@@ -40,5 +40,87 @@ Ikuti langkah-langkah di bawah ini untuk menjalankan aplikasi di komputer lokal:
 * Composer
 * PostgreSQL (pastikan service berjalan)
 
-   git clone [https://github.com/username-kamu/nama-repo-kamu.git](https://github.com/username-kamu/nama-repo-kamu.git)
-   cd nama-repo-kamu
+### Entity Relationship Diagram (ERD)
+
+```mermaid
+erDiagram
+    divisi ||--o{ karyawan : "memiliki"
+    divisi {
+        VARCHAR2 id_divisi PK
+        VARCHAR2 kode_divisi
+        VARCHAR2 nama_divisi
+        VARCHAR2 status_aktif
+    }
+
+    karyawan ||--o{ tugas : "ditugaskan"
+    karyawan ||--o{ User : "memiliki akun"
+    karyawan {
+        VARCHAR2 id_karyawan PK
+        VARCHAR2 nama
+        VARCHAR2 jenis_kelamin
+        DATE tanggal_lahir
+        DATE tanggal_rekrut
+        VARCHAR2 no_telepon
+        VARCHAR2 email
+        VARCHAR2 jabatan
+        VARCHAR2 divisi_id_divisi FK
+    }
+
+    role ||--o{ User : "memiliki"
+    role {
+        VARCHAR2 id_role PK
+        VARCHAR2 nama_role
+    }
+
+    User ||--o{ notifikasi : "menerima"
+    User {
+        VARCHAR2 id_user PK
+        VARCHAR2 username
+        VARCHAR2 password
+        VARCHAR2 role_id_role FK
+        VARCHAR2 karyawan_id_karyawan FK
+    }
+
+    notifikasi {
+        VARCHAR2 id_notifikasi PK
+        VARCHAR2 judul_notifikasi
+        VARCHAR2 isi_notif
+        DATE tanggal_notifikasi
+        VARCHAR2 user_id_user FK
+    }
+
+    tugas ||--o{ pesan : "memiliki"
+    tugas ||--o{ submit_tugas : "mempunyai"
+    tugas {
+        VARCHAR2 id_tugas PK
+        VARCHAR2 karyawan_id_karyawan PK, FK
+        VARCHAR2 judul_tugas
+        VARCHAR2 deskripsi
+        DATE deadline
+        VARCHAR2 progress
+        VARCHAR2 status
+        DATE tanggal_dibuat
+        DATE tanggal_update
+    }
+
+    pesan {
+        VARCHAR2 id_pesan PK
+        VARCHAR2 judul_pesan
+        VARCHAR2 deskripsi
+        DATE tanggal_pesan
+        VARCHAR2 tugas_id_tugas FK
+        VARCHAR2 tugas_karyawan_id_karyawan FK
+    }
+
+    submit_tugas {
+        VARCHAR2 id_submit_tugas PK
+        BLOB link_submit
+        VARCHAR2 file_hasil
+        VARCHAR2 catatan_karyawan
+        VARCHAR2 catatan_revisi
+        DATE tanggal_submit
+        VARCHAR2 status_review
+        VARCHAR2 tugas_id_tugas FK
+        VARCHAR2 tugas_karyawan_id_karyawan FK
+    }
+
