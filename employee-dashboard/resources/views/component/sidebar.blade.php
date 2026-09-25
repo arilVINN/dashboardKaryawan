@@ -10,7 +10,7 @@
                     <h1 class="text-xl font-bold text-[#2A4B6A] leading-tight">
                         PT SILINDO
                     </h1>
-                    <p class="text-xs font-small text-[#1CA4BA] tracking-tight leading-tight">
+                    <p class="text-[11px] font-small text-[#1CA4BA] tracking-tight leading-tight">
                         PT SINERGI ILMIAH INDONESIA
                     </p>
                 </div>
@@ -56,8 +56,7 @@
                 Pesan
             </a>
         </nav>
-
-
+        
         <div class="p-4 border-t border-white mt-auto">
 
 
