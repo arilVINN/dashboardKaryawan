@@ -46,4 +46,13 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function pesanDikirim()
+    {
+        return $this->hasMany(
+            Pesan::class,
+            'pengirim_id_user',
+            'id_user'
+        );
+    }
 }

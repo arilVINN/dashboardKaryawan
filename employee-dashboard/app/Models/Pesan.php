@@ -14,6 +14,8 @@ class Pesan extends Model
 
     protected $keyType = 'string';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'id_pesan',
         'judul_pesan',
@@ -21,6 +23,7 @@ class Pesan extends Model
         'tanggal_pesan',
         'tugas_id_tugas',
         'tugas_karyawan_id_karyawan',
+        'pengirim_id_user',
     ];
 
     public function tugas()
@@ -31,4 +34,13 @@ class Pesan extends Model
             'id_tugas'
         );
     }
+
+    public function pengirim(){
+        return $this->belongsTo(
+            User::class,
+            'pengirim_id_user',
+            'id_user'
+        );
+    }
+
 }
