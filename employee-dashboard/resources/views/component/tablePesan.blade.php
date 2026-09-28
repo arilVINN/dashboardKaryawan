@@ -1,56 +1,73 @@
-<div class="flex flex-col gap-3">
+@php
+    $isCompact = $compact ?? false;
+    $cellPadding = $isCompact ? 'px-4 py-3' : 'px-6 py-4';
+
+    // Data dummy pesan
+    $dummyPesan = [
+        [
+            'id' => 1,
+            'judul' => 'Revisi Layout',
+            'isi' => 'Tolong rapikan margin pada topbar dan tabel tugas agar presisi.',
+            'tugas' => 'Pembuatan UI/UX',
+            'tanggal' => '28 Sept 2026',
+        ],
+        [
+            'id' => 2,
+            'judul' => 'Integrasi API',
+            'isi' => 'Endpoint untuk autentikasi token sudah ready untuk diintegrasikan.',
+            'tugas' => 'Backend Setup',
+            'tanggal' => '27 Sept 2026',
+        ],
+        [
+            'id' => 3,
+            'judul' => 'Update Asset Logo',
+            'isi' => 'Gunakan file SVG terbaru untuk logo instansi di bagian header sidebar.',
+            'tugas' => 'Branding Staff',
+            'tanggal' => '26 Sept 2026',
+        ],
+    ];
+@endphp
+
+<div class="flex flex-col gap-3 w-full">
     <h2 class="text-xl font-bold text-slate-800">Table Pesan</h2>
     
-    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
+        <div class="{{ $isCompact ? 'overflow-hidden' : 'overflow-x-auto' }}">
             <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-slate-100 text-slate-500">
+                <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
                     <tr>
-                        <th class="px-4 py-3 font-medium whitespace-nowrap">Judul Pesan</th>
-                        <th class="px-4 py-3 font-medium whitespace-nowrap">Isi Pesan</th>
-                        <th class="px-4 py-3 font-medium whitespace-nowrap">Tugas Terkait</th>
-                        <th class="px-4 py-3 font-medium whitespace-nowrap">Tanggal</th>
-                        <th class="px-4 py-3 font-medium whitespace-nowrap text-center">Aksi</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Judul Pesan</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Isi Pesan</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Tugas Terkait</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Tanggal</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
-                    <tr class="hover:bg-slate-50">
-                        <td class="px-4 py-3 font-semibold text-slate-800 whitespace-nowrap">Revisi Layout</td>
-                        <td class="px-4 py-3 max-w-[140px] truncate text-slate-500">Tolong rapikan margin...</td>
-                        <td class="px-4 py-3 whitespace-nowrap">
-                            <span class="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs">Pembuatan UI/UX</span>
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap">28 Sept 2026</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-center">
-                            <button class="text-blue-600 hover:text-blue-800 font-medium hover:underline">Baca</button>
-                        </td>
-                    </tr>
-                </tbody>
-                <tbody class="divide-y divide-slate-200">
-                    <tr class="hover:bg-slate-50">
-                        <td class="px-4 py-3 font-semibold text-slate-800 whitespace-nowrap">Revisi Layout</td>
-                        <td class="px-4 py-3 max-w-[140px] truncate text-slate-500">Tolong rapikan margin...</td>
-                        <td class="px-4 py-3 whitespace-nowrap">
-                            <span class="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs">Pembuatan UI/UX</span>
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap">28 Sept 2026</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-center">
-                            <button class="text-blue-600 hover:text-blue-800 font-medium hover:underline">Baca</button>
-                        </td>
-                    </tr>
-                </tbody>
-                <tbody class="divide-y divide-slate-200">
-                    <tr class="hover:bg-slate-50">
-                        <td class="px-4 py-3 font-semibold text-slate-800 whitespace-nowrap">Revisi Layout</td>
-                        <td class="px-4 py-3 max-w-[140px] truncate text-slate-500">Tolong rapikan margin...</td>
-                        <td class="px-4 py-3 whitespace-nowrap">
-                            <span class="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs">Pembuatan UI/UX</span>
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap">28 Sept 2026</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-center">
-                            <button class="text-blue-600 hover:text-blue-800 font-medium hover:underline">Baca</button>
-                        </td>
-                    </tr>
+                    @foreach ($dummyPesan as $pesan)
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="{{ $cellPadding }} font-semibold text-slate-800 whitespace-nowrap">
+                                {{ $pesan['judul'] }}
+                            </td>
+                            <td class="{{ $cellPadding }} max-w-[160px] truncate text-slate-500">
+                                {{ $pesan['isi'] }}
+                            </td>
+                            <td class="{{ $cellPadding }} whitespace-nowrap">
+                                <span class="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs">
+                                    {{ $pesan['tugas'] }}
+                                </span>
+                            </td>
+                            <td class="{{ $cellPadding }} whitespace-nowrap text-slate-500">
+                                {{ $pesan['tanggal'] }}
+                            </td>
+                            <td class="{{ $cellPadding }} whitespace-nowrap text-center">
+                                <a href="{{ url('/pesan/detail/' . $pesan['id']) }}" 
+                                   class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
+                                    Baca
+                                </a>
+                            </td>
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
