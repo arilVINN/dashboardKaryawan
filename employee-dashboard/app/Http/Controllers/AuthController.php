@@ -39,12 +39,7 @@ class AuthController extends Controller
         // Generate token
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Login berhasil',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'role' => $user->role->nama_role ?? 'Tidak ada role'
-        ]);
+        return response()->json(['access_token' => $token]);
     }
 
     public function logout(Request $request)

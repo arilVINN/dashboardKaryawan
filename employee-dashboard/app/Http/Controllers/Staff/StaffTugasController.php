@@ -8,7 +8,7 @@ use App\Models\Tugas;
 use App\Models\SubmitTugas;
 use Illuminate\Support\Str;
 
-class TugasController extends Controller
+class StaffTugasController extends Controller
 {
     // GET /staff/tugas
     public function index(Request $request)
@@ -53,8 +53,13 @@ class TugasController extends Controller
         if (!$tugas) {
             return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
         }
+
+        // Cegah pengiriman ulang jika tugas sudah di-ACC
+        if ($tugas->status === 'selesai') {
+            return response()->json(['message' => 'Tugas ini sudah di-ACC dan tidak bisa dikirim ulang'], 403);
+        }
         $request->validate([
-            'file_hasil' => 'nullable|file',
+            'file_hasil' => 'nullable|file|max:204800', // max 200 MB (dalam kilobyte)
             'link_submit' => 'nullable|string',
             'catatan_karyawan' => 'nullable|string',
             'progress' => 'required|integer|min:0|max:100'
@@ -63,9 +68,13 @@ class TugasController extends Controller
         if ($request->hasFile('file_hasil')) {
             $filePath = $request->file('file_hasil')->store('submissions', 'public');
         }
+        // Generate dynamic ID SB001, SB002, etc. (Max 5 chars)
+        $lastSubmit = SubmitTugas::orderBy('id_submit_tugas', 'desc')->first();
+        $newId = $lastSubmit ? 'SB' . str_pad(intval(substr($lastSubmit->id_submit_tugas, 2)) + 1, 3, '0', STR_PAD_LEFT) : 'SB001';
+
         // 1. Simpan ke tabel submit_tugas dengan antisipasi NOT NULL SQL
         SubmitTugas::create([
-            'id_submit_tugas' => 'SB001', // Sesuaikan logika ID 5 karakter
+            'id_submit_tugas' => $newId,
             'tugas_id_tugas' => $tugas->id_tugas,
             'tugas_karyawan_id_karyawan' => $karyawanId,
             'file_hasil' => $filePath,

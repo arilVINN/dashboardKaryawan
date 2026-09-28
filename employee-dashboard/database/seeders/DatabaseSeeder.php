@@ -60,6 +60,66 @@ class DatabaseSeeder extends Seeder
             'tanggal_update' => now(),
         ]);
         
-        $this->command->info('Berhasil Seed Database dengan panjang karakter aman (<= 5)!');
+        // --- ADD REVA ---
+        $karyawanReva = Karyawan::create([
+            'id_karyawan' => 'KR002',
+            'nama' => 'Reva',
+            'jenis_kelamin' => 'Perempuan',
+            'tanggal_lahir' => '1998-08-20',
+            'tanggal_rekrut' => '2024-02-01',
+            'no_telepon' => '08987654',
+            'email' => 'reva@mail.com',
+            'jabatan' => 'Frontend',
+            'divisi_id_divisi' => $divisiIT->id_divisi, // Same division as Budi for testing
+        ]);
+
+        User2::create([
+            'id_user' => 'US002',
+            'username' => 'revast',
+            'password' => Hash::make('pass123'),
+            'role_id_role' => $roleStaff->id_role,
+            'karyawan_id_karyawan' => $karyawanReva->id_karyawan,
+        ]);
+
+        Tugas::create([
+            'id_tugas' => 'TG002',
+            'karyawan_id_karyawan' => $karyawanReva->id_karyawan,
+            'judul_tugas' => 'Desain UI Dashboard',
+            'deskripsi' => 'Buat tampilan dashboard yang responsive.',
+            'deadline' => now()->addDays(5),
+            'progress' => '0',
+            'status' => 'pending',
+            'tanggal_dibuat' => now(),
+            'tanggal_update' => now(),
+        ]);
+        // -----------------
+        // --- ADD KADIV (PAK TONO) ---
+        $roleKadiv = Role::create([
+            'id_role' => 'RL002',
+            'nama_role' => 'kadiv'
+        ]);
+
+        $karyawanKadiv = Karyawan::create([
+            'id_karyawan' => 'KR003',
+            'nama' => 'Pak Tono',
+            'jenis_kelamin' => 'Laki-laki',
+            'tanggal_lahir' => '1980-01-01',
+            'tanggal_rekrut' => '2015-01-01',
+            'no_telepon' => '08111222333',
+            'email' => 'tono@mail.com',
+            'jabatan' => 'Kepala Divisi IT',
+            'divisi_id_divisi' => $divisiIT->id_divisi,
+        ]);
+
+        User2::create([
+            'id_user' => 'US003',
+            'username' => 'tonokd',
+            'password' => Hash::make('pass123'),
+            'role_id_role' => $roleKadiv->id_role,
+            'karyawan_id_karyawan' => $karyawanKadiv->id_karyawan,
+        ]);
+        // -----------------
+        
+        $this->command->info('Berhasil Seed Database dengan Budi, Reva, dan Pak Tono (Kadiv)!');
     }
 }
