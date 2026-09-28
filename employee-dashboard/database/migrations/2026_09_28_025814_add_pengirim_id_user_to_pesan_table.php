@@ -9,8 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pesans', function (Blueprint $table) {
-            $table->foreignId('pengirim_id_user')
-                ->constrained('users');
+            $table->string('pengirim_id_user', 20);
+
+            $table->foreign('pengirim_id_user')
+                ->references('id_user')
+                ->on('users2')
+                ->restrictOnDelete();
         });
     }
 

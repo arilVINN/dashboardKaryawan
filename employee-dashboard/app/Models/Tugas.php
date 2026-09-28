@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\TugasDitugaskan;
 use Illuminate\Database\Eloquent\Model;
 
 class Tugas extends Model
@@ -26,6 +27,13 @@ class Tugas extends Model
         'tanggal_update',
     ];
 
+    protected static function booted(): void
+    {
+        static::created(function (Tugas $tugas): void {
+            TugasDitugaskan::dispatch($tugas);
+        });
+    }
+
     public function karyawan()
     {
         return $this->belongsTo(
@@ -38,6 +46,14 @@ class Tugas extends Model
     public function pesans()
     {
         return $this->hasMany(Pesan::class, 'tugas_id_tugas');
+    }
+
+    public function latestPesan()
+    {
+        return $this->hasOne(
+            Pesan::class,
+            'tugas_id_tugas'
+        )->latestOfMany('created_at');
     }
 
     public function submitTugas()

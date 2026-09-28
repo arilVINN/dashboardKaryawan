@@ -25,7 +25,7 @@ class Notifikasi extends Model
     public function user()
     {
         return $this->belongsTo(
-            User::class,
+            User2::class,
             'user_id_user',
             'id_user'
         );
