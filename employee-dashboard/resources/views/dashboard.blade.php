@@ -10,14 +10,18 @@
 
 <body class="bg-gray-100 flex h-screen">
     @include('component.sidebar')
-    
 
     <main class="flex-1 p-8 top-0 overflow-y-auto pt-10">
         <h1 class="text-2xl font-bold text-gray-800">Status tugas tugas staff</h1>
         @include('component.statusbar')
-        <h1 class="text-2xl font-bold text-gray-800 pt-5" >Notifikasi</h1>
+        <h1 class="text-2xl font-bold text-gray-800 pt-5">Notifikasi</h1>
         @include('component.notifikasi')
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start mt-6">
+        @include('component.tableTugas')
+        @include('component.tablePesan')
+        </div>
     </main>
 
 </body>
+
 </html>
