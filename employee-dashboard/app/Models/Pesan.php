@@ -21,6 +21,7 @@ class Pesan extends Model
         'tanggal_pesan',
         'tugas_id_tugas',
         'tugas_karyawan_id_karyawan',
+        'pengirim_id_user',
     ];
 
     public function tugas()
@@ -29,6 +30,15 @@ class Pesan extends Model
             Tugas::class,
             'tugas_id_tugas',
             'id_tugas'
+        );
+    }
+
+    public function pengirim()
+    {
+        return $this->belongsTo(
+            User2::class,
+            'pengirim_id_user',
+            'id_user'
         );
     }
 }
