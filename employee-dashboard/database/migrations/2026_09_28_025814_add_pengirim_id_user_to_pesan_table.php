@@ -8,18 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('pesan', function (Blueprint $table) {
-            $table->string('pengirim_id_user', 5);
-
-            $table->foreign('pengirim_id_user')
-                ->references('id_user')
-                ->on('User');
+        Schema::table('pesans', function (Blueprint $table) {
+            $table->foreignId('pengirim_id_user')
+                ->constrained('users');
         });
     }
 
     public function down(): void
     {
-        Schema::table('pesan', function (Blueprint $table) {
+        Schema::table('pesans', function (Blueprint $table) {
             $table->dropForeign(['pengirim_id_user']);
             $table->dropColumn('pengirim_id_user');
         });

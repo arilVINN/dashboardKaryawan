@@ -52,7 +52,6 @@ class User extends Authenticatable
         return $this->hasMany(
             Pesan::class,
             'pengirim_id_user',
-            'id_user'
         );
     }
 }

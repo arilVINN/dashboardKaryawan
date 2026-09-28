@@ -39,7 +39,6 @@ class Pesan extends Model
         return $this->belongsTo(
             User::class,
             'pengirim_id_user',
-            'id_user'
         );
     }
 
