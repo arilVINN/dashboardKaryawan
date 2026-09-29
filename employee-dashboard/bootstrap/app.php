@@ -12,12 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
             'gateway.throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'gateway.format' => \App\Http\Middleware\ApiResponseFormatter::class,
-
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
