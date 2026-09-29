@@ -119,7 +119,124 @@ class DatabaseSeeder extends Seeder
             'karyawan_id_karyawan' => $karyawanKadiv->id_karyawan,
         ]);
         // -----------------
+
+        $divisiHR = Divisi::create([
+            'id_divisi' => 'DV002',
+            'kode_divisi' => 'HR01',
+            'nama_divisi' => 'Human Resources',
+            'status_aktif' => 'Aktif',
+        ]);
+
+        $karyawanKadivHR = Karyawan::create([
+            'id_karyawan' => 'KR004',
+            'nama' => 'Bu Rina',
+            'jenis_kelamin' => 'Perempuan',
+            'tanggal_lahir' => '1985-04-12',
+            'tanggal_rekrut' => '2018-06-01',
+            'no_telepon' => '08122334455',
+            'email' => 'rina@mail.com',
+            'jabatan' => 'Kepala Divisi HR',
+            'divisi_id_divisi' => $divisiHR->id_divisi,
+        ]);
+
+        User2::create([
+            'id_user' => 'US004',
+            'username' => 'rinakadiv',
+            'password' => Hash::make('pass123'),
+            'role_id_role' => $roleKadiv->id_role,
+            'karyawan_id_karyawan' => $karyawanKadivHR->id_karyawan,
+        ]);
+
+        $karyawanAndi = Karyawan::create([
+            'id_karyawan' => 'KR005',
+            'nama' => 'Andi',
+            'jenis_kelamin' => 'Laki-laki',
+            'tanggal_lahir' => '1997-03-18',
+            'tanggal_rekrut' => '2022-08-15',
+            'no_telepon' => '08133445566',
+            'email' => 'andi@mail.com',
+            'jabatan' => 'Staff HR',
+            'divisi_id_divisi' => $divisiHR->id_divisi,
+        ]);
+
+        User2::create([
+            'id_user' => 'US005',
+            'username' => 'andist',
+            'password' => Hash::make('pass123'),
+            'role_id_role' => $roleStaff->id_role,
+            'karyawan_id_karyawan' => $karyawanAndi->id_karyawan,
+        ]);
+
+        Tugas::create([
+            'id_tugas' => 'TG003',
+            'karyawan_id_karyawan' => $karyawanAndi->id_karyawan,
+            'judul_tugas' => 'Perbarui Data Karyawan',
+            'deskripsi' => 'Periksa dan perbarui data karyawan divisi HR.',
+            'deadline' => now()->addDays(4),
+            'progress' => '0',
+            'status' => 'pending',
+            'tanggal_dibuat' => now(),
+            'tanggal_update' => now(),
+        ]);
+
+        $karyawanMaya = Karyawan::create([
+            'id_karyawan' => 'KR006',
+            'nama' => 'Maya',
+            'jenis_kelamin' => 'Perempuan',
+            'tanggal_lahir' => '1999-11-07',
+            'tanggal_rekrut' => '2023-05-10',
+            'no_telepon' => '08144556677',
+            'email' => 'maya@mail.com',
+            'jabatan' => 'Staff HR',
+            'divisi_id_divisi' => $divisiHR->id_divisi,
+        ]);
+
+        User2::create([
+            'id_user' => 'US006',
+            'username' => 'mayast',
+            'password' => Hash::make('pass123'),
+            'role_id_role' => $roleStaff->id_role,
+            'karyawan_id_karyawan' => $karyawanMaya->id_karyawan,
+        ]);
+
+        Tugas::create([
+            'id_tugas' => 'TG004',
+            'karyawan_id_karyawan' => $karyawanMaya->id_karyawan,
+            'judul_tugas' => 'Siapkan Orientasi Karyawan',
+            'deskripsi' => 'Siapkan materi orientasi untuk karyawan baru.',
+            'deadline' => now()->addDays(6),
+            'progress' => '0',
+            'status' => 'pending',
+            'tanggal_dibuat' => now(),
+            'tanggal_update' => now(),
+        ]);
+        // --- ADD HRD ---
+        $roleHrd = Role::create([
+            'id_role' => 'RL003',
+            'nama_role' => 'hrd'
+        ]);
+
+        $karyawanHrd = Karyawan::create([
+            'id_karyawan' => 'KR007',
+            'nama' => 'Pak Darmawan',
+            'jenis_kelamin' => 'Laki-laki',
+            'tanggal_lahir' => '1978-06-20',
+            'tanggal_rekrut' => '2012-01-15',
+            'no_telepon' => '08155667788',
+            'email' => 'darmawan@mail.com',
+            'jabatan' => 'HRD Manager',
+            'divisi_id_divisi' => $divisiHR->id_divisi,
+        ]);
+
+        User2::create([
+            'id_user' => 'US007',
+            'username' => 'darmawanhrd',
+            'password' => Hash::make('pass123'),
+            'role_id_role' => $roleHrd->id_role,
+            'karyawan_id_karyawan' => $karyawanHrd->id_karyawan,
+        ]);
+        // -----------------
         
-        $this->command->info('Berhasil Seed Database dengan Budi, Reva, dan Pak Tono (Kadiv)!');
+        $this->command->info('Berhasil Seed Database: 3 Role (staff, kadiv, hrd), 2 Divisi, 7 Karyawan!');
     }
 }

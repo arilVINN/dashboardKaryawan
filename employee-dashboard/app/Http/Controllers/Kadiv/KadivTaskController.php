@@ -50,6 +50,7 @@ class KadivTaskController extends Controller
             'deadline' => 'required|date',
             // File atau link pendukung (opsional)
             'file_pendukung' => 'nullable|file|max:20480', // 20 MB max
+            'link_pendukung' => 'nullable|string',
         ]);
 
         // Pastikan karyawan penerima tugas berada di divisi yang sama
@@ -65,17 +66,18 @@ class KadivTaskController extends Controller
         $lastTugas = Tugas::orderBy('id_tugas', 'desc')->first();
         $newId = $lastTugas ? 'TG' . str_pad(intval(substr($lastTugas->id_tugas, 2)) + 1, 3, '0', STR_PAD_LEFT) : 'TG001';
 
-        // NOTE: Struktur database awal tidak memiliki kolom file_pendukung di tabel Tugas,
-        // namun instruksi meminta file pendukung. Jika kolom tidak ada, kita bisa menggunakan deskripsi atau menolak.
-        // Untuk saat ini, kita abaikan file upload jika kolom tidak tersedia, atau Anda harus mengubah migration.
-        // Di sini kita asumsikan kolomnya belum ditambahkan di migration, maka disatukan ke deskripsi jika ada.
-        $deskripsi = $request->deskripsi;
-        
+        $filePath = null;
+        if ($request->hasFile('file_pendukung')) {
+            $filePath = $request->file('file_pendukung')->store('tugas_pendukung', 'public');
+        }
+
         $tugas = Tugas::create([
             'id_tugas' => $newId,
             'karyawan_id_karyawan' => $request->karyawan_id_karyawan,
             'judul_tugas' => $request->judul_tugas,
-            'deskripsi' => $deskripsi,
+            'deskripsi' => $request->deskripsi,
+            'file_pendukung' => $filePath,
+            'link_pendukung' => $request->link_pendukung,
             'deadline' => $request->deadline,
             'progress' => '0',
             'status' => 'pending',
@@ -108,7 +110,9 @@ class KadivTaskController extends Controller
             'judul_tugas' => 'sometimes|required|string|max:100',
             'deskripsi' => 'sometimes|required|string',
             'deadline' => 'sometimes|required|date',
-            'karyawan_id_karyawan' => 'sometimes|required|exists:karyawans,id_karyawan'
+            'karyawan_id_karyawan' => 'sometimes|required|exists:karyawans,id_karyawan',
+            'file_pendukung' => 'nullable|file|max:20480',
+            'link_pendukung' => 'nullable|string'
         ]);
 
         // Jika pindah tangan, pastikan karyawan baru se-divisi
@@ -121,10 +125,17 @@ class KadivTaskController extends Controller
             }
         }
 
+        $filePath = $tugas->file_pendukung;
+        if ($request->hasFile('file_pendukung')) {
+            $filePath = $request->file('file_pendukung')->store('tugas_pendukung', 'public');
+        }
+
         $tugas->update([
             'karyawan_id_karyawan' => $request->karyawan_id_karyawan ?? $tugas->karyawan_id_karyawan,
             'judul_tugas' => $request->judul_tugas ?? $tugas->judul_tugas,
             'deskripsi' => $request->deskripsi ?? $tugas->deskripsi,
+            'file_pendukung' => $filePath,
+            'link_pendukung' => $request->link_pendukung ?? $tugas->link_pendukung,
             'deadline' => $request->deadline ?? $tugas->deadline,
             'tanggal_update' => now(),
         ]);
@@ -175,6 +186,10 @@ class KadivTaskController extends Controller
 
         if (!$tugas || $tugas->karyawan->divisi_id_divisi !== $divisiId) {
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar wewenang'], 404);
+        }
+
+        if ($tugas->status === 'selesai') {
+            return response()->json(['message' => 'Tugas ini sudah di-ACC sebelumnya dan tidak dapat direview lagi'], 403);
         }
 
         $request->validate([

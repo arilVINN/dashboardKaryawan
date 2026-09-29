@@ -36,6 +36,9 @@ class AuthController extends Controller
             return response()->json(['message' => 'Username atau password salah'], 401);
         }
 
+        // Update last login
+        $user->update(['last_login_at' => now()]);
+
         // Generate token
         $token = $user->createToken('auth_token')->plainTextToken;
 

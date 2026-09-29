@@ -21,6 +21,7 @@ class User2 extends Authenticatable
         'password',
         'role_id_role',
         'karyawan_id_karyawan',
+        'last_login_at',
     ];
 
     public function role()

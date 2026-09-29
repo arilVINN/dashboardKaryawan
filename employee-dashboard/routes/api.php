@@ -37,4 +37,17 @@ Route::middleware([
         Route::delete('/tugas/{id}', [\App\Http\Controllers\Kadiv\KadivTaskController::class, 'destroy']);
         Route::post('/tugas/{id}/review', [\App\Http\Controllers\Kadiv\KadivTaskController::class, 'review']);
     });
+
+    // HRD‑only routes
+    Route::middleware('role:hrd')->prefix('hrd')->group(function () {
+        // Manajemen Divisi
+        Route::get('/divisi', [\App\Http\Controllers\Hrd\HrdDivisiController::class, 'index']);
+        Route::post('/divisi', [\App\Http\Controllers\Hrd\HrdDivisiController::class, 'store']);
+        Route::get('/divisi/{id}', [\App\Http\Controllers\Hrd\HrdDivisiController::class, 'show']);
+
+        // Manajemen Staff
+        Route::get('/staff', [\App\Http\Controllers\Hrd\HrdStaffController::class, 'index']);
+        Route::post('/staff', [\App\Http\Controllers\Hrd\HrdStaffController::class, 'store']);
+        Route::get('/staff/{id}', [\App\Http\Controllers\Hrd\HrdStaffController::class, 'show']);
+    });
 });
