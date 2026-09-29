@@ -6,8 +6,33 @@ use App\Http\Controllers\Staff\PesanController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('dashboard');
-});
+    return view('staff.dashboard');
+})->name('dashboard');
+
+Route::get('/tugas', function () {
+    return view('staff.tugas');
+})->name('tugas');
+
+Route::get('/pesan', function () {
+    return view('staff.pesan');
+})->name('pesan');
+
+Route::get('/pesan/detail/{id?}', function () {
+    return view('staff.detailPesan');
+})->name('pesan.detail');
+
+Route::get('/tugas/detail/{id?}', function () {
+    return view('staff.detailTugas');
+})->name('tugas.detail');
+
+Route::get('/profile', function () {
+    return view('staff.detailProfile');
+})->name('profile');
+
+Route::get('/login', function () {
+    return view('login');
+})->name('login');
+
 
 Route::prefix('staff')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
