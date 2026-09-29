@@ -4,6 +4,9 @@ use App\Http\Controllers\Staff\DashboardController;
 use App\Http\Controllers\Staff\NotifikasiController;
 use App\Http\Controllers\Staff\PesanController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+
+
 
 Route::get('/', function () {
     return view('staff.dashboard');
@@ -42,4 +45,53 @@ Route::prefix('staff')->group(function () {
     Route::get('/pesan/{id_tugas}', [PesanController::class, 'show']);
 
     Route::get('/notifikasi', [NotifikasiController::class, 'index']);
+});
+
+//HRD
+Route::get('/hrd/dashboard', function () {
+    return view('hrd.dashboard');
+})->name('dashboard');
+
+Route::get('/hrd/manajemenDivisi', function () {
+    return view('hrd.manajemenDivisi');
+})->name('manajemen');
+
+Route::get('/hrd/pesan', function () {
+    return view('hrd.pesan');
+})->name('pesan');
+
+
+
+// 1. Route untuk proses form login
+Route::post('/login-proses', function (Request $request) {
+    // Data dummy
+    $userDummy = [
+        'nama' => 'Samuel Sigalingging',
+        'inisial' => 'S',
+        'email' => 'staff@silindo.co.id',
+        'telepon' => '081234567890',
+        'tingkatan' => 'Staff',
+        'divisi' => 'Content Writer',
+        'tanggal_masuk' => '12 Januari 2025',
+        'alamat' => 'Salatiga, Jawa Tengah',
+        'tanggal_dibuat' => '10 Januari 2025',
+    ];
+
+    session(['user_session' => $userDummy]);
+
+    return redirect('/'); 
+})->name('login.proses');
+
+
+// 2. Route untuk halaman profil
+Route::get('/profile', function () {
+    // Cek apakah ada session login, jika tidak, tendang balik ke login
+    if (!session()->has('user_session')) {
+        return redirect('/login');
+    }
+
+    // Ambil data dari session dan lempar ke view detailProfile
+    $pegawai = session('user_session');
+    
+    return view('staff.detailProfile', ['pegawai' => $pegawai]);
 });

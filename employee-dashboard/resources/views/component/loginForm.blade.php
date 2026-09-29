@@ -19,7 +19,8 @@
             </div>
         </div>
 
-        <div class="absolute inset-0 bg-gradient-to-l from-white/40 via-white/10 to-transparent pointer-events-none z-1"></div>
+        <div class="absolute inset-0 bg-gradient-to-l from-white/40 via-white/10 to-transparent pointer-events-none z-1">
+        </div>
 
         <div
             class="absolute -right-0 top-24 w-10 h-[50%] rotate-40 pointer-events-none z-2 
@@ -47,7 +48,7 @@
             </p>
         </div>
 
-        <form action="{{ $action }}" method="POST" class="space-y-5 max-w-sm mx-auto w-full">
+        <form action="{{ route('login.proses') }}" method="POST" class="space-y-5 max-w-sm mx-auto w-full">
             @csrf
             <div>
                 <label class="block text-sm font-bold text-slate-900 mb-1.5">Username</label>
