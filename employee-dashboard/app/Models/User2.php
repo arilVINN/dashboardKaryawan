@@ -23,6 +23,7 @@ class User2 extends Authenticatable
         'password',
         'role_id_role',
         'karyawan_id_karyawan',
+        'last_login_at',
     ];
 
     protected $hidden = [
@@ -34,6 +35,7 @@ class User2 extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'last_login_at' => 'datetime',
         ];
     }
 
@@ -69,6 +71,15 @@ class User2 extends Authenticatable
         return $this->hasMany(
             Pesan::class,
             'pengirim_id_user',
+            'id_user'
+        );
+    }
+
+    public function pesanDiterima()
+    {
+        return $this->hasMany(
+            Pesan::class,
+            'penerima_id_user',
             'id_user'
         );
     }

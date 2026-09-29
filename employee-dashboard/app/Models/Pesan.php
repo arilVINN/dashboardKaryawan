@@ -18,10 +18,14 @@ class Pesan extends Model
         'id_pesan',
         'judul_pesan',
         'deskripsi',
+        'tipe',
+        'link_lampiran',
+        'file_lampiran',
         'tanggal_pesan',
         'tugas_id_tugas',
         'tugas_karyawan_id_karyawan',
         'pengirim_id_user',
+        'penerima_id_user',
     ];
 
     public function tugas()
@@ -38,6 +42,15 @@ class Pesan extends Model
         return $this->belongsTo(
             User2::class,
             'pengirim_id_user',
+            'id_user'
+        );
+    }
+
+    public function penerima()
+    {
+        return $this->belongsTo(
+            User2::class,
+            'penerima_id_user',
             'id_user'
         );
     }
