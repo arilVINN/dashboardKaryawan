@@ -19,8 +19,8 @@ php artisan serve        # default http://127.0.0.1:8000
 |---|---|---|---|---|
 | `budist` | `pass123` | Staff | IT | Punya tugas `TG001` "Bikin API" |
 | `revast` | `pass123` | Staff | IT | Punya tugas `TG002` "Desain UI Dashboard" |
-| `andist` | `pass123` | Staff | IT | Punya tugas "Perbarui Data Karyawan" |
-| `mayast` | `pass123` | Staff | IT | Punya tugas "Siapkan Orientasi Karyawan" |
+| `andist` | `pass123` | Staff | HR | Punya tugas "Perbarui Data Karyawan" |
+| `mayast` | `pass123` | Staff | HR | Punya tugas "Siapkan Orientasi Karyawan" |
 | `tonokd` | `pass123` | Kadiv | IT | Kepala Divisi IT |
 | `rinakadiv` | `pass123` | Kadiv | HR | Kepala Divisi HR |
 | `darmawanhrd` | `pass123` | HRD | HR | |
@@ -32,6 +32,27 @@ php artisan serve        # default http://127.0.0.1:8000
    - `token` = *(kosongkan, diisi otomatis saat login)*
 2. Setiap request: header `Accept: application/json`.
 3. Setelah login, isi header `Authorization: Bearer {{token}}`.
+
+### Referensi status tugas
+
+Lima status (hasil revisi UI/UX). Empat status pertama disimpan di kolom `tugas.status`; **`telat` tidak pernah disimpan** — diturunkan dari deadline.
+
+| Status | Kapan muncul |
+|---|---|
+| `baru` | Tugas dibuat, belum dikerjakan |
+| `berjalan` | Sedang dikerjakan, atau hasil revisi dari Kadiv |
+| `menunggu di-acc` | Staff submit dengan `progress = 100` |
+| `sudah di-acc` | Kadiv memberi ACC |
+| `telat` | Deadline lewat **dan** status belum `sudah di-acc` (status turunan) |
+
+Transisi:
+
+- Buat tugas (kadiv) → `baru`
+- Submit dengan progress `< 100` → `berjalan` · submit dengan progress `= 100` → `menunggu di-acc`
+- Review kadiv `acc` → `sudah di-acc` · `revisi` → `berjalan`
+- Deadline terlewat → status efektif `telat` (kecuali sudah `sudah di-acc`)
+
+> Catatan: `status_review` pada `submit_tugas` (`submitted` / `acc` / `revisi`) adalah kolom terpisah untuk alur review pengumpulan — bukan status tugas.
 
 ---
 
@@ -74,7 +95,7 @@ Semua butuh token dengan role **staff**.
 Response `200`:
 
 ```json
-{ "message": "Daftar tugas Anda", "data": [ { "id_tugas": "TG001", "judul_tugas": "Bikin API", "status": "pending", "progress": "0" } ] }
+{ "message": "Daftar tugas Anda", "data": [ { "id_tugas": "TG001", "judul_tugas": "Bikin API", "status": "baru", "progress": "0" } ] }
 ```
 
 ### GET `/api/staff/tugas/{id}` — Detail tugas
@@ -96,7 +117,7 @@ Body (`form-data`, karena bisa upload file):
 Response `200`: `{ "message": "Hasil tugas berhasil dikirim", "data": { ...tugas } }`
 
 Error:
-- `403` → tugas sudah di-ACC (`status = selesai`)
+- `403` → tugas sudah di-ACC (`status = sudah di-acc`)
 - `404` → tugas bukan milik Anda
 
 ---
@@ -114,9 +135,11 @@ Response `200`:
   "data": {
     "divisi": { "id_divisi": "DV001", "nama_divisi": "Information Technology" },
     "metrics": {
-      "tugas_belum_dikirim": 2,
-      "tugas_belum_di_acc": 0,
-      "tugas_sudah_di_acc": 1,
+      "tugas_baru": 1,
+      "tugas_berjalan": 1,
+      "tugas_menunggu_di_acc": 1,
+      "tugas_sudah_di_acc": 2,
+      "tugas_telat": 1,
       "persentase_penyelesaian": 33.33
     },
     "staff": [ { "id_karyawan": "KR001", "nama": "Budi", "jumlah_tugas_dikerjakan": 1, "terakhir_login": null } ]
@@ -203,7 +226,7 @@ Body JSON:
 { "status_review": "acc", "catatan_revisi": null }
 ```
 
-`status_review`: `acc` (tugas → `selesai`) atau `revisi` (tugas → `revisi`).
+`status_review`: `acc` (tugas → `sudah di-acc`) atau `revisi` (tugas → `berjalan`).
 
 - `200` → `{ "message": "Review berhasil disimpan", "data": { "tugas": {}, "submit": {} } }`
 - `400` → belum ada file yang dikumpulkan staff
@@ -258,6 +281,8 @@ Response `200`:
   }
 }
 ```
+
+> `tugas_selesai` menghitung tugas dengan `status = sudah di-acc`.
 
 ### GET `/api/hrd/staff` — Daftar seluruh staff
 

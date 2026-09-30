@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\Tugas;
 
 class HrdDivisiController extends Controller
 {
@@ -83,7 +84,7 @@ class HrdDivisiController extends Controller
 
         foreach ($divisi->karyawans as $karyawan) {
             $totalTugas += $karyawan->tugas->count();
-            $tugasSelesai += $karyawan->tugas->where('status', 'selesai')->count();
+            $tugasSelesai += $karyawan->tugas->where('status', Tugas::STATUS_SUDAH_ACC)->count();
 
             // Identifikasi Ketua Divisi (role kadiv)
             if ($karyawan->user && $karyawan->user->role && $karyawan->user->role->nama_role === 'kadiv') {

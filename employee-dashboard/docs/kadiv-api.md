@@ -6,12 +6,16 @@ Base URL: `/api/v1/kadiv`. Semua endpoint membutuhkan user terautentikasi dengan
 
 `GET /api/v1/kadiv/dashboard`
 
-Mengembalikan empat metrik tugas di divisi Kadiv dan tabel ringkas Staff. Definisi metrik:
+Mengembalikan metrik status tugas di divisi Kadiv dan tabel ringkas Staff. Lima metrik adalah bucket status tugas yang saling eksklusif (status efektif, termasuk turunan `telat`):
 
-- `tugas_belum_dikirim`: tugas yang belum memiliki submission.
-- `tugas_belum_di_acc`: tugas yang sudah memiliki submission tetapi belum ada review berstatus `acc`, `approved`, atau `disetujui` (case-insensitive).
-- `tugas_sudah_di_acc`: tugas yang memiliki minimal satu submission berstatus diterima.
+- `tugas_baru`: status `baru`, deadline belum lewat.
+- `tugas_berjalan`: status `berjalan`, deadline belum lewat.
+- `tugas_menunggu_di_acc`: status `menunggu di-acc`, deadline belum lewat.
+- `tugas_sudah_di_acc`: status `sudah di-acc` (tanpa syarat deadline — tugas yang sudah di-ACC tidak pernah dihitung `telat`).
+- `tugas_telat`: deadline sudah lewat dan status belum `sudah di-acc`.
 - `persentase_penyelesaian`: `tugas_sudah_di_acc / seluruh_tugas_divisi * 100`.
+
+Status `telat` adalah status turunan yang dihitung dari deadline — tidak pernah disimpan ke database. Lihat referensi status di `docs/api-testing-guide.md`.
 
 Contoh respons `200`:
 
@@ -20,10 +24,12 @@ Contoh respons `200`:
   "data": {
     "divisi": { "id_divisi": "DIV-IT", "nama_divisi": "Teknologi" },
     "metrics": {
-      "tugas_belum_dikirim": 4,
-      "tugas_belum_di_acc": 2,
+      "tugas_baru": 2,
+      "tugas_berjalan": 3,
+      "tugas_menunggu_di_acc": 2,
       "tugas_sudah_di_acc": 8,
-      "persentase_penyelesaian": 57.14
+      "tugas_telat": 1,
+      "persentase_penyelesaian": 50
     },
     "staff": [
       {
