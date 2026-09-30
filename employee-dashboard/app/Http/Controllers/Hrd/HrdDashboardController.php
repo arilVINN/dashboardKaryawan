@@ -21,7 +21,7 @@ class HrdDashboardController extends Controller
         $totalDivisi = Divisi::count();
         
         $totalTugas = Tugas::count();
-        $tugasSelesai = Tugas::where('status', 'selesai')->count();
+        $tugasSelesai = Tugas::statusEfektif(Tugas::STATUS_SUDAH_ACC)->count();
         $persentaseTugas = $totalTugas > 0 ? round(($tugasSelesai / $totalTugas) * 100, 2) : 0;
 
         $user = $request->user();
