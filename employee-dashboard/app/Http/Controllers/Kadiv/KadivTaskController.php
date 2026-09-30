@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 class KadivTaskController extends Controller
 {
     /**
-     * GET /api/v1/kadiv/tugas
+    * GET /api/kadiv/tugas
      * Menampilkan semua tugas di divisi terkait.
      */
     public function index(Request $request)
@@ -35,7 +35,7 @@ class KadivTaskController extends Controller
     }
 
     /**
-     * POST /api/v1/kadiv/tugas
+    * POST /api/kadiv/tugas
      * Membuat tugas baru
      */
     public function store(Request $request)
@@ -92,7 +92,7 @@ class KadivTaskController extends Controller
     }
 
     /**
-     * PUT /api/v1/kadiv/tugas/{id}
+    * PUT /api/kadiv/tugas/{id}
      * Mengedit tugas
      */
     public function update(Request $request, $id)
@@ -147,7 +147,7 @@ class KadivTaskController extends Controller
     }
 
     /**
-     * DELETE /api/v1/kadiv/tugas/{id}
+    * DELETE /api/kadiv/tugas/{id}
      * Menghapus tugas
      */
     public function destroy(Request $request, $id)
@@ -172,7 +172,7 @@ class KadivTaskController extends Controller
     }
 
     /**
-     * POST /api/v1/kadiv/tugas/{id}/review
+    * POST /api/kadiv/tugas/{id}/review
      * ACC / Approval atau Revisi
      */
     public function review(Request $request, $id)

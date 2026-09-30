@@ -1,10 +1,10 @@
 # API Kadiv — Dashboard, Pesan, dan Surat
 
-Base URL: `/api/v1/kadiv`. Semua endpoint membutuhkan user terautentikasi dengan role `Kadiv` dan profil karyawan yang memiliki divisi.
+Base URL: `/api/kadiv`. Semua endpoint membutuhkan user terautentikasi dengan role `Kadiv` dan profil karyawan yang memiliki divisi.
 
 ## Dashboard
 
-`GET /api/v1/kadiv/dashboard`
+`GET /api/kadiv/dashboard`
 
 Mengembalikan empat metrik tugas di divisi Kadiv dan tabel ringkas Staff. Definisi metrik:
 
@@ -39,7 +39,7 @@ Contoh respons `200`:
 
 ## Daftar pesan dan surat
 
-`GET /api/v1/kadiv/pesan`
+`GET /api/kadiv/pesan`
 
 Query opsional:
 
@@ -49,9 +49,13 @@ Query opsional:
 
 Respons berisi `data` dan metadata pagination (`current_page`, `last_page`, `per_page`, `total`). `arah` dihitung relatif terhadap Kadiv yang sedang login.
 
+`GET /api/kadiv/pesan/{id_pesan}` mengambil satu pesan. Kadiv hanya dapat melihat pesan yang dikirim/diterima olehnya atau pesan yang terkait dengan tugas di divisinya; pesan di luar lingkup menghasilkan `404`.
+
+`POST /api/kadiv/pesan/{id_pesan}/balas` membalas pesan bertipe `pesan` dengan body `{"deskripsi":"Terima kasih."}`. Balasan ditautkan ke pesan asal dan dikirim ke lawan bicara. Pesan bertipe `surat` tidak dapat dibalas (`422`).
+
 ## Kirim pesan atau surat
 
-`POST /api/v1/kadiv/pesan`
+`POST /api/kadiv/pesan`
 
 Gunakan `multipart/form-data` bila mengirim file. Field:
 
