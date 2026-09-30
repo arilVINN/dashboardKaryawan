@@ -20,6 +20,8 @@ class Tugas extends Model
         'karyawan_id_karyawan',
         'judul_tugas',
         'deskripsi',
+        'file_pendukung',
+        'link_pendukung',
         'deadline',
         'progress',
         'status',
