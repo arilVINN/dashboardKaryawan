@@ -3,6 +3,7 @@
 use App\Http\Controllers\Staff\DashboardController;
 use App\Http\Controllers\Staff\NotifikasiController;
 use App\Http\Controllers\Staff\PesanController;
+use App\Http\Middleware\EnsureStaffRole;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -36,8 +37,7 @@ Route::get('/login', function () {
     return view('login');
 })->name('login');
 
-
-Route::prefix('staff')->group(function () {
+Route::prefix('staff')->middleware(EnsureStaffRole::class)->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     Route::get('/pesan', [PesanController::class, 'index']);

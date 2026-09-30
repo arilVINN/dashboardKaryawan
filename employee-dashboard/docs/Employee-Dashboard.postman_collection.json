@@ -1,0 +1,121 @@
+{
+  "info": {
+    "name": "Employee Dashboard API",
+    "description": "Kadiv and Staff endpoint examples. Successful requests require an authenticated User2 session/token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "staff_task_id", "value": "TGS-001" },
+    { "key": "recipient_user_id", "value": "USR-STAFF-001" }
+  ],
+  "item": [
+    {
+      "name": "Kadiv",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/kadiv/dashboard"
+          }
+        },
+        {
+          "name": "List Messages",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/kadiv/pesan?tipe=surat&arah=keluar&per_page=15"
+          }
+        },
+        {
+          "name": "Send Message to Staff",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"penerima_id_user\": \"{{recipient_user_id}}\",\n  \"tipe\": \"pesan\",\n  \"judul_pesan\": \"Update Tugas\",\n  \"deskripsi\": \"Mohon periksa catatan terbaru.\",\n  \"tugas_id_tugas\": \"{{staff_task_id}}\",\n  \"link_lampiran\": \"https://example.com/catatan\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/kadiv/pesan"
+          }
+        },
+        {
+          "name": "Send Letter with File",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "penerima_id_user", "value": "{{recipient_user_id}}", "type": "text" },
+                { "key": "tipe", "value": "surat", "type": "text" },
+                { "key": "judul_pesan", "value": "Surat Pengujian", "type": "text" },
+                { "key": "deskripsi", "value": "Surat dummy dari Postman.", "type": "text" },
+                { "key": "link_lampiran", "value": "https://example.com/lampiran", "type": "text" },
+                { "key": "file_lampiran", "type": "file", "src": [] }
+              ]
+            },
+            "url": "{{base_url}}/api/v1/kadiv/pesan"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Staff",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/staff/dashboard"
+          }
+        },
+        {
+          "name": "List Messages",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/staff/pesan"
+          }
+        },
+        {
+          "name": "Message Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/staff/pesan/{{staff_task_id}}"
+          }
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tugas_id_tugas\": \"{{staff_task_id}}\",\n  \"judul_pesan\": \"Update Progress\",\n  \"deskripsi\": \"Pekerjaan sudah mencapai tahap pengujian.\"\n}"
+            },
+            "url": "{{base_url}}/staff/pesan/send"
+          }
+        },
+        {
+          "name": "Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/staff/notifikasi"
+          }
+        }
+      ]
+    }
+  ]
+}
