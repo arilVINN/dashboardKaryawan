@@ -56,7 +56,64 @@ Transisi:
 
 ---
 
-## 2. Auth
+## 2. Referensi Endpoint per Role
+
+Semua path menggunakan base URL `{{baseUrl}}`. Kecuali `POST /api/login`, endpoint membutuhkan Bearer token. Endpoint terproteksi dibatasi 60 request per menit per user/IP.
+
+### Publik dan autentikasi
+
+| Method | Endpoint | Akses | Keterangan |
+|---|---|---|---|
+| POST | `/api/login` | Publik | Login dan membuat token |
+| POST | `/api/logout` | Semua role | Mencabut token aktif |
+
+### Staff
+
+| Method | Endpoint | Keterangan |
+|---|---|---|
+| GET | `/api/staff/tugas` | Daftar tugas sendiri |
+| GET | `/api/staff/tugas/{id}` | Detail tugas sendiri |
+| POST | `/api/staff/tugas/{id}/submit` | Submit hasil/progress tugas |
+| GET | `/api/staff/pesan` | Daftar pesan per tugas sendiri |
+| GET | `/api/staff/pesan/{id_pesan}` | Detail satu pesan milik/diterima Staff |
+| GET | `/api/staff/pesan?tugas_id_tugas={id_tugas}` | Riwayat pesan pada tugas sendiri |
+| POST | `/api/staff/pesan/{id_pesan}/balas` | Membalas pesan, bukan surat |
+
+### Kadiv
+
+| Method | Endpoint | Keterangan |
+|---|---|---|
+| GET | `/api/kadiv/dashboard` | Metrik divisi dan ringkasan staff |
+| GET | `/api/kadiv/pesan` | Daftar pesan/surat masuk dan keluar |
+| GET | `/api/kadiv/pesan/{id_pesan}` | Detail pesan dalam lingkup Kadiv/divisinya |
+| POST | `/api/kadiv/pesan` | Kirim pesan/surat ke staff satu divisi atau HRD |
+| POST | `/api/kadiv/pesan/{id_pesan}/balas` | Membalas pesan, bukan surat |
+| GET | `/api/kadiv/staff` | Daftar staff divisi |
+| GET | `/api/kadiv/staff/{id}` | Detail staff dan tugasnya |
+| GET | `/api/kadiv/tugas` | Daftar tugas divisi |
+| POST | `/api/kadiv/tugas` | Membuat tugas |
+| POST | `/api/kadiv/tugas/{id}` | Alias untuk update tugas |
+| PUT | `/api/kadiv/tugas/{id}` | Update tugas |
+| DELETE | `/api/kadiv/tugas/{id}` | Hapus tugas beserta submission |
+| POST | `/api/kadiv/tugas/{id}/review` | ACC atau minta revisi |
+
+### HRD
+
+| Method | Endpoint | Keterangan |
+|---|---|---|
+| GET | `/api/hrd/dashboard` | Dashboard HRD dan metrik perusahaan |
+| GET | `/api/hrd/divisi` | Daftar divisi |
+| POST | `/api/hrd/divisi` | Membuat divisi |
+| GET | `/api/hrd/divisi/{id}` | Detail divisi dan statistik |
+| GET | `/api/hrd/pesan` | Daftar pesan/surat global yang masuk dan keluar |
+| POST | `/api/hrd/pesan` | Kirim pesan/surat baru |
+| GET | `/api/hrd/pesan/{id_pesan}` | Detail pesan yang dikirim/diterima HRD |
+| POST | `/api/hrd/pesan/{id_pesan}/balas` | Membalas pesan, bukan surat |
+| GET | `/api/hrd/staff` | Daftar seluruh karyawan |
+| POST | `/api/hrd/staff` | Membuat karyawan dan akun login |
+| GET | `/api/hrd/staff/{id}` | Detail karyawan dan tugasnya |
+
+## 3. Auth
 
 ### POST `/api/login` — Login
 
@@ -86,7 +143,7 @@ Response `200`: `{ "message": "Logout berhasil" }`
 
 ---
 
-## 3. Staff Endpoints
+## 4. Staff Endpoints
 
 Semua butuh token dengan role **staff**.
 
@@ -120,13 +177,65 @@ Error:
 - `403` → tugas sudah di-ACC (`status = sudah di-acc`)
 - `404` → tugas bukan milik Anda
 
+### GET `/api/staff/pesan` — Daftar pesan per tugas
+
+Response berisi ringkasan tugas di `data` serta pesan langsung masuk (pesan tanpa `tugas_id_tugas`) di `pesan_langsung`. Pesan yang dikaitkan dengan tugas tetap tampil pada ringkasan tugas:
+
+```json
+{
+  "data": [
+    {
+      "id_tugas": "TG001",
+      "judul_tugas": "Bikin API",
+      "jumlah_pesan": 2,
+      "pesan_terakhir": {
+        "id_pesan": "PSN001",
+        "deskripsi": "Mohon kirim update progres."
+      }
+    }
+  ],
+  "pesan_langsung": [
+    {
+      "id_pesan": "PSNC3227046477",
+      "tipe": "pesan",
+      "arah": "masuk",
+      "judul_pesan": "Pembaruan tugas",
+      "deskripsi": "Mohon kirim update progres.",
+      "tanggal_pesan": "2026-09-30",
+      "pengirim": {
+        "id_user": "US003",
+        "username": "tonokd",
+        "nama": "Pak Tono"
+      },
+      "lampiran": { "link": null, "file": null },
+      "tugas": null,
+      "created_at": "2026-09-30T06:03:26.000000Z"
+    }
+  ]
+}
+```
+
+### GET `/api/staff/pesan/{id_pesan}` — Detail satu pesan
+
+Staff hanya dapat membuka pesan yang dikirim/diterima olehnya atau pesan pada tugas miliknya. Contoh: `GET /api/staff/pesan/PSNC3227046477`.
+
+Response `200` berisi detail pesan, pengirim, penerima, lampiran, tugas (jika ada), daftar `balasan`, dan `can_reply`. `can_reply` bernilai `false` untuk surat. Pesan di luar akses Staff menghasilkan `404`.
+
+### POST `/api/staff/pesan/{id_pesan}/balas` — Balas pesan
+
+Body JSON: `{ "deskripsi": "Progres sudah 80 persen." }`. Balasan tersimpan sebagai pesan baru dan ditautkan ke pesan asal. Hanya tipe `pesan` yang bisa dibalas; tipe `surat` menghasilkan `422`.
+
+Untuk membuka seluruh thread tugas, gunakan query pada endpoint daftar: `GET /api/staff/pesan?tugas_id_tugas=TG001`.
+
+Staff tidak dapat membuat pesan baru. Pesan hanya dapat dikirim sebagai balasan terhadap pesan bertipe `pesan` melalui endpoint balas di atas.
+
 ---
 
-## 4. Kadiv Endpoints
+## 5. Kadiv Endpoints
 
 Semua butuh token dengan role **kadiv**.
 
-### GET `/api/v1/kadiv/dashboard` — Metrik divisi
+### GET `/api/kadiv/dashboard` — Metrik divisi
 
 Response `200`:
 
@@ -147,7 +256,7 @@ Response `200`:
 }
 ```
 
-### GET `/api/v1/kadiv/pesan` — Daftar pesan/surat
+### GET `/api/kadiv/pesan` — Daftar pesan/surat
 
 Query params (opsional): `tipe` (`pesan`|`surat`), `arah` (`masuk`|`keluar`), `per_page` (1–100).
 
@@ -160,7 +269,11 @@ Response `200`:
 }
 ```
 
-### POST `/api/v1/kadiv/pesan` — Kirim pesan/surat
+### GET `/api/kadiv/pesan/{id_pesan}` — Detail pesan
+
+Contoh: `GET /api/kadiv/pesan/PSNC3227046477`. Kadiv dapat membuka pesan yang dikirim/diterima olehnya atau pesan terkait tugas di divisinya. Response `200` berisi `balasan` dan `can_reply`; pesan di luar lingkup menghasilkan `404`.
+
+### POST `/api/kadiv/pesan` — Kirim pesan/surat
 
 Body JSON:
 
@@ -178,6 +291,10 @@ Body JSON:
 - `201` → `{ "message": "Surat berhasil dikirim.", "data": { ... } }`
 - `422` → penerima harus Staff satu divisi atau HRD
 - File lampiran: gunakan `form-data` dengan key `file_lampiran` (pdf/doc/docx/xls/xlsx/jpg/jpeg/png, max 5 MB)
+
+### POST `/api/kadiv/pesan/{id_pesan}/balas` — Balas pesan
+
+Body JSON: `{ "deskripsi": "Terima kasih atas informasinya." }`. Balasan dikirim ke lawan bicara pada pesan asal. Surat ditolak dengan `422`.
 
 ### GET `/api/kadiv/tugas` — Semua tugas divisi
 
@@ -202,12 +319,12 @@ Body JSON:
 - `403` → karyawan beda divisi
 - `422` → validasi gagal
 
-### PUT `/api/kadiv/tugas/{id}` — Edit tugas
+### PUT atau POST `/api/kadiv/tugas/{id}` — Edit tugas
 
-Body JSON (semua opsional, kirim yang diubah):
+Body JSON (semua opsional, kirim yang diubah). `POST` adalah alias untuk client yang memakai POST ketika upload file. Field yang dapat diubah: `judul_tugas`, `deskripsi`, `deadline`, `karyawan_id_karyawan`, `file_pendukung`, dan `link_pendukung`.
 
 ```json
-{ "judul_tugas": "Judul baru", "deadline": "2026-10-20", "progress": "50" }
+{ "judul_tugas": "Judul baru", "deadline": "2026-10-20" }
 ```
 
 - `200` → `{ "message": "Tugas berhasil diubah", "data": { ...tugas } }`
@@ -244,9 +361,79 @@ Response `200`: `{ "message": "Berhasil mengambil data staff divisi", "data": [.
 
 ---
 
-## 5. HRD Endpoints
+## 6. HRD Endpoints
 
 Semua butuh token dengan role **hrd**.
+
+### GET `/api/hrd/dashboard` — Dashboard HRD & Metrik Perusahaan
+
+Response `200`:
+
+```json
+{
+  "message": "Berhasil mengambil data dashboard HRD",
+  "data": {
+    "metrics": {
+      "total_staff": 7,
+      "total_divisi": 2,
+      "tugas_keseluruhan": 4,
+      "tugas_selesai": 1,
+      "persentase_tugas_selesai": "25%",
+      "total_pesan_perusahaan": 15
+    },
+    "widgets": {
+      "divisi_terbesar": [
+        { "nama_divisi": "Information Technology", "total_staff": 4 },
+        { "nama_divisi": "Human Resources", "total_staff": 3 }
+      ]
+    }
+  }
+}
+```
+
+### GET `/api/hrd/pesan` — Daftar Pusat Pesan
+
+Response `200`:
+
+```json
+{
+  "message": "Berhasil mengambil pusat pesan",
+  "data": {
+    "metrics": {
+      "total": 5,
+      "belum_dibaca": 2,
+      "selesai": 3
+    },
+    "list_pesan": [
+      {
+        "id_pesan": "PSN...",
+        "tipe": "surat",
+        "judul_pesan": "Surat Edaran",
+        "status": "belum_dibaca",
+        "pengirim": {},
+        "penerima": {}
+      }
+    ]
+  }
+}
+```
+
+### POST `/api/hrd/pesan` — Kirim Pesan/Surat Baru
+
+Body (form-data atau JSON):
+
+```json
+{
+  "penerima_id_user": "US003",
+  "tipe": "surat",
+  "judul_pesan": "Pemberitahuan Audit",
+  "deskripsi": "Berikut terlampir dokumen yang perlu dipersiapkan.",
+  "link_lampiran": "https://drive.google.com/..."
+}
+```
+*Gunakan `form-data` dengan key `file_lampiran` jika ingin mengunggah file (maks 20MB).*
+
+- `201` → `{ "message": "Pesan/Surat berhasil dikirim", "data": { ...pesan } }`
 
 ### GET `/api/hrd/divisi` — Daftar divisi
 
@@ -307,7 +494,7 @@ Body JSON:
 }
 ```
 
-- `200` → `{ "message": "Staff dan akun login berhasil dibuat" }`
+- `201` → `{ "message": "Staff dan akun login berhasil dibuat", "data": { "karyawan": {}, "user": {} } }`
 - `404` → divisi tidak ditemukan
 - `422` → validasi gagal / username sudah dipakai
 
@@ -316,24 +503,30 @@ Body JSON:
 - `200` → `{ "message": "Berhasil mengambil detail staff", "data": { ...karyawan } }`
 - `404` → staff tidak ditemukan
 
+### GET `/api/hrd/pesan/{id_pesan}` — Detail pesan
+
+Contoh: `GET /api/hrd/pesan/PSNC3227046477`. HRD hanya dapat membuka pesan yang dikirim atau diterima oleh akunnya. Response `200` berisi detail pesan, pengirim, penerima, lampiran, tugas bila ada, `balasan`, dan `can_reply`.
+
+### POST `/api/hrd/pesan/{id_pesan}/balas` — Balas pesan
+
+Body JSON: `{ "deskripsi": "Data akan dikirim hari ini." }`. Balasan dikirim kepada pengirim pesan asal. Surat ditolak dengan `422`.
+
 ---
 
-## 6. Negative Tests (Keamanan)
+## 7. Negative Tests (Keamanan)
 
 Pastikan proteksi bekerja:
 
 | Skenario | Request | Expected |
 |---|---|---|
 | Tanpa token | `GET /api/staff/tugas` (header Authorization dihapus) | `401` `{ "success": false, "code": 401, "message": "Unauthenticated", "data": null }` |
-| Token role salah | Login sebagai `budist` (staff), lalu `GET /api/v1/kadiv/dashboard` | `403` `{ "message": "Forbidden. Akses ditolak." }` |
+| Token role salah | Login sebagai `budist` (staff), lalu `GET /api/kadiv/dashboard` | `403` `{ "message": "Forbidden. Akses ditolak." }` |
 | Staff lihat tugas orang lain | `budist` → `GET /api/staff/tugas/TG002` | `404` |
 | Kadiv buat tugas untuk divisi lain | `tonokd` → `POST /api/kadiv/tugas` dengan karyawan HR | `403` |
 | Review tanpa submission | `POST /api/kadiv/tugas/TG001/review` sebelum staff submit | `400` |
 
 ---
 
-## 7. Catatan: Endpoint Web `/staff/*`
+## 8. Catatan Route Web (bukan API)
 
-Endpoint `/staff/dashboard`, `/staff/pesan`, `/staff/notifikasi` (di `routes/web.php`)
-memakai **session auth** (untuk frontend Blade/Vue), bukan token. Untuk pengujian API
-via Postman, gunakan endpoint `/api/*` di atas.
+API pesan Staff hanya tersedia di `/api/staff/pesan` dan memakai Sanctum Bearer token. Route `/staff/dashboard` dan `/staff/notifikasi` merupakan route web/aplikasi, bukan API. Halaman Blade pesan berada di `GET /pesan`; halaman tersebut berbeda dari endpoint JSON `/api/staff/pesan`.

@@ -93,17 +93,18 @@ class StaffApiTest extends TestCase
         $task = $this->createTask('TGS-OWN', $this->staff->karyawan_id_karyawan, 'berjalan');
         $this->createMessage('PSN-ONE', $task, $this->kadiv, 'Pesan pertama');
         $this->createMessage('PSN-TWO', $task, $this->staff, 'Balasan staff');
+        $token = $this->staff->createToken('staff-messages')->plainTextToken;
 
-        $this->actingAs($this->staff)
-            ->getJson('/staff/pesan')
+        $this->withToken($token)
+            ->getJson('/api/staff/pesan')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id_tugas', 'TGS-OWN')
             ->assertJsonPath('data.0.jumlah_pesan', 2)
             ->assertJsonPath('data.0.pesan_terakhir.id_pesan', 'PSN-TWO');
 
-        $this->actingAs($this->staff)
-            ->getJson('/staff/pesan/TGS-OWN')
+        $this->withToken($token)
+            ->getJson('/api/staff/pesan?tugas_id_tugas=TGS-OWN')
             ->assertOk()
             ->assertJsonPath('data.tugas.id_tugas', 'TGS-OWN')
             ->assertJsonCount(2, 'data.pesan')
@@ -111,28 +112,123 @@ class StaffApiTest extends TestCase
             ->assertJsonPath('data.pesan.1.id_pesan', 'PSN-TWO');
     }
 
-    public function test_staff_can_send_message_to_their_task(): void
+    public function test_staff_cannot_create_new_messages(): void
     {
         $task = $this->createTask('TGS-SEND', $this->staff->karyawan_id_karyawan, 'berjalan');
 
-        $response = $this->actingAs($this->staff)->postJson('/staff/pesan/send', [
+        $token = $this->staff->createToken('staff-send-message')->plainTextToken;
+        $this->withToken($token)->postJson('/api/staff/pesan', [
             'tugas_id_tugas' => $task->id_tugas,
             'judul_pesan' => 'Update Dummy',
             'deskripsi' => 'Pekerjaan sudah mencapai tahap pengujian.',
+        ])->assertMethodNotAllowed();
+
+        $this->assertDatabaseCount('pesans', 0);
+    }
+
+    public function test_staff_can_see_direct_messages_sent_to_them(): void
+    {
+        Pesan::create([
+            'id_pesan' => 'PSN-DIRECT',
+            'judul_pesan' => 'Pesan langsung',
+            'deskripsi' => 'Pesan tanpa tugas.',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-09-30',
+            'pengirim_id_user' => $this->kadiv->id_user,
+            'penerima_id_user' => $this->staff->id_user,
         ]);
 
-        $response
+        Pesan::create([
+            'id_pesan' => 'PSN-OTHER',
+            'judul_pesan' => 'Pesan untuk orang lain',
+            'deskripsi' => 'Pesan privat.',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-09-30',
+            'pengirim_id_user' => $this->kadiv->id_user,
+            'penerima_id_user' => $this->kadiv->id_user,
+        ]);
+
+        $token = $this->staff->createToken('staff-direct-messages')->plainTextToken;
+
+        $this->withToken($token)
+            ->getJson('/api/staff/pesan')
+            ->assertOk()
+            ->assertJsonCount(0, 'data')
+            ->assertJsonCount(1, 'pesan_langsung')
+            ->assertJsonPath('pesan_langsung.0.id_pesan', 'PSN-DIRECT')
+            ->assertJsonPath('pesan_langsung.0.arah', 'masuk')
+            ->assertJsonPath('pesan_langsung.0.pengirim.nama', 'Kadiv Dummy');
+
+            $this->withToken($token)
+                ->getJson('/api/staff/pesan/PSN-DIRECT')
+                ->assertOk()
+                ->assertJsonPath('data.id_pesan', 'PSN-DIRECT')
+                ->assertJsonPath('data.penerima.id_user', $this->staff->id_user);
+
+            $this->withToken($token)
+                ->getJson('/api/staff/pesan/PSN-OTHER')
+                ->assertNotFound();
+            }
+
+    public function test_staff_can_reply_to_messages_but_not_letters(): void
+    {
+        Pesan::create([
+            'id_pesan' => 'PSN-REPLY',
+            'judul_pesan' => 'Pembaruan pekerjaan',
+            'deskripsi' => 'Bagaimana progres tugasnya?',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-09-30',
+            'pengirim_id_user' => $this->kadiv->id_user,
+            'penerima_id_user' => $this->staff->id_user,
+        ]);
+        Pesan::create([
+            'id_pesan' => 'PSN-LETTER',
+            'judul_pesan' => 'Surat resmi',
+            'deskripsi' => 'Surat untuk staff.',
+            'tipe' => 'surat',
+            'tanggal_pesan' => '2026-09-30',
+            'pengirim_id_user' => $this->kadiv->id_user,
+            'penerima_id_user' => $this->staff->id_user,
+        ]);
+
+        $token = $this->staff->createToken('staff-reply')->plainTextToken;
+
+        $this->withToken($token)
+            ->getJson('/api/staff/pesan/PSN-REPLY')
+            ->assertOk()
+            ->assertJsonPath('data.can_reply', true);
+
+        $replyResponse = $this->withToken($token)
+            ->postJson('/api/staff/pesan/PSN-REPLY/balas', [
+                'deskripsi' => 'Progres sudah 80 persen.',
+            ])
             ->assertCreated()
-            ->assertJsonPath('message', 'Pesan berhasil dikirim.')
-            ->assertJsonPath('data.tugas_id_tugas', 'TGS-SEND')
-            ->assertJsonPath('data.pengirim.id_user', $this->staff->id_user);
+            ->assertJsonPath('message', 'Balasan berhasil dikirim.');
 
         $this->assertDatabaseHas('pesans', [
-            'judul_pesan' => 'Update Dummy',
-            'tugas_id_tugas' => 'TGS-SEND',
+            'id_pesan' => $replyResponse->json('data.id_pesan'),
+            'balasan_dari_id_pesan' => 'PSN-REPLY',
             'pengirim_id_user' => $this->staff->id_user,
+            'penerima_id_user' => $this->kadiv->id_user,
         ]);
-        Event::assertDispatched(PesanDikirim::class);
+
+        $this->withToken($token)
+            ->getJson('/api/staff/pesan/PSN-REPLY')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.balasan')
+            ->assertJsonPath('data.balasan.0.deskripsi', 'Progres sudah 80 persen.');
+
+        $this->withToken($token)
+            ->getJson('/api/staff/pesan/PSN-LETTER')
+            ->assertOk()
+            ->assertJsonPath('data.can_reply', false);
+
+        $this->withToken($token)
+            ->postJson('/api/staff/pesan/PSN-LETTER/balas', [
+                'deskripsi' => 'Mencoba membalas surat.',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Surat tidak dapat dibalas.');
     }
 
     public function test_staff_can_list_only_their_notifications(): void
@@ -161,21 +257,13 @@ class StaffApiTest extends TestCase
             ->assertJsonPath('data.0.id_notifikasi', 'NTF-OWN');
     }
 
-    public function test_staff_cannot_open_or_send_message_to_another_staff_task(): void
+    public function test_staff_cannot_open_another_staff_task_thread(): void
     {
         $otherStaff = $this->createAccount('KRY-OTHER', 'Staff Lain', 'ROLE-STAFF', 'staff.other');
         $otherTask = $this->createTask('TGS-OTHER', $otherStaff->karyawan_id_karyawan, 'berjalan');
 
         $this->actingAs($this->staff)
-            ->getJson('/staff/pesan/'.$otherTask->id_tugas)
-            ->assertNotFound();
-
-        $this->actingAs($this->staff)
-            ->postJson('/staff/pesan/send', [
-                'tugas_id_tugas' => $otherTask->id_tugas,
-                'judul_pesan' => 'Percobaan akses',
-                'deskripsi' => 'Pesan ini tidak boleh disimpan.',
-            ])
+            ->getJson('/api/staff/pesan?tugas_id_tugas='.$otherTask->id_tugas)
             ->assertNotFound();
 
         $this->assertDatabaseCount('pesans', 0);
@@ -186,9 +274,9 @@ class StaffApiTest extends TestCase
         $task = $this->createTask('TGS-AUTH', $this->staff->karyawan_id_karyawan, 'berjalan');
 
         $this->getJson('/staff/dashboard')->assertUnauthorized();
-        $this->getJson('/staff/pesan')->assertUnauthorized();
-        $this->getJson('/staff/pesan/'.$task->id_tugas)->assertUnauthorized();
-        $this->postJson('/staff/pesan/send', [])->assertUnauthorized();
+        $this->getJson('/api/staff/pesan')->assertUnauthorized();
+        $this->getJson('/api/staff/pesan?tugas_id_tugas='.$task->id_tugas)->assertUnauthorized();
+        $this->getJson('/api/staff/pesan/PSN-UNKNOWN')->assertUnauthorized();
         $this->getJson('/staff/notifikasi')->assertUnauthorized();
     }
 
@@ -200,7 +288,7 @@ class StaffApiTest extends TestCase
             ->assertJsonPath('message', 'Akses hanya diberikan kepada Staff.');
 
         $this->actingAs($this->kadiv)
-            ->getJson('/staff/pesan')
+            ->getJson('/api/staff/pesan')
             ->assertForbidden();
 
         $this->actingAs($this->kadiv)

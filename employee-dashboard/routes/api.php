@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Hrd\HrdDivisiController;
+use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
 use App\Http\Controllers\Kadiv\KadivDashboardController;
 use App\Http\Controllers\Kadiv\KadivMessageController;
 use App\Http\Controllers\Kadiv\KadivStaffController;
 use App\Http\Controllers\Kadiv\KadivTaskController;
+use App\Http\Controllers\Staff\PesanController;
 use App\Http\Controllers\Staff\StaffTugasController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,9 +24,11 @@ Route::middleware([
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Kadiv dashboard & messaging endpoints
-    Route::middleware('role:kadiv')->prefix('v1/kadiv')->group(function (): void {
+    Route::middleware('role:kadiv')->prefix('kadiv')->group(function (): void {
         Route::get('/dashboard', [KadivDashboardController::class, 'index']);
         Route::get('/pesan', [KadivMessageController::class, 'index']);
+        Route::get('/pesan/{id_pesan}', [KadivMessageController::class, 'show']);
+        Route::post('/pesan/{id_pesan}/balas', [KadivMessageController::class, 'balas']);
         Route::post('/pesan', [KadivMessageController::class, 'store']);
     });
 
@@ -33,6 +37,9 @@ Route::middleware([
         Route::get('/tugas', [StaffTugasController::class, 'index']);
         Route::get('/tugas/{id}', [StaffTugasController::class, 'show']);
         Route::post('/tugas/{id}/submit', [StaffTugasController::class, 'submit']);
+        Route::get('/pesan', [PesanController::class, 'index']);
+        Route::get('/pesan/{id_pesan}', [PesanController::class, 'show']);
+        Route::post('/pesan/{id_pesan}/balas', [PesanController::class, 'balas']);
     });
 
     // Kadiv‑only routes
@@ -52,6 +59,13 @@ Route::middleware([
 
     // HRD‑only routes
     Route::middleware('role:hrd')->prefix('hrd')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Hrd\HrdDashboardController::class, 'index']);
+        
+        Route::get('/pesan', [HrdPesanController::class, 'index']);
+        Route::post('/pesan', [HrdPesanController::class, 'store']);
+        Route::get('/pesan/{id_pesan}', [HrdPesanController::class, 'show']);
+        Route::post('/pesan/{id_pesan}/balas', [HrdPesanController::class, 'balas']);
+
         // Manajemen Divisi
         Route::get('/divisi', [HrdDivisiController::class, 'index']);
         Route::post('/divisi', [HrdDivisiController::class, 'store']);

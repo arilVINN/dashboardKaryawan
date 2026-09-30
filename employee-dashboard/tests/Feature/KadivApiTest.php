@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Events\PesanDikirim;
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\Pesan;
 use App\Models\Role;
 use App\Models\Tugas;
 use App\Models\User2;
@@ -52,7 +53,7 @@ class KadivApiTest extends TestCase
         $this->createTask('T-OUT', $outsideStaff->karyawan_id_karyawan);
 
         $this->actingAs($kadiv)
-            ->getJson('/api/v1/kadiv/dashboard')
+            ->getJson('/api/kadiv/dashboard')
             ->assertOk()
             ->assertJsonPath('data.metrics.tugas_baru', 1)
             ->assertJsonPath('data.metrics.tugas_berjalan', 1)
@@ -70,8 +71,8 @@ class KadivApiTest extends TestCase
         $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
         $hrd = $this->createAccount('HR-1', 'HRD', 'DIV-HR', 'ROLE-HRD', 'hrd');
 
-        $this->actingAs($kadiv)
-            ->postJson('/api/v1/kadiv/pesan', [
+        $sendResponse = $this->actingAs($kadiv)
+            ->postJson('/api/kadiv/pesan', [
                 'penerima_id_user' => $hrd->id_user,
                 'tipe' => 'surat',
                 'judul_pesan' => 'Permintaan Rekrutmen',
@@ -83,6 +84,18 @@ class KadivApiTest extends TestCase
             ->assertJsonPath('data.arah', 'keluar')
             ->assertJsonPath('data.penerima.id_user', $hrd->id_user);
 
+        $messageId = $sendResponse->json('data.id_pesan');
+
+        $this->actingAs($kadiv)
+            ->getJson('/api/kadiv/pesan/'.$messageId)
+            ->assertOk()
+            ->assertJsonPath('data.id_pesan', $messageId);
+
+        $this->actingAs($hrd)
+            ->getJson('/api/hrd/pesan/'.$messageId)
+            ->assertOk()
+            ->assertJsonPath('data.penerima.id_user', $hrd->id_user);
+
         $this->assertDatabaseHas('pesans', [
             'pengirim_id_user' => $kadiv->id_user,
             'penerima_id_user' => $hrd->id_user,
@@ -90,7 +103,7 @@ class KadivApiTest extends TestCase
         ]);
 
         $this->actingAs($kadiv)
-            ->getJson('/api/v1/kadiv/pesan?tipe=surat&arah=keluar')
+            ->getJson('/api/kadiv/pesan?tipe=surat&arah=keluar')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('meta.total', 1);
@@ -102,7 +115,7 @@ class KadivApiTest extends TestCase
         $outsideStaff = $this->createAccount('ST-2', 'Staff HR', 'DIV-HR', 'ROLE-STAFF', 'staff.hr');
 
         $this->actingAs($kadiv)
-            ->postJson('/api/v1/kadiv/pesan', [
+            ->postJson('/api/kadiv/pesan', [
                 'penerima_id_user' => $outsideStaff->id_user,
                 'tipe' => 'pesan',
                 'judul_pesan' => 'Tidak boleh terkirim',
@@ -114,12 +127,70 @@ class KadivApiTest extends TestCase
         $this->assertDatabaseCount('pesans', 0);
     }
 
+    public function test_kadiv_and_hrd_can_reply_to_messages_but_not_letters(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $hrd = $this->createAccount('HR-1', 'HRD', 'DIV-HR', 'ROLE-HRD', 'hrd');
+
+        Pesan::create([
+            'id_pesan' => 'PSN-TO-HRD',
+            'judul_pesan' => 'Permintaan data',
+            'deskripsi' => 'Mohon bantuannya.',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-09-30',
+            'pengirim_id_user' => $kadiv->id_user,
+            'penerima_id_user' => $hrd->id_user,
+        ]);
+
+        $this->actingAs($hrd)
+            ->postJson('/api/hrd/pesan/PSN-TO-HRD/balas', [
+                'deskripsi' => 'Data akan dikirim hari ini.',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.balasan_dari_id_pesan', 'PSN-TO-HRD');
+
+        $this->actingAs($kadiv)
+            ->postJson('/api/kadiv/pesan/PSN-TO-HRD/balas', [
+                'deskripsi' => 'Terima kasih atas informasinya.',
+            ])
+            ->assertCreated();
+
+        $this->actingAs($kadiv)
+            ->getJson('/api/kadiv/pesan/PSN-TO-HRD')
+            ->assertOk()
+            ->assertJsonCount(2, 'data.balasan');
+
+        Pesan::create([
+            'id_pesan' => 'PSN-LETTER-HRD',
+            'judul_pesan' => 'Surat resmi',
+            'deskripsi' => 'Surat tidak dapat dibalas.',
+            'tipe' => 'surat',
+            'tanggal_pesan' => '2026-09-30',
+            'pengirim_id_user' => $kadiv->id_user,
+            'penerima_id_user' => $hrd->id_user,
+        ]);
+
+        $this->actingAs($kadiv)
+            ->postJson('/api/kadiv/pesan/PSN-LETTER-HRD/balas', [
+                'deskripsi' => 'Percobaan balas surat.',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Surat tidak dapat dibalas.');
+
+        $this->actingAs($hrd)
+            ->postJson('/api/hrd/pesan/PSN-LETTER-HRD/balas', [
+                'deskripsi' => 'Percobaan balas surat.',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Surat tidak dapat dibalas.');
+    }
+
     public function test_non_kadiv_is_forbidden(): void
     {
         $staff = $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
 
         $this->actingAs($staff)
-            ->getJson('/api/v1/kadiv/dashboard')
+            ->getJson('/api/kadiv/dashboard')
             ->assertForbidden();
     }
 

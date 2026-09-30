@@ -60,6 +60,121 @@ class KadivMessageController extends Controller
         ]);
     }
 
+    public function show(Request $request, string $id_pesan): JsonResponse
+    {
+        $user = $this->authenticatedKadiv($request);
+        if (! $user) {
+            return $this->unauthorizedResponse($request);
+        }
+
+        $message = Pesan::query()
+            ->with(['pengirim.karyawan', 'penerima.karyawan', 'tugas.karyawan', 'balasan.pengirim.karyawan', 'balasan.penerima.karyawan', 'balasanDari'])
+            ->whereKey($id_pesan)
+            ->where(function ($query) use ($user): void {
+                $query->where('pengirim_id_user', $user->id_user)
+                    ->orWhere('penerima_id_user', $user->id_user)
+                    ->orWhereHas('tugas.karyawan', fn ($employeeQuery) =>
+                        $employeeQuery->where('divisi_id_divisi', $user->karyawan->divisi_id_divisi)
+                    );
+            })
+            ->first();
+
+        if (! $message) {
+            return response()->json(['message' => 'Pesan tidak ditemukan.'], 404);
+        }
+
+        $root = $message->balasanDari ?? $message;
+        $data = $this->messageData($message, $user);
+        $data['can_reply'] = ($root->tipe ?? 'pesan') === 'pesan';
+        $data['balasan'] = ($root->id_pesan === $message->id_pesan
+            ? $message->balasan
+            : $root->balasan
+        )->map(fn (Pesan $reply) => $this->messageData($reply, $user));
+
+        return response()->json([
+            'data' => $data,
+        ]);
+    }
+
+    public function balas(Request $request, string $id_pesan): JsonResponse
+    {
+        $user = $this->authenticatedKadiv($request);
+        if (! $user) {
+            return $this->unauthorizedResponse($request);
+        }
+
+        $validated = $request->validate([
+            'deskripsi' => ['required', 'string', 'max:10000'],
+        ]);
+
+        $message = Pesan::query()
+            ->with(['pengirim', 'penerima', 'balasanDari', 'tugas.karyawan.user'])
+            ->whereKey($id_pesan)
+            ->where(function ($query) use ($user): void {
+                $query->where('pengirim_id_user', $user->id_user)
+                    ->orWhere('penerima_id_user', $user->id_user)
+                    ->orWhereHas('tugas.karyawan', fn ($employeeQuery) =>
+                        $employeeQuery->where('divisi_id_divisi', $user->karyawan->divisi_id_divisi)
+                    );
+            })
+            ->first();
+
+        if (! $message) {
+            return response()->json(['message' => 'Pesan tidak ditemukan.'], 404);
+        }
+
+        $root = $message->balasanDari ?? $message;
+        if (($root->tipe ?? 'pesan') !== 'pesan') {
+            return response()->json(['message' => 'Surat tidak dapat dibalas.'], 422);
+        }
+
+        $recipient = $this->resolveReplyRecipient($message, $user);
+        if (! $recipient || $recipient->id_user === $user->id_user) {
+            return response()->json(['message' => 'Penerima balasan tidak dapat ditentukan.'], 422);
+        }
+
+        $reply = Pesan::create([
+            'id_pesan' => $this->generateMessageId(),
+            'judul_pesan' => $root->judul_pesan,
+            'deskripsi' => $validated['deskripsi'],
+            'tipe' => 'pesan',
+            'tanggal_pesan' => now()->toDateString(),
+            'tugas_id_tugas' => $root->tugas_id_tugas,
+            'tugas_karyawan_id_karyawan' => $root->tugas_karyawan_id_karyawan,
+            'pengirim_id_user' => $user->id_user,
+            'penerima_id_user' => $recipient->id_user,
+            'balasan_dari_id_pesan' => $root->id_pesan,
+        ]);
+
+        PesanDikirim::dispatch($reply);
+
+        return response()->json([
+            'message' => 'Balasan berhasil dikirim.',
+            'data' => [
+                'id_pesan' => $reply->id_pesan,
+                'balasan_dari_id_pesan' => $reply->balasan_dari_id_pesan,
+                'tipe' => $reply->tipe,
+                'judul_pesan' => $reply->judul_pesan,
+                'deskripsi' => $reply->deskripsi,
+                'pengirim_id_user' => $reply->pengirim_id_user,
+                'penerima_id_user' => $reply->penerima_id_user,
+            ],
+        ], 201);
+    }
+
+    private function resolveReplyRecipient(Pesan $message, User2 $user): ?User2
+    {
+        if ($message->pengirim_id_user === $user->id_user && $message->penerima) {
+            return $message->penerima;
+        }
+
+        if ($message->penerima_id_user === $user->id_user && $message->pengirim) {
+            return $message->pengirim;
+        }
+
+        return $message->tugas?->karyawan?->user;
+    }
+
     public function store(Request $request): JsonResponse
     {
         $user = $this->authenticatedKadiv($request);
@@ -161,6 +276,7 @@ class KadivMessageController extends Controller
                 'id_tugas' => $message->tugas->id_tugas,
                 'judul_tugas' => $message->tugas->judul_tugas,
             ] : null,
+            'balasan_dari_id_pesan' => $message->balasan_dari_id_pesan,
             'created_at' => $message->created_at?->toISOString(),
         ];
     }
