@@ -9,7 +9,7 @@ use App\Models\Karyawan;
 class KadivStaffController extends Controller
 {
     /**
-     * GET /api/v1/kadiv/staff
+    * GET /api/kadiv/staff
      * Mengambil daftar seluruh karyawan di divisi Kadiv.
      */
     public function index(Request $request)
@@ -35,7 +35,7 @@ class KadivStaffController extends Controller
     }
 
     /**
-     * GET /api/v1/kadiv/staff/{id}
+    * GET /api/kadiv/staff/{id}
      * Detail profil staff + daftar tugas yang sedang dikerjakan staff tersebut.
      */
     public function show(Request $request, $id)

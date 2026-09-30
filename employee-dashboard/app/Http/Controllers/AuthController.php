@@ -42,12 +42,21 @@ class AuthController extends Controller
         // Generate token
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json(['access_token' => $token]);
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'role' => $user->role?->nama_role,
+            'user' => [
+                'id_user' => $user->id_user,
+                'username' => $user->username,
+                'karyawan_id_karyawan' => $user->karyawan_id_karyawan,
+            ],
+        ]);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->currentAccessToken()?->delete();
         return response()->json(['message' => 'Logout berhasil']);
     }
 }

@@ -1,8 +1,8 @@
 <?php
 
-namespace database\Seeders;
+namespace Database\Seeders;
 
-use Illuminate\database\Seeder;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Role;
 use App\Models\Divisi;

@@ -14,7 +14,15 @@ class TugasApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $seeder = \database\Seeders\DatabaseSeeder::class;
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Seed explicitly: the $seeder property only runs during migrate:fresh,
+        // which happens at most once per test process (other test classes may
+        // migrate first), so depending on it makes this test order-dependent.
+        $this->seed(\Database\Seeders\DatabaseSeeder::class);
+    }
 
     #[Test]
     public function staff_bisa_login_menggunakan_username()
@@ -74,7 +82,7 @@ class TugasApiTest extends TestCase
 
         // 2. Kita buat Staff B yang SATU DIVISI dengan Budi
         $karyawanB = \App\Models\Karyawan::create([
-            'id_karyawan' => 'KR002',
+            'id_karyawan' => 'KR902',
             'nama' => 'Joko (Teman Divisi)',
             'jenis_kelamin' => 'Laki-laki',
             'tanggal_lahir' => '1996-01-01',
@@ -85,7 +93,7 @@ class TugasApiTest extends TestCase
             'divisi_id_divisi' => $staffA->karyawan->divisi_id_divisi, // Satu divisi!
         ]);
         $staffB = User2::create([
-            'id_user' => 'US002',
+            'id_user' => 'US902',
             'username' => 'jokost',
             'password' => 'pass123',
             'role_id_role' => $staffA->role_id_role,

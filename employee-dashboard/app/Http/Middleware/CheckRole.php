@@ -15,8 +15,10 @@ class CheckRole
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        // Cek nama role sesuai dengan relasi di database
-        if (!in_array($user->role->nama_role, $roles)) {
+        // Case-insensitive comparison so 'Staff', 'staff', 'STAFF' all match.
+        $userRole = strtolower($user->role?->nama_role ?? '');
+
+        if (!in_array($userRole, array_map('strtolower', $roles), true)) {
             return response()->json(['message' => 'Forbidden. Akses ditolak.'], 403);
         }
 

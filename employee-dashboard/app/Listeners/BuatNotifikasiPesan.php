@@ -20,7 +20,23 @@ class BuatNotifikasiPesan
         $tugas = $pesan->tugas;
         $pengirim = $pesan->pengirim;
 
-        if (! $tugas || ! $pengirim) {
+        if (! $pengirim) {
+            return;
+        }
+
+        if ($pesan->penerima_id_user) {
+            Notifikasi::create([
+                'id_notifikasi' => $this->generateNotifikasiId(),
+                'judul_notifikasi' => ucfirst($pesan->tipe ?? 'pesan').' Baru',
+                'isi_notif' => 'Anda menerima '.($pesan->tipe ?? 'pesan').': '.$pesan->judul_pesan,
+                'tanggal_notifikasi' => now()->toDateString(),
+                'user_id_user' => $pesan->penerima_id_user,
+            ]);
+
+            return;
+        }
+
+        if (! $tugas) {
             return;
         }
 
