@@ -68,16 +68,14 @@
                                     </span>
                                 @endif
                             </td>
+
                             {{-- Kolom Aksi --}}
-                            <td class="{{ $cellPadding }} whitespace-nowrap text-center text-xs">
-                                <a href="{{ url('/hrd/divisi/edit/' . $divisi['id']) }}" 
+
+                            <td class="{{ $cellPadding }} whitespace-nowrap text-center ml-10 text-xs">
+                                <a href="{{ url('/hrd/detailDivisi/{id}' . $divisi['id']) }}" 
                                    class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline mr-3">
-                                    Edit
+                                    Selengkapnya
                                 </a>
-                                <button onclick="confirm('Yakin ingin hapus {{ $divisi['nama'] }}?')"
-                                   class="text-red-600 hover:text-red-800 font-medium hover:underline">
-                                    Hapus
-                                </button>
                             </td>
                         </tr>
                     @endforeach

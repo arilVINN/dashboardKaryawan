@@ -76,7 +76,7 @@
 
 </div>
 
-<!-- Script pembuat grafik diletakkan langsung di dalam komponen ini -->
+<!-- Script grafik  -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

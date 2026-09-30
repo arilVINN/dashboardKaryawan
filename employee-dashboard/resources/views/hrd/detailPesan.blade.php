@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Pesan - PT Silindo</title>
+    <title>Detail Pesan HRD - PT Silindo</title>
 
     @vite('resources/css/app.css')
 </head>
 
 <body class="bg-white flex h-screen overflow-hidden">
 
-    @include('component.sidebar')
+    @include('component_hrd.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
