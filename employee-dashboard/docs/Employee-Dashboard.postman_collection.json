@@ -7,7 +7,8 @@
   "variable": [
     { "key": "base_url", "value": "http://127.0.0.1:8000" },
     { "key": "staff_task_id", "value": "TGS-001" },
-    { "key": "recipient_user_id", "value": "USR-STAFF-001" }
+    { "key": "recipient_user_id", "value": "USR-STAFF-001" },
+    { "key": "message_id", "value": "PSN-001" }
   ],
   "item": [
     {
@@ -18,7 +19,7 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/v1/kadiv/dashboard"
+            "url": "{{base_url}}/api/kadiv/dashboard"
           }
         },
         {
@@ -26,7 +27,27 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/api/v1/kadiv/pesan?tipe=surat&arah=keluar&per_page=15"
+            "url": "{{base_url}}/api/kadiv/pesan?tipe=surat&arah=keluar&per_page=15"
+          }
+        },
+        {
+          "name": "Message Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/kadiv/pesan/{{message_id}}"
+          }
+        },
+        {
+          "name": "Reply to Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"deskripsi\": \"Terima kasih atas informasinya.\"\n}" },
+            "url": "{{base_url}}/api/kadiv/pesan/{{message_id}}/balas"
           }
         },
         {
@@ -41,7 +62,7 @@
               "mode": "raw",
               "raw": "{\n  \"penerima_id_user\": \"{{recipient_user_id}}\",\n  \"tipe\": \"pesan\",\n  \"judul_pesan\": \"Update Tugas\",\n  \"deskripsi\": \"Mohon periksa catatan terbaru.\",\n  \"tugas_id_tugas\": \"{{staff_task_id}}\",\n  \"link_lampiran\": \"https://example.com/catatan\"\n}"
             },
-            "url": "{{base_url}}/api/v1/kadiv/pesan"
+            "url": "{{base_url}}/api/kadiv/pesan"
           }
         },
         {
@@ -60,7 +81,7 @@
                 { "key": "file_lampiran", "type": "file", "src": [] }
               ]
             },
-            "url": "{{base_url}}/api/v1/kadiv/pesan"
+            "url": "{{base_url}}/api/kadiv/pesan"
           }
         }
       ]
@@ -81,7 +102,15 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/staff/pesan"
+            "url": "{{base_url}}/api/staff/pesan"
+          }
+        },
+        {
+          "name": "Task Message Thread",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/staff/pesan?tugas_id_tugas={{staff_task_id}}"
           }
         },
         {
@@ -89,22 +118,19 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/staff/pesan/{{staff_task_id}}"
+            "url": "{{base_url}}/api/staff/pesan/{{message_id}}"
           }
         },
         {
-          "name": "Send Message",
+          "name": "Reply to Message",
           "request": {
             "method": "POST",
             "header": [
               { "key": "Accept", "value": "application/json" },
               { "key": "Content-Type", "value": "application/json" }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"tugas_id_tugas\": \"{{staff_task_id}}\",\n  \"judul_pesan\": \"Update Progress\",\n  \"deskripsi\": \"Pekerjaan sudah mencapai tahap pengujian.\"\n}"
-            },
-            "url": "{{base_url}}/staff/pesan/send"
+            "body": { "mode": "raw", "raw": "{\n  \"deskripsi\": \"Progres sudah 80 persen.\"\n}" },
+            "url": "{{base_url}}/api/staff/pesan/{{message_id}}/balas"
           }
         },
         {
@@ -113,6 +139,31 @@
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/staff/notifikasi"
+          }
+        }
+      ]
+    },
+    {
+      "name": "HRD",
+      "item": [
+        {
+          "name": "Message Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/hrd/pesan/{{message_id}}"
+          }
+        },
+        {
+          "name": "Reply to Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"deskripsi\": \"Data akan dikirim hari ini.\"\n}" },
+            "url": "{{base_url}}/api/hrd/pesan/{{message_id}}/balas"
           }
         }
       ]

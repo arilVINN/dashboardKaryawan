@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pesan extends Model
 {
@@ -26,6 +28,7 @@ class Pesan extends Model
         'tugas_karyawan_id_karyawan',
         'pengirim_id_user',
         'penerima_id_user',
+        'balasan_dari_id_pesan',
     ];
 
     public function tugas()
@@ -53,5 +56,15 @@ class Pesan extends Model
             'penerima_id_user',
             'id_user'
         );
+    }
+
+    public function balasanDari(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'balasan_dari_id_pesan', 'id_pesan');
+    }
+
+    public function balasan(): HasMany
+    {
+        return $this->hasMany(self::class, 'balasan_dari_id_pesan', 'id_pesan');
     }
 }
