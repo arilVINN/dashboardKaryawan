@@ -55,6 +55,14 @@ Route::get('/hrd/pesan', function () {
     return view('hrd.pesan');
 })->name('pesan');
 
+Route::get('/hrd/detailPesan/{id}', function () {
+    return view('hrd.detailPesan');
+})->name('detailPesan');
+
+Route::get('/hrd/detailDivisi/{id}', function () {
+    return view('hrd.detailDivisi');
+})->name('detailDivisi');
+
 
 
 // 1. Route untuk proses form login

@@ -41,11 +41,8 @@
         ],
     ];
 @endphp
+
 <div class="flex flex-col gap-3 w-full mt-2">
-    <div class="flex justify-end items-right">
-        <button class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199]">Tambah
-            Pesan</button>
-    </div>
 
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="{{ $isCompact ? 'overflow-hidden' : 'overflow-x-auto' }}">
@@ -55,46 +52,34 @@
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Id Pesan</th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Judul Pesan</th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Deskripsi</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Tanggal Pesan</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Tugas_id_tugas</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">
-                            Tugas_Karyawan_id_tugas</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Tanggal Pesan</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                     @foreach ($dummyPesan as $pesan)
                         <tr class="hover:bg-slate-50 transition">
-                            {{-- Kolom ID Pesan --}}
                             <td class="{{ $cellPadding }} font-semibold text-slate-800 whitespace-nowrap">
                                 {{ $pesan['id_pesan'] }}
                             </td>
 
-                            {{-- Kolom Judul Pesan --}}
                             <td class="{{ $cellPadding }} text-slate-900 font-medium whitespace-nowrap">
                                 {{ $pesan['judul_pesan'] }}
                             </td>
-
-                            {{-- Kolom Deskripsi (Gunakan truncate agar teks panjang tidak merusak tabel) --}}
+                            
                             <td class="{{ $cellPadding }} max-w-[200px] truncate text-slate-500">
                                 {{ $pesan['deskripsi'] }}
                             </td>
 
-                            {{-- Kolom Tanggal Pesan --}}
                             <td class="{{ $cellPadding }} whitespace-nowrap text-slate-600">
                                 {{ $pesan['tanggal_pesan'] }}
                             </td>
 
-                            {{-- Kolom Aksi --}}
                             <td class="{{ $cellPadding }} whitespace-nowrap text-center text-xs">
-                                <!-- Menggunakan id_pesan untuk URL -->
-                                <a href="{{ url('/hrd/pesan/edit/' . $pesan['id_pesan']) }}"
+                                <a href="{{ url('/hrd/detailPesan/{id}' . $pesan['id_pesan']) }}"
                                     class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline mr-3">
-                                    Edit
+                                    Lihat
                                 </a>
-                                <button onclick="confirm('Yakin ingin hapus pesan: {{ $pesan['judul_pesan'] }}?')"
-                                    class="text-red-600 hover:text-red-800 font-medium hover:underline">
-                                    Hapus
-                                </button>
                             </td>
                         </tr>
                     @endforeach
