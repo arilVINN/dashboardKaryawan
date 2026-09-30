@@ -30,24 +30,29 @@ class DashboardController extends Controller
 
         $totalTugas = (clone $tugasQuery)->count();
 
-        $tugasBerlangsung = (clone $tugasQuery)
-            ->where('status', 'berjalan')
+        // Lima bucket status (status efektif, termasuk turunan "telat").
+        $tugasBaru = (clone $tugasQuery)
+            ->statusEfektif(Tugas::STATUS_BARU)
             ->count();
 
-        $tugasPending = (clone $tugasQuery)
-            ->whereIn('status', ['baru', 'jeda'])
+        $tugasBerjalan = (clone $tugasQuery)
+            ->statusEfektif(Tugas::STATUS_BERJALAN)
             ->count();
 
-        $tugasKendala = (clone $tugasQuery)
-            ->where('status', 'kendala')
+        $tugasMenungguAcc = (clone $tugasQuery)
+            ->statusEfektif(Tugas::STATUS_MENUNGGU_ACC)
             ->count();
 
-        $tugasSelesai = (clone $tugasQuery)
-            ->where('status', 'selesai')
+        $tugasSudahAcc = (clone $tugasQuery)
+            ->statusEfektif(Tugas::STATUS_SUDAH_ACC)
+            ->count();
+
+        $tugasTelat = (clone $tugasQuery)
+            ->statusEfektif(Tugas::STATUS_TELAT)
             ->count();
 
         $completionPercentage = $totalTugas > 0
-            ? round(($tugasSelesai / $totalTugas) * 100, 2)
+            ? round(($tugasSudahAcc / $totalTugas) * 100, 2)
             : 0;
 
         $pesanTerbaru = Pesan::query()
@@ -68,10 +73,11 @@ class DashboardController extends Controller
         return response()->json([
             'data' => [
                 'statistik' => [
-                    'tugas_berlangsung' => $tugasBerlangsung,
-                    'tugas_pending' => $tugasPending,
-                    'tugas_kendala' => $tugasKendala,
-                    'tugas_selesai' => $tugasSelesai,
+                    'tugas_baru' => $tugasBaru,
+                    'tugas_berjalan' => $tugasBerjalan,
+                    'tugas_menunggu_acc' => $tugasMenungguAcc,
+                    'tugas_sudah_acc' => $tugasSudahAcc,
+                    'tugas_telat' => $tugasTelat,
                     'total_tugas' => $totalTugas,
                     'completion_percentage' => $completionPercentage,
                 ],

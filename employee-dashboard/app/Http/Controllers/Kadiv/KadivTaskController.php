@@ -80,7 +80,7 @@ class KadivTaskController extends Controller
             'link_pendukung' => $request->link_pendukung,
             'deadline' => $request->deadline,
             'progress' => '0',
-            'status' => 'pending',
+            'status' => Tugas::STATUS_BARU,
             'tanggal_dibuat' => now(),
             'tanggal_update' => now(),
         ]);
@@ -188,7 +188,7 @@ class KadivTaskController extends Controller
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar wewenang'], 404);
         }
 
-        if ($tugas->status === 'selesai') {
+        if ($tugas->status === Tugas::STATUS_SUDAH_ACC) {
             return response()->json(['message' => 'Tugas ini sudah di-ACC sebelumnya dan tidak dapat direview lagi'], 403);
         }
 
@@ -210,7 +210,9 @@ class KadivTaskController extends Controller
 
         // Update Tugas Status
         $tugas->update([
-            'status' => $request->status_review == 'acc' ? 'selesai' : 'revisi'
+            'status' => $request->status_review == 'acc'
+                ? Tugas::STATUS_SUDAH_ACC
+                : Tugas::STATUS_BERJALAN
         ]);
 
         return response()->json([

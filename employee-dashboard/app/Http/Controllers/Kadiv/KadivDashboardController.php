@@ -8,12 +8,9 @@ use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class KadivDashboardController extends Controller
 {
-    private const APPROVED_REVIEW_STATUSES = ['acc', 'approved', 'disetujui'];
-
     public function index(Request $request): JsonResponse
     {
         $user = $this->authenticatedKadiv($request);
@@ -32,19 +29,23 @@ class KadivDashboardController extends Controller
             fn ($query) => $query->where('divisi_id_divisi', $divisionId)
         );
 
-        $approvedSubmission = fn ($query) => $query->whereIn(
-            DB::raw('LOWER(status_review)'),
-            self::APPROVED_REVIEW_STATUSES
-        );
-
         $totalTasks = (clone $divisionTasks)->count();
-        $notSubmitted = (clone $divisionTasks)->doesntHave('submitTugas')->count();
-        $approved = (clone $divisionTasks)
-            ->whereHas('submitTugas', $approvedSubmission)
+
+        // Lima bucket status (status efektif, termasuk turunan "telat").
+        $baru = (clone $divisionTasks)
+            ->statusEfektif(Tugas::STATUS_BARU)
             ->count();
-        $awaitingApproval = (clone $divisionTasks)
-            ->has('submitTugas')
-            ->whereDoesntHave('submitTugas', $approvedSubmission)
+        $berjalan = (clone $divisionTasks)
+            ->statusEfektif(Tugas::STATUS_BERJALAN)
+            ->count();
+        $menungguAcc = (clone $divisionTasks)
+            ->statusEfektif(Tugas::STATUS_MENUNGGU_ACC)
+            ->count();
+        $sudahAcc = (clone $divisionTasks)
+            ->statusEfektif(Tugas::STATUS_SUDAH_ACC)
+            ->count();
+        $telat = (clone $divisionTasks)
+            ->statusEfektif(Tugas::STATUS_TELAT)
             ->count();
 
         $staff = Karyawan::query()
@@ -68,11 +69,13 @@ class KadivDashboardController extends Controller
                     'nama_divisi' => $user->karyawan->divisi->nama_divisi,
                 ],
                 'metrics' => [
-                    'tugas_belum_dikirim' => $notSubmitted,
-                    'tugas_belum_di_acc' => $awaitingApproval,
-                    'tugas_sudah_di_acc' => $approved,
+                    'tugas_baru' => $baru,
+                    'tugas_berjalan' => $berjalan,
+                    'tugas_menunggu_di_acc' => $menungguAcc,
+                    'tugas_sudah_di_acc' => $sudahAcc,
+                    'tugas_telat' => $telat,
                     'persentase_penyelesaian' => $totalTasks > 0
-                        ? round(($approved / $totalTasks) * 100, 2)
+                        ? round(($sudahAcc / $totalTasks) * 100, 2)
                         : 0,
                 ],
                 'staff' => $staff,

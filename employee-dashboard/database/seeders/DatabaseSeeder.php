@@ -55,7 +55,7 @@ class DatabaseSeeder extends Seeder
             'deskripsi' => 'Buat backend.',
             'deadline' => now()->addDays(3),
             'progress' => '0',
-            'status' => 'pending',
+            'status' => 'baru',
             'tanggal_dibuat' => now(),
             'tanggal_update' => now(),
         ]);
@@ -88,7 +88,7 @@ class DatabaseSeeder extends Seeder
             'deskripsi' => 'Buat tampilan dashboard yang responsive.',
             'deadline' => now()->addDays(5),
             'progress' => '0',
-            'status' => 'pending',
+            'status' => 'baru',
             'tanggal_dibuat' => now(),
             'tanggal_update' => now(),
         ]);
@@ -174,7 +174,7 @@ class DatabaseSeeder extends Seeder
             'deskripsi' => 'Periksa dan perbarui data karyawan divisi HR.',
             'deadline' => now()->addDays(4),
             'progress' => '0',
-            'status' => 'pending',
+            'status' => 'baru',
             'tanggal_dibuat' => now(),
             'tanggal_update' => now(),
         ]);
@@ -206,7 +206,7 @@ class DatabaseSeeder extends Seeder
             'deskripsi' => 'Siapkan materi orientasi untuk karyawan baru.',
             'deadline' => now()->addDays(6),
             'progress' => '0',
-            'status' => 'pending',
+            'status' => 'baru',
             'tanggal_dibuat' => now(),
             'tanggal_update' => now(),
         ]);
