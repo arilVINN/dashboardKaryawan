@@ -23,7 +23,7 @@
             <h1 class="text-2xl font-bold text-gray-800 pt-5">Notifikasi</h1>
             @include('component.notifikasi')
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start mt-6">
+            <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 items-start mt-6">
                 @include('component.tableTugas',['compact' => true])
                 @include('component.tablePesan',['compact' => true])
             </div>
