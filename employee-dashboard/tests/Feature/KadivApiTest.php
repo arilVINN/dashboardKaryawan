@@ -7,7 +7,6 @@ use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Pesan;
 use App\Models\Role;
-use App\Models\SubmitTugas;
 use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -40,24 +39,31 @@ class KadivApiTest extends TestCase
         $staff = $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it', '2026-09-29 08:30:00');
         $outsideStaff = $this->createAccount('ST-2', 'Staff HR', 'DIV-HR', 'ROLE-STAFF', 'staff.hr');
 
-        $notSubmitted = $this->createTask('T-1', $staff->karyawan_id_karyawan);
-        $waiting = $this->createTask('T-2', $staff->karyawan_id_karyawan);
-        $approved = $this->createTask('T-3', $staff->karyawan_id_karyawan);
+        $this->createTask('T-1', $staff->karyawan_id_karyawan, Tugas::STATUS_BARU);
+        $this->createTask('T-2', $staff->karyawan_id_karyawan, Tugas::STATUS_MENUNGGU_ACC);
+        $this->createTask('T-3', $staff->karyawan_id_karyawan, Tugas::STATUS_SUDAH_ACC);
+        $this->createTask('T-4', $staff->karyawan_id_karyawan, Tugas::STATUS_BERJALAN);
+        // Deadline lewat, belum di-ACC → bucket "telat", bukan "berjalan".
+        $this->createTask(
+            'T-5',
+            $staff->karyawan_id_karyawan,
+            Tugas::STATUS_BERJALAN,
+            now()->subDays(5)->toDateString()
+        );
         $this->createTask('T-OUT', $outsideStaff->karyawan_id_karyawan);
-
-        $this->createSubmission('SUB-1', $waiting, 'menunggu');
-        $this->createSubmission('SUB-2', $approved, 'ACC');
 
         $this->actingAs($kadiv)
             ->getJson('/api/kadiv/dashboard')
             ->assertOk()
-            ->assertJsonPath('data.metrics.tugas_belum_dikirim', 1)
-            ->assertJsonPath('data.metrics.tugas_belum_di_acc', 1)
+            ->assertJsonPath('data.metrics.tugas_baru', 1)
+            ->assertJsonPath('data.metrics.tugas_berjalan', 1)
+            ->assertJsonPath('data.metrics.tugas_menunggu_di_acc', 1)
             ->assertJsonPath('data.metrics.tugas_sudah_di_acc', 1)
-            ->assertJsonPath('data.metrics.persentase_penyelesaian', 33.33)
+            ->assertJsonPath('data.metrics.tugas_telat', 1)
+            ->assertJsonPath('data.metrics.persentase_penyelesaian', 20)
             ->assertJsonCount(1, 'data.staff')
             ->assertJsonPath('data.staff.0.nama', 'Staff IT')
-            ->assertJsonPath('data.staff.0.jumlah_tugas_dikerjakan', 3);
+            ->assertJsonPath('data.staff.0.jumlah_tugas_dikerjakan', 5);
     }
 
     public function test_kadiv_can_send_and_list_a_letter_to_hrd(): void
@@ -215,24 +221,19 @@ class KadivApiTest extends TestCase
         ]);
     }
 
-    private function createTask(string $id, string $employeeId): Tugas
-    {
+    private function createTask(
+        string $id,
+        string $employeeId,
+        string $status = Tugas::STATUS_BERJALAN,
+        ?string $deadline = null
+    ): Tugas {
         return Tugas::create([
             'id_tugas' => $id,
             'karyawan_id_karyawan' => $employeeId,
             'judul_tugas' => 'Tugas '.$id,
-            'status' => 'berjalan',
+            'deadline' => $deadline ?? now()->addDays(30)->toDateString(),
+            'status' => $status,
             'tanggal_dibuat' => '2026-09-29',
-        ]);
-    }
-
-    private function createSubmission(string $id, Tugas $task, string $reviewStatus): SubmitTugas
-    {
-        return SubmitTugas::create([
-            'id_submit_tugas' => $id,
-            'status_review' => $reviewStatus,
-            'tugas_id_tugas' => $task->id_tugas,
-            'tugas_karyawan_id_karyawan' => $task->karyawan_id_karyawan,
         ]);
     }
 }

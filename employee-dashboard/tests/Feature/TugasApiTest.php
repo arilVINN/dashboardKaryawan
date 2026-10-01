@@ -72,6 +72,75 @@ class TugasApiTest extends TestCase
             'link_submit' => '-',
             'status_review' => 'submitted'
         ]);
+
+        // Submit 100% → tugas berpindah ke status "menunggu di-acc"
+        $this->assertDatabaseHas('tugas', [
+            'id_tugas' => $tugas->id_tugas,
+            'status' => Tugas::STATUS_MENUNGGU_ACC,
+        ]);
+    }
+
+    #[Test]
+    public function kadiv_bisa_acc_tugas_dan_tidak_bisa_acc_dua_kali()
+    {
+        $staff = User2::where('username', 'budist')->first();
+        $kadiv = User2::where('username', 'tonokd')->first();
+        $tugas = Tugas::where('karyawan_id_karyawan', $staff->karyawan_id_karyawan)->first();
+
+        // Staff submit dulu agar ada yang direview
+        $this->actingAs($staff, 'sanctum')
+             ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                 'catatan_karyawan' => 'Siap direview',
+                 'progress' => 100,
+             ])
+             ->assertStatus(200);
+
+        // ACC pertama → status "sudah di-acc"
+        $this->actingAs($kadiv, 'sanctum')
+             ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", [
+                 'status_review' => 'acc',
+             ])
+             ->assertStatus(200);
+
+        $this->assertDatabaseHas('tugas', [
+            'id_tugas' => $tugas->id_tugas,
+            'status' => Tugas::STATUS_SUDAH_ACC,
+        ]);
+
+        // ACC kedua → ditolak (guard dobel-ACC)
+        $this->actingAs($kadiv, 'sanctum')
+             ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", [
+                 'status_review' => 'acc',
+             ])
+             ->assertStatus(403);
+    }
+
+    #[Test]
+    public function kadiv_revisi_mengembalikan_tugas_ke_berjalan()
+    {
+        $staff = User2::where('username', 'budist')->first();
+        $kadiv = User2::where('username', 'tonokd')->first();
+        $tugas = Tugas::where('karyawan_id_karyawan', $staff->karyawan_id_karyawan)->first();
+
+        $this->actingAs($staff, 'sanctum')
+             ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                 'catatan_karyawan' => 'Revisi dulu',
+                 'progress' => 100,
+             ])
+             ->assertStatus(200);
+
+        // Revisi → tugas kembali "berjalan"
+        $this->actingAs($kadiv, 'sanctum')
+             ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", [
+                 'status_review' => 'revisi',
+                 'catatan_revisi' => 'Perbaiki bagian ini',
+             ])
+             ->assertStatus(200);
+
+        $this->assertDatabaseHas('tugas', [
+            'id_tugas' => $tugas->id_tugas,
+            'status' => Tugas::STATUS_BERJALAN,
+        ]);
     }
         #[Test]
     public function staff_hanya_bisa_melihat_tugas_sendiri()
