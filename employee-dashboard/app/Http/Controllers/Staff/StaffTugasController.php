@@ -55,7 +55,7 @@ class StaffTugasController extends Controller
         }
 
         // Cegah pengiriman ulang jika tugas sudah di-ACC
-        if ($tugas->status === 'selesai') {
+        if ($tugas->status === Tugas::STATUS_SUDAH_ACC) {
             return response()->json(['message' => 'Tugas ini sudah di-ACC dan tidak bisa dikirim ulang'], 403);
         }
         $request->validate([
@@ -86,8 +86,11 @@ class StaffTugasController extends Controller
             'status_review' => 'submitted',
         ]);
         $tugas->update([
-            'progress' => $progress,
-            'status' => $progress == 100 ? 'submitted' : $tugas->status,
+            'progress' => $request->progress,
+            'status' => $request->progress == 100
+                ? Tugas::STATUS_MENUNGGU_ACC
+                : $tugas->status,
+
         ]);
         return response()->json(['message' => 'Hasil tugas berhasil dikirim', 'data' => $tugas]);
     }

@@ -46,9 +46,23 @@ class StaffApiTest extends TestCase
 
     public function test_staff_dashboard_returns_metrics_recent_messages_and_notifications(): void
     {
-        foreach (['berjalan', 'baru', 'jeda', 'kendala', 'selesai'] as $index => $status) {
-            $this->createTask('TGS-'.$index, $this->staff->karyawan_id_karyawan, $status);
-        }
+        $this->createTask('TGS-0', $this->staff->karyawan_id_karyawan, Tugas::STATUS_BERJALAN);
+        $this->createTask('TGS-1', $this->staff->karyawan_id_karyawan, Tugas::STATUS_BARU);
+        $this->createTask('TGS-2', $this->staff->karyawan_id_karyawan, Tugas::STATUS_MENUNGGU_ACC);
+        // Di-ACC meski deadline lewat: tetap "sudah di-acc", bukan "telat".
+        $this->createTask(
+            'TGS-3',
+            $this->staff->karyawan_id_karyawan,
+            Tugas::STATUS_SUDAH_ACC,
+            now()->subDays(5)->toDateString()
+        );
+        // Deadline lewat dan belum di-ACC: masuk bucket "telat".
+        $this->createTask(
+            'TGS-4',
+            $this->staff->karyawan_id_karyawan,
+            Tugas::STATUS_BERJALAN,
+            now()->subDays(5)->toDateString()
+        );
 
         $task = Tugas::findOrFail('TGS-0');
         $this->createMessage('PSN-DASH', $task, $this->kadiv, 'Pesan dashboard');
@@ -63,10 +77,11 @@ class StaffApiTest extends TestCase
         $this->actingAs($this->staff)
             ->getJson('/staff/dashboard')
             ->assertOk()
-            ->assertJsonPath('data.statistik.tugas_berlangsung', 1)
-            ->assertJsonPath('data.statistik.tugas_pending', 2)
-            ->assertJsonPath('data.statistik.tugas_kendala', 1)
-            ->assertJsonPath('data.statistik.tugas_selesai', 1)
+            ->assertJsonPath('data.statistik.tugas_berjalan', 1)
+            ->assertJsonPath('data.statistik.tugas_baru', 1)
+            ->assertJsonPath('data.statistik.tugas_menunggu_acc', 1)
+            ->assertJsonPath('data.statistik.tugas_sudah_acc', 1)
+            ->assertJsonPath('data.statistik.tugas_telat', 1)
             ->assertJsonPath('data.statistik.total_tugas', 5)
             ->assertJsonPath('data.statistik.completion_percentage', 20)
             ->assertJsonPath('data.pesan_terbaru.0.id_pesan', 'PSN-DASH')
@@ -305,15 +320,15 @@ class StaffApiTest extends TestCase
         ]);
     }
 
-    private function createTask(string $id, string $employeeId, string $status): Tugas
+    private function createTask(string $id, string $employeeId, string $status, ?string $deadline = null): Tugas
     {
         return Tugas::create([
             'id_tugas' => $id,
             'karyawan_id_karyawan' => $employeeId,
             'judul_tugas' => 'Tugas Dummy '.$id,
             'deskripsi' => 'Data dummy untuk pengujian endpoint.',
-            'deadline' => '2026-10-31',
-            'progress' => $status === 'selesai' ? '100' : '50',
+            'deadline' => $deadline ?? now()->addDays(30)->toDateString(),
+            'progress' => $status === Tugas::STATUS_SUDAH_ACC ? '100' : '50',
             'status' => $status,
             'tanggal_dibuat' => '2026-09-20',
             'tanggal_update' => '2026-09-29',
