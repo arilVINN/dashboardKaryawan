@@ -7,22 +7,19 @@
         [
             'id' => 1,
             'judul' => 'Revisi Layout',
-            'isi' => 'Tolong rapikan margin pada topbar dan tabel tugas agar presisi.',
-            'tugas' => 'Pembuatan UI/UX',
+            'pengirim' => 'aril',
             'tanggal' => '28 Sept 2026',
         ],
         [
             'id' => 2,
             'judul' => 'Integrasi API',
-            'isi' => 'Endpoint untuk autentikasi token sudah ready untuk diintegrasikan.',
-            'tugas' => 'Backend Setup',
+            'pengirim' => 'jeremy',
             'tanggal' => '27 Sept 2026',
         ],
         [
             'id' => 3,
             'judul' => 'Update Asset Logo',
-            'isi' => 'Gunakan file SVG terbaru untuk logo instansi di bagian header sidebar.',
-            'tugas' => 'Branding Staff',
+            'pengirim' => 'fitri',
             'tanggal' => '26 Sept 2026',
         ],
     ];
@@ -36,9 +33,8 @@
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
                     <tr>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Judul Pesan</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Isi Pesan</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Tugas Terkait</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Pengirim</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Judul</th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Tanggal</th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Aksi</th>
                     </tr>
@@ -47,15 +43,10 @@
                     @foreach ($dummyPesan as $pesan)
                         <tr class="hover:bg-slate-50 transition">
                             <td class="{{ $cellPadding }} font-semibold text-slate-800 whitespace-nowrap">
-                                {{ $pesan['judul'] }}
+                                {{ $pesan['pengirim'] }}
                             </td>
                             <td class="{{ $cellPadding }} max-w-[160px] truncate text-slate-500">
-                                {{ $pesan['isi'] }}
-                            </td>
-                            <td class="{{ $cellPadding }} whitespace-nowrap">
-                                <span class="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs">
-                                    {{ $pesan['tugas'] }}
-                                </span>
+                                {{ $pesan['judul'] }}
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap text-slate-500">
                                 {{ $pesan['tanggal'] }}

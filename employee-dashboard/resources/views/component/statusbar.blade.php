@@ -2,7 +2,7 @@
 
     <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Tugas Ongoing</span>
+            <span class="text-sm font-bold text-slate-500">Tugas Berjalan</span>
             <span class="text-xl font-bold text-slate-800 mt-1">2/10 Tugas</span>
         </div>
         <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">

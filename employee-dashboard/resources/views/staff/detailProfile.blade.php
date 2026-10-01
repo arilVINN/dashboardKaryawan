@@ -29,13 +29,14 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         @include('component.topbar')
-        
+
 
         <main class="flex-1 overflow-y-auto px-10 py-8">
             <div class="max-w-5xl space-y-8">
 
                 <div class="flex items-center gap-6">
-                    <div class="w-28 h-28 rounded-full bg-slate-300 shrink-0 flex items-center justify-center text-4xl font-bold text-slate-500 uppercase">
+                    <div
+                        class="w-28 h-28 rounded-full bg-slate-300 shrink-0 flex items-center justify-center text-4xl font-bold text-slate-500 uppercase">
                         <!-- Menampilkan inisial nama di tempat foto -->
                         {{ substr($pegawai['nama'], 0, 1) }}
                     </div>
@@ -55,11 +56,17 @@
 
                 <div class="grid grid-cols-2 md:grid-cols-2 gap-6 items-start">
 
-                    <div class="space-y-6">
+                    <div class="space-y-6 grid-cols 2">
                         <div class="bg-white border border-slate-100 rounded-xl p-6 shadow-sm">
                             <h2 class="text-lg font-bold text-slate-900 border-b border-slate-200 pb-3 mb-4">
                                 Detail Karyawan
+
                             </h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                            </svg>
 
                             <div class="space-y-4 text-sm">
                                 <div>
@@ -116,24 +123,30 @@
                         </div>
 
                         <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-                            <h3 class="text-lg font-bold text-slate-900 border-b border-slate-200 pb-3 mb-5">Keamanan Akun</h3>
+                            <h3 class="text-lg font-bold text-slate-900 border-b border-slate-200 pb-3 mb-5">Keamanan
+                                Akun</h3>
 
                             <form action="#" method="POST" class="space-y-4 max-w-xl">
                                 @csrf
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1.5">Password Saat Ini</label>
+                                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1.5">Password
+                                        Saat Ini</label>
                                     <input type="password" placeholder="********"
                                         class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-500">
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1.5">Password Baru</label>
+                                        <label
+                                            class="block text-xs font-semibold text-slate-700 uppercase mb-1.5">Password
+                                            Baru</label>
                                         <input type="password" placeholder="********"
                                             class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-500">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1.5">Ulangi Password Baru</label>
+                                        <label
+                                            class="block text-xs font-semibold text-slate-700 uppercase mb-1.5">Ulangi
+                                            Password Baru</label>
                                         <input type="password" placeholder="********"
                                             class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-500">
                                     </div>

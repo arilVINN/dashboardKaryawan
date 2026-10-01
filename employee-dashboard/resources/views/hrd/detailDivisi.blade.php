@@ -17,30 +17,24 @@
         @include('component.topbar')
         @include('component.breadcrumbs')
 
-        <div class="flex flex-col gap-3 w-full mt-2 ml-8">
+        <div class="flex flex-col gap-3 w-full pt-9 ml-8">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold text-slate-800">Divisi Komunikasi dan IT</h2>
             </div>
         </div>
 
-        <main class="flex overflow-y-auto p-8 pt-6 items-center gap-5">
-            <!-- Konten  -->
+        <main class="flex overflow-y-auto p-8 pt-2 items-center gap-5 drop-shadow-2sm">
             <div
-                class="w-20 h-20 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
-                P
+                class="w-20 h-20 rounded-full bg-white stroke-blue-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                <img src="/gambar/silindo.png" alt="">
             </div>
-            <div class="font-medium items-center">
-                <h3>Panji doe <br>Ketua divisi</h3>
+            <div class=" items-center">
+                <h3 class="font-medium">Panji doe <br></h3>
+                <h4 class="font-light"> Ketua divisi </h4>
             </div>
 
         </main>
 
-        <div class="flex justify-end pr-4 sm:pr-6 lg:pr-8 gap-3">
-            <button type="button" id="btn-toggle-balas"
-                class="px-6 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-semibold rounded-lg shadow-sm transition">
-                Tambah
-            </button>
-        </div>
         @include('component_hrd.tabelAnggotaDivisi')
 
 
