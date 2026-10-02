@@ -1,5 +1,12 @@
 <aside id="sidebar" 
        class="w-64 flex flex-col h-screen shrink-0 bg-gradient-to-b from-[#044564] from-50% to-[#19A7CE] transition-all duration-300 ease-in-out">
+<<<<<<< HEAD
+=======
+
+    @php
+        $user = session('user_session');
+    @endphp
+>>>>>>> 157a0e3bf51ea3b8eaf1506438e527d9455178f5
     
     <div class="h-16 flex items-center justify-between px-4 bg-white rounded-bl-3xl border-b border-r border-slate-200 shrink-0 box-border overflow-hidden">
         
@@ -19,16 +26,56 @@
     </div>
 
     <nav class="flex-1 p-3 space-y-2 overflow-y-auto">
+<<<<<<< HEAD
         <a href="{{ url('/') }}"
            class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ (request()->is('/') || request()->is('dashboard*')) ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+=======
+
+        <a href="{{ (($user['tingkatan'] ?? '') === 'Kadiv') ? url('/kadiv/dashboard') : url('/') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ (($user['tingkatan'] ?? '') === 'Kadiv' && request()->is('kadiv/dashboard*')) || (($user['tingkatan'] ?? '') !== 'Kadiv' && (request()->is('/') || request()->is('dashboard*'))) ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+>>>>>>> 157a0e3bf51ea3b8eaf1506438e527d9455178f5
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
             <span class="sidebar-text whitespace-nowrap transition-all duration-200">Dashboard</span>
         </a>
 
+<<<<<<< HEAD
         <a href="{{ url('/tugas') }}"
            class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('tugas*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+=======
+        @if (($user['tingkatan'] ?? '') === 'Kadiv')
+
+            <a href="{{ url('/kadiv/manajemenStaff') }}"
+               class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition
+               {{ request()->is('kadiv/manajemenStaff*')
+                    ? 'bg-white/40 text-white font-medium'
+                    : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+
+                <svg class="w-5 h-5 shrink-0"
+                     fill="none"
+                     stroke="currentColor"
+                     viewBox="0 0 24 24">
+
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 004-4h1m4-6a4 4 0 11-8 0 4 4 0 008 0zm6 2a3 3 0 10-6 0 3 3 0 006 0z">
+                    </path>
+
+                </svg>
+
+                <span class="sidebar-text whitespace-nowrap transition-all duration-200">
+                    Manajemen Staff
+                </span>
+
+            </a>
+
+        @endif
+
+        <a href="{{ (($user['tingkatan'] ?? '') === 'Kadiv') ? url('/kadiv/detailTugas') : url('/tugas') }}"
+          class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('tugas*') || request()->is('kadiv/detailTugas*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}"
+>>>>>>> 157a0e3bf51ea3b8eaf1506438e527d9455178f5
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5h8m-8 7h8m-8 7h8M3 17l2 2l4-4"/>
                 <rect width="6" height="6" x="3" y="4" rx="1"></rect>
@@ -36,10 +83,17 @@
             <span class="sidebar-text whitespace-nowrap transition-all duration-200">Tugas</span>
         </a>
 
+<<<<<<< HEAD
         <a href="{{ url('/pesan') }}"
            class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('pesan*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-3 12H7c-.55 0-1-.45-1-1s.45-1 1-1h10c.55 0 1 .45 1 1s-.45 1-1 1m0-3H7c-.55 0-1-.45-1-1s.45-1 1-1h10c.55 0 1 .45 1 1s-.45 1-1 1m0-3H7c-.55 0-1-.45-1-1s.45-1 1-1h10c.55 0 1 .45 1 1s-.45 1-1 1"></path>
+=======
+        <a href="{{ (($user['tingkatan'] ?? '') === 'Kadiv') ? url('/kadiv/detailPesan') : url('/pesan') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('pesan*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1.9-2-2-2m-3 12H7c-.55 0-1-.45-1-1s.45-1 1-1h10c.55 0 1 .45 1 1s-.45 1-1 1m0-3H7c-.55 0-1-.45-1-1s.45-1 1-1h10c.55 0 1 .45 1 1s-.45 1-1 1m0-3H7c-.55 0-1-.45-1-1s.45-1 1-1h10c.55 0 1 .45 1 1s-.45 1-1 1"></path>
+>>>>>>> 157a0e3bf51ea3b8eaf1506438e527d9455178f5
             </svg>
             <span class="sidebar-text whitespace-nowrap transition-all duration-200">Pesan</span>
         </a>

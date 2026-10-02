@@ -149,10 +149,10 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-xs font-bold text-slate-500 mb-2">2. DIVISI</label>
-                    <input type="text" name="divisi"
+                    <label class="block text-xs font-bold text-slate-500 mb-2">2. JABATAN</label>
+                    <input type="text" name="jabatan"
                         class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-[#004A65] focus:border-[#004A65] outline-none text-sm placeholder-gray-400"
-                        placeholder="Pilih divisi" required>
+                        placeholder="Masukkan jabatan" required>
                 </div>
 
                 <div class="mb-4">
@@ -260,19 +260,17 @@
                         class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-[#004A65] focus:border-[#004A65] outline-none text-sm placeholder-gray-400"
                         placeholder="Pilih divisi" required>
                 </div>
-
                 <div class="mb-4">
-                    <label class="block text-xs font-bold text-slate-500 mb-2">3. KETERANGAN</label>
-                    <input type="text" name="keterangan"
+                    <label class="block text-xs font-bold text-slate-500 mb-2">3. JABATAN</label>
+                    <input type="text" name="jabatan"
                         class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-[#004A65] focus:border-[#004A65] outline-none text-sm placeholder-gray-400"
-                        placeholder="Keterangan tambahan" required>
+                        placeholder="Masukkan jabatan" required>
                 </div>
-
-                <div class="mb-5 border-b border-slate-100 pb-5">
-                    <label class="block text-xs font-bold text-slate-500 mb-2">4. UPLOAD FOTO PROFILE</label>
-                    <input type="file" name="foto_profile"
-                        class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-[#004A65] focus:border-[#004A65] outline-none text-sm placeholder-gray-400 text-slate-600"
-                        required>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-500 mb-2">4. STATUS</label>
+                    <input type="text" name="status"
+                        class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-[#004A65] focus:border-[#004A65] outline-none text-sm placeholder-gray-400"
+                        placeholder="Masukkan status" required>
                 </div>
             </div>
 
