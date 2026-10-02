@@ -62,8 +62,9 @@ class StaffTugasController extends Controller
             'file_hasil' => 'nullable|file|max:204800', // max 200 MB (dalam kilobyte)
             'link_submit' => 'nullable|string',
             'catatan_karyawan' => 'nullable|string',
-            'progress' => 'required|integer|min:0|max:100'
+            'progress' => 'sometimes|integer|min:0|max:100'
         ]);
+        $progress = $request->input('progress', $tugas->progress);
         $filePath = '-'; // Default string '-' karena database Anda melarang NULL
         if ($request->hasFile('file_hasil')) {
             $filePath = $request->file('file_hasil')->store('submissions', 'public');
@@ -89,6 +90,7 @@ class StaffTugasController extends Controller
             'status' => $request->progress == 100
                 ? Tugas::STATUS_MENUNGGU_ACC
                 : $tugas->status,
+
         ]);
         return response()->json(['message' => 'Hasil tugas berhasil dikirim', 'data' => $tugas]);
     }
