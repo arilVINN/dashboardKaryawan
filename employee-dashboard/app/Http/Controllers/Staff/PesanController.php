@@ -22,8 +22,12 @@ class PesanController extends Controller
             ], 401);
         }
 
-        if ($request->filled('tugas_id_tugas')) {
-            return $this->showTaskThread($request, (string) $request->query('tugas_id_tugas'));
+        $validatedThread = $request->validate([
+            'tugas_id_tugas' => ['nullable', 'string', 'max:20', 'exists:tugas,id_tugas'],
+        ]);
+
+        if (! empty($validatedThread['tugas_id_tugas'])) {
+            return $this->showTaskThread($request, $validatedThread['tugas_id_tugas']);
         }
 
         $query = Tugas::query()

@@ -117,8 +117,9 @@ class HrdStaffController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            report($e);
             return response()->json([
-                'message' => 'Gagal menambahkan staff: ' . $e->getMessage()
+                'message' => 'Gagal menambahkan staff. Silakan coba lagi.'
             ], 500);
         }
     }

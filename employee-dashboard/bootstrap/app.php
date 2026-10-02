@@ -12,9 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->validateCsrfTokens(except: [
-            'staff/pesan/send',
-        ]);
+$middleware->validateCsrfTokens(except: [
+    'staff/pesan/send',
+]);
 
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
@@ -34,7 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     $message = 'Unauthenticated';
                 } elseif ($e instanceof \Illuminate\Auth\Access\AuthorizationException) {
                     $statusCode = 403;
-                    $message = $e->getMessage() ?: 'Forbidden';
+                    $message = 'Forbidden';
                 } elseif ($e instanceof \Illuminate\Validation\ValidationException) {
                     $statusCode = 422;
                     $message = 'Validation Failed';
@@ -47,7 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     $message = 'Ukuran file terlalu besar. Maksimal yang diizinkan adalah 200 MB.';
                 } else {
                     $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
-                    $message = $e->getMessage() ?: 'Server Error';
+                    $message = $statusCode >= 500 ? 'Server Error' : 'Request failed';
                 }
 
                 return response()->json([

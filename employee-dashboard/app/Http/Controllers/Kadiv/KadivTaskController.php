@@ -49,8 +49,8 @@ class KadivTaskController extends Controller
             'deskripsi' => 'required|string',
             'deadline' => 'required|date',
             // File atau link pendukung (opsional)
-            'file_pendukung' => 'nullable|file|max:20480', // 20 MB max
-            'link_pendukung' => 'nullable|string',
+            'file_pendukung' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png', // 20 MB max
+            'link_pendukung' => 'nullable|url|max:2048',
         ]);
 
         // Pastikan karyawan penerima tugas berada di divisi yang sama
@@ -111,8 +111,8 @@ class KadivTaskController extends Controller
             'deskripsi' => 'sometimes|required|string',
             'deadline' => 'sometimes|required|date',
             'karyawan_id_karyawan' => 'sometimes|required|exists:karyawans,id_karyawan',
-            'file_pendukung' => 'nullable|file|max:20480',
-            'link_pendukung' => 'nullable|string'
+            'file_pendukung' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
+            'link_pendukung' => 'nullable|url|max:2048'
         ]);
 
         // Jika pindah tangan, pastikan karyawan baru se-divisi
