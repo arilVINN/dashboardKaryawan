@@ -10,8 +10,13 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "filament/filament": "5.0",
         "laravel/framework": "^12.0",
+<<<<<<< HEAD
         "laravel/sanctum": "*",
+=======
+        "laravel/sanctum": "^4.3",
+>>>>>>> origin/main
         "laravel/tinker": "^2.10.1"
     },
     "require-dev": {

@@ -24,7 +24,6 @@ class Karyawan extends Model
         'tanggal_lahir',
         'tanggal_rekrut',
         'no_telepon',
-        'email',
         'jabatan',
         'divisi_id_divisi',
     ];
@@ -41,7 +40,7 @@ class Karyawan extends Model
     public function user(): HasOne
     {
         return $this->hasOne(
-            User::class,
+            User2::class,
             'karyawan_id_karyawan',
             'id_karyawan'
         );
