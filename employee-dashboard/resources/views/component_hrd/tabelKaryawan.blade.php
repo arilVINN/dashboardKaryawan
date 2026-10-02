@@ -5,7 +5,7 @@
     $dummyKaryawan = [
         [
             'id_karyawan' => 'KRY01',
-            'nama' => 'Samuel Exlesiano Sigalingging',
+            'nama' => 'Samuel',
             'divisi' => 'Teknologi Informasi & Komunikasi',
             'jabatan' => 'Frontend Developer Intern',
             'status' => 'Aktif',
@@ -19,7 +19,7 @@
         ],
         [
             'id_karyawan' => 'KRY03',
-            'nama' => 'Ariellus Antoro',
+            'nama' => 'Ariel2',
             'divisi' => 'Teknologi Informasi & Komunikasi',
             'jabatan' => 'Fullstack Developer',
             'status' => 'Aktif',
@@ -38,9 +38,6 @@
     
     <div class="flex justify-between items-center mb-2">
         <h2 class="text-xl font-bold text-slate-800">Daftar Karyawan</h2>
-        <button onclick="bukaModalKaryawan()" class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition">
-            Tambah Karyawan
-        </button>
     </div>
 
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">

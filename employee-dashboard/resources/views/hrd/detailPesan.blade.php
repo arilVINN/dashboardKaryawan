@@ -16,6 +16,7 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         @include('component.topbar')
+        @include('component.breadcrumbs')
 
         <main class="flex-1 overflow-y-auto px-10 py-8">
             <h1 class="text-2xl font-bold text-slate-900 mb-6">Pesan</h1>
@@ -49,6 +50,8 @@
                 </div>
 
             </div>
+
+            <!-- Form Balasan -->
             <div id="form-balasan" class="hidden pt-2 space-y-4 max-w-xl transition-all">
                 <h2 class="text-xl font-bold text-slate-900">Balasan</h2>
 
@@ -57,7 +60,8 @@
 
                     <div>
                         <label class="block text-sm font-semibold text-slate-900 mb-1.5">Pesan</label>
-                        <input type="text" name="pesan_balasan" placeholder="Tulis balasan pesan..."
+                        <!-- Ditambahkan id="pesanInput" untuk pelacak JavaScript -->
+                        <input type="text" name="pesan_balasan" id="pesanInput" placeholder="Tulis balasan pesan..."
                             class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-cyan-500">
                     </div>
 
@@ -81,13 +85,46 @@
     <script>
         const btnToggle = document.getElementById('btn-toggle-balas');
         const formBalasan = document.getElementById('form-balasan');
-        const btnBatal = document.getElementById('btn-batal');
 
         btnToggle.addEventListener('click', () => {
             formBalasan.classList.remove('hidden');
             btnToggle.classList.add('hidden');
         });
 
+        let isFormDirty = false;
+        const pesanInput = document.getElementById('pesanInput');
+
+        if (pesanInput) {
+            pesanInput.addEventListener('input', function() {
+                isFormDirty = this.value.trim().length > 0;
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (link && isFormDirty) {
+                if (link.getAttribute('target') === '_blank') return;
+
+                const konfirmasi = confirm("Perubahan belum disimpan. Yakin ingin meninggalkan halaman ini?");
+                if (!konfirmasi) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        window.addEventListener('beforeunload', function(e) {
+            if (isFormDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        const formPesan = document.querySelector('form');
+        if (formPesan) {
+            formPesan.addEventListener('submit', function() {
+                isFormDirty = false;
+            });
+        }
     </script>
 
 </body>

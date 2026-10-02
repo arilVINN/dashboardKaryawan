@@ -44,6 +44,10 @@
 
 <div class="flex flex-col gap-3 w-full mt-2">
 
+    <div class="flex justify-between items-center mb-2">
+        <h2 class="text-xl font-bold text-slate-800">Daftar Pesan</h2>
+    </div>
+
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="{{ $isCompact ? 'overflow-hidden' : 'overflow-x-auto' }}">
             <table class="w-full text-left text-sm text-slate-600">
@@ -66,7 +70,7 @@
                             <td class="{{ $cellPadding }} text-slate-900 font-medium whitespace-nowrap">
                                 {{ $pesan['judul_pesan'] }}
                             </td>
-                            
+
                             <td class="{{ $cellPadding }} max-w-[200px] truncate text-slate-500">
                                 {{ $pesan['deskripsi'] }}
                             </td>

@@ -1,6 +1,6 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Tugas Berjalan</span>
             <span class="text-xl font-bold text-slate-800 mt-1">2/10 Tugas</span>
@@ -12,7 +12,7 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Tugas Pending</span>
             <span class="text-xl font-bold text-slate-800 mt-1">1/1 Tugas</span>
@@ -23,7 +23,7 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Tugas Revisi</span>
             <span class="text-xl font-bold text-slate-800 mt-1">0/2 Tugas</span>
@@ -34,7 +34,7 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex flex-col justify-center">
+    <div class="rounded-md drop-shadow-xs bg-white p-4 flex flex-col justify-center">
         <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">Presentase</span>
 
         <div class="flex items-center gap-3">

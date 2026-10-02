@@ -74,6 +74,25 @@ Route::get('/hrd/detailKaryawan', function () {
     return view('hrd.detailKaryawan');
 })->name('detailKaryawan');
 
+
+
+//route" untuk halaman daftar divisi dan daftar karyawan, dan daftar pesan, yang akan 
+//menampilkan tabel data divisi, karyawan, dan pesan
+Route::get('/hrd/daftarDivisi', function () {
+    return view('hrd.daftarDivisi');
+})->name('daftarDivisi');
+
+Route::get('/hrd/daftarKaryawan', function () {
+    return view('hrd.daftarKaryawan');
+})->name('daftarKaryawan');
+
+Route::get('/hrd/daftarPesan', function () {
+    return view('hrd.daftarPesan');
+})->name('daftarPesan');
+
+
+
+
 // 1. Route untuk proses form login
 Route::post('/login-proses', function (Request $request) {
     // Data dummy
@@ -107,3 +126,17 @@ Route::get('/profile', function () {
     
     return view('staff.detailProfile', ['pegawai' => $pegawai]);
 });
+
+Route::post('/profile', function (Request $request) {
+    $validated = $request->validate([
+        'nama' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'email', 'max:255'],
+        'telepon' => ['required', 'string', 'max:30'],
+        'alamat' => ['required', 'string', 'max:1000'],
+    ]);
+
+    $pegawai = session('user_session', []);
+    session(['user_session' => array_merge($pegawai, $validated)]);
+
+    return redirect()->route('profile')->with('success', 'Profil berhasil diperbarui.');
+})->name('profile.update');
