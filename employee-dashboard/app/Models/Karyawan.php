@@ -24,7 +24,6 @@ class Karyawan extends Model
         'tanggal_lahir',
         'tanggal_rekrut',
         'no_telepon',
-        'email',
         'jabatan',
         'divisi_id_divisi',
     ];

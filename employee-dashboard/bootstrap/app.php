@@ -34,7 +34,7 @@ $middleware->validateCsrfTokens(except: [
                     $message = 'Unauthenticated';
                 } elseif ($e instanceof \Illuminate\Auth\Access\AuthorizationException) {
                     $statusCode = 403;
-                    $message = $e->getMessage() ?: 'Forbidden';
+                    $message = 'Forbidden';
                 } elseif ($e instanceof \Illuminate\Validation\ValidationException) {
                     $statusCode = 422;
                     $message = 'Validation Failed';
@@ -47,7 +47,7 @@ $middleware->validateCsrfTokens(except: [
                     $message = 'Ukuran file terlalu besar. Maksimal yang diizinkan adalah 200 MB.';
                 } else {
                     $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
-                    $message = $e->getMessage() ?: 'Server Error';
+                    $message = $statusCode >= 500 ? 'Server Error' : 'Request failed';
                 }
 
                 return response()->json([

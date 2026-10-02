@@ -35,7 +35,6 @@ class DatabaseSeeder extends Seeder
             'tanggal_lahir' => '1995-05-15',
             'tanggal_rekrut' => '2023-01-10',
             'no_telepon' => '08123456',
-            'email' => 'budi@mail.com',
             'jabatan' => 'Backend',
             'divisi_id_divisi' => $divisiIT->id_divisi,
         ]);
@@ -68,7 +67,6 @@ class DatabaseSeeder extends Seeder
             'tanggal_lahir' => '1998-08-20',
             'tanggal_rekrut' => '2024-02-01',
             'no_telepon' => '08987654',
-            'email' => 'reva@mail.com',
             'jabatan' => 'Frontend',
             'divisi_id_divisi' => $divisiIT->id_divisi, // Same division as Budi for testing
         ]);
@@ -106,7 +104,6 @@ class DatabaseSeeder extends Seeder
             'tanggal_lahir' => '1980-01-01',
             'tanggal_rekrut' => '2015-01-01',
             'no_telepon' => '08111222333',
-            'email' => 'tono@mail.com',
             'jabatan' => 'Kepala Divisi IT',
             'divisi_id_divisi' => $divisiIT->id_divisi,
         ]);
@@ -134,7 +131,6 @@ class DatabaseSeeder extends Seeder
             'tanggal_lahir' => '1985-04-12',
             'tanggal_rekrut' => '2018-06-01',
             'no_telepon' => '08122334455',
-            'email' => 'rina@mail.com',
             'jabatan' => 'Kepala Divisi HR',
             'divisi_id_divisi' => $divisiHR->id_divisi,
         ]);
@@ -154,7 +150,6 @@ class DatabaseSeeder extends Seeder
             'tanggal_lahir' => '1997-03-18',
             'tanggal_rekrut' => '2022-08-15',
             'no_telepon' => '08133445566',
-            'email' => 'andi@mail.com',
             'jabatan' => 'Staff HR',
             'divisi_id_divisi' => $divisiHR->id_divisi,
         ]);
@@ -186,7 +181,6 @@ class DatabaseSeeder extends Seeder
             'tanggal_lahir' => '1999-11-07',
             'tanggal_rekrut' => '2023-05-10',
             'no_telepon' => '08144556677',
-            'email' => 'maya@mail.com',
             'jabatan' => 'Staff HR',
             'divisi_id_divisi' => $divisiHR->id_divisi,
         ]);
@@ -223,7 +217,6 @@ class DatabaseSeeder extends Seeder
             'tanggal_lahir' => '1978-06-20',
             'tanggal_rekrut' => '2012-01-15',
             'no_telepon' => '08155667788',
-            'email' => 'darmawan@mail.com',
             'jabatan' => 'HRD Manager',
             'divisi_id_divisi' => $divisiHR->id_divisi,
         ]);
