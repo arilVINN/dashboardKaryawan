@@ -58,7 +58,7 @@ Transisi:
 
 ## 2. Referensi Endpoint per Role
 
-Semua path menggunakan base URL `{{baseUrl}}`. Kecuali `POST /api/login`, endpoint membutuhkan Bearer token. Endpoint terproteksi dibatasi 60 request per menit per user/IP.
+Semua path menggunakan base URL `{{baseUrl}}`. Kecuali `POST /api/login`, endpoint membutuhkan Bearer token. Endpoint terproteksi dibatasi 60 request per menit per user/IP. Login publik dibatasi 5 request per menit per IP terhadap brute-force.
 
 ### Publik dan autentikasi
 
@@ -137,6 +137,8 @@ Response `200`:
 > **Tips:** tambahkan test script di request ini agar token tersimpan otomatis:
 > `pm.collectionVariables.set("token", pm.response.json().access_token);`
 
+> **Keamanan:** login memakai `Hash::check` saja (tanpa fallback plaintext) dan throttle `5/min/IP`. Brute-force berulang menghasilkan `429 Too Many Attempts`.
+
 ### POST `/api/logout` — Logout (butuh token)
 
 Response `200`: `{ "message": "Logout berhasil" }`
@@ -166,10 +168,10 @@ Body (`form-data`, karena bisa upload file):
 
 | Key | Tipe | Wajib | Keterangan |
 |---|---|---|---|
-| `progress` | integer | ✅ | 0–100 |
-| `file_hasil` | file | ❌ | max 200 MB |
-| `link_submit` | string | ❌ | |
-| `catatan_karyawan` | string | ❌ | |
+| `progress` | integer | ❌ | 0–100, jika kosong memakai progress saat ini |
+| `file_hasil` | file | ❌ | pdf/doc/docx/xls/xlsx/jpg/jpeg/png/zip, max 200 MB |
+| `link_submit` | url | ❌ | harus URL `https://...` valid, max 2048 |
+| `catatan_karyawan` | string | ❌ | tag HTML dihapus via `strip_tags` |
 
 Response `200`: `{ "message": "Hasil tugas berhasil dikirim", "data": { ...tugas } }`
 
@@ -431,7 +433,7 @@ Body (form-data atau JSON):
   "link_lampiran": "https://drive.google.com/..."
 }
 ```
-*Gunakan `form-data` dengan key `file_lampiran` jika ingin mengunggah file (maks 20MB).*
+*Gunakan `form-data` dengan key `file_lampiran` jika ingin mengunggah file (pdf/doc/docx/xls/xlsx/jpg/jpeg/png, maks 20MB). `link_lampiran` harus URL valid (`url|max:2048`), `javascript:`/`data:` ditolak 422. `judul_pesan` disanitasi via `strip_tags`.*
 
 - `201` → `{ "message": "Pesan/Surat berhasil dikirim", "data": { ...pesan } }`
 
@@ -527,6 +529,33 @@ Pastikan proteksi bekerja:
 
 ---
 
-## 8. Catatan Route Web (bukan API)
+## 8. Keamanan (Security)
+
+Aturan validasi keamanan yang diterapkan di semua endpoint:
+
+- **SQL injection:** seluruh query memakai Eloquent binding. Dua `whereRaw` tersisa memakai binding `?` (`LOWER(nama_role) = ?`). `tugas_id_tugas` divalidasi `exists:tugas,id_tugas`.
+- **Brute-force:** `POST /api/login` throttle `5/min/IP` → `429`. Endpoint auth memakai `gateway.throttle:60,1`.
+- **Password:** hanya `Hash::check`. Tidak ada fallback plaintext.
+- **Upload:** `file_lampiran`/`file_pendukung` → `mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png` (submit tambah `zip`). `.php/.phtml/.svg` ditolak `422`.
+- **Link/SSRF:** `link_*` wajib `url|max:2048`. `javascript:`/`data:` ditolak `422`. Tidak ada fetch server-side.
+- **Error disclosure:** 5xx mengembalikan `Server Error` generik tanpa `getMessage()`/SQL. Detail hanya di log via `report($e)`.
+- **XSS:** `judul_*` via `strip_tags`. `deskripsi` disimpan mentah — frontend wajib escape (`textContent`, jangan `v-html`/`innerHTML`).
+- **IDOR:** `show/update/destroy` di-scope ke `karyawan_id`/`divisi_id` milik user. Thread `balasan` mengembalikan full thread setelah satu pesan terotorisasi.
+
+### Uji keamanan via Postman
+
+| Skenario | Request | Expected |
+|---|---|---|
+| Brute-force login | `POST /api/login` 6× cepat `{"username":"x","password":"y"}` | ke-6 `429 Too Many Attempts` |
+| Upload webshell | HRD login → `POST /api/hrd/pesan` form-data + file `evil.php` sebagai `file_lampiran` | `422` error `file_lampiran` |
+| Upload valid | file `.pdf` yang sama | `201` |
+| Link jahat | `link_lampiran=javascript:alert(1)` | `422` |
+| Link valid | `link_lampiran=https://example.com/x` | `201` |
+| SQLi query | `GET /api/staff/pesan?tugas_id_tugas=' OR '1'='1` | `422`, bukan dump data |
+| Error generik | `POST /api/hrd/staff` username duplikat | `500 {"message":"Gagal menambahkan staff. Silakan coba lagi."}` tanpa teks SQL |
+
+---
+
+## 9. Catatan Route Web (bukan API)
 
 API pesan Staff hanya tersedia di `/api/staff/pesan` dan memakai Sanctum Bearer token. Route `/staff/dashboard` dan `/staff/notifikasi` merupakan route web/aplikasi, bukan API. Halaman Blade pesan berada di `GET /pesan`; halaman tersebut berbeda dari endpoint JSON `/api/staff/pesan`.

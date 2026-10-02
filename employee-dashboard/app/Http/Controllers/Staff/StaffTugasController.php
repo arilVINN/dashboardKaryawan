@@ -58,13 +58,13 @@ class StaffTugasController extends Controller
         if ($tugas->status === Tugas::STATUS_SUDAH_ACC) {
             return response()->json(['message' => 'Tugas ini sudah di-ACC dan tidak bisa dikirim ulang'], 403);
         }
-        $request->validate([
-            'file_hasil' => 'nullable|file|max:204800', // max 200 MB (dalam kilobyte)
-            'link_submit' => 'nullable|string',
+        $validated = $request->validate([
+            'file_hasil' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip', // max 200 MB (dalam kilobyte)
+            'link_submit' => 'nullable|url|max:2048',
             'catatan_karyawan' => 'nullable|string',
             'progress' => 'sometimes|integer|min:0|max:100'
         ]);
-        $progress = $request->input('progress', $tugas->progress);
+        $progress = $validated['progress'] ?? $tugas->progress;
         $filePath = '-'; // Default string '-' karena database Anda melarang NULL
         if ($request->hasFile('file_hasil')) {
             $filePath = $request->file('file_hasil')->store('submissions', 'public');
@@ -79,15 +79,15 @@ class StaffTugasController extends Controller
             'tugas_id_tugas' => $tugas->id_tugas,
             'tugas_karyawan_id_karyawan' => $karyawanId,
             'file_hasil' => $filePath,
-            'link_submit' => $request->link_submit ?? '-', // Cegah error NOT NULL
-            'catatan_karyawan' => $request->catatan_karyawan ?? '-', // Cegah error NOT NULL
+            'link_submit' => $validated['link_submit'] ?? '-', // Cegah error NOT NULL
+            'catatan_karyawan' => isset($validated['catatan_karyawan']) ? strip_tags($validated['catatan_karyawan']) : '-', // Cegah error NOT NULL
             'catatan_revisi' => '-', // Pasti '-' saat pertama submit
             'tanggal_submit' => now(),
             'status_review' => 'submitted',
         ]);
         $tugas->update([
-            'progress' => $request->progress,
-            'status' => $request->progress == 100
+            'progress' => $progress,
+            'status' => $progress == 100
                 ? Tugas::STATUS_MENUNGGU_ACC
                 : $tugas->status,
 

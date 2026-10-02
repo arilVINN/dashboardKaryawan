@@ -22,14 +22,7 @@ class AuthController extends Controller
         $passwordMatches = false;
 
         if ($user) {
-            $passwordInfo = password_get_info($user->password);
-            $passwordMatches = $passwordInfo['algo'] !== 0
-                ? Hash::check($request->password, $user->password)
-                : hash_equals($user->password, $request->password);
-
-            if ($passwordMatches && $passwordInfo['algo'] === 0) {
-                $user->forceFill(['password' => Hash::make($request->password)])->save();
-            }
+            $passwordMatches = ! empty($user->password) && Hash::check($request->password, $user->password);
         }
 
         if (!$passwordMatches) {

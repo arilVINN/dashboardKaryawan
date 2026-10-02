@@ -28,8 +28,10 @@ class HrdPesanController extends Controller
         
         // Kita asumsikan HRD adalah pusat, jadi tampilkan pesan masuk/keluar mereka:
         $query = Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
-            ->where('penerima_id_user', $user->id_user)
-            ->orWhere('pengirim_id_user', $user->id_user)
+            ->where(function ($query) use ($user): void {
+                $query->where('penerima_id_user', $user->id_user)
+                    ->orWhere('pengirim_id_user', $user->id_user);
+            })
             ->orderBy('created_at', 'desc');
 
         $pesan = $query->get();
@@ -62,8 +64,8 @@ class HrdPesanController extends Controller
             'judul_pesan' => 'required|string|max:200',
             'deskripsi' => 'required|string',
             'tipe' => 'required|in:pesan,surat',
-            'file_lampiran' => 'nullable|file|max:20480',
-            'link_lampiran' => 'nullable|string'
+            'file_lampiran' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
+            'link_lampiran' => 'nullable|url|max:2048'
         ]);
 
         $filePath = null;
@@ -73,7 +75,7 @@ class HrdPesanController extends Controller
 
         $pesan = Pesan::create([
             'id_pesan' => $this->generateMessageId(),
-            'judul_pesan' => $validated['judul_pesan'],
+            'judul_pesan' => strip_tags($validated['judul_pesan']),
             'deskripsi' => $validated['deskripsi'],
             'tipe' => $validated['tipe'],
             'tanggal_pesan' => now()->toDateString(),
