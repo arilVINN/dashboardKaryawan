@@ -80,7 +80,6 @@ Route::post('/login-proses', function (Request $request) {
     $userDummy = [
         'nama' => 'Samuel Sigalingging',
         'inisial' => 'S',
-        'email' => 'staff@silindo.co.id',
         'telepon' => '081234567890',
         'tingkatan' => 'Staff',
         'divisi' => 'Content Writer',
@@ -91,7 +90,7 @@ Route::post('/login-proses', function (Request $request) {
 
     session(['user_session' => $userDummy]);
 
-    return redirect('/'); 
+    return redirect('/');
 })->name('login.proses');
 
 
@@ -104,6 +103,6 @@ Route::get('/profile', function () {
 
     // Ambil data dari session dan lempar ke view detailProfile
     $pegawai = session('user_session');
-    
+
     return view('staff.detailProfile', ['pegawai' => $pegawai]);
 });

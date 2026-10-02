@@ -17,12 +17,12 @@ class HrdDivisiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'kode_divisi' => 'required|string|max:20',
-            'nama_divisi' => 'required|string|max:100',
+            'kode_divisi' => 'required|string|max:20|unique:divisis,kode_divisi',
+            'nama_divisi' => 'required|string|max:100|unique:divisis,nama_divisi',
             'status_aktif' => 'nullable|string|max:20',
         ]);
 
-        // Cek apakah nama divisi sudah ada (cegah duplikat)
+        // Cek apakah nama divisi sudah ada (cegah duplikat, respons 409 agar kompatibel)
         $exists = Divisi::where('nama_divisi', $request->nama_divisi)->first();
         if ($exists) {
             return response()->json([
@@ -36,12 +36,20 @@ class HrdDivisiController extends Controller
             ? 'DV' . str_pad(intval(substr($lastDivisi->id_divisi, 2)) + 1, 3, '0', STR_PAD_LEFT)
             : 'DV001';
 
-        $divisi = Divisi::create([
-            'id_divisi' => $newId,
-            'kode_divisi' => $request->kode_divisi,
-            'nama_divisi' => $request->nama_divisi,
-            'status_aktif' => $request->status_aktif ?? 'Aktif',
-        ]);
+        try {
+            $divisi = Divisi::create([
+                'id_divisi' => $newId,
+                'kode_divisi' => $request->kode_divisi,
+                'nama_divisi' => $request->nama_divisi,
+                'status_aktif' => $request->status_aktif ?? 'Aktif',
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Race condition: duplikat lolos validasi (kode/nama/ID)
+            report($e);
+            return response()->json([
+                'message' => 'Divisi dengan kode atau nama tersebut sudah ada'
+            ], 409);
+        }
 
         return response()->json([
             'message' => 'Divisi berhasil ditambahkan',

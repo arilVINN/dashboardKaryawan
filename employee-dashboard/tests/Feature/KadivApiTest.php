@@ -206,7 +206,6 @@ class KadivApiTest extends TestCase
             'id_karyawan' => $employeeId,
             'nama' => $name,
             'jenis_kelamin' => 'Laki-laki',
-            'email' => $username.'@example.com',
             'jabatan' => $name,
             'divisi_id_divisi' => $divisionId,
         ]);

@@ -142,6 +142,23 @@ class TugasApiTest extends TestCase
             'status' => Tugas::STATUS_BERJALAN,
         ]);
     }
+
+    #[Test]
+    public function staff_bisa_submit_tugas_tanpa_mengirim_progress()
+    {
+        $user = User2::where('username', 'budist')->first();
+        $tugas = Tugas::where('karyawan_id_karyawan', $user->karyawan_id_karyawan)->first();
+        $progressAwal = $tugas->progress;
+
+        $response = $this->actingAs($user, 'sanctum')
+                         ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                             'catatan_karyawan' => 'Sedang dikerjakan',
+                         ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals($progressAwal, $tugas->fresh()->progress);
+    }
+
         #[Test]
     public function staff_hanya_bisa_melihat_tugas_sendiri()
     {
@@ -157,7 +174,6 @@ class TugasApiTest extends TestCase
             'tanggal_lahir' => '1996-01-01',
             'tanggal_rekrut' => '2023-01-10',
             'no_telepon' => '08111',
-            'email' => 'joko@mail.com',
             'jabatan' => 'Frontend',
             'divisi_id_divisi' => $staffA->karyawan->divisi_id_divisi, // Satu divisi!
         ]);
