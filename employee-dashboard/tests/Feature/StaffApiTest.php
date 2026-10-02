@@ -126,6 +126,20 @@ class StaffApiTest extends TestCase
         $this->assertDatabaseCount('pesans', 0);
     }
 
+    public function test_login_rejects_non_alphanumeric_username(): void
+    {
+        $this->postJson('/api/login', [
+            'username' => "' OR 1=1 --",
+            'password' => 'password',
+        ])->assertUnprocessable();
+
+        $this->assertDatabaseCount('personal_access_tokens', 0);
+        $this->assertDatabaseHas('users2', [
+            'id_user' => $this->staff->id_user,
+            'last_login_at' => '2026-09-29 08:00:00',
+        ]);
+    }
+
     public function test_staff_can_see_direct_messages_sent_to_them(): void
     {
         Pesan::create([
