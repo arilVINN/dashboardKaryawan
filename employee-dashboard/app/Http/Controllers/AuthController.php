@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User2;
 
@@ -11,12 +10,12 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        $request->validate([
-            'username' => 'required|string',
-            'password' => 'required'
+        $credentials = $request->validate([
+            'username' => 'required|string|alpha_num:ascii|max:50',
+            'password' => 'required|string',
         ]);
 
-        $user = User2::with('role')->where('username', $request->username)->first();
+        $user = User2::with('role')->where('username', $credentials['username'])->first();
 
         // Cek user ada dan password cocok
         $passwordMatches = false;
@@ -24,11 +23,11 @@ class AuthController extends Controller
         if ($user) {
             $passwordInfo = password_get_info($user->password);
             $passwordMatches = $passwordInfo['algo'] !== 0
-                ? Hash::check($request->password, $user->password)
-                : hash_equals($user->password, $request->password);
+                ? Hash::check($credentials['password'], $user->password)
+                : hash_equals($user->password, $credentials['password']);
 
             if ($passwordMatches && $passwordInfo['algo'] === 0) {
-                $user->forceFill(['password' => Hash::make($request->password)])->save();
+                $user->forceFill(['password' => Hash::make($credentials['password'])])->save();
             }
         }
 
