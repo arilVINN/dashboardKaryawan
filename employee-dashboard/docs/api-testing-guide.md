@@ -488,7 +488,6 @@ Body JSON:
   "tanggal_lahir": "1995-05-05",
   "tanggal_rekrut": "2026-01-15",
   "no_telepon": "081234567890",
-  "email": "john@mail.com",
   "jabatan": "Backend Developer",
   "divisi_id_divisi": "DV001",
   "username": "johndoe",

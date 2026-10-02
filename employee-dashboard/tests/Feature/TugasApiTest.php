@@ -174,7 +174,6 @@ class TugasApiTest extends TestCase
             'tanggal_lahir' => '1996-01-01',
             'tanggal_rekrut' => '2023-01-10',
             'no_telepon' => '08111',
-            'email' => 'joko@mail.com',
             'jabatan' => 'Frontend',
             'divisi_id_divisi' => $staffA->karyawan->divisi_id_divisi, // Satu divisi!
         ]);

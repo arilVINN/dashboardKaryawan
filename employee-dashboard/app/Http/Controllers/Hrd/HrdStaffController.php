@@ -42,7 +42,6 @@ class HrdStaffController extends Controller
             'tanggal_lahir' => 'required|date',
             'tanggal_rekrut' => 'nullable|date',
             'no_telepon' => 'required|string|max:20',
-            'email' => 'required|email|max:100',
             'jabatan' => 'required|string|max:100',
             'divisi_id_divisi' => 'required|string|max:20',
             // Data akun login
@@ -78,7 +77,6 @@ class HrdStaffController extends Controller
                 'tanggal_lahir' => $request->tanggal_lahir,
                 'tanggal_rekrut' => $request->tanggal_rekrut ?? now()->toDateString(),
                 'no_telepon' => $request->no_telepon,
-                'email' => $request->email,
                 'jabatan' => $request->jabatan,
                 'divisi_id_divisi' => $request->divisi_id_divisi,
             ]);
@@ -115,6 +113,18 @@ class HrdStaffController extends Controller
                 ]
             ], 201);
 
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            report($e);
+            // Duplikat race-condition (username/ID): 23000 integrity violation
+            if ($e->getCode() === '23000') {
+                return response()->json([
+                    'message' => 'Staff dengan username tersebut sudah ada'
+                ], 409);
+            }
+            return response()->json([
+                'message' => 'Gagal menambahkan staff. Silakan coba lagi.'
+            ], 500);
         } catch (\Exception $e) {
             DB::rollBack();
             report($e);

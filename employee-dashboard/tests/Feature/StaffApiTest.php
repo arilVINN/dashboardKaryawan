@@ -305,7 +305,6 @@ class StaffApiTest extends TestCase
             'tanggal_lahir' => '2000-01-01',
             'tanggal_rekrut' => '2026-01-10',
             'no_telepon' => '081234567890',
-            'email' => $username.'@example.test',
             'jabatan' => $name,
             'divisi_id_divisi' => 'DIV-IT',
         ]);
