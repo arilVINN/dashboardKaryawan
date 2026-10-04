@@ -9,7 +9,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
-    <a href="{{ url('/hrd/detailKaryawan') }}" class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between hover:bg-blue-100 transition">
+    <a href="{{ url('/hrd/daftarKaryawan') }}" class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Total Karyawan</span>
             <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['karyawan'] }}</span>
@@ -22,7 +22,7 @@
 
     </a>
 
-    <a href="{{url('/hrd/manajemenDivisi')}}" class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between hover:bg-blue-100 transition">
+    <a href="{{url('/hrd/daftarDivisi')}}" class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between duration-300 hover:scale-105">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Total Divisi</span>
             <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['divisi'] }}</span>
@@ -33,7 +33,7 @@
         </svg>
     </a>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <a href="{{url('/hrd/daftarPesan')}}" class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Total Pesan</span>
             <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['pesan'] }}</span>
@@ -41,7 +41,7 @@
         <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"></path>
         </svg>
-    </div>
+    </a>
 
     <div class="rounded-md drop-shadow-md bg-white p-4 flex flex-col justify-center">
         <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">Presentase</span>

@@ -1,4 +1,4 @@
-<aside id="sidebar" 
+﻿<aside id="sidebar" 
        class="w-64 flex flex-col h-screen shrink-0 bg-gradient-to-b from-[#044564] from-50% to-[#19A7CE] transition-all duration-300 ease-in-out">
 
     @php
@@ -27,7 +27,6 @@
         {{-- Dashboard --}}
         <a href="{{ (($user['tingkatan'] ?? '') === 'Kadiv') ? url('/kadiv/dashboard') : url('/') }}"
            class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ (($user['tingkatan'] ?? '') === 'Kadiv' && request()->is('kadiv/dashboard*')) || (($user['tingkatan'] ?? '') !== 'Kadiv' && (request()->is('/') || request()->is('dashboard*'))) ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
-
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
@@ -35,8 +34,6 @@
             <span class="sidebar-text whitespace-nowrap transition-all duration-200">Dashboard</span>
         </a>
 
-
-        {{-- MENU KHUSUS KADIV --}}
         @if (($user['tingkatan'] ?? '') === 'Kadiv')
 
             {{-- Manajemen Staff --}}
@@ -67,11 +64,9 @@
 
         @endif
 
-
         {{-- Tugas --}}
         <a href="{{ (($user['tingkatan'] ?? '') === 'Kadiv') ? url('/kadiv/detailTugas') : url('/tugas') }}"
            class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('tugas*') || request()->is('kadiv/detailTugas*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
-
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <rect x="3" y="4" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"></rect>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5h8M13 12h8M13 19h8M3 17l2 2 4-4"></path>
@@ -81,7 +76,6 @@
                 Tugas
             </span>
         </a>
-
 
         {{-- Pesan --}}
         <a href="{{ (($user['tingkatan'] ?? '') === 'Kadiv') ? url('/kadiv/detailPesan') : url('/pesan') }}"
