@@ -135,11 +135,16 @@
 
                             // Nonaktifkan tombol "Kerjakan" jika statusnya sudah di-acc atau menunggu acc
                             const st = (t.status || '').toLowerCase();
-                            if (st === 'sudah di-acc' || st === 'menunggu acc' || st === 'menunggu di-acc') {
-                                const btnToggle = document.getElementById('btn-toggle-tugas');
+                            const btnToggle = document.getElementById('btn-toggle-tugas');
+                            
+                            if (st === 'sudah di-acc' || st === 'sudah acc') {
                                 btnToggle.disabled = true;
-                                btnToggle.className = "mt-6 px-6 py-2.5 bg-slate-300 text-slate-500 text-sm font-semibold rounded-lg shadow-none cursor-not-allowed";
-                                btnToggle.textContent = 'Menunggu Review / Selesai';
+                                btnToggle.className = "mt-6 px-6 py-2.5 bg-emerald-100 text-emerald-700 text-sm font-semibold rounded-lg shadow-none cursor-not-allowed";
+                                btnToggle.textContent = 'Tugas Selesai';
+                            } else if (st === 'menunggu acc' || st === 'menunggu di-acc') {
+                                btnToggle.disabled = true;
+                                btnToggle.className = "mt-6 px-6 py-2.5 bg-orange-100 text-orange-700 text-sm font-semibold rounded-lg shadow-none cursor-not-allowed";
+                                btnToggle.textContent = 'Tugas Pending (Menunggu Review)';
                             }
 
                         } catch(e) {
