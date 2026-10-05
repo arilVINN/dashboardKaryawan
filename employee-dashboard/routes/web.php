@@ -16,6 +16,8 @@ Route::get('/login', function () {
     return view('login');
 })->name('login');
 
+
+
 //staff route
 Route::get('/tugas', function () {
     return view('staff.tugas');
@@ -37,13 +39,13 @@ Route::get('/profile', function () {
     return view('staff.detailProfile');
 })->name('profile');
 
-
-
 Route::prefix('staff')->middleware(EnsureStaffRole::class)->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     Route::get('/notifikasi', [NotifikasiController::class, 'index']);
 });
+
+
 
 //HRD
 Route::get('/hrd/dashboard', function () {
@@ -89,7 +91,6 @@ Route::get('/hrd/daftarKaryawan', function () {
 Route::get('/hrd/daftarPesan', function () {
     return view('hrd.daftarPesan');
 })->name('daftarPesan');
-
 
 
 
