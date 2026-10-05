@@ -146,30 +146,6 @@ U
                     <div class="pt-2 text-right">
                         <button id="btn-logout" class="px-5 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700">Logout dari Perangkat</button>
                     </div>
-
-                    <!-- Keamanan Akun (Ganti Password) -->
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                        <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">Keamanan Akun</h2>
-                        <form id="form-password" class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Password Saat Ini</label>
-                                <input type="password" id="current_password" required placeholder="********" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Password Baru</label>
-                                    <input type="password" id="new_password" required placeholder="********" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Ulangi Password Baru</label>
-                                    <input type="password" id="confirm_password" required placeholder="********" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
-                                </div>
-                            </div>
-                            <div class="pt-2">
-                                <button type="submit" class="px-5 py-2 bg-[#044564] text-white text-sm font-semibold rounded-lg hover:bg-[#03344b]">Perbarui Password</button>
-                            </div>
-                        </form>
-                    </div>
                 </div>
             </div>
         </main>
