@@ -25,7 +25,7 @@
 <body class="bg-slate-50 flex h-screen overflow-hidden">
 
     {{-- Sidebar --}}
-    @include('component.sidebar')
+    @include('component_kadiv.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 

@@ -169,7 +169,7 @@
 <body class="bg-gray-100 flex h-screen overflow-hidden">
 
     {{-- SIDEBAR --}}
-    @include('component.sidebar')
+    @include('component_kadiv.sidebar')
 
     {{-- AREA KANAN --}}
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">

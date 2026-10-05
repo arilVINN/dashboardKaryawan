@@ -243,13 +243,13 @@
 <body class="bg-white flex h-screen overflow-hidden">
 
     {{-- SIDEBAR --}}
-    @include('component.sidebar')
-
+    @include('component_kadiv.sidebar')
+    
     {{-- AREA KANAN --}}
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         {{-- TOPBAR --}}
-        @include('component.topbar')
+        @include('component_kadiv.topbar')
 
         {{-- CONTENT --}}
         <main class="flex-1 overflow-y-auto">
@@ -265,182 +265,89 @@
 
                     {{-- TOMBOL AKSI --}}
                     <div class="flex justify-end">
-                        <button type="button" class="buttontertiary">
-                            <span class="aksi">Aksi</span>
+                        <button type="button" id="openModal" class="buttontertiary">
+                             <span class="add pesan">add pesan</span>
                         </button>
                     </div>
 
                     {{-- TABEL --}}
                     <div class="tabel">
 
-                        {{-- HEADER TABEL --}}
-                        <div class="frame-parent">
+                       {{-- HEADER TABEL --}}
+    <div class="frame-parent">
 
-                            <div class="nama-divisi-parent">
-                                <div class="cari">
-                                    Nama Divisi
-                                </div>
-                            </div>
+    <div class="nama-divisi-parent">
+        <div class="cari">Nama Divisi</div>
+    </div>
 
-                            <div class="tugas-wrapper">
-                                <div class="cari">
-                                    Tugas
-                                </div>
-                            </div>
+    <div class="tugas-wrapper">
+        <div class="cari">Tugas</div>
+    </div>
 
-                            <div class="keterangan-parent">
-                                <div class="cari">
-                                    Keterangan
-                                </div>
-                            </div>
+    <div class="keterangan-parent">
+        <div class="cari">Keterangan</div>
+    </div>
 
-                            <div class="aksi-header">
-                                <div class="cari">
-                                    Aksi
-                                </div>
-                            </div>
+    <div class="aksi-header">
+        <div class="cari">Aksi</div>
+    </div>
 
-                        </div>
+</div>
 
-                        {{-- ISI TABEL --}}
-                        <div class="tabel-body">
+{{-- ISI TABEL --}}
+<div class="tabel-body">
 
-                            {{-- DATA 1 --}}
-                            <div class="tabel-row">
+    @php
+        $daftarPesan = [
+            ['divisi' => 'Content Writer',    'tugas' => 'Review artikel website', 'status' => 'Sedang dikerjakan', 'statusClass' => 'status-proses'],
+            ['divisi' => 'Digital Marketing', 'tugas' => 'Konten promosi',          'status' => 'Menunggu',          'statusClass' => 'status-menunggu'],
+            ['divisi' => 'IT Support',        'tugas' => 'Pemeriksaan sistem',      'status' => 'Selesai',           'statusClass' => 'status-selesai'],
+            ['divisi' => 'Human Resource',    'tugas' => 'Rekap data karyawan',     'status' => 'Perlu revisi',      'statusClass' => 'status-revisi'],
+            ['divisi' => 'Content Writer',    'tugas' => 'Pembuatan artikel baru',  'status' => 'Menunggu',          'statusClass' => 'status-menunggu'],
+        ];
+    @endphp
 
-                                <div class="cell">
-                                    Content Writer
-                                </div>
+    @foreach ($daftarPesan as $pesan)
+        <div class="tabel-row">
 
-                                <div class="cell cell-center">
-                                    Review artikel website
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <span class="status status-proses">
-                                        Sedang dikerjakan
-                                    </span>
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <button type="button" class="aksi-button">
-                                        Lihat
-                                    </button>
-                                </div>
-
-                            </div>
-
-                            {{-- DATA 2 --}}
-                            <div class="tabel-row">
-
-                                <div class="cell">
-                                    Digital Marketing
-                                </div>
-
-                                <div class="cell cell-center">
-                                    Konten promosi
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <span class="status status-menunggu">
-                                        Menunggu
-                                    </span>
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <button type="button" class="aksi-button">
-                                        Lihat
-                                    </button>
-                                </div>
-
-                            </div>
-
-                            {{-- DATA 3 --}}
-                            <div class="tabel-row">
-
-                                <div class="cell">
-                                    IT Support
-                                </div>
-
-                                <div class="cell cell-center">
-                                    Pemeriksaan sistem
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <span class="status status-selesai">
-                                        Selesai
-                                    </span>
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <button type="button" class="aksi-button">
-                                        Lihat
-                                    </button>
-                                </div>
-
-                            </div>
-
-                            {{-- DATA 4 --}}
-                            <div class="tabel-row">
-
-                                <div class="cell">
-                                    Human Resource
-                                </div>
-
-                                <div class="cell cell-center">
-                                    Rekap data karyawan
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <span class="status status-revisi">
-                                        Perlu revisi
-                                    </span>
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <button type="button" class="aksi-button">
-                                        Lihat
-                                    </button>
-                                </div>
-
-                            </div>
-
-                            {{-- DATA 5 --}}
-                            <div class="tabel-row">
-
-                                <div class="cell">
-                                    Content Writer
-                                </div>
-
-                                <div class="cell cell-center">
-                                    Pembuatan artikel baru
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <span class="status status-menunggu">
-                                        Menunggu
-                                    </span>
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <button type="button" class="aksi-button">
-                                        Lihat
-                                    </button>
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+            <div class="cell">
+                {{ $pesan['divisi'] }}
             </div>
+
+            <div class="cell cell-center">
+                {{ $pesan['tugas'] }}
+            </div>
+
+            <div class="cell cell-center">
+                <span class="status {{ $pesan['statusClass'] }}">
+                    {{ $pesan['status'] }}
+                </span>
+            </div>
+
+            <div class="cell cell-center">
+                <a href="{{ url('/kadiv/detailPesan/' . $loop->iteration) }}"
+                   class="aksi-button">
+                    Lihat
+                </a>
+            </div>
+
+        </div>
+    @endforeach
+
+    </div>
+
+    </div>
+
+    </div>
+
+    </div>
+
+    </div>
 
         </main>
 
     </div>
-
+     {{-- MODAL TAMBAH PESAN --}}
+    @include('component_kadiv.addPesan')
 </body>
 </html>

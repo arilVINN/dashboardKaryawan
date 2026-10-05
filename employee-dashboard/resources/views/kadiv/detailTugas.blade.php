@@ -12,12 +12,12 @@
 <body class="bg-white flex h-screen overflow-hidden">
 
     {{-- SIDEBAR --}}
-    @include('component.sidebar')
+    @include('component_kadiv.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         {{-- TOPBAR --}}
-        @include('component.topbar')
+        @include('component_kadiv.topbar')
 
         <main class="flex-1 overflow-y-auto">
 
@@ -33,6 +33,7 @@
                     {{-- BUTTON AKSI --}}
                     <button
                         type="button"
+                        id="openModal"
                         class="absolute right-0 top-[32px]
                                w-[148px] h-[36px]
                                rounded-[9px]
@@ -44,7 +45,7 @@
                                flex items-center justify-center
                                hover:bg-[#0B8EAF]
                                transition-colors duration-200">
-                        Aksi
+                        add tugas
                     </button>
 
                 </div>
@@ -91,137 +92,63 @@
                     </div>
 
                     {{-- ISI TABEL --}}
-                    <div class="bg-white min-h-[716px]">
+<div class="bg-white min-h-[716px]">
 
-                        {{-- BARIS 1 --}}
-                        <div class="grid grid-cols-[40%_20.5%_21.3%_18.2%]
-                                    min-h-[64px]
-                                    border-b border-[#E5E7EB]
-                                    text-[14px]
-                                    leading-[22px]
-                                    text-[#565E74]">
+    @php
+        $daftarTugas = [
+            ['divisi' => 'Content Writer',    'tugas' => 'Membuat artikel website', 'keterangan' => 'Sedang dikerjakan'],
+            ['divisi' => 'Digital Marketing', 'tugas' => 'Membuat konten promosi',  'keterangan' => 'Menunggu pemeriksaan'],
+            ['divisi' => 'IT Support',        'tugas' => 'Pemeriksaan sistem',      'keterangan' => 'Selesai'],
+            ['divisi' => 'Human Resource',    'tugas' => 'Rekap data karyawan',     'keterangan' => 'Sedang dikerjakan'],
+            ['divisi' => 'Content Writer',    'tugas' => 'Review artikel',          'keterangan' => 'Menunggu revisi'],
+        ];
+    @endphp
 
-                            <div class="flex items-center px-[20px]">
-                                Content Writer
-                            </div>
+    @foreach ($daftarTugas as $item)
+        <a href="{{ url('/kadiv/detailTugas/' . $loop->iteration) }}"
+           class="grid grid-cols-[40%_20.5%_21.3%_18.2%]
+                  min-h-[64px]
+                  border-b border-[#E5E7EB]
+                  text-[14px]
+                  leading-[22px]
+                  text-[#565E74]
+                  hover:bg-[#F8FAFC]
+                  transition-colors duration-150
+                  cursor-pointer">
 
-                            <div class="flex items-center px-[20px]">
-                                Membuat artikel website
-                            </div>
+            <div class="flex items-center px-[20px]">
+                {{ $item['divisi'] }}
+            </div>
 
-                            <div class="flex items-center px-[20px]">
-                                Sedang dikerjakan
-                            </div>
+            <div class="flex items-center px-[20px]">
+                {{ $item['tugas'] }}
+            </div>
 
-                            <div></div>
+            <div class="flex items-center px-[20px]">
+                {{ $item['keterangan'] }}
+            </div>
 
-                        </div>
+            <div></div>
 
-                        {{-- BARIS 2 --}}
-                        <div class="grid grid-cols-[40%_20.5%_21.3%_18.2%]
-                                    min-h-[64px]
-                                    border-b border-[#E5E7EB]
-                                    text-[14px]
-                                    leading-[22px]
-                                    text-[#565E74]">
+         </a>
+         @endforeach
 
-                            <div class="flex items-center px-[20px]">
-                                Digital Marketing
-                            </div>
+        </div>
 
-                            <div class="flex items-center px-[20px]">
-                                Membuat konten promosi
-                            </div>
+            <div></div>
 
-                            <div class="flex items-center px-[20px]">
-                                Menunggu pemeriksaan
-                            </div>
+            </div>
 
-                            <div></div>
+            </div>
 
-                        </div>
-
-                        {{-- BARIS 3 --}}
-                        <div class="grid grid-cols-[40%_20.5%_21.3%_18.2%]
-                                    min-h-[64px]
-                                    border-b border-[#E5E7EB]
-                                    text-[14px]
-                                    leading-[22px]
-                                    text-[#565E74]">
-
-                            <div class="flex items-center px-[20px]">
-                                IT Support
-                            </div>
-
-                            <div class="flex items-center px-[20px]">
-                                Pemeriksaan sistem
-                            </div>
-
-                            <div class="flex items-center px-[20px]">
-                                Selesai
-                            </div>
-
-                            <div></div>
-
-                        </div>
-
-                        {{-- BARIS 4 --}}
-                        <div class="grid grid-cols-[40%_20.5%_21.3%_18.2%]
-                                    min-h-[64px]
-                                    border-b border-[#E5E7EB]
-                                    text-[14px]
-                                    leading-[22px]
-                                    text-[#565E74]">
-
-                            <div class="flex items-center px-[20px]">
-                                Human Resource
-                            </div>
-
-                            <div class="flex items-center px-[20px]">
-                                Rekap data karyawan
-                            </div>
-
-                            <div class="flex items-center px-[20px]">
-                                Sedang dikerjakan
-                            </div>
-
-                            <div></div>
-
-                        </div>
-
-                        {{-- BARIS 5 --}}
-                        <div class="grid grid-cols-[40%_20.5%_21.3%_18.2%]
-                                    min-h-[64px]
-                                    border-b border-[#E5E7EB]
-                                    text-[14px]
-                                    leading-[22px]
-                                    text-[#565E74]">
-
-                            <div class="flex items-center px-[20px]">
-                                Content Writer
-                            </div>
-
-                            <div class="flex items-center px-[20px]">
-                                Review artikel
-                            </div>
-
-                            <div class="flex items-center px-[20px]">
-                                Menunggu revisi
-                            </div>
-
-                            <div></div>
-
-                        </div>
-
-                    </div>
-
-                </div>
+            </div>
 
             </div>
 
         </main>
 
     </div>
-
+    {{-- MODAL TAMBAH TUGAS --}}
+    @include('component_kadiv.addTugas')
 </body>
 </html>

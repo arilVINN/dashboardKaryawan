@@ -55,16 +55,77 @@ Route::get('/kadiv/manajemenStaff', function () {
 })->name('manajemenStaff');
 
 Route::get('/kadiv/detailTugas', function () {
-    return view('kadiv.buka-tugas');
+    return view('kadiv.detailTugas');
 })->name('kadiv.detailTugas');
+
+Route::get('/kadiv/detailTugas/{id}', function ($id) {
+    return view('kadiv.lihatTugas', ['id' => $id]);
+})->name('kadiv.detailTugas.show');
+
+//rute lihat tugas
+Route::post('/kadiv/detailTugas/{id}/revisi', function (Request $request, $id) {
+    $request->validate([
+        'isi_revisi' => ['required', 'string', 'max:2000'],
+        'tenggat'    => ['nullable', 'string'],
+    ]);
+
+    // Ambil revisi yang sudah ada
+    $semuaRevisi = session('revisi_tugas', []);
+
+    // Tambah revisi baru
+    $semuaRevisi[] = [
+        'id_tugas' => $id,
+        'isi'      => $request->input('isi_revisi'),
+        'tenggat'  => $request->input('tenggat', ''),
+        'waktu'    => now()->format('d M Y, H.i'),
+    ];
+
+    // Simpan ke session
+    session(['revisi_tugas' => $semuaRevisi]);
+
+    return redirect()
+        ->route('kadiv.detailTugas.show', $id)
+        ->with('success', 'Revisi berhasil dikirim.');
+    })->name('kadiv.revisiTugas');
+
 
 Route::get('/kadiv/detailPesan', function () {
     return view('kadiv.detailPesan');
 })->name('kadiv.detailPesan');
 
+
 Route::get('/kadiv/profile', function () {
     return view('kadiv.detailProfile');
 })->name('kadiv.profile');
+
+//rute lain kadiv
+Route::get('/kadiv/detailPesan/{id}', function ($id) {
+    return view('kadiv.lihatPesan', ['id' => $id]);
+})->name('kadiv.detailPesan.show');
+
+Route::post('/kadiv/detailPesan/{id}/balas', function (Request $request, $id) {
+    $request->validate([
+        'pesan' => ['required', 'string', 'max:1000'],
+    ]);
+
+    // Ambil balasan yang sudah ada di session (kalau ada)
+    $semuaBalasan = session('balasan_pesan', []);
+
+    // Tambahkan balasan baru
+    $semuaBalasan[] = [
+        'id_pesan'    => $id,
+        'isi'         => $request->input('pesan'),
+        'pengirim'    => 'Kadiv',
+        'waktu'       => now()->format('d M Y, H.i'),
+    ];
+
+    // Simpan kembali ke session
+    session(['balasan_pesan' => $semuaBalasan]);
+
+    return redirect()
+        ->route('kadiv.detailPesan.show', $id)
+        ->with('success', 'Balasan berhasil dikirim.');
+})->name('kadiv.balasPesan');
 
 //HRD
 Route::get('/hrd/dashboard', function () {
