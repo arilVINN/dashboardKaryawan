@@ -34,12 +34,17 @@ Route::middleware([
 
     // Staff‑only routes (role middleware registered as "role")
     Route::middleware('role:staff')->prefix('staff')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Staff\DashboardController::class, 'index']);
+        Route::get('/notifikasi', [\App\Http\Controllers\Staff\NotifikasiController::class, 'index']);
         Route::get('/tugas', [StaffTugasController::class, 'index']);
         Route::get('/tugas/{id}', [StaffTugasController::class, 'show']);
         Route::post('/tugas/{id}/submit', [StaffTugasController::class, 'submit']);
         Route::get('/pesan', [PesanController::class, 'index']);
         Route::get('/pesan/{id_pesan}', [PesanController::class, 'show']);
         Route::post('/pesan/{id_pesan}/balas', [PesanController::class, 'balas']);
+        Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
+        Route::put('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update']);
+        Route::put('/profile/password', [\App\Http\Controllers\Staff\ProfileController::class, 'updatePassword']);
     });
 
     // Kadiv‑only routes
@@ -70,10 +75,16 @@ Route::middleware([
         Route::get('/divisi', [HrdDivisiController::class, 'index']);
         Route::post('/divisi', [HrdDivisiController::class, 'store']);
         Route::get('/divisi/{id}', [HrdDivisiController::class, 'show']);
+        Route::put('/divisi/{id}', [HrdDivisiController::class, 'update']);
+        Route::patch('/divisi/{id}', [HrdDivisiController::class, 'update']);
+        Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy']);
 
         // Manajemen Staff
         Route::get('/staff', [HrdStaffController::class, 'index']);
         Route::post('/staff', [HrdStaffController::class, 'store']);
         Route::get('/staff/{id}', [HrdStaffController::class, 'show']);
+        Route::put('/staff/{id}', [HrdStaffController::class, 'update']);
+        Route::patch('/staff/{id}', [HrdStaffController::class, 'update']);
+        Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
     });
 });

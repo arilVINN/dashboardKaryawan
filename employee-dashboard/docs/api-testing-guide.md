@@ -105,6 +105,8 @@ Semua path menggunakan base URL `{{baseUrl}}`. Kecuali `POST /api/login`, endpoi
 | GET | `/api/hrd/divisi` | Daftar divisi |
 | POST | `/api/hrd/divisi` | Membuat divisi |
 | GET | `/api/hrd/divisi/{id}` | Detail divisi dan statistik |
+| PUT/PATCH | `/api/hrd/divisi/{id}` | Mengubah kode, nama, atau status divisi |
+| DELETE | `/api/hrd/divisi/{id}` | Menghapus divisi kosong |
 | GET | `/api/hrd/pesan` | Daftar pesan/surat global yang masuk dan keluar |
 | POST | `/api/hrd/pesan` | Kirim pesan/surat baru |
 | GET | `/api/hrd/pesan/{id_pesan}` | Detail pesan yang dikirim/diterima HRD |
@@ -112,6 +114,8 @@ Semua path menggunakan base URL `{{baseUrl}}`. Kecuali `POST /api/login`, endpoi
 | GET | `/api/hrd/staff` | Daftar seluruh karyawan |
 | POST | `/api/hrd/staff` | Membuat karyawan dan akun login |
 | GET | `/api/hrd/staff/{id}` | Detail karyawan dan tugasnya |
+| PUT/PATCH | `/api/hrd/staff/{id}` | Mengubah profil, akun, dan role staff/kadiv |
+| DELETE | `/api/hrd/staff/{id}` | Menghapus karyawan dan akun login |
 
 ## 3. Auth
 
@@ -473,6 +477,14 @@ Response `200`:
 
 > `tugas_selesai` menghitung tugas dengan `status = sudah di-acc`.
 
+### PUT/PATCH `/api/hrd/divisi/{id}` — Edit divisi
+
+Body JSON parsial: `kode_divisi`, `nama_divisi`, dan/atau `status_aktif`. Respons `200` berisi divisi terbaru; `404` jika divisi tidak ditemukan dan `422` jika validasi gagal atau kode/nama sudah dipakai.
+
+### DELETE `/api/hrd/divisi/{id}` — Hapus divisi
+
+Respons `200` jika berhasil, `404` jika tidak ditemukan, atau `409` jika divisi masih memiliki karyawan.
+
 ### GET `/api/hrd/staff` — Daftar seluruh staff
 
 Response `200`: `{ "message": "Berhasil mengambil daftar seluruh staff", "data": [...] }`
@@ -503,6 +515,19 @@ Body JSON:
 
 - `200` → `{ "message": "Berhasil mengambil detail staff", "data": { ...karyawan } }`
 - `404` → staff tidak ditemukan
+
+### PUT/PATCH `/api/hrd/staff/{id}` — Edit staff
+
+Body JSON parsial. Field profil yang dapat diubah: `nama`, `jenis_kelamin`, `tanggal_lahir`, `tanggal_rekrut`, `no_telepon`, `jabatan`, dan `divisi_id_divisi`. Field akun opsional: `username`, `password`, serta `role_id_role`. Role yang diizinkan hanya ID role dengan nama `kadiv` atau `staff`.
+
+- `200` → data staff terbaru
+- `404` → staff tidak ditemukan
+- `409` → akun login tidak ditemukan
+- `422` → validasi gagal atau role selain kadiv/staff
+
+### DELETE `/api/hrd/staff/{id}` — Hapus staff
+
+Menghapus profil dan akun login dalam satu transaksi. Respons `200` jika berhasil, `404` jika staff tidak ditemukan, atau `409` jika tugas/pesan terkait masih membatasi penghapusan.
 
 ### GET `/api/hrd/pesan/{id_pesan}` — Detail pesan
 
