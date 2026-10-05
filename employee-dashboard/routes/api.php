@@ -70,10 +70,16 @@ Route::middleware([
         Route::get('/divisi', [HrdDivisiController::class, 'index']);
         Route::post('/divisi', [HrdDivisiController::class, 'store']);
         Route::get('/divisi/{id}', [HrdDivisiController::class, 'show']);
+        Route::put('/divisi/{id}', [HrdDivisiController::class, 'update']);
+        Route::patch('/divisi/{id}', [HrdDivisiController::class, 'update']);
+        Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy']);
 
         // Manajemen Staff
         Route::get('/staff', [HrdStaffController::class, 'index']);
         Route::post('/staff', [HrdStaffController::class, 'store']);
         Route::get('/staff/{id}', [HrdStaffController::class, 'show']);
+        Route::put('/staff/{id}', [HrdStaffController::class, 'update']);
+        Route::patch('/staff/{id}', [HrdStaffController::class, 'update']);
+        Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
     });
 });
