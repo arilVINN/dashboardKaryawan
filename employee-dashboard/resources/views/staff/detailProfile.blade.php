@@ -16,7 +16,7 @@
             <!-- Header Profil (Mirip Screenshot) -->
             <div class="flex items-center gap-6 mb-10">
                 <div id="prof-inisial" class="w-24 h-24 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-4xl font-bold shrink-0">
-                    S
+U
                 </div>
                 <div>
                     <h1 id="hdr-nama" class="text-2xl font-bold text-slate-900 leading-tight">Memuat...</h1>
@@ -66,7 +66,7 @@
                     <div id="view-info" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative">
                         <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
                             <h2 class="text-lg font-bold text-slate-900">Informasi Pribadi</h2>
-                            <button id="btn-edit-info" class="text-slate-400 hover:text-slate-700 transition">
+                            <button id="btn-edit-info" class="text-slate-400 hover:text-slate-700 transition cursor-pointer">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                             </button>
                         </div>
@@ -147,6 +147,29 @@
                         <button id="btn-logout" class="px-5 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700">Logout dari Perangkat</button>
                     </div>
 
+                    <!-- Keamanan Akun (Ganti Password) -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                        <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">Keamanan Akun</h2>
+                        <form id="form-password" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Password Saat Ini</label>
+                                <input type="password" id="current_password" required placeholder="********" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Password Baru</label>
+                                    <input type="password" id="new_password" required placeholder="********" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Ulangi Password Baru</label>
+                                    <input type="password" id="confirm_password" required placeholder="********" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                                </div>
+                            </div>
+                            <div class="pt-2">
+                                <button type="submit" class="px-5 py-2 bg-[#044564] text-white text-sm font-semibold rounded-lg hover:bg-[#03344b]">Perbarui Password</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </main>
@@ -171,7 +194,7 @@
                         document.getElementById('hdr-nama').textContent = p.nama;
                         document.getElementById('hdr-email').textContent = p.email;
                         document.getElementById('hdr-telp').textContent = p.no_telepon;
-                        document.getElementById('prof-inisial').textContent = p.nama ? p.nama.charAt(0).toUpperCase() : 'U';
+                        document.getElementById('prof-inisial').textContent = p.nama && p.nama !== '-' ? p.nama.charAt(0).toUpperCase() : 'U';
 
                         // Kiri
                         document.getElementById('prof-divisi').textContent = p.divisi;
@@ -296,6 +319,7 @@
                     window.location.href = '/login';
                 });
             }
+
         });
     </script>
 </body>

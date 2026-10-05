@@ -200,16 +200,7 @@ Route::post('/login-proses', function (Request $request) {
 
 // 2. Route untuk halaman profil
 Route::get('/profile', function () {
-    // Cek apakah ada session login, jika tidak, tendang balik ke login
-    if (!session()->has('user_session')) {
-        return redirect('/login');
-    }
-
-    // Ambil data dari session dan lempar ke view detailProfile
-    $pegawai = session('user_session');
-    
-    
-    return view('staff.detailProfile', ['pegawai' => $pegawai]);
+    return view('staff.detailProfile');
 });
 
 Route::post('/profile', function (Request $request) {

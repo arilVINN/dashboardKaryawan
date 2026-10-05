@@ -48,8 +48,7 @@
             </p>
         </div>
 
-        <form action="{{ route('login.proses') }}" method="POST" class="space-y-5 max-w-sm mx-auto w-full">
-            @csrf
+        <form id="form-login" class="space-y-5 max-w-sm mx-auto w-full">
             <div>
                 <label class="block text-sm font-bold text-slate-900 mb-1.5">Username</label>
                 <input type="text" name="username" placeholder="Masukan username anda" required
@@ -62,8 +61,10 @@
                     class="w-full px-4 py-2.5 border border-slate-300 rounded-full text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0097B2] focus:border-transparent transition">
             </div>
 
+            <p id="login-error" class="text-xs text-red-500 text-center hidden"></p>
+
             <div class="pt-4 flex justify-center">
-                <button type="submit"
+                <button type="submit" id="btn-login"
                     class="w-36 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-xs font-semibold rounded-lg shadow-sm hover:shadow transition">
                     Login
                 </button>
@@ -73,3 +74,54 @@
     </div>
 
 </div>
+
+<script>
+document.getElementById('form-login').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const username = document.querySelector('input[name="username"]').value;
+    const password = document.querySelector('input[name="password"]').value;
+    const errorEl = document.getElementById('login-error');
+    const btnLogin = document.getElementById('btn-login');
+
+    errorEl.classList.add('hidden');
+    btnLogin.disabled = true;
+    btnLogin.textContent = 'Memproses...';
+
+    try {
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ username: username, password: password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.access_token) {
+            localStorage.setItem('staff_token', data.access_token);
+            
+            // Arahkan berdasarkan role
+            const role = (data.role || '').toLowerCase();
+            if (role === 'kadiv') {
+                window.location.href = '/kadiv/dashboard';
+            } else if (role === 'hrd') {
+                window.location.href = '/hrd/dashboard';
+            } else {
+                window.location.href = '/';
+            }
+        } else {
+            errorEl.textContent = data.message || 'Login gagal, periksa kembali username dan password.';
+            errorEl.classList.remove('hidden');
+        }
+    } catch (error) {
+        errorEl.textContent = 'Terjadi kesalahan jaringan.';
+        errorEl.classList.remove('hidden');
+    }
+
+    btnLogin.disabled = false;
+    btnLogin.textContent = 'Login';
+});
+</script>
