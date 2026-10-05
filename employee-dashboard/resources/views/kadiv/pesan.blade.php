@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Staff</title>
+    <title>Manajemen Pesan</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -22,12 +22,10 @@
         {{-- MAIN CONTENT --}}
         <main class="flex-1 overflow-y-auto p-6 lg:p-8 pb-16">
 
-
-            @include('component_kadiv.tabelStaff')
+            @include('component_kadiv.tabelPesan')
 
         </main>
 
     </div>
-
 </body>
 </html>

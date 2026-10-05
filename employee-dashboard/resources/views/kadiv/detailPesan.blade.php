@@ -1,446 +1,195 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Manajement Pesan</title>
+    <title>Detail Pesan KADIV - PT Silindo</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap">
-
-    <style>
-        body {
-            margin: 0;
-            line-height: normal;
-            font-family: 'PT Sans', sans-serif;
-        }
-
-        .detail-pesan-page {
-            width: 100%;
-            min-height: 100%;
-            position: relative;
-            background-color: #fff;
-            overflow-x: hidden;
-            text-align: left;
-            font-size: 14px;
-            color: #565e74;
-        }
-
-        /* JUDUL */
-        .manajement-pesan {
-            position: absolute;
-            top: 32px;
-            left: 30px;
-            font-size: 24px;
-            line-height: 32px;
-            color: #000;
-            font-weight: 700;
-        }
-
-        /* AREA CONTENT */
-        .detail-pesan-content {
-            position: relative;
-            padding: 32px 30px 60px;
-        }
-
-        /* TABEL */
-        .tabel {
-            margin-top: 70px;
-            width: 100%;
-            min-height: 500px;
-            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-            border-radius: 2px;
-            overflow: hidden;
-            color: #565e74;
-        }
-
-        .frame-parent {
-            width: 100%;
-            height: 30px;
-            background-color: #d9d9d9;
-            display: grid;
-            grid-template-columns: 40% 20.5% 21.3% 18.2%;
-            align-items: center;
-            box-sizing: border-box;
-        }
-
-        .nama-divisi-parent,
-        .tugas-wrapper,
-        .keterangan-parent {
-            height: 30px;
-            display: flex;
-            align-items: center;
-            box-sizing: border-box;
-        }
-
-        .nama-divisi-parent {
-            padding: 0 10px;
-            gap: 10px;
-        }
-
-        .tugas-wrapper {
-            justify-content: center;
-            padding: 0 10px;
-        }
-
-        .keterangan-parent {
-            justify-content: flex-end;
-            padding: 0 10px;
-            gap: 10px;
-        }
-
-        .aksi-header {
-            justify-content: center;
-            padding: 0 10px;
-        }
-
-        .cari {
-            position: relative;
-            line-height: 22px;
-        }
-
-        /* ISI TABEL */
-        .tabel-body {
-            background-color: #fff;
-            min-height: 500px;
-        }
-
-        .tabel-row {
-            min-height: 64px;
-            display: grid;
-            grid-template-columns: 40% 20.5% 21.3% 18.2%;
-            align-items: center;
-            border-bottom: 1px solid #e5e7eb;
-            box-sizing: border-box;
-            color: #565e74;
-            background-color: #fff;
-        }
-
-        .tabel-row:hover {
-            background-color: #f8fafc;
-        }
-
-        .cell {
-            padding: 14px 20px;
-            box-sizing: border-box;
-            line-height: 20px;
-        }
-
-        .cell-center {
-            text-align: center;
-        }
-
-        .cell-right {
-            text-align: right;
-        }
-
-        /* STATUS */
-        .status {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            line-height: 18px;
-            white-space: nowrap;
-        }
-
-        .status-selesai {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-
-        .status-proses {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-menunggu {
-            background-color: #dbeafe;
-            color: #1d4ed8;
-        }
-
-        .status-revisi {
-            background-color: #fee2e2;
-            color: #b91c1c;
-        }
-
-        /* BUTTON AKSI */
-        .buttontertiary {
-            border-radius: 9px;
-            background-color: #0e9dc3;
-            width: 148.4px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 16px;
-            box-sizing: border-box;
-            text-align: center;
-            font-size: 16px;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        .buttontertiary:hover {
-            background-color: #0b8eaf;
-        }
-
-        .aksi {
-            position: relative;
-            line-height: 24px;
-        }
-
-        /* BUTTON DI DALAM TABEL */
-        .aksi-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 80px;
-            height: 32px;
-            padding: 0 12px;
-            border: none;
-            border-radius: 7px;
-            background-color: #0e9dc3;
-            color: #fff;
-            font-family: 'PT Sans', sans-serif;
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-        .aksi-button:hover {
-            background-color: #0b8eaf;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 900px) {
-            .detail-pesan-content {
-                padding: 24px 20px 40px;
-            }
-
-            .manajement-pesan {
-                left: 20px;
-            }
-
-            .tabel {
-                overflow-x: auto;
-            }
-
-            .frame-parent,
-            .tabel-row {
-                min-width: 850px;
-            }
-        }
-    </style>
 </head>
 
 <body class="bg-white flex h-screen overflow-hidden">
 
-    {{-- SIDEBAR --}}
-    @include('component.sidebar')
+    @include('component_kadiv.sidebar')
 
-    {{-- AREA KANAN --}}
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
-        {{-- TOPBAR --}}
-        @include('component.topbar')
+        @include('component_kadiv.topbar')
+        @include('component.breadcrumbs')
 
-        {{-- CONTENT --}}
-        <main class="flex-1 overflow-y-auto">
+        <main class="flex-1 overflow-y-auto px-10 py-8">
+            @php
+                $semuaBalasan = collect(session('balasan_pesan', []))->where('id_pesan', (int) $id)->values();
+            @endphp
 
-            <div class="detail-pesan-page">
+            <h1 class="text-2xl font-bold text-slate-900 mb-6">Pesan</h1>
 
-                <div class="detail-pesan-content">
+            @if (session('success'))
+                <div class="mb-4 px-4 py-2 rounded-lg bg-green-100 text-green-700 text-sm font-medium">
+                    {{ session('success') }}
+                </div>
+            @endif
 
-                    {{-- JUDUL --}}
-                    <b class="manajement-pesan">
-                        Manajement Pesan
-                    </b>
+            <div class="space-y-4 bg-white p-5 rounded-3xl w-full drop-shadow-2xl">
 
-                    {{-- TOMBOL AKSI --}}
-                    <div class="flex justify-end">
-                        <button type="button" class="buttontertiary">
-                            <span class="aksi">Aksi</span>
-                        </button>
+                {{-- PESAN ASLI --}}
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900 leading-snug">{{ $pesan['pengirim'] }}</h2>
+                    <p class="text-sm font-semibold text-slate-900 mt-1">tanggal : {{ $pesan['tanggal'] }}</p>
+                </div>
+
+                <div class="text-sm text-slate-800 leading-relaxed text-justify pt-2">
+                    <p>{{ $pesan['isi'] }}</p>
+                </div>
+
+                {{-- RIWAYAT BALASAN --}}
+                @if ($semuaBalasan->count() > 0)
+                    <hr class="border-t border-slate-300 my-6">
+
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-slate-900">Riwayat Balasan</h3>
+                        <span class="text-sm text-slate-500">{{ $semuaBalasan->count() }} balasan</span>
                     </div>
 
-                    {{-- TABEL --}}
-                    <div class="tabel">
+                    <div class="max-h-[420px] overflow-y-auto pr-2 space-y-5">
+                        @foreach ($semuaBalasan as $b)
+                            <div>
+                                <h4 class="text-base font-bold text-slate-900">Balasan ke-{{ $loop->iteration }}</h4>
+                                <p class="text-xs text-slate-500">{{ $b['waktu'] }}</p>
 
-                        {{-- HEADER TABEL --}}
-                        <div class="frame-parent">
+                                <div class="mt-2 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+                                    <p class="text-sm text-slate-800 leading-relaxed">{{ $b['isi'] }}</p>
 
-                            <div class="nama-divisi-parent">
-                                <div class="cari">
-                                    Nama Divisi
+                                    @if ($b['file'])
+                                        <div
+                                            class="w-[260px] shrink-0 bg-white rounded-[10px] border border-black shadow-[0px_4px_4px_0px_rgba(0,0,0,0.3)] px-5 py-2">
+                                            <p class="text-sm font-bold text-black underline truncate">
+                                                {{ $b['file'] }}</p>
+                                            <p class="text-xs font-bold text-black/40">Lampiran</p>
+                                        </div>
+                                    @endif
                                 </div>
+
+                                @if (!$loop->last)
+                                    <div class="mt-5 border-t border-dashed border-slate-300"></div>
+                                @endif
                             </div>
-
-                            <div class="tugas-wrapper">
-                                <div class="cari">
-                                    Tugas
-                                </div>
-                            </div>
-
-                            <div class="keterangan-parent">
-                                <div class="cari">
-                                    Keterangan
-                                </div>
-                            </div>
-
-                            <div class="aksi-header">
-                                <div class="cari">
-                                    Aksi
-                                </div>
-                            </div>
-
-                        </div>
-
-                        {{-- ISI TABEL --}}
-                        <div class="tabel-body">
-
-                            {{-- DATA 1 --}}
-                            <div class="tabel-row">
-
-                                <div class="cell">
-                                    Content Writer
-                                </div>
-
-                                <div class="cell cell-center">
-                                    Review artikel website
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <span class="status status-proses">
-                                        Sedang dikerjakan
-                                    </span>
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <button type="button" class="aksi-button">
-                                        Lihat
-                                    </button>
-                                </div>
-
-                            </div>
-
-                            {{-- DATA 2 --}}
-                            <div class="tabel-row">
-
-                                <div class="cell">
-                                    Digital Marketing
-                                </div>
-
-                                <div class="cell cell-center">
-                                    Konten promosi
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <span class="status status-menunggu">
-                                        Menunggu
-                                    </span>
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <button type="button" class="aksi-button">
-                                        Lihat
-                                    </button>
-                                </div>
-
-                            </div>
-
-                            {{-- DATA 3 --}}
-                            <div class="tabel-row">
-
-                                <div class="cell">
-                                    IT Support
-                                </div>
-
-                                <div class="cell cell-center">
-                                    Pemeriksaan sistem
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <span class="status status-selesai">
-                                        Selesai
-                                    </span>
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <button type="button" class="aksi-button">
-                                        Lihat
-                                    </button>
-                                </div>
-
-                            </div>
-
-                            {{-- DATA 4 --}}
-                            <div class="tabel-row">
-
-                                <div class="cell">
-                                    Human Resource
-                                </div>
-
-                                <div class="cell cell-center">
-                                    Rekap data karyawan
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <span class="status status-revisi">
-                                        Perlu revisi
-                                    </span>
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <button type="button" class="aksi-button">
-                                        Lihat
-                                    </button>
-                                </div>
-
-                            </div>
-
-                            {{-- DATA 5 --}}
-                            <div class="tabel-row">
-
-                                <div class="cell">
-                                    Content Writer
-                                </div>
-
-                                <div class="cell cell-center">
-                                    Pembuatan artikel baru
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <span class="status status-menunggu">
-                                        Menunggu
-                                    </span>
-                                </div>
-
-                                <div class="cell cell-center">
-                                    <button type="button" class="aksi-button">
-                                        Lihat
-                                    </button>
-                                </div>
-
-                            </div>
-
-                        </div>
-
+                        @endforeach
                     </div>
+                @endif
 
+                <hr class="border-t border-slate-300 my-6">
+
+                <div>
+                    <button type="button" id="btn-toggle-balas"
+                        class="px-6 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-semibold rounded-lg shadow-sm transition cursor-pointer">
+                        Balas Pesan
+                    </button>
                 </div>
 
             </div>
 
+            <!-- Form Balasan -->
+            <div id="form-balasan" class="hidden pt-6 space-y-4 max-w-xl transition-all">
+                <h2 class="text-xl font-bold text-slate-900">Balasan</h2>
+
+                <form id="formPesan" action="{{ route('kadiv.balasPesan', $id) }}" method="POST"
+                    enctype="multipart/form-data" class="space-y-4">
+                    @csrf
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-900 mb-1.5">Pesan</label>
+                        <textarea name="isi_balasan" id="pesanInput" rows="4" required placeholder="Tulis balasan pesan..."
+                            class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-cyan-500 resize-none">{{ old('isi_balasan') }}</textarea>
+                        @error('isi_balasan')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-900 mb-1.5">Lampiran (opsional)</label>
+                        <input type="file" name="lampiran" id="lampiranBalas"
+                            class="block w-full text-sm text-slate-600 border border-slate-300 rounded-lg cursor-pointer file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-slate-200 file:text-slate-700 file:font-medium hover:file:bg-slate-300">
+                        <p class="mt-1 text-xs text-slate-400">Maks 20 MB</p>
+                    </div>
+
+                    <div class="flex items-center gap-4 pt-1">
+                        <button type="reset" id="btnReset"
+                            class="px-7 py-2 bg-[#d32f2f] hover:bg-[#b71c1c] text-white text-sm font-medium rounded-lg shadow-sm transition cursor-pointer">
+                            reset
+                        </button>
+
+                        <button type="submit"
+                            class="px-7 py-2 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-medium rounded-lg shadow-sm transition cursor-pointer">
+                            submit
+                        </button>
+                    </div>
+                </form>
+            </div>
         </main>
 
     </div>
 
+    <script>
+        const btnToggle = document.getElementById('btn-toggle-balas');
+        const formBalasan = document.getElementById('form-balasan');
+        const pesanInput = document.getElementById('pesanInput');
+        const formPesan = document.getElementById('formPesan');
+        let isFormDirty = false;
+
+        function bukaForm() {
+            formBalasan.classList.remove('hidden');
+            btnToggle.classList.add('hidden');
+        }
+
+        btnToggle.addEventListener('click', bukaForm);
+
+        // kalau validasi gagal, form tetap terbuka
+        @if ($errors->any())
+            bukaForm();
+            isFormDirty = true;
+        @endif
+
+        pesanInput.addEventListener('input', function() {
+            isFormDirty = this.value.trim().length > 0;
+        });
+
+        document.getElementById('btnReset').addEventListener('click', () => {
+            isFormDirty = false;
+        });
+
+        // validasi ukuran file 20 MB
+        document.getElementById('lampiranBalas').addEventListener('change', function() {
+            const f = this.files[0];
+            if (f && f.size > 20 * 1024 * 1024) {
+                alert('Ukuran file maksimal 20 MB');
+                this.value = '';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (link && isFormDirty) {
+                if (link.getAttribute('target') === '_blank') return;
+                if (!confirm('Perubahan belum disimpan. Yakin ingin meninggalkan halaman ini?')) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        window.addEventListener('beforeunload', function(e) {
+            if (isFormDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        formPesan.addEventListener('submit', function() {
+            isFormDirty = false;
+        });
+    </script>
+
 </body>
+
 </html>

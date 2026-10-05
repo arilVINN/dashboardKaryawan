@@ -5,7 +5,7 @@ use App\Http\Controllers\Staff\NotifikasiController;
 use App\Http\Middleware\EnsureStaffRole;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-
+use App\Http\Controllers\KadivController;
 
 
 Route::get('/', function () {
@@ -15,8 +15,6 @@ Route::get('/', function () {
 Route::get('/login', function () {
     return view('login');
 })->name('login');
-
-
 
 //staff route
 Route::get('/tugas', function () {
@@ -44,6 +42,114 @@ Route::prefix('staff')->middleware(EnsureStaffRole::class)->group(function () {
 
     Route::get('/notifikasi', [NotifikasiController::class, 'index']);
 });
+
+
+
+
+// ================= KADIV ================= //
+
+// Rute Dashboard
+Route::get('/kadiv/dashboard', function () {
+    return view('kadiv.dashboard');
+})->name('kadiv.dashboard');
+
+// Rute Manajemen Staff
+Route::get('/kadiv/manajemenStaff', function () {
+    return view('kadiv.manajemenStaff');
+})->name('kadiv.manajemenStaff'); 
+
+// (Tambahan) Rute Detail Manajemen Staff sesuai file baru di gambar
+Route::get('/kadiv/manajemenStaff/{id}', function ($id) {
+    return view('kadiv.detailManajemenStaff', ['id' => $id]); 
+})->name('kadiv.manajemenStaff.show');
+
+// Rute Profil
+Route::get('/kadiv/profile', function () {
+    return view('kadiv.profile'); // Disesuaikan ke profile.blade.php
+})->name('kadiv.profile');
+
+
+
+// ================= TUGAS ================= //
+
+// Rute Daftar Tugas
+Route::get('/kadiv/tugas', function () {
+    return view('kadiv.tugas'); // Disesuaikan ke tugas.blade.php
+})->name('kadiv.tugas');
+
+// Rute Detail Tugas
+Route::get('/kadiv/detailTugas/{id}', function ($id) {
+    return view('kadiv.detailTugas', ['id' => $id]);
+})->name('kadiv.detailTugas.show');
+
+Route::get('/kadiv/tugas/{id}', function ($id) {
+    return view('kadiv.detailTugas', compact('id'));
+});
+
+ // sesuaikan dengan controller kamu
+Route::post('/kadiv/tugas', [KadivController::class, 'store'])->name('kadiv.tugas.store');
+
+// Rute Revisi Tugas
+Route::post('/kadiv/tugas/{id}/revisi', function (Request $request, $id) {
+    $request->validate([
+        'isi_revisi' => ['required', 'string', 'max:2000'],
+        'tenggat'    => ['nullable', 'string'],
+    ]);
+
+    $semuaRevisi = session('revisi_tugas', []);
+    $semuaRevisi[] = [
+        'id_tugas' => $id,
+        'isi'      => $request->input('isi_revisi'),
+        'tenggat'  => $request->input('tenggat', ''),
+        'waktu'    => now()->format('d M Y, H.i'),
+    ];
+    session(['revisi_tugas' => $semuaRevisi]);
+
+    return redirect()
+        ->route('kadiv.detailTugas.show', $id)
+        ->with('success', 'Revisi berhasil dikirim.');
+})->name('kadiv.revisiTugas');
+
+
+
+// ================= PESAN ================= //
+Route::post('/kadiv/detailPesan/{id}/balas', [KadivController::class, 'balasPesan'])->name('kadiv.balasPesan');
+
+// Rute Daftar Pesan
+Route::get('/kadiv/pesan', function () { // Path diubah dari /kadiv/detailPesan menjadi /kadiv/pesan
+    return view('kadiv.pesan'); // Disesuaikan ke pesan.blade.php
+})->name('kadiv.pesan');
+
+// Rute Detail Pesan
+Route::get('/kadiv/detailPesan/{id}', function ($id) {
+    return view('kadiv.lihatPesan', ['id' => $id]); // Sesuai dengan file lihatPesan.blade.php
+})->name('kadiv.detailPesan.show');
+
+Route::get('/kadiv/detailPesan/{id}', function ($id) {
+    return view('kadiv.detailPesan', compact('id'));
+})->name('kadiv.detailPesan');
+
+Route::get('/kadiv/detailPesan/{id}', [KadivController::class, 'detailPesan'])->name('kadiv.detailPesan');
+
+// Rute Balas Pesan
+Route::post('/kadiv/pesan/{id}/balas', function (Request $request, $id) {
+    $request->validate([
+        'pesan' => ['required', 'string', 'max:1000'],
+    ]);
+
+    $semuaBalasan = session('balasan_pesan', []);
+    $semuaBalasan[] = [
+        'id_pesan'    => $id,
+        'isi'         => $request->input('pesan'),
+        'pengirim'    => 'Kadiv',
+        'waktu'       => now()->format('d M Y, H.i'),
+    ];
+    session(['balasan_pesan' => $semuaBalasan]);
+
+    return redirect()
+        ->route('kadiv.detailPesan.show', $id)
+        ->with('success', 'Balasan berhasil dikirim.');
+})->name('kadiv.balasPesan');
 
 
 
@@ -77,7 +183,6 @@ Route::get('/hrd/detailKaryawan', function () {
 })->name('detailKaryawan');
 
 
-
 //route" untuk halaman daftar divisi dan daftar karyawan, dan daftar pesan, yang akan 
 //menampilkan tabel data divisi, karyawan, dan pesan
 Route::get('/hrd/daftarDivisi', function () {
@@ -91,8 +196,6 @@ Route::get('/hrd/daftarKaryawan', function () {
 Route::get('/hrd/daftarPesan', function () {
     return view('hrd.daftarPesan');
 })->name('daftarPesan');
-
-
 
 // 1. Route untuk proses form login
 Route::post('/login-proses', function (Request $request) {
@@ -112,6 +215,7 @@ Route::post('/login-proses', function (Request $request) {
     session(['user_session' => $userDummy]);
 
     return redirect('/'); 
+    return redirect('/'); 
 })->name('login.proses');
 
 
@@ -124,6 +228,7 @@ Route::get('/profile', function () {
 
     // Ambil data dari session dan lempar ke view detailProfile
     $pegawai = session('user_session');
+    
     
     return view('staff.detailProfile', ['pegawai' => $pegawai]);
 });
