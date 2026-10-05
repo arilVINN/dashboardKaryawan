@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Tugas;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
+use Illuminate\Validation\Rule;
 
 class HrdDivisiController extends Controller
 {
@@ -69,6 +72,62 @@ class HrdDivisiController extends Controller
             'message' => 'Berhasil mengambil daftar divisi',
             'data' => $divisis
         ]);
+    }
+
+    /**
+     * PUT/PATCH /api/hrd/divisi/{id_divisi}
+     * Mengubah data divisi.
+     */
+    public function update(Request $request, $id)
+    {
+        $divisi = Divisi::where('id_divisi', $id)->first();
+
+        if (!$divisi) {
+            return response()->json(['message' => 'Divisi tidak ditemukan'], 404);
+        }
+
+        $validated = $request->validate([
+            'kode_divisi' => ['sometimes', 'required', 'string', 'max:20', Rule::unique('divisis', 'kode_divisi')->ignore($divisi->id_divisi, 'id_divisi')],
+            'nama_divisi' => ['sometimes', 'required', 'string', 'max:100', Rule::unique('divisis', 'nama_divisi')->ignore($divisi->id_divisi, 'id_divisi')],
+            'status_aktif' => 'sometimes|required|string|max:20',
+        ]);
+
+        $divisi->update($validated);
+
+        return response()->json([
+            'message' => 'Divisi berhasil diubah',
+            'data' => $divisi->fresh(),
+        ]);
+    }
+
+    /**
+     * DELETE /api/hrd/divisi/{id_divisi}
+     * Menghapus divisi yang belum memiliki karyawan.
+     */
+    public function destroy($id)
+    {
+        $divisi = Divisi::where('id_divisi', $id)->first();
+
+        if (!$divisi) {
+            return response()->json(['message' => 'Divisi tidak ditemukan'], 404);
+        }
+
+        if ($divisi->karyawans()->exists()) {
+            return response()->json([
+                'message' => 'Divisi tidak dapat dihapus karena masih memiliki karyawan',
+            ], 409);
+        }
+
+        try {
+            $divisi->delete();
+        } catch (QueryException $e) {
+            report($e);
+            return response()->json([
+                'message' => 'Divisi tidak dapat dihapus karena masih memiliki karyawan',
+            ], 409);
+        }
+
+        return response()->json(['message' => 'Divisi berhasil dihapus']);
     }
 
     /**
