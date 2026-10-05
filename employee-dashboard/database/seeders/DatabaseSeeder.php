@@ -34,8 +34,10 @@ class DatabaseSeeder extends Seeder
             'jenis_kelamin' => 'Laki-laki',
             'tanggal_lahir' => '1995-05-15',
             'tanggal_rekrut' => '2023-01-10',
-            'no_telepon' => '08123456',
-            'jabatan' => 'Backend',
+            'no_telepon' => '081234567890',
+            'email' => 'staff@silindo.co.id',
+            'alamat' => 'Salatiga, Jawa Tengah',
+            'jabatan' => 'Content Writer',
             'divisi_id_divisi' => $divisiIT->id_divisi,
         ]);
 
