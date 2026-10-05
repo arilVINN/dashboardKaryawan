@@ -1,0 +1,180 @@
+<aside id="sidebar" 
+       class="w-64 flex flex-col h-screen shrink-0 bg-gradient-to-b from-[#044564] from-50% to-[#19A7CE] transition-all duration-300 ease-in-out">
+    
+    <div class="h-16 flex items-center justify-between px-4 bg-white rounded-bl-3xl border-b border-r border-slate-200 shrink-0 box-border overflow-hidden">
+        
+        <div class="sidebar-text flex items-center gap-2.5 overflow-hidden transition-all duration-200">
+            <img src="{{ asset('gambar/silindo.png') }}" 
+                 alt="Logo" 
+                 class="w-10 h-10 object-contain shrink-0">
+
+            <div class="flex flex-col leading-tight whitespace-nowrap">
+                <h1 class="text-sm font-bold text-[#2A4B6A] tracking-wide">
+                    PT SILINDO
+                </h1>
+
+                <p class="text-[9px] font-medium text-[#1CA4BA] tracking-tight">
+                    PT SINERGI ILMIAH INDONESIA
+                </p>
+            </div>
+        </div>
+
+        <button type="button"
+                id="btn-sidebar-toggle"
+                class="p-1.5 text-[#2A4B6A] hover:bg-slate-100 rounded-lg transition shrink-0 cursor-pointer mx-auto">
+            <svg class="w-6 h-6"
+                 fill="none"
+                 stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 6h16M4 12h16M4 18h16">
+                </path>
+            </svg>
+        </button>
+    </div>
+
+    <nav class="flex-1 p-3 space-y-2 overflow-y-auto">
+
+        {{-- Dashboard --}}
+        <a href="{{ url('/kadiv/dashboard') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition
+           {{ request()->is('kadiv/dashboard*')
+                ? 'bg-white/40 text-white font-medium'
+                : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+
+            <svg class="w-5 h-5 shrink-0"
+                 fill="none"
+                 stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                </path>
+            </svg>
+
+            <span class="sidebar-text whitespace-nowrap transition-all duration-200">
+                Dashboard
+            </span>
+        </a>
+
+        {{-- Manajemen Staff --}}
+        <a href="{{ url('/kadiv/manajemenStaff') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition
+           {{ request()->is('kadiv/manajemenStaff*')
+                ? 'bg-white/40 text-white font-medium'
+                : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+
+            <svg class="w-5 h-5 shrink-0"
+                 fill="none"
+                 stroke="currentColor"
+                 viewBox="0 0 24 24">
+
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 004-4h1m4-6a4 4 0 11-8 0 4 4 0 008 0zm6 2a3 3 0 10-6 0 3 3 0 006 0z">
+                </path>
+
+            </svg>
+
+            <span class="sidebar-text whitespace-nowrap transition-all duration-200">
+                Manajemen Staff
+            </span>
+        </a>
+
+        {{-- Tugas --}}
+        <a href="{{ url('/kadiv/detailTugas') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition
+           {{ request()->is('kadiv/detailTugas*')
+                ? 'bg-white/40 text-white font-medium'
+                : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+
+            <svg class="w-5 h-5 shrink-0"
+                 fill="none"
+                 stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <rect x="3"
+                      y="4"
+                      width="6"
+                      height="6"
+                      rx="1"
+                      stroke="currentColor"
+                      stroke-width="2">
+                </rect>
+
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 5h8M13 12h8M13 19h8M3 17l2 2 4-4">
+                </path>
+            </svg>
+
+            <span class="sidebar-text whitespace-nowrap transition-all duration-200">
+                Tugas
+            </span>
+        </a>
+
+        {{-- Pesan --}}
+        <a href="{{ url('/kadiv/detailPesan') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition
+           {{ request()->is('kadiv/detailPesan*')
+                ? 'bg-white/40 text-white font-medium'
+                : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+
+            <svg class="w-5 h-5 shrink-0"
+                 fill="none"
+                 stroke="currentColor"
+                 viewBox="0 0 24 24">
+
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-3 12H7c-.55 0-1-.45-1-1s.45-1 1-1h10c.55 0 1 .45 1 1s-.45 1-1 1m0-3H7c-.55 0-1-.45-1-1s.45-1 1-1h10c.55 0 1 .45 1 1s-.45 1-1 1m0-3H7c-.55 0-1-.45-1-1s.45-1 1-1h10c.55 0 1 .45 1 1s-.45 1-1 1">
+                </path>
+
+            </svg>
+
+            <span class="sidebar-text whitespace-nowrap transition-all duration-200">
+                Pesan
+            </span>
+        </a>
+
+    </nav>
+</aside>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const sidebar = document.getElementById('sidebar');
+        const btnToggle = document.getElementById('btn-sidebar-toggle');
+        const texts = document.querySelectorAll('.sidebar-text');
+
+        if (btnToggle && sidebar) {
+
+            btnToggle.addEventListener('click', function () {
+
+                if (sidebar.classList.contains('w-64')) {
+
+                    sidebar.classList.remove('w-64');
+                    sidebar.classList.add('w-20');
+
+                    texts.forEach(el => el.classList.add('hidden'));
+
+                } else {
+
+                    sidebar.classList.remove('w-20');
+                    sidebar.classList.add('w-64');
+
+                    texts.forEach(el => el.classList.remove('hidden'));
+
+                }
+
+            });
+
+        }
+
+    });
+</script>

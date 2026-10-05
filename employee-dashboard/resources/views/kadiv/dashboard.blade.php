@@ -16,7 +16,7 @@
          SIDEBAR
          Menggunakan sidebar utama project
     ========================================================== --}}
-    @include('component.sidebar')
+    @include('component_kadiv.sidebar')
 
 
     {{-- =========================================================
@@ -25,7 +25,7 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         {{-- Topbar utama project --}}
-        @include('component.topbar')
+        @include('component_kadiv.topbar')
 
 
         {{-- =====================================================
