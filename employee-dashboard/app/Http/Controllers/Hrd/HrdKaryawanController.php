@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Karyawan;
 use App\Models\Divisi;
+use App\Models\Tugas;
 
 class HrdKaryawanController extends Controller
 {
@@ -13,8 +14,8 @@ class HrdKaryawanController extends Controller
     {
         $karyawan = Karyawan::with(['divisi', 'user.role'])
             ->withCount('tugas')
-            ->when($request->divisi, fn ($q, $d) => $q->where('divisi_id_divisi', $d))
-            ->when($request->q, fn ($q, $kata) => $q->where('nama', 'like', "%{$kata}%"))
+            ->when($request->divisi, fn($q, $d) => $q->where('divisi_id_divisi', $d))
+            ->when($request->q, fn($q, $kata) => $q->where('nama', 'like', "%{$kata}%"))
             ->orderBy('nama')
             ->paginate(6)
             ->withQueryString();
@@ -22,5 +23,18 @@ class HrdKaryawanController extends Controller
         $daftarDivisi = Divisi::orderBy('nama_divisi')->get();
 
         return view('hrd.daftarKaryawan', compact('karyawan', 'daftarDivisi'));
+    }
+
+
+    public function detailPage($id)
+    {
+        $karyawan = Karyawan::with(['divisi', 'user.role', 'tugas'])
+            ->where('id_karyawan', $id)
+            ->firstOrFail();
+
+        $totalTugas   = $karyawan->tugas->count();
+        $tugasSelesai = $karyawan->tugas->where('status', Tugas::STATUS_SUDAH_ACC)->count();
+
+        return view('hrd.detailKaryawan', compact('karyawan', 'totalTugas', 'tugasSelesai'));
     }
 }

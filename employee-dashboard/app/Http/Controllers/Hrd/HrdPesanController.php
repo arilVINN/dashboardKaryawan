@@ -15,13 +15,7 @@ class HrdPesanController extends Controller
     public function page(Request $request)
     {
         $user = $request->user();
-        $pesans = Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
-            ->where(function ($query) use ($user): void {
-                $query->where('penerima_id_user', $user->id_user)
-                    ->orWhere('pengirim_id_user', $user->id_user);
-            })
-            ->orderByDesc('created_at')
-            ->get();
+        $pesans = $this->messagesFor($user->id_user);
 
         return view('hrd.pesan', [
             'pesans' => $pesans,
@@ -29,6 +23,24 @@ class HrdPesanController extends Controller
             'pesanMasuk' => $pesans->where('penerima_id_user', $user->id_user)->count(),
             'pesanKeluar' => $pesans->where('pengirim_id_user', $user->id_user)->count(),
         ]);
+    }
+
+    public function daftarPage(Request $request)
+    {
+        $pesans = $this->messagesFor($request->user()->id_user);
+
+        return view('hrd.daftarPesan', compact('pesans'));
+    }
+
+    private function messagesFor(string $userId)
+    {
+        return Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
+            ->where(function ($query) use ($userId): void {
+                $query->where('penerima_id_user', $userId)
+                    ->orWhere('pengirim_id_user', $userId);
+            })
+            ->orderByDesc('created_at')
+            ->get();
     }
 
     public function detailPage(Request $request, string $id_pesan)

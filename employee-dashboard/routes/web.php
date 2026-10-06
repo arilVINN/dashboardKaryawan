@@ -240,9 +240,7 @@ Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
         return view('hrd.daftarKaryawan');
     })->name('hrd.daftarKaryawan');
 
-    Route::get('/daftarPesan', function () {
-        return redirect()->route('hrd.pesan');
-    })->name('hrd.daftarPesan');
+    Route::get('/daftarPesan', [HrdPesanController::class, 'daftarPage'])->name('hrd.daftarPesan');
 
     Route::get('/divisi-page', function () {
         return view('hrd.divisi', [
@@ -265,3 +263,4 @@ Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
 
 Route::get('/hrd/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage']);
 Route::get('/hrd/daftarDivisi', [HrdDivisiController::class, 'listPage']);
+Route::get('/hrd/detailKaryawan/{id}', [HrdKaryawanController::class, 'detailPage']);

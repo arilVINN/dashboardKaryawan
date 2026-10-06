@@ -252,7 +252,10 @@ class HrdManagementApiTest extends TestCase
 
         $this->actingAs($this->hrd)
             ->get('/hrd/daftarPesan')
-            ->assertRedirect('/hrd/pesan');
+            ->assertOk()
+            ->assertViewIs('hrd.daftarPesan')
+            ->assertSee('Daftar Pesan')
+            ->assertDontSee('Pusat Pesan &amp; Komunikasi');
 
         $this->actingAs($this->hrd)
             ->get('/hrd/detailPesan/PSN-HRD-001')
