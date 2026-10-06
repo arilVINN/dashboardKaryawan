@@ -1,41 +1,10 @@
 @php
     $isCompact = $compact ?? false;
     $cellPadding = $isCompact ? 'px-4 py-3' : 'px-6 py-4';
-
-    $dummyKaryawan = [
-        [
-            'id_karyawan' => 'KRY01',
-            'nama' => 'Samuel',
-            'divisi' => 'Teknologi Informasi & Komunikasi',
-            'jabatan' => 'Frontend Developer Intern',
-            'status' => 'Aktif',
-        ],
-        [
-            'id_karyawan' => 'KRY02',
-            'nama' => 'Aril',
-            'divisi' => 'Teknologi Informasi & Komunikasi',
-            'jabatan' => 'Backend Developer',
-            'status' => 'Aktif',
-        ],
-        [
-            'id_karyawan' => 'KRY03',
-            'nama' => 'Ariel2',
-            'divisi' => 'Teknologi Informasi & Komunikasi',
-            'jabatan' => 'Fullstack Developer',
-            'status' => 'Aktif',
-        ],
-        [
-            'id_karyawan' => 'KRY04',
-            'nama' => 'Rina Melati',
-            'divisi' => 'Human Capital Management (HRD)',
-            'jabatan' => 'HR Staff',
-            'status' => 'Non-aktif',
-        ],
-    ];
 @endphp
 
 <div class="flex flex-col gap-3 w-full mt-2">
-    
+
     <div class="flex justify-between items-center mb-2">
         <h2 class="text-xl font-bold text-slate-800">Daftar Karyawan</h2>
     </div>
@@ -54,44 +23,47 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
-                    @foreach ($dummyKaryawan as $karyawan)
+                    @forelse ($karyawan as $k)
                         <tr class="hover:bg-slate-50 transition">
                             <td class="{{ $cellPadding }} font-semibold text-slate-800 whitespace-nowrap">
-                                {{ $karyawan['id_karyawan'] }}
+                                {{ $k->id_karyawan }}
                             </td>
 
                             <td class="{{ $cellPadding }} text-slate-900 font-medium whitespace-nowrap">
-                                {{ $karyawan['nama'] }}
-                            </td>
-                            
-                            <td class="{{ $cellPadding }} text-slate-500 whitespace-nowrap">
-                                {{ $karyawan['divisi'] }}
+                                {{ $k->nama }}
                             </td>
 
                             <td class="{{ $cellPadding }} text-slate-500 whitespace-nowrap">
-                                {{ $karyawan['jabatan'] }}
+                                {{ $k->divisi->nama_divisi ?? '-' }}
+                            </td>
+
+                            <td class="{{ $cellPadding }} text-slate-500 whitespace-nowrap">
+                                {{ $k->jabatan }}
                             </td>
 
                             <td class="{{ $cellPadding }} whitespace-nowrap">
-                                @if($karyawan['status'] == 'Aktif')
-                                    <span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                                        {{ $karyawan['status'] }}
-                                    </span>
+                                @if ($k->user)
+                                    <span
+                                        class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Aktif</span>
                                 @else
-                                    <span class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">
-                                        {{ $karyawan['status'] }}
-                                    </span>
+                                    <span
+                                        class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">Belum
+                                        ada akun</span>
                                 @endif
                             </td>
 
                             <td class="{{ $cellPadding }} whitespace-nowrap text-center text-xs">
-                                <a href="{{ url('/hrd/detailKaryawan/' . $karyawan['id_karyawan']) }}"
-                                    class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline mr-3">
+                                <a href="{{ url('/hrd/detailKaryawan/' . $k->id_karyawan) }}"
+                                    class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
                                     Lihat Detail
                                 </a>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-10 text-center text-slate-400">Belum ada karyawan.</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

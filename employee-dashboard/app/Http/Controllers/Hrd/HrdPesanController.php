@@ -12,6 +12,53 @@ use Illuminate\Support\Facades\Storage;
 
 class HrdPesanController extends Controller
 {
+    public function page(Request $request)
+    {
+        $user = $request->user();
+        $pesans = Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
+            ->where(function ($query) use ($user): void {
+                $query->where('penerima_id_user', $user->id_user)
+                    ->orWhere('pengirim_id_user', $user->id_user);
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('hrd.pesan', [
+            'pesans' => $pesans,
+            'totalPesan' => $pesans->count(),
+            'pesanMasuk' => $pesans->where('penerima_id_user', $user->id_user)->count(),
+            'pesanKeluar' => $pesans->where('pengirim_id_user', $user->id_user)->count(),
+        ]);
+    }
+
+    public function detailPage(Request $request, string $id_pesan)
+    {
+        $user = $request->user();
+        $pesan = Pesan::with([
+            'pengirim.karyawan',
+            'penerima.karyawan',
+            'tugas',
+            'balasan.pengirim.karyawan',
+            'balasan.penerima.karyawan',
+            'balasanDari',
+        ])
+            ->whereKey($id_pesan)
+            ->where(function ($query) use ($user): void {
+                $query->where('pengirim_id_user', $user->id_user)
+                    ->orWhere('penerima_id_user', $user->id_user);
+            })
+            ->firstOrFail();
+
+        $root = $pesan->balasanDari ?? $pesan;
+        $thread = $root->balasan->prepend($root)->sortBy('created_at');
+
+        return view('hrd.detailPesan', [
+            'pesan' => $pesan,
+            'thread' => $thread,
+            'canReply' => ($root->tipe ?? 'pesan') === 'pesan',
+        ]);
+    }
+
     /**
      * GET /api/hrd/pesan
      * Pusat pesan global & status metrics (Total, Belum Dibaca, Selesai).

@@ -10,18 +10,18 @@
 
 <body class="bg-gray-100 flex h-screen overflow-hidden">
     @include('component_hrd.sidebar')
-    
+
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
         @include('component.breadcrumbs')
-        <main class="flex-1 overflow-y auto p-8 pt-6">
-            @include('component_hrd.tabelDaftarDivisi')
-
+        <main class="flex-1 overflow-y-auto p-8 pt-6">
+            @include('component_hrd.tabelDaftarDivisi', ['divisis' => $divisis, 'compact' => true])
+            <div class="px-1 mt-2">{{ $divisis->links() }}</div>
         </main>
-        
 
-            
+
+
     </div>
 </body>
 

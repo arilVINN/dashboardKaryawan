@@ -4,10 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User2;
 
 class AuthController extends Controller
 {
+    public function showLoginForm()
+    {
+        return view('login');
+    }
+
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -17,7 +23,6 @@ class AuthController extends Controller
 
         $user = User2::with('role')->where('username', $credentials['username'])->first();
 
-        // Cek user ada dan password cocok
         $passwordMatches = false;
 
         if ($user) {
@@ -34,30 +39,63 @@ class AuthController extends Controller
         }
 
         if (!$passwordMatches) {
-            return response()->json(['message' => 'Username atau password salah'], 401);
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'Username atau password salah'], 401);
+            }
+            return back()->withErrors(['username' => 'Username atau password salah']);
         }
 
-        // Update last login
         $user->update(['last_login_at' => now()]);
 
-        // Generate token
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $isApiRequest = $request->is('api/*');
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'role' => $user->role?->nama_role,
-            'user' => [
-                'id_user' => $user->id_user,
-                'username' => $user->username,
-                'karyawan_id_karyawan' => $user->karyawan_id_karyawan,
-            ],
-        ]);
+        if (! $isApiRequest) {
+            Auth::login($user);
+            $request->session()->regenerate();
+        }
+
+        if ($request->expectsJson() || $isApiRequest) {
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'role' => $user->role?->nama_role,
+                'user' => [
+                    'id_user' => $user->id_user,
+                    'username' => $user->username,
+                    'karyawan_id_karyawan' => $user->karyawan_id_karyawan,
+                ],
+            ]);
+        }
+
+        $roleName = strtolower($user->role?->nama_role ?? '');
+
+        if ($roleName === 'hrd') {
+            return redirect()->intended('/hrd/dashboard');
+        } elseif ($roleName === 'kadiv') {
+            return redirect()->intended('/kadiv/dashboard');
+        } else {
+            return redirect()->intended('/');
+        }
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()?->delete();
-        return response()->json(['message' => 'Logout berhasil']);
+        $request->user()?->currentAccessToken()?->delete();
+
+        if ($request->is('api/*')) {
+            return response()->json(['message' => 'Logout berhasil']);
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Logout berhasil']);
+        }
+
+        return redirect('/login');
     }
 }

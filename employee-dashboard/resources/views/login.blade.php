@@ -24,7 +24,7 @@
     </div>
 
     @include('component.loginForm', [
-        'action' => route('login'),
+        'action' => route('login', absolute: false),
         'logo' => asset('gambar/silindo.png'),
         'bgCity' => asset('gambar/bglogin.png'),
     ])

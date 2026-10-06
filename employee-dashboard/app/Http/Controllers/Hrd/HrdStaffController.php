@@ -41,9 +41,10 @@ class HrdStaffController extends Controller
         $request->validate([
             'nama' => 'required|string|max:100',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            'tanggal_lahir' => 'required|date',
+            'tanggal_lahir' => 'nullable|date',
             'tanggal_rekrut' => 'nullable|date',
-            'no_telepon' => 'required|string|max:20',
+            'no_telepon' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:100|unique:karyawans,email',
             'jabatan' => 'required|string|max:100',
             'divisi_id_divisi' => 'required|string|max:20',
             // Data akun login
@@ -60,6 +61,15 @@ class HrdStaffController extends Controller
                 return response()->json([
                     'message' => 'Divisi dengan ID "' . $request->divisi_id_divisi . '" tidak ditemukan. Silakan buat divisi terlebih dahulu.'
                 ], 404);
+            }
+
+            $roleId = $request->role_id_role
+                ?? Role::whereRaw('LOWER(nama_role) = ?', ['staff'])->value('id_role');
+
+            if (!$roleId) {
+                return response()->json([
+                    'message' => 'Role staff belum tersedia. Tambahkan role staff terlebih dahulu.'
+                ], 422);
             }
 
             // Gunakan transaksi agar data karyawan + user konsisten
@@ -79,6 +89,7 @@ class HrdStaffController extends Controller
                 'tanggal_lahir' => $request->tanggal_lahir,
                 'tanggal_rekrut' => $request->tanggal_rekrut ?? now()->toDateString(),
                 'no_telepon' => $request->no_telepon,
+                'email' => $request->email,
                 'jabatan' => $request->jabatan,
                 'divisi_id_divisi' => $request->divisi_id_divisi,
             ]);
@@ -90,8 +101,6 @@ class HrdStaffController extends Controller
                 : 'US001';
 
             // 4. Default role = staff jika tidak diisi
-            $roleId = $request->role_id_role ?? Role::where('nama_role', 'staff')->first()->id_role;
-
             // 5. Buat Akun User
             $user = User2::create([
                 'id_user' => $newUserId,
@@ -171,9 +180,13 @@ class HrdStaffController extends Controller
         $validated = $request->validate([
             'nama' => 'sometimes|required|string|max:100',
             'jenis_kelamin' => 'sometimes|required|in:Laki-laki,Perempuan',
-            'tanggal_lahir' => 'sometimes|required|date',
+            'tanggal_lahir' => 'sometimes|nullable|date',
             'tanggal_rekrut' => 'sometimes|nullable|date',
-            'no_telepon' => 'sometimes|required|string|max:20',
+            'no_telepon' => 'sometimes|nullable|string|max:20',
+            'email' => [
+                'sometimes', 'nullable', 'email', 'max:100',
+                Rule::unique('karyawans', 'email')->ignore($karyawan->id_karyawan, 'id_karyawan'),
+            ],
             'jabatan' => 'sometimes|required|string|max:100',
             'divisi_id_divisi' => 'sometimes|required|string|max:20|exists:divisis,id_divisi',
             'username' => [
@@ -202,7 +215,7 @@ class HrdStaffController extends Controller
         DB::transaction(function () use ($karyawan, $validated): void {
             $karyawan->update(array_intersect_key($validated, array_flip([
                 'nama', 'jenis_kelamin', 'tanggal_lahir', 'tanggal_rekrut',
-                'no_telepon', 'jabatan', 'divisi_id_divisi',
+                'no_telepon', 'email', 'jabatan', 'divisi_id_divisi',
             ])));
 
             if ($karyawan->user) {

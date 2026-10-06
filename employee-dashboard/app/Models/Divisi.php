@@ -8,11 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Divisi extends Model
 {
     protected $table = 'divisis';
-
     protected $primaryKey = 'id_divisi';
 
     public $incrementing = false;
-
     protected $keyType = 'string';
 
     protected $fillable = [

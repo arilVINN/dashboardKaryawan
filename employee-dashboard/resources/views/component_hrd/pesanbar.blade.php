@@ -1,8 +1,8 @@
 @php
     $total = [
-        'pesan' => '30',
-        'belum_dibaca' => '6',
-        'selesai' => '50',
+        'pesan' => $totalPesan ?? 0,
+        'masuk' => $pesanMasuk ?? 0,
+        'keluar' => $pesanKeluar ?? 0,
     ];
 @endphp
 
@@ -23,8 +23,8 @@
 
     <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Belum Dibaca</span>
-            <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['belum_dibaca'] }}</span>
+            <span class="text-sm font-bold text-slate-500">Pesan Masuk</span>
+            <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['masuk'] }}</span>
         </div>
         <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"></path>
@@ -33,8 +33,8 @@
 
     <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Selesai</span>
-            <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['selesai'] }}</span>
+            <span class="text-sm font-bold text-slate-500">Pesan Keluar</span>
+            <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['keluar'] }}</span>
         </div>
         <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
