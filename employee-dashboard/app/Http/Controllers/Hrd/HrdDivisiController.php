@@ -13,6 +13,20 @@ use Illuminate\Validation\Rule;
 
 class HrdDivisiController extends Controller
 {
+    public function detailPage($id)
+    {
+        $divisi = Divisi::with(['karyawans.user.role'])
+            ->where('id_divisi', $id)
+            ->firstOrFail();
+
+        $anggotaDivisi = $divisi->karyawans;
+        $ketuaDivisi = $anggotaDivisi->first(function ($karyawan) {
+            return strtolower($karyawan->user->role->nama_role ?? '') === 'kadiv';
+        });
+
+        return view('hrd.detailDivisi', compact('divisi', 'anggotaDivisi', 'ketuaDivisi'));
+    }
+
     /**
      * POST /api/hrd/divisi
      * Tambah divisi baru.
@@ -172,5 +186,14 @@ class HrdDivisiController extends Controller
                 'persentase_selesai' => $persentase . '%',
             ]
         ]);
+    }
+
+    public function listPage()
+    {
+        $divisis = Divisi::withCount('karyawans')
+            ->orderBy('id_divisi', 'desc')
+            ->paginate(5);
+
+        return view('hrd.daftarDivisi', compact('divisis'));
     }
 }

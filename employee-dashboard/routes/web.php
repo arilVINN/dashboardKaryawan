@@ -6,15 +6,26 @@ use App\Http\Middleware\EnsureStaffRole;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\KadivController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Hrd\HrdKaryawanController;
+
+use App\Http\Controllers\Hrd\HrdDivisiController;
+use App\Http\Controllers\Hrd\HrdPesanController;
+use App\Http\Controllers\Hrd\HrdStaffController;
+use App\Models\Divisi;
+
+
 
 
 Route::get('/', function () {
     return view('staff.dashboard');
 })->name('dashboard');
 
-Route::get('/login', function () {
-    return view('login');
-})->name('login');
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('gateway.throttle:5,1')
+    ->name('login.post');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 //staff route
 Route::get('/tugas', function () {
@@ -56,11 +67,11 @@ Route::get('/kadiv/dashboard', function () {
 // Rute Manajemen Staff
 Route::get('/kadiv/manajemenStaff', function () {
     return view('kadiv.manajemenStaff');
-})->name('kadiv.manajemenStaff'); 
+})->name('kadiv.manajemenStaff');
 
 // (Tambahan) Rute Detail Manajemen Staff sesuai file baru di gambar
 Route::get('/kadiv/manajemenStaff/{id}', function ($id) {
-    return view('kadiv.detailManajemenStaff', ['id' => $id]); 
+    return view('kadiv.detailManajemenStaff', ['id' => $id]);
 })->name('kadiv.manajemenStaff.show');
 
 // Rute Profil
@@ -86,7 +97,7 @@ Route::get('/kadiv/tugas/{id}', function ($id) {
     return view('kadiv.detailTugas', compact('id'));
 });
 
- // sesuaikan dengan controller kamu
+// sesuaikan dengan controller kamu
 Route::post('/kadiv/tugas', [KadivController::class, 'store'])->name('kadiv.tugas.store');
 
 // Rute Revisi Tugas
@@ -153,50 +164,6 @@ Route::post('/kadiv/pesan/{id}/balas', function (Request $request, $id) {
 
 
 
-//HRD
-Route::get('/hrd/dashboard', function () {
-    return view('hrd.dashboard');
-})->name('dashboard');
-
-Route::get('/hrd/manajemenDivisi', function () {
-    return view('hrd.manajemenDivisi');
-})->name('manajemen');
-
-Route::get('/hrd/pesan', function () {
-    return view('hrd.pesan');
-})->name('pesan');
-
-Route::get('/hrd/detailPesan/{id}', function () {
-    return view('hrd.detailPesan');
-})->name('detailPesan');
-
-Route::get('/hrd/detailDivisi/{id}', function () {
-    return view('hrd.detailDivisi');
-})->name('detailDivisi');
-
-Route::get('/hrd/detailDivisi', function () {
-    return view('hrd.detailDivisi');
-})->name('detailDivisi');
-
-Route::get('/hrd/detailKaryawan', function () {
-    return view('hrd.detailKaryawan');
-})->name('detailKaryawan');
-
-
-//route" untuk halaman daftar divisi dan daftar karyawan, dan daftar pesan, yang akan 
-//menampilkan tabel data divisi, karyawan, dan pesan
-Route::get('/hrd/daftarDivisi', function () {
-    return view('hrd.daftarDivisi');
-})->name('daftarDivisi');
-
-Route::get('/hrd/daftarKaryawan', function () {
-    return view('hrd.daftarKaryawan');
-})->name('daftarKaryawan');
-
-Route::get('/hrd/daftarPesan', function () {
-    return view('hrd.daftarPesan');
-})->name('daftarPesan');
-
 // 1. Route untuk proses form login
 Route::post('/login-proses', function (Request $request) {
     // Data dummy
@@ -214,8 +181,8 @@ Route::post('/login-proses', function (Request $request) {
 
     session(['user_session' => $userDummy]);
 
-    return redirect('/'); 
-    return redirect('/'); 
+    return redirect('/');
+    return redirect('/');
 })->name('login.proses');
 
 
@@ -237,3 +204,64 @@ Route::post('/profile', function (Request $request) {
 
     return redirect()->route('profile')->with('success', 'Profil berhasil diperbarui.');
 })->name('profile.update');
+
+
+
+//route hrd 
+Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('hrd.dashboard', [
+            'divisis' => Divisi::all(),
+        ]);
+    })->name('hrd.dashboard');
+
+    Route::get('/manajemenDivisi', function () {
+        return view('hrd.manajemenDivisi', [
+            'divisis' => Divisi::all(),
+        ]);
+    })->name('hrd.manajemenDivisi');
+
+    Route::get('/pesan', [HrdPesanController::class, 'page'])->name('hrd.pesan');
+
+    Route::get('/detailPesan/{id_pesan}', [HrdPesanController::class, 'detailPage'])->name('hrd.detailPesan');
+    Route::post('/detailPesan/{id_pesan}/balas', [HrdPesanController::class, 'balas'])->name('hrd.detailPesan.balas');
+
+    Route::get('/detailDivisi/{id}', [HrdDivisiController::class, 'detailPage'])->name('hrd.detailDivisi');
+
+    Route::get('/detailKaryawan', function () {
+        return view('hrd.detailKaryawan');
+    })->name('hrd.detailKaryawan');
+
+    Route::get('/daftarDivisi', function () {
+        return view('hrd.daftarDivisi');
+    })->name('hrd.daftarDivisi');
+
+    Route::get('/daftarKaryawan', function () {
+        return view('hrd.daftarKaryawan');
+    })->name('hrd.daftarKaryawan');
+
+    Route::get('/daftarPesan', function () {
+        return redirect()->route('hrd.pesan');
+    })->name('hrd.daftarPesan');
+
+    Route::get('/divisi-page', function () {
+        return view('hrd.divisi', [
+            'isCompact' => false,
+            'cellPadding' => 'px-4 py-3'
+        ]);
+    })->name('hrd.divisiPage');
+
+    // 2. Route Action/API Divisi (Dipanggil via Fetch JavaScript)
+    Route::get('/divisi', [HrdDivisiController::class, 'index']);
+    Route::post('/divisi', [HrdDivisiController::class, 'store']);
+    Route::get('/divisi/{id}', [HrdDivisiController::class, 'show']);
+    Route::put('/divisi/{id}', [HrdDivisiController::class, 'update']);
+    Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy']);
+
+    Route::post('/staff', [HrdStaffController::class, 'store']);
+    Route::put('/staff/{id}', [HrdStaffController::class, 'update']);
+    Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
+});
+
+Route::get('/hrd/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage']);
+Route::get('/hrd/daftarDivisi', [HrdDivisiController::class, 'listPage']);
