@@ -87,16 +87,19 @@
             const s = json.data.statistik;
 
             // 1. Tampilkan Angka Statistik Asli (Tanpa Tugas yang Selesai)
-            const totalAktif = s.tugas_berjalan + s.tugas_baru + s.tugas_telat;
+            const tugasBerjalan = (s.tugas_baru || 0) + (s.tugas_berjalan || 0);
+            const tugasPending = (s.tugas_menunggu_acc || 0);
+            const tugasTelat = (s.tugas_telat || 0);
+            const totalAktif = tugasBerjalan + tugasPending + tugasTelat;
             
-            document.getElementById('stat-berjalan').textContent = s.tugas_berjalan + '/' + totalAktif + ' Tugas';
-            document.getElementById('stat-pending').textContent = s.tugas_baru + '/' + totalAktif + ' Tugas';
-            document.getElementById('stat-telat').textContent = s.tugas_telat + '/' + totalAktif + ' Tugas';
+            document.getElementById('stat-berjalan').textContent = tugasBerjalan + '/' + totalAktif + ' Tugas';
+            document.getElementById('stat-pending').textContent = tugasPending + '/' + totalAktif + ' Tugas';
+            document.getElementById('stat-telat').textContent = tugasTelat + '/' + totalAktif + ' Tugas';
 
             // 2. Hitung Persentase (Tanpa yang Selesai)
-            const pctBerjalan = totalAktif > 0 ? Math.round((s.tugas_berjalan / totalAktif) * 100) : 0;
-            const pctPending = totalAktif > 0 ? Math.round((s.tugas_baru / totalAktif) * 100) : 0;
-            const pctTelat = totalAktif > 0 ? Math.round((s.tugas_telat / totalAktif) * 100) : 0;
+            const pctBerjalan = totalAktif > 0 ? Math.round((tugasBerjalan / totalAktif) * 100) : 0;
+            const pctPending = totalAktif > 0 ? Math.round((tugasPending / totalAktif) * 100) : 0;
+            const pctTelat = totalAktif > 0 ? Math.round((tugasTelat / totalAktif) * 100) : 0;
 
             document.getElementById('pct-berjalan').textContent = pctBerjalan + '%';
             document.getElementById('pct-pending').textContent = pctPending + '%';
