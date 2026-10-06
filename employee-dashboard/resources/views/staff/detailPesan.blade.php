@@ -31,6 +31,8 @@
                 <div class="text-sm text-slate-800 leading-relaxed text-justify pt-2">
                     <p id="pesan-isi">Memuat isi pesan...</p>
                 </div>
+
+                <div id="pesan-lampiran" class="flex flex-wrap gap-3"></div>
                 
                 <!-- Balasan thread -->
                 <div id="thread-balasan" class="mt-4 space-y-3">
@@ -77,8 +79,36 @@
     <script>
         const pesanId = window.location.pathname.split('/').filter(Boolean).pop();
 
+        function renderAttachments(container, attachment) {
+            container.replaceChildren();
+            if (!attachment) return;
+
+            [
+                { url: attachment.file, label: 'File lampiran' },
+                { url: attachment.link, label: 'Tautan lampiran' }
+            ].forEach(({ url, label }) => {
+                if (typeof url !== 'string' || !url.trim() || url.trim() === '-') return;
+
+                let safeUrl;
+                try {
+                    safeUrl = new URL(url.trim(), window.location.origin);
+                } catch {
+                    return;
+                }
+                if (safeUrl.protocol !== 'http:' && safeUrl.protocol !== 'https:') return;
+
+                const link = document.createElement('a');
+                link.href = safeUrl.href;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.className = 'inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-cyan-700 underline shadow-sm hover:bg-slate-50';
+                link.textContent = label;
+                container.appendChild(link);
+            });
+        }
+
         async function loadDetailPesan() {
-            const token = localStorage.getItem('staff_token');
+            const token = sessionStorage.getItem('staff_token');
             if (!token || !pesanId) return;
 
             try {
@@ -98,13 +128,13 @@
                 // API Pesan Controller bisa jadi return thread tugas atau pesan langsung
                 let p = json.data; 
                 let balasan = [];
-                let isTaskThread = false;
+                let pesanUtama = p;
 
                 // Jika data berbentuk thread Tugas (ada array 'pesan' di dalamnya)
                 if (p && p.tugas && p.pesan) {
-                    isTaskThread = true;
                     // Ambil pesan paling atas (terlama) sebagai parent
                     const rootPesan = p.pesan[0];
+                    pesanUtama = rootPesan;
                     balasan = p.pesan.slice(1);
                     
                     document.getElementById('pesan-judul').textContent = 'Tugas: ' + p.tugas.judul_tugas;
@@ -125,22 +155,41 @@
                     }
                 }
 
+                renderAttachments(document.getElementById('pesan-lampiran'), pesanUtama?.lampiran);
+
                 // Render semua balasan
                 const threadContainer = document.getElementById('thread-balasan');
-                threadContainer.innerHTML = '';
-                
-                balasan.forEach(b => {
+                threadContainer.replaceChildren();
+
+                balasan.forEach((b) => {
                     const pengirim = b.pengirim ? (b.pengirim.nama || b.pengirim.username) : 'Sistem';
-                    const isSaya = p.arah === 'keluar'; // atau deteksi user login ID
-                    
-                    threadContainer.innerHTML += `
-                    <div class="mt-4 p-4 rounded-xl border border-slate-100 bg-slate-50">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-slate-800">${pengirim}</span>
-                            <span class="text-[10px] text-slate-500">${b.tanggal_pesan || b.created_at || '-'}</span>
-                        </div>
-                        <p class="text-sm text-slate-700">${b.deskripsi}</p>
-                    </div>`;
+                    const reply = document.createElement('div');
+                    reply.className = 'mt-4 p-4 rounded-xl border border-slate-100 bg-slate-50';
+
+                    const metadata = document.createElement('div');
+                    metadata.className = 'flex justify-between items-center mb-2';
+                    const sender = document.createElement('span');
+                    sender.className = 'text-xs font-bold text-slate-800';
+                    sender.textContent = pengirim;
+                    const date = document.createElement('span');
+                    date.className = 'text-[10px] text-slate-500';
+                    date.textContent = b.tanggal_pesan || b.created_at || '-';
+                    metadata.append(sender, date);
+                    reply.appendChild(metadata);
+
+                    const description = document.createElement('p');
+                    description.className = 'text-sm text-slate-700';
+                    description.textContent = b.deskripsi || '-';
+                    reply.appendChild(description);
+
+                    const attachmentContainer = document.createElement('div');
+                    attachmentContainer.className = 'mt-3 flex flex-wrap gap-3';
+                    renderAttachments(attachmentContainer, b.lampiran);
+                    if (attachmentContainer.childElementCount) {
+                        reply.appendChild(attachmentContainer);
+                    }
+
+                    threadContainer.appendChild(reply);
                 });
 
             } catch(e) {
@@ -184,7 +233,7 @@
 
         formSubmit.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const token = localStorage.getItem('staff_token');
+            const token = sessionStorage.getItem('staff_token');
             if (!token) return alert('Silakan login terlebih dahulu');
             
             const isiBalasan = pesanInput.value.trim();

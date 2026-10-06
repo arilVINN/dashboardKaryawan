@@ -1,16 +1,3 @@
-@php
-    $pegawai = session('user_session', [
-        'nama' => 'Nama Kadiv',
-        'email' => 'kadiv@silindo.co.id',
-        'telepon' => '081234567890',
-        'tingkatan' => 'Kadiv',
-        'divisi' => 'Content Writer',
-        'tanggal_masuk' => '12 Januari 2025',
-        'alamat' => 'Salatiga, Jawa Tengah',
-        'tanggal_dibuat' => '10 Januari 2025',
-    ]);
-@endphp
-
 <!DOCTYPE html>
 <html lang="id">
 
@@ -41,20 +28,20 @@
 
                     <div
                         class="w-28 h-28 rounded-full bg-slate-300 shrink-0 flex items-center justify-center text-4xl font-bold text-slate-500 uppercase">
-                        {{ substr($pegawai['nama'], 0, 1) }}
+                        <span id="profile-initial">-</span>
                     </div>
 
                     <div>
                         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
-                            {{ $pegawai['nama'] }}
+                            <span id="profile-name">-</span>
                         </h1>
 
                         <p class="text-sm text-slate-600 mt-1">
-                            {{ $pegawai['email'] }}
+                            <span id="profile-header-email">-</span>
                         </p>
 
                         <p class="text-sm text-slate-600">
-                            {{ $pegawai['telepon'] }}
+                            <span id="profile-header-phone">-</span>
                         </p>
                     </div>
 
@@ -82,7 +69,7 @@
                                     </p>
 
                                     <p class="font-bold text-slate-900 mt-0.5">
-                                        {{ $pegawai['tingkatan'] }}
+                                        <span id="profile-role">-</span>
                                     </p>
                                 </div>
 
@@ -92,7 +79,7 @@
                                     </p>
 
                                     <p class="font-bold text-slate-900 mt-0.5">
-                                        {{ $pegawai['divisi'] }}
+                                        <span id="profile-division">-</span>
                                     </p>
                                 </div>
 
@@ -102,7 +89,7 @@
                                     </p>
 
                                     <p class="font-bold text-slate-900 mt-0.5">
-                                        {{ $pegawai['tanggal_masuk'] }}
+                                        <span id="profile-hire-date">-</span>
                                     </p>
                                 </div>
 
@@ -125,7 +112,7 @@
                                 </p>
 
                                 <p class="font-bold text-slate-900 mt-0.5">
-                                    {{ $pegawai['tanggal_dibuat'] }}
+                                    <span id="profile-created-date">-</span>
                                 </p>
 
                             </div>
@@ -154,7 +141,7 @@
                                     </p>
 
                                     <p class="font-bold text-slate-900 mt-0.5">
-                                        {{ $pegawai['email'] }}
+                                        <span id="profile-email">-</span>
                                     </p>
                                 </div>
 
@@ -164,7 +151,7 @@
                                     </p>
 
                                     <p class="font-bold text-slate-900 mt-0.5">
-                                        {{ $pegawai['alamat'] }}
+                                        <span id="profile-address">-</span>
                                     </p>
                                 </div>
 
@@ -174,7 +161,7 @@
                                     </p>
 
                                     <p class="font-bold text-slate-900 mt-0.5">
-                                        {{ $pegawai['telepon'] }}
+                                        <span id="profile-phone">-</span>
                                     </p>
                                 </div>
 
@@ -191,7 +178,7 @@
                                 Keamanan Akun
                             </h3>
 
-                            <form action="#" method="POST" class="space-y-4 max-w-xl">
+                            <form id="kadiv-password-form" action="#" method="POST" class="space-y-4 max-w-xl">
 
                                 @csrf
 
@@ -203,6 +190,8 @@
 
                                     <input
                                         type="password"
+                                        name="current_password"
+                                        required
                                         placeholder="********"
                                         class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-500">
                                 </div>
@@ -217,6 +206,8 @@
 
                                         <input
                                             type="password"
+                                            name="new_password"
+                                            required
                                             placeholder="********"
                                             class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-500">
                                     </div>
@@ -229,6 +220,8 @@
 
                                         <input
                                             type="password"
+                                            name="confirm_password"
+                                            required
                                             placeholder="********"
                                             class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-cyan-500">
                                     </div>
@@ -259,6 +252,79 @@
 
     </div>
 
-</body>
+<script>
+    async function loadKadivProfile() {
+        const token = sessionStorage.getItem('staff_token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
 
+        try {
+            const response = await fetch('/api/kadiv/profile', {
+                headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Gagal memuat profil.');
+            const profile = result.data;
+            const values = {
+                'profile-initial': (profile.nama || '-').charAt(0).toUpperCase(),
+                'profile-name': profile.nama,
+                'profile-header-email': profile.email,
+                'profile-header-phone': profile.no_telepon,
+                'profile-role': profile.jabatan,
+                'profile-division': profile.divisi,
+                'profile-hire-date': profile.tanggal_rekrut,
+                'profile-created-date': profile.tanggal_dibuat,
+                'profile-email': profile.email,
+                'profile-address': profile.alamat,
+                'profile-phone': profile.no_telepon
+            };
+            Object.entries(values).forEach(([id, value]) => {
+                document.getElementById(id).textContent = value || '-';
+            });
+        } catch (error) {
+            console.error('Gagal memuat profil Kadiv:', error);
+            alert(error.message);
+        }
+    }
+
+    document.getElementById('kadiv-password-form').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const token = sessionStorage.getItem('staff_token');
+        const data = new FormData(this);
+        if (data.get('new_password') !== data.get('confirm_password')) {
+            alert('Konfirmasi password baru tidak sama.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/kadiv/profile/password', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    current_password: data.get('current_password'),
+                    new_password: data.get('new_password')
+                })
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Password gagal diperbarui.');
+            this.reset();
+            alert(result.message || 'Password berhasil diperbarui.');
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadKadivProfile);
+    } else {
+        loadKadivProfile();
+    }
+</script>
+</body>
 </html>

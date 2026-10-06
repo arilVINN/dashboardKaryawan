@@ -21,9 +21,11 @@
 
         {{-- MAIN CONTENT --}}
         <main class="flex-1 overflow-y-auto p-6 lg:p-8 pb-16">
+            <h1 class="text-2xl font-bold text-gray-800">
+                Manajemen Staff
+            </h1>
 
-
-            @include('component_kadiv.tabelStaff')
+            @include('component_kadiv.tabelstaff')
 
         </main>
 

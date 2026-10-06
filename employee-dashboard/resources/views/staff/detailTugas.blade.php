@@ -42,6 +42,9 @@
                     <p id="revisi-status" class="text-sm font-semibold text-slate-800 mb-4">status : -</p>
                     <p id="revisi-catatan" class="text-sm text-slate-700 leading-relaxed text-justify mb-6">-</p>
 
+                    <!-- File Pendukung Revisi dari Kadiv -->
+                    <div id="revisi-attachment-container" class="flex flex-wrap gap-4 mb-4"></div>
+
                     <!-- File Hasil Submit Sebelumnya -->
                     <div id="revisi-file-container" class="flex flex-wrap gap-4"></div>
                 </div>
@@ -118,7 +121,7 @@
         }
 
         async function loadDetailTugas() {
-            const token = localStorage.getItem('staff_token');
+            const token = sessionStorage.getItem('staff_token');
             if (!token || !tugasId) { window.location.href = '/login'; return; }
 
             try {
@@ -163,31 +166,43 @@
                 const sectionRevisi = document.getElementById('section-revisi');
                 const hrRevisi = document.getElementById('hr-revisi');
 
-                if (t.submit_tugas && t.submit_tugas.length > 0) {
-                    const lastSubmit = t.submit_tugas[t.submit_tugas.length - 1];
-                    const catatanRevisi = lastSubmit.catatan_revisi;
+                const submissions = Array.isArray(t.submit_tugas) ? t.submit_tugas : [];
+                const lastSubmit = submissions[ submissions.length - 1 ];
+                const revisionSubmit = [...submissions].reverse().find((submission) =>
+                    submission.status_review === 'revisi'
+                    && typeof submission.catatan_revisi === 'string'
+                    && submission.catatan_revisi.trim() !== ''
+                    && submission.catatan_revisi.trim() !== '-'
+                );
+
+                if (revisionSubmit) {
+                    const catatanRevisi = revisionSubmit.catatan_revisi;
                     const fileHasil = lastSubmit.file_hasil;
 
-                    // Tampilkan section revisi jika ada catatan revisi atau file hasil
-                    const hasRevisi = (catatanRevisi && catatanRevisi !== '-' && catatanRevisi.trim() !== '');
-                    const hasFileHasil = (fileHasil && fileHasil !== '-');
+                    document.getElementById('revisi-judul').textContent = 'Revisi ' + (t.judul_tugas || '');
+                    document.getElementById('revisi-tenggat').textContent =
+                        'tenggat : ' + fmtDate(revisionSubmit.deadline_revisi || t.deadline);
+                    document.getElementById('revisi-status').textContent =
+                        'status : ' + (revisionSubmit.status_review || '-');
+                    document.getElementById('revisi-catatan').textContent = catatanRevisi;
 
-                    if (hasRevisi || hasFileHasil) {
-                        document.getElementById('revisi-judul').textContent = 'Revisi ' + (t.judul_tugas || '');
-                        document.getElementById('revisi-tenggat').textContent = 'tenggat : ' + fmtDate(t.deadline);
-                        document.getElementById('revisi-status').textContent = 'status : ' + (t.status || '-');
-                        document.getElementById('revisi-catatan').textContent = hasRevisi ? catatanRevisi : '-';
-
-                        // File hasil submit staff
-                        const revisiFileContainer = document.getElementById('revisi-file-container');
-                        revisiFileContainer.innerHTML = '';
-                        if (hasFileHasil) {
-                            revisiFileContainer.innerHTML += renderFileCard(fileHasil, t.judul_tugas || 'File Hasil');
-                        }
-
-                        sectionRevisi.classList.remove('hidden');
-                        hrRevisi.classList.remove('hidden');
+                    const revisionAttachmentContainer = document.getElementById('revisi-attachment-container');
+                    revisionAttachmentContainer.replaceChildren();
+                    if (revisionSubmit.file_revisi && revisionSubmit.file_revisi !== '-') {
+                        revisionAttachmentContainer.innerHTML = renderFileCard(
+                            revisionSubmit.file_revisi,
+                            'File Pendukung Revisi'
+                        );
                     }
+
+                    const revisiFileContainer = document.getElementById('revisi-file-container');
+                    revisiFileContainer.innerHTML = '';
+                    if (lastSubmit?.file_hasil && lastSubmit.file_hasil !== '-') {
+                        revisiFileContainer.innerHTML = renderFileCard(lastSubmit.file_hasil, t.judul_tugas || 'File Hasil');
+                    }
+
+                    sectionRevisi.classList.remove('hidden');
+                    hrRevisi.classList.remove('hidden');
                 }
 
                 // Juga tampilkan pesan dari Kadiv di section revisi jika ada
@@ -258,7 +273,7 @@
             const btnSubmit = document.getElementById('btn-submit-tugas');
             if (btnSubmit.disabled) return;
 
-            const token = localStorage.getItem('staff_token');
+            const token = sessionStorage.getItem('staff_token');
             if (!token) return alert('Sesi habis, silakan login ulang.');
 
             const fileInput = document.getElementById('file_tugas');

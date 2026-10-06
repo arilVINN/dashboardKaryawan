@@ -8,13 +8,10 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\KadivController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Hrd\HrdKaryawanController;
-
 use App\Http\Controllers\Hrd\HrdDivisiController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
 use App\Models\Divisi;
-
-
 
 
 Route::get('/', function () {
@@ -120,47 +117,15 @@ Route::post('/kadiv/tugas/{id}/revisi', function (Request $request, $id) {
         ->route('kadiv.detailTugas.show', $id)
         ->with('success', 'Revisi berhasil dikirim.');
 })->name('kadiv.revisiTugas');
-
-
-
 // ================= PESAN ================= //
-Route::post('/kadiv/detailPesan/{id}/balas', [KadivController::class, 'balasPesan'])->name('kadiv.balasPesan');
-
 // Rute Daftar Pesan
 Route::get('/kadiv/pesan', function () { // Path diubah dari /kadiv/detailPesan menjadi /kadiv/pesan
     return view('kadiv.pesan'); // Disesuaikan ke pesan.blade.php
 })->name('kadiv.pesan');
 
-// Rute Detail Pesan
-Route::get('/kadiv/detailPesan/{id}', function ($id) {
-    return view('kadiv.lihatPesan', ['id' => $id]); // Sesuai dengan file lihatPesan.blade.php
-})->name('kadiv.detailPesan.show');
-
 Route::get('/kadiv/detailPesan/{id}', function ($id) {
     return view('kadiv.detailPesan', compact('id'));
 })->name('kadiv.detailPesan');
-
-Route::get('/kadiv/detailPesan/{id}', [KadivController::class, 'detailPesan'])->name('kadiv.detailPesan');
-
-// Rute Balas Pesan
-Route::post('/kadiv/pesan/{id}/balas', function (Request $request, $id) {
-    $request->validate([
-        'pesan' => ['required', 'string', 'max:1000'],
-    ]);
-
-    $semuaBalasan = session('balasan_pesan', []);
-    $semuaBalasan[] = [
-        'id_pesan'    => $id,
-        'isi'         => $request->input('pesan'),
-        'pengirim'    => 'Kadiv',
-        'waktu'       => now()->format('d M Y, H.i'),
-    ];
-    session(['balasan_pesan' => $semuaBalasan]);
-
-    return redirect()
-        ->route('kadiv.detailPesan.show', $id)
-        ->with('success', 'Balasan berhasil dikirim.');
-})->name('kadiv.balasPesan');
 
 
 

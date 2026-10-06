@@ -107,7 +107,8 @@ document.getElementById('form-login').addEventListener('submit', async function(
         const data = await response.json();
 
         if (response.ok && data.access_token) {
-            localStorage.setItem('staff_token', data.access_token);
+            localStorage.removeItem('staff_token');
+            sessionStorage.setItem('staff_token', data.access_token);
             
             // Arahkan berdasarkan role
             const role = (data.role || '').toLowerCase();

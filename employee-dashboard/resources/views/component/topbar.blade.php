@@ -58,7 +58,7 @@
 <script>
     // Fetch nama & divisi user untuk topbar
     (async function loadTopbar() {
-        const token = localStorage.getItem('staff_token');
+        const token = sessionStorage.getItem('staff_token');
         if (!token) return;
 
         try {
@@ -82,7 +82,7 @@
             const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
             if (!confirmLogout) return;
 
-            const token = localStorage.getItem('staff_token');
+            const token = sessionStorage.getItem('staff_token');
             try {
                 if (token) {
                     await fetch('/api/logout', {
@@ -92,7 +92,7 @@
                 }
             } catch (e) {}
 
-            localStorage.removeItem('staff_token');
+            sessionStorage.removeItem('staff_token');
             window.location.href = '/login';
         });
     }

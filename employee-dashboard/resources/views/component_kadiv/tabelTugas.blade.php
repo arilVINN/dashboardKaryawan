@@ -2,37 +2,6 @@
     $isCompact = $compact ?? false;
     $cellPadding = $isCompact ? 'px-4 py-3' : 'px-6 py-4';
 
-    // Data dummy tugas
-    $dummyTugas = [
-        [
-            'id' => 1,
-            'nama_tugas' => 'Integrasi API Dashboard',
-            'keterangan' => 'Belum Selesai',
-            'tanggal' => '08 Oct 2026',
-            'status' => 'Proses',
-        ],
-        [
-            'id' => 2,
-            'nama_tugas' => 'Review Desain UI/UX',
-            'keterangan' => 'Menunggu ACC Kadiv',
-            'tanggal' => '06 Oct 2026',
-            'status' => 'Review',
-        ],
-        [
-            'id' => 3,
-            'nama_tugas' => 'Fix Bug Authentication',
-            'keterangan' => 'Telah Diselesaikan',
-            'tanggal' => '02 Oct 2026',
-            'status' => 'Selesai',
-        ],
-        [
-            'id' => 4,
-            'nama_tugas' => 'Setup Database PostgreSQL',
-            'keterangan' => 'Telah Diselesaikan',
-            'tanggal' => '28 Sep 2026',
-            'status' => 'Selesai',
-        ],
-    ];
 @endphp
 
 <div class="flex flex-col gap-3 w-full mt-2">
@@ -58,44 +27,8 @@
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200">
-                    @foreach ($dummyTugas as $tugas)
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="{{ $cellPadding }} font-semibold text-slate-800 whitespace-nowrap">
-                                {{ $tugas['nama_tugas'] }}
-                            </td>
-
-                            <td class="{{ $cellPadding }} whitespace-nowrap text-center">
-                                @if ($tugas['status'] == 'Selesai')
-                                    <span
-                                        class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                                        {{ $tugas['keterangan'] }}
-                                    </span>
-                                @elseif($tugas['status'] == 'Review')
-                                    <span
-                                        class="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">
-                                        {{ $tugas['keterangan'] }}
-                                    </span>
-                                @else
-                                    <span class="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">
-                                        {{ $tugas['keterangan'] }}
-                                    </span>
-                                @endif
-                            </td>
-
-                            <td class="{{ $cellPadding }} text-slate-500 text-center whitespace-nowrap">
-                                {{ $tugas['tanggal'] }}
-                            </td>
-
-                            {{-- Kolom Aksi --}}
-                            <td class="{{ $cellPadding }} whitespace-nowrap text-center text-xs">
-                                <a href="/kadiv/detailTugas/{{ $tugas['id'] }}"
-                                    class="text-[#0c88a9] hover:text-[#104958] transition font-medium">
-                                    Detail
-                                </a>
-                            </td>
-                        </tr>
-                    @endforeach
+                <tbody id="kadiv-tugas-list" class="divide-y divide-slate-200">
+                    <tr><td colspan="4" class="{{ $cellPadding }} text-center text-slate-500">Memuat tugas...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -108,8 +41,8 @@
             bg-[rgba(86,94,116,0.4)] backdrop-blur-sm
             transition-opacity duration-300 ease-in-out">
 
-    <form data-modal-panel
-          action="{{ route('kadiv.tugas.store') }}"
+    <form id="formTugasBaru" data-modal-panel
+          action="#"
           method="POST"
           enctype="multipart/form-data"
           class="bg-white rounded-xl w-full max-w-[420px] max-h-[90vh] flex flex-col
@@ -146,12 +79,9 @@
                 <div class="space-y-3">
 
                     <select name="penerima" required
+                            id="penerimaTugas"
                             class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] bg-white outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
-                        <option value="Samuel">Samu</option>
-                        <option value="Aril">Aril</option>
-                        <option value="Fitri">Fitri</option>
-                        <option value="jerremy">Jerremy</option>
-                        <option value="semua">Semua anggota divisi</option>
+                        <option value="">Memuat staff...</option>
                     </select>
                 </div>
             </div>
@@ -197,6 +127,137 @@
 {{-- Buka/tutup + animasi ditangani script global di app.js. Di sini hanya nama file + validasi 20 MB --}}
 <script>
 (function () {
+    const token = sessionStorage.getItem('staff_token');
+    const taskRows = document.getElementById('kadiv-tugas-list');
+    const staffSelect = document.getElementById('penerimaTugas');
+    const taskForm = document.getElementById('formTugasBaru');
+
+    async function apiRequest(url, options = {}) {
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + token,
+                ...(options.headers || {})
+            }
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Permintaan ke server gagal.');
+        }
+        return result;
+    }
+
+    async function loadTasks() {
+        try {
+            const result = await apiRequest('/api/kadiv/tugas');
+            taskRows.replaceChildren();
+            if (!Array.isArray(result.data) || result.data.length === 0) {
+                taskRows.innerHTML = '<tr><td colspan="4" class="{{ $cellPadding }} text-center text-slate-500">Belum ada tugas.</td></tr>';
+                return;
+            }
+
+            result.data.forEach((task) => {
+                const status = (task.status_efektif || task.status || 'baru').replaceAll('-', ' ');
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-50 transition';
+
+                const title = document.createElement('td');
+                title.className = '{{ $cellPadding }} font-semibold text-slate-800 whitespace-nowrap';
+                title.textContent = task.judul_tugas || '-';
+                row.appendChild(title);
+
+                const statusCell = document.createElement('td');
+                statusCell.className = '{{ $cellPadding }} whitespace-nowrap text-center';
+                const badge = document.createElement('span');
+                badge.className = 'px-2.5 py-1 rounded-full text-xs font-bold';
+                badge.classList.add(status === 'sudah di acc' ? 'bg-green-100' : (status === 'menunggu di acc' ? 'bg-amber-100' : 'bg-blue-100'));
+                badge.classList.add(status === 'sudah di acc' ? 'text-green-700' : (status === 'menunggu di acc' ? 'text-amber-700' : 'text-blue-700'));
+                badge.textContent = status;
+                statusCell.appendChild(badge);
+                row.appendChild(statusCell);
+
+                const deadline = document.createElement('td');
+                deadline.className = '{{ $cellPadding }} text-slate-500 text-center whitespace-nowrap';
+                deadline.textContent = task.deadline
+                    ? new Date(task.deadline + 'T00:00:00').toLocaleDateString('id-ID')
+                    : '-';
+                row.appendChild(deadline);
+
+                const actionCell = document.createElement('td');
+                actionCell.className = '{{ $cellPadding }} whitespace-nowrap text-center text-xs';
+                const action = document.createElement('a');
+                action.href = '/kadiv/detailTugas/' + encodeURIComponent(task.id_tugas);
+                action.className = 'text-[#0c88a9] hover:text-[#104958] transition font-medium';
+                action.textContent = 'Detail';
+                actionCell.appendChild(action);
+                row.appendChild(actionCell);
+                taskRows.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Gagal memuat tugas Kadiv:', error);
+            taskRows.innerHTML = '<tr><td colspan="4" class="{{ $cellPadding }} text-center text-red-600">Tugas gagal dimuat.</td></tr>';
+        }
+    }
+
+    async function loadStaffOptions() {
+        try {
+            const result = await apiRequest('/api/kadiv/staff');
+            staffSelect.replaceChildren(new Option('-- Pilih Staff --', ''));
+            (result.data || []).forEach((staff) => {
+                const account = staff.user;
+                if (account?.role?.nama_role?.toLowerCase() === 'staff') {
+                    staffSelect.add(new Option(staff.nama, staff.id_karyawan));
+                }
+            });
+            staffSelect.add(new Option('Semua anggota divisi', 'semua'));
+        } catch (error) {
+            console.error('Gagal memuat penerima tugas:', error);
+            staffSelect.replaceChildren(new Option('Staff gagal dimuat', ''));
+        }
+    }
+
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    loadTasks();
+    loadStaffOptions();
+
+    taskForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const formData = new FormData(taskForm);
+        const recipient = formData.get('penerima');
+        const staffIds = recipient === 'semua'
+            ? Array.from(staffSelect.options).map((option) => option.value).filter((value) => value && value !== 'semua')
+            : [recipient];
+        const file = document.getElementById('fileTugas').files[0];
+
+        if (!staffIds.length) {
+            alert('Pilih staff penerima tugas.');
+            return;
+        }
+
+        try {
+            for (const staffId of staffIds) {
+                const payload = new FormData();
+                payload.append('karyawan_id_karyawan', staffId);
+                payload.append('judul_tugas', formData.get('judul'));
+                payload.append('deskripsi', formData.get('deskripsi') || '');
+                payload.append('deadline', formData.get('tenggat'));
+                if (file) payload.append('file_pendukung', file);
+                await apiRequest('/api/kadiv/tugas', { method: 'POST', body: payload });
+            }
+            taskForm.reset();
+            document.getElementById('namaFileTugas').textContent = 'Pilih File';
+            if (window.setModal) window.setModal('modalTugasBaru', false);
+            await loadTasks();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+
     // cegah dobel kalau script yang sama sudah ada di app.js
     if (!window.__modalReady) {
         window.__modalReady = true;
@@ -241,7 +302,7 @@
         const f = this.files[0];
         if (!f) { label.textContent = 'Pilih File'; return; }
         if (f.size > 20 * 1024 * 1024) {
-            alert('Ukuran file maksimal 5 MB');
+            alert('Ukuran file maksimal 20 MB');
             this.value = '';
             label.textContent = 'Pilih File';
             return;

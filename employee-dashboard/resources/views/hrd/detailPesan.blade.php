@@ -28,10 +28,10 @@
                         <span class="px-2.5 py-1 bg-cyan-50 text-cyan-700 rounded-full text-xs font-bold">
                             {{ ucfirst($pesan->tipe ?? 'pesan') }}
                         </span>
-                        <span class="text-xs text-slate-500">{{ $pesan->tanggal_pesan }}</span>
+                        <span id="pesan-tanggal" class="text-xs text-slate-500">{{ $pesan->tanggal_pesan }}</span>
                     </div>
-                    <h2 class="text-2xl font-bold text-slate-900">{{ $pesan->judul_pesan }}</h2>
-                    <p class="text-sm text-slate-600 mt-2">
+                    <h2 id="pesan-judul" class="text-2xl font-bold text-slate-900">{{ $pesan->judul_pesan }}</h2>
+                    <p id="pesan-pengirim" class="text-sm text-slate-600 mt-2">
                         Dari {{ $pesan->pengirim?->karyawan?->nama ?? $pesan->pengirim?->username ?? 'Pengguna tidak tersedia' }}
                         kepada {{ $pesan->penerima?->karyawan?->nama ?? $pesan->penerima?->username ?? 'Pengguna tidak tersedia' }}
                     </p>
@@ -46,6 +46,8 @@
                         </a>
                     </p>
                 @endif
+
+                <div id="pesan-lampiran" class="hidden"></div>
 
                 @foreach ($thread as $item)
                     <article class="rounded-xl border border-slate-200 p-4 {{ $item->id_pesan === $pesan->id_pesan ? 'bg-cyan-50/50' : 'bg-slate-50' }}">
@@ -88,6 +90,11 @@
                         <p id="errorBalasPesan" class="hidden text-sm text-red-600" role="alert"></p>
                     </form>
                 </section>
+            @endif
+                        </button>
+                        <p id="errorBalasPesan" class="hidden text-sm text-red-600" role="alert"></p>
+                    </form>
+                </section>
             @else
                 <p class="mt-5 text-sm text-slate-500">Surat ini tidak dapat dibalas melalui sistem.</p>
             @endif
@@ -96,13 +103,118 @@
 
     @if ($canReply)
         <script>
-            document.getElementById('formBalasPesan').addEventListener('submit', async function(event) {
-                event.preventDefault();
-                const form = event.currentTarget;
-                const button = document.getElementById('btnBalasPesan');
-                const error = document.getElementById('errorBalasPesan');
-                button.disabled = true;
-                error.classList.add('hidden');
+            const form = document.getElementById('formBalasPesan');
+            const button = document.getElementById('btnBalasPesan');
+            const error = document.getElementById('errorBalasPesan');
+
+            if (form && button && error) {
+                form.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    const formData = new FormData(form);
+                    button.disabled = true;
+                    error.classList.add('hidden');
+
+                    try {
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                            },
+                            body: formData
+                        });
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            const validationErrors = result.errors ? Object.values(result.errors).flat().join('\n') : '';
+                            throw new Error(validationErrors || result.message || 'Balasan gagal dikirim.');
+                        }
+
+                        window.location.reload();
+                    } catch (exception) {
+                        error.textContent = exception.message || 'Terjadi kesalahan saat mengirim balasan.';
+                        error.classList.remove('hidden');
+                    } finally {
+                        button.disabled = false;
+                    }
+                });
+            }
+
+            const messageId = window.location.pathname.split('/').filter(Boolean).pop();
+            const token = sessionStorage.getItem('staff_token');
+            const btnToggle = document.getElementById('btn-toggle-balas');
+            const formBalasan = document.getElementById('form-balasan');
+            const formSubmit = document.getElementById('form-submit-balasan');
+            const pesanInput = document.getElementById('pesanInput');
+            const lampiranInput = document.getElementById('lampiranBalas');
+
+            if (btnToggle && formBalasan && formSubmit) {
+                btnToggle.addEventListener('click', () => {
+                    formBalasan.classList.toggle('hidden');
+                });
+
+                let isFormDirty = false;
+                const updateDirtyState = () => {
+                    isFormDirty = (pesanInput?.value.trim().length || 0) > 0 || (lampiranInput?.files.length || 0) > 0;
+                };
+
+                pesanInput?.addEventListener('input', updateDirtyState);
+                lampiranInput?.addEventListener('change', () => {
+                    const file = lampiranInput.files[0];
+                    if (file && file.size > 20 * 1024 * 1024) {
+                        alert('Ukuran file maksimal 20 MB');
+                        lampiranInput.value = '';
+                    }
+                    updateDirtyState();
+                });
+                formSubmit.addEventListener('reset', () => {
+                    isFormDirty = false;
+                });
+
+                formSubmit.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const file = lampiranInput?.files[0];
+                    if (file && file.size > 20 * 1024 * 1024) {
+                        alert('Ukuran file maksimal 20 MB');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/hrd/pesan/' + encodeURIComponent(messageId) + '/balas', {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+                            body: new FormData(formSubmit)
+                        });
+                        const result = await response.json();
+                        if (!response.ok) throw new Error(result.message || 'Balasan gagal dikirim.');
+
+                        formSubmit.reset();
+                        isFormDirty = false;
+                        formBalasan.classList.add('hidden');
+                        window.location.reload();
+                    } catch (submitError) {
+                        alert(submitError.message || 'Terjadi kesalahan saat mengirim balasan.');
+                    }
+                });
+
+                document.addEventListener('click', (event) => {
+                    const link = event.target.closest('a');
+                    if (!link || !isFormDirty || link.target === '_blank' || link.getAttribute('href')?.startsWith('#')) return;
+                    if (!confirm('Perubahan belum disimpan. Yakin ingin meninggalkan halaman ini?')) {
+                        event.preventDefault();
+                    } else {
+                        isFormDirty = false;
+                    }
+                });
+
+                window.addEventListener('beforeunload', (event) => {
+                    if (!isFormDirty) return;
+                    event.preventDefault();
+                    event.returnValue = '';
+                });
+            }
+        </script>
+    @endif
 
                 try {
                     const response = await fetch(form.action, {
@@ -118,21 +230,64 @@
                     });
                     const result = await response.json();
 
-                    if (!response.ok) {
-                        const validationErrors = result.errors ? Object.values(result.errors).flat().join('\n') : '';
-                        throw new Error(validationErrors || result.message || 'Balasan gagal dikirim.');
-                    }
+        pesanInput.addEventListener('input', () => {
+            isFormDirty = pesanInput.value.trim().length > 0 || lampiranInput.files.length > 0;
+        });
+        lampiranInput.addEventListener('change', () => {
+            const file = lampiranInput.files[0];
+            if (file && file.size > 20 * 1024 * 1024) {
+                alert('Ukuran file maksimal 20 MB');
+                lampiranInput.value = '';
+            }
+            isFormDirty = pesanInput.value.trim().length > 0 || lampiranInput.files.length > 0;
+        });
+        formSubmit.addEventListener('reset', () => {
+            isFormDirty = false;
+        });
 
-                    window.location.reload();
-                } catch (exception) {
-                    error.textContent = exception.message || 'Terjadi kesalahan saat mengirim balasan.';
-                    error.classList.remove('hidden');
-                } finally {
-                    button.disabled = false;
-                }
-            });
-        </script>
-    @endif
+        formSubmit.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const file = lampiranInput.files[0];
+            if (file && file.size > 20 * 1024 * 1024) {
+                alert('Ukuran file maksimal 20 MB');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/hrd/pesan/' + encodeURIComponent(messageId) + '/balas', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+                    body: new FormData(formSubmit)
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || 'Balasan gagal dikirim.');
+
+                formSubmit.reset();
+                isFormDirty = false;
+                formBalasan.classList.add('hidden');
+                window.location.reload();
+            } catch (error) {
+                alert(error.message || 'Terjadi kesalahan saat mengirim balasan.');
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            const link = event.target.closest('a');
+            if (!link || !isFormDirty || link.target === '_blank' || link.getAttribute('href')?.startsWith('#')) return;
+            if (!confirm('Perubahan belum disimpan. Yakin ingin meninggalkan halaman ini?')) {
+                event.preventDefault();
+            } else {
+                isFormDirty = false;
+            }
+        });
+
+        window.addEventListener('beforeunload', (event) => {
+            if (!isFormDirty) return;
+            event.preventDefault();
+            event.returnValue = '';
+        });
+
+        window.location.reload();
 </body>
 
 </html>
