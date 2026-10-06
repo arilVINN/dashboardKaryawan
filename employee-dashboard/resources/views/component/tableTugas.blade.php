@@ -29,7 +29,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async function() {
-        const token = localStorage.getItem('staff_token');
+        const token = sessionStorage.getItem('staff_token');
         const tbody = document.getElementById('tbody-tugas');
         if (!token || !tbody) return;
 

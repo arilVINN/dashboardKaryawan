@@ -105,6 +105,7 @@ class KadivMessageController extends Controller
 
         $validated = $request->validate([
             'deskripsi' => ['required', 'string', 'max:10000'],
+            'file_lampiran' => ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
         ]);
 
         $message = Pesan::query()
@@ -133,18 +134,31 @@ class KadivMessageController extends Controller
             return response()->json(['message' => 'Penerima balasan tidak dapat ditentukan.'], 422);
         }
 
-        $reply = Pesan::create([
-            'id_pesan' => $this->generateMessageId(),
-            'judul_pesan' => $root->judul_pesan,
-            'deskripsi' => $validated['deskripsi'],
-            'tipe' => 'pesan',
-            'tanggal_pesan' => now()->toDateString(),
-            'tugas_id_tugas' => $root->tugas_id_tugas,
-            'tugas_karyawan_id_karyawan' => $root->tugas_karyawan_id_karyawan,
-            'pengirim_id_user' => $user->id_user,
-            'penerima_id_user' => $recipient->id_user,
-            'balasan_dari_id_pesan' => $root->id_pesan,
-        ]);
+        $storedPath = $request->hasFile('file_lampiran')
+            ? $request->file('file_lampiran')->store('pesan-lampiran', 'public')
+            : null;
+
+        try {
+            $reply = Pesan::create([
+                'id_pesan' => $this->generateMessageId(),
+                'judul_pesan' => $root->judul_pesan,
+                'deskripsi' => $validated['deskripsi'],
+                'tipe' => 'pesan',
+                'file_lampiran' => $storedPath,
+                'tanggal_pesan' => now()->toDateString(),
+                'tugas_id_tugas' => $root->tugas_id_tugas,
+                'tugas_karyawan_id_karyawan' => $root->tugas_karyawan_id_karyawan,
+                'pengirim_id_user' => $user->id_user,
+                'penerima_id_user' => $recipient->id_user,
+                'balasan_dari_id_pesan' => $root->id_pesan,
+            ]);
+        } catch (\Throwable $exception) {
+            if ($storedPath) {
+                Storage::disk('public')->delete($storedPath);
+            }
+
+            throw $exception;
+        }
 
         PesanDikirim::dispatch($reply);
 
@@ -156,6 +170,7 @@ class KadivMessageController extends Controller
                 'tipe' => $reply->tipe,
                 'judul_pesan' => $reply->judul_pesan,
                 'deskripsi' => $reply->deskripsi,
+                'file_lampiran' => $storedPath ? Storage::disk('public')->url($storedPath) : null,
                 'pengirim_id_user' => $reply->pengirim_id_user,
                 'penerima_id_user' => $reply->penerima_id_user,
             ],

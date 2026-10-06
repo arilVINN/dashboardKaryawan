@@ -32,7 +32,7 @@
             <button type="button"
                     id="profile-dropdown-btn"
                     class="flex items-center gap-2 cursor-pointer">
-                <div class="w-9 h-9 rounded-full bg-[#19A7CE] flex items-center justify-center text-white font-bold text-sm">
+                <div id="kadiv-topbar-initial" class="w-9 h-9 rounded-full bg-[#19A7CE] flex items-center justify-center text-white font-bold text-sm">
                     {{ strtoupper(substr($user['nama'] ?? 'U', 0, 1)) }}
                 </div>
 
@@ -53,10 +53,10 @@
                  class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 overflow-hidden z-50">
 
                 <div class="px-4 py-3 border-b border-slate-100">
-                    <p class="text-sm font-bold text-[#2A4B6A] truncate">
+                    <p id="kadiv-topbar-name" class="text-sm font-bold text-[#2A4B6A] truncate">
                         {{ $user['nama'] ?? 'User' }}
                     </p>
-                    <p class="text-xs text-slate-500 truncate">
+                    <p id="kadiv-topbar-email" class="text-xs text-slate-500 truncate">
                         {{ $user['email'] ?? '' }}
                     </p>
                 </div>
@@ -66,7 +66,7 @@
                     Profil
                 </a>
 
-                <a href="{{ url('/login') }}"
+                <a id="kadiv-logout" href="{{ url('/login') }}"
                    class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition border-t border-slate-100">
                     Logout
                 </a>
@@ -81,6 +81,43 @@
         const profileBtn = document.getElementById('profile-dropdown-btn');
         const profileMenu = document.getElementById('profile-dropdown-menu');
         const dropdownArrow = document.getElementById('dropdown-arrow');
+        const token = sessionStorage.getItem('staff_token');
+
+        if (token) {
+            fetch('/api/kadiv/profile', {
+                headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+            })
+                .then(async response => {
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message || 'Gagal memuat identitas Kadiv.');
+                    return result.data;
+                })
+                .then(profile => {
+                    document.getElementById('kadiv-topbar-initial').textContent =
+                        (profile.nama || 'U').charAt(0).toUpperCase();
+                    document.getElementById('kadiv-topbar-name').textContent = profile.nama || 'User';
+                    document.getElementById('kadiv-topbar-email').textContent = profile.email || '';
+                })
+                .catch(error => console.error('Gagal memuat identitas Kadiv:', error));
+        }
+
+        document.getElementById('kadiv-logout').addEventListener('click', async function (event) {
+            event.preventDefault();
+            try {
+                if (token) {
+                    const response = await fetch('/api/logout', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+                    });
+                    if (!response.ok) throw new Error('Logout backend gagal: ' + response.status);
+                }
+            } catch (error) {
+                console.error('Gagal melakukan logout Kadiv:', error);
+            } finally {
+                sessionStorage.removeItem('staff_token');
+                window.location.href = this.href;
+            }
+        });
 
         if (profileBtn && profileMenu) {
 

@@ -1,21 +1,25 @@
-<div class="mt-5 overflow-x-auto">
-    <div class="min-w-[700px] rounded-md bg-white shadow-md overflow-hidden">
-        <div class="grid grid-cols-[2fr_1fr_1.5fr_1fr] items-center bg-slate-100 px-4 py-3">
-            <span class="text-sm font-medium text-slate-600">Nama</span>
-            <span class="text-sm font-medium text-slate-600 text-center">Tugas</span>
-            <span class="text-sm font-medium text-slate-600 text-center">Terakhir Login</span>
-            <span class="text-sm font-medium text-slate-600 text-center">Aksi</span>
-        </div>
-        <div id="kadiv-staff-rows">
-            <div class="h-52 flex items-center justify-center text-sm text-slate-500">Memuat data staff...</div>
-        </div>
-    </div>
+<div class="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+    <table class="w-full min-w-[650px] text-left text-sm text-slate-600">
+        <thead class="bg-slate-100 text-xs uppercase text-slate-500">
+            <tr>
+                <th class="px-4 py-3 font-medium">Nama Staff</th>
+                <th class="px-4 py-3 text-center font-medium">Tugas</th>
+                <th class="px-4 py-3 text-center font-medium">Terakhir Login</th>
+                <th class="px-4 py-3 text-center font-medium">Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="kadiv-staff-rows">
+            <tr>
+                <td colspan="4" class="h-28 px-4 text-center text-slate-500">Memuat data staff...</td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 
 <script>
     async function loadKadivStaffTable() {
         const rows = document.getElementById('kadiv-staff-rows');
-        const token = localStorage.getItem('staff_token');
+        const token = sessionStorage.getItem('staff_token');
         if (!token) {
             window.location.href = '/login';
             return;
@@ -36,37 +40,47 @@
             const staff = result.data.staff || [];
             rows.replaceChildren();
             if (staff.length === 0) {
-                rows.innerHTML = '<div class="h-52 flex items-center justify-center text-sm text-slate-500">Belum ada staff.</div>';
+                rows.innerHTML = '<tr><td colspan="4" class="h-28 px-4 text-center text-slate-500">Belum ada staff di divisi ini.</td></tr>';
                 return;
             }
 
             staff.forEach((person) => {
-                const row = document.createElement('div');
-                row.className = 'grid grid-cols-[2fr_1fr_1.5fr_1fr] items-center border-t border-slate-100 px-4 py-3 text-sm text-slate-700';
-                const lastLogin = person.terakhir_login
-                    ? new Date(person.terakhir_login).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-50';
+
+                const name = document.createElement('td');
+                name.className = 'px-4 py-3 font-semibold text-slate-800';
+                name.textContent = person.nama || '-';
+                row.appendChild(name);
+
+                const tasks = document.createElement('td');
+                tasks.className = 'px-4 py-3 text-center';
+                tasks.textContent = person.jumlah_tugas_dikerjakan ?? 0;
+                row.appendChild(tasks);
+
+                const lastLogin = document.createElement('td');
+                lastLogin.className = 'px-4 py-3 text-center';
+                lastLogin.textContent = person.terakhir_login
+                    ? new Date(person.terakhir_login).toLocaleString('id-ID', {
+                        dateStyle: 'medium',
+                        timeStyle: 'short'
+                    })
                     : 'Belum pernah login';
+                row.appendChild(lastLogin);
 
-                [person.nama || '-', person.jumlah_tugas_dikerjakan ?? 0, lastLogin].forEach((value, index) => {
-                    const cell = document.createElement('span');
-                    cell.className = index === 0 ? 'font-medium' : 'text-center';
-                    cell.textContent = value;
-                    row.appendChild(cell);
-                });
-
-                const actionCell = document.createElement('span');
-                actionCell.className = 'text-center';
+                const actionCell = document.createElement('td');
+                actionCell.className = 'px-4 py-3 text-center';
                 const action = document.createElement('a');
-                action.href = '/kadiv/manajemenStaff';
+                action.href = '/kadiv/manajemenStaff/' + encodeURIComponent(person.id_karyawan);
                 action.className = 'font-semibold text-cyan-700 hover:underline';
-                action.textContent = 'Kelola';
+                action.textContent = 'Detail';
                 actionCell.appendChild(action);
                 row.appendChild(actionCell);
                 rows.appendChild(row);
             });
         } catch (error) {
             console.error('Gagal memuat staff Kadiv:', error);
-            rows.innerHTML = '<div class="h-52 flex items-center justify-center px-4 text-center text-sm text-red-600">Data staff gagal dimuat. Silakan muat ulang halaman.</div>';
+            rows.innerHTML = '<tr><td colspan="4" class="h-28 px-4 text-center text-red-600">Data staff gagal dimuat. Silakan muat ulang halaman.</td></tr>';
         }
     }
 

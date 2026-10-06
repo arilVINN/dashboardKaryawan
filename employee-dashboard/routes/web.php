@@ -5,7 +5,6 @@ use App\Http\Controllers\Staff\NotifikasiController;
 use App\Http\Middleware\EnsureStaffRole;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use App\Http\Controllers\KadivController;
 
 
 Route::get('/', function () {
@@ -87,69 +86,15 @@ Route::get('/kadiv/tugas/{id}', function ($id) {
 });
 
  // sesuaikan dengan controller kamu
-Route::post('/kadiv/tugas', [KadivController::class, 'store'])->name('kadiv.tugas.store');
-
-// Rute Revisi Tugas
-Route::post('/kadiv/tugas/{id}/revisi', function (Request $request, $id) {
-    $request->validate([
-        'isi_revisi' => ['required', 'string', 'max:2000'],
-        'tenggat'    => ['nullable', 'string'],
-    ]);
-
-    $semuaRevisi = session('revisi_tugas', []);
-    $semuaRevisi[] = [
-        'id_tugas' => $id,
-        'isi'      => $request->input('isi_revisi'),
-        'tenggat'  => $request->input('tenggat', ''),
-        'waktu'    => now()->format('d M Y, H.i'),
-    ];
-    session(['revisi_tugas' => $semuaRevisi]);
-
-    return redirect()
-        ->route('kadiv.detailTugas.show', $id)
-        ->with('success', 'Revisi berhasil dikirim.');
-})->name('kadiv.revisiTugas');
-
-
-
 // ================= PESAN ================= //
-Route::post('/kadiv/detailPesan/{id}/balas', [KadivController::class, 'balasPesan'])->name('kadiv.balasPesan');
-
 // Rute Daftar Pesan
 Route::get('/kadiv/pesan', function () { // Path diubah dari /kadiv/detailPesan menjadi /kadiv/pesan
     return view('kadiv.pesan'); // Disesuaikan ke pesan.blade.php
 })->name('kadiv.pesan');
 
-// Rute Detail Pesan
-Route::get('/kadiv/detailPesan/{id}', function ($id) {
-    return view('kadiv.lihatPesan', ['id' => $id]); // Sesuai dengan file lihatPesan.blade.php
-})->name('kadiv.detailPesan.show');
-
 Route::get('/kadiv/detailPesan/{id}', function ($id) {
     return view('kadiv.detailPesan', compact('id'));
 })->name('kadiv.detailPesan');
-
-Route::get('/kadiv/detailPesan/{id}', [KadivController::class, 'detailPesan'])->name('kadiv.detailPesan');
-
-// Rute Balas Pesan
-Route::post('/kadiv/pesan/{id}/balas', function (Request $request, $id) {
-    $request->validate([
-        'pesan' => ['required', 'string', 'max:1000'],
-    ]);
-
-    $semuaBalasan = session('balasan_pesan', []);
-    $semuaBalasan[] = [
-        'id_pesan'    => $id,
-        'isi'         => $request->input('pesan'),
-        'pengirim'    => 'Kadiv',
-        'waktu'       => now()->format('d M Y, H.i'),
-    ];
-    session(['balasan_pesan' => $semuaBalasan]);
-
-    return redirect()
-        ->route('kadiv.detailPesan.show', $id)
-        ->with('success', 'Balasan berhasil dikirim.');
-})->name('kadiv.balasPesan');
 
 
 

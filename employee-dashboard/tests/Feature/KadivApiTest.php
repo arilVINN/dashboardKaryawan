@@ -10,7 +10,9 @@ use App\Models\Role;
 use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class KadivApiTest extends TestCase
@@ -131,6 +133,7 @@ class KadivApiTest extends TestCase
     {
         $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
         $hrd = $this->createAccount('HR-1', 'HRD', 'DIV-HR', 'ROLE-HRD', 'hrd');
+        Storage::fake('public');
 
         Pesan::create([
             'id_pesan' => 'PSN-TO-HRD',
@@ -143,8 +146,9 @@ class KadivApiTest extends TestCase
         ]);
 
         $this->actingAs($hrd)
-            ->postJson('/api/hrd/pesan/PSN-TO-HRD/balas', [
+            ->post('/api/hrd/pesan/PSN-TO-HRD/balas', [
                 'deskripsi' => 'Data akan dikirim hari ini.',
+                'file_lampiran' => UploadedFile::fake()->create('data.pdf', 1, 'application/pdf'),
             ])
             ->assertCreated()
             ->assertJsonPath('data.balasan_dari_id_pesan', 'PSN-TO-HRD');
@@ -159,6 +163,12 @@ class KadivApiTest extends TestCase
             ->getJson('/api/kadiv/pesan/PSN-TO-HRD')
             ->assertOk()
             ->assertJsonCount(2, 'data.balasan');
+
+        $this->actingAs($hrd)
+            ->getJson('/api/hrd/pesan/PSN-TO-HRD')
+            ->assertOk()
+            ->assertJsonCount(2, 'data.balasan')
+            ->assertJsonFragment(['file' => Storage::disk('public')->url(Pesan::where('balasan_dari_id_pesan', 'PSN-TO-HRD')->first()->file_lampiran)]);
 
         Pesan::create([
             'id_pesan' => 'PSN-LETTER-HRD',

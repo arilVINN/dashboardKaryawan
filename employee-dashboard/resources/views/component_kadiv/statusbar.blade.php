@@ -38,7 +38,12 @@
         <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">Presentase</span>
         <div class="flex items-center gap-3">
             <div class="relative w-14 h-14 shrink-0">
-                <canvas id="miniChart" class="block h-14 w-14"></canvas>
+                <svg class="block h-14 w-14 -rotate-90" viewBox="0 0 56 56" role="img" aria-label="Grafik persentase tugas">
+                    <circle cx="28" cy="28" r="22" fill="none" stroke="#e2e8f0" stroke-width="8"></circle>
+                    <circle id="ring-berjalan" cx="28" cy="28" r="22" fill="none" stroke="#22c55e" stroke-width="8"></circle>
+                    <circle id="ring-pending" cx="28" cy="28" r="22" fill="none" stroke="#eab308" stroke-width="8"></circle>
+                    <circle id="ring-selesai" cx="28" cy="28" r="22" fill="none" stroke="#3b82f6" stroke-width="8"></circle>
+                </svg>
             </div>
             <div class="flex-1 space-y-1 text-[10px] font-bold text-slate-600">
                 <div class="flex justify-between items-center">
@@ -64,17 +69,10 @@
     </div>
 
 </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     async function loadKadivStatusbar() {
-        const token = localStorage.getItem('staff_token');
+        const token = sessionStorage.getItem('staff_token');
         if (!token) {
             window.location.href = '/login';
             return;
@@ -111,44 +109,19 @@
             document.getElementById('pct-pending').textContent = percentage(pending) + '%';
             document.getElementById('pct-selesai').textContent = percentage(selesai) + '%';
 
-            const chartCanvas = document.getElementById('miniChart');
-            if (chartCanvas) {
-                if (window.kadivMiniChart instanceof Chart) {
-                    window.kadivMiniChart.destroy();
-                }
-
-                window.kadivMiniChart = new Chart(chartCanvas, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Yang Belum', 'Belum Di-acc', 'Selesai'],
-                        datasets: [{
-                            data: [belum, pending, selesai],
-                            backgroundColor: [
-                                '#22c55e',
-                                '#eab308',
-                                '#3b82f6'
-                            ],
-                            borderWidth: 0,
-                            cutout: '60%'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                enabled: false
-                            }
-                        },
-                        layout: {
-                            padding: 0
-                        }
-                    }
-                });
-            }
+            const circumference = 2 * Math.PI * 22;
+            let offset = 0;
+            [
+                ['ring-berjalan', belum],
+                ['ring-pending', pending],
+                ['ring-selesai', selesai]
+            ].forEach(([id, count]) => {
+                const ring = document.getElementById(id);
+                const length = total > 0 ? (count / total) * circumference : 0;
+                ring.setAttribute('stroke-dasharray', `${length} ${circumference - length}`);
+                ring.setAttribute('stroke-dashoffset', `${-offset}`);
+                offset += length;
+            });
         } catch (error) {
             console.error('Gagal memuat statistik Kadiv:', error);
         }

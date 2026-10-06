@@ -165,6 +165,12 @@ class PesanController extends Controller
                     'tanggal_pesan' => $reply->tanggal_pesan,
                     'pengirim' => $person($reply->pengirim),
                     'penerima' => $person($reply->penerima),
+                    'lampiran' => [
+                        'link' => $reply->link_lampiran,
+                        'file' => $reply->file_lampiran
+                            ? Storage::disk('public')->url($reply->file_lampiran)
+                            : null,
+                    ],
                     'created_at' => $reply->created_at?->toISOString(),
                 ]),
                 'created_at' => $pesan->created_at?->toISOString(),
@@ -313,6 +319,12 @@ class PesanController extends Controller
                         'judul_pesan' => $pesan->judul_pesan,
                         'deskripsi' => $pesan->deskripsi,
                         'tanggal_pesan' => $pesan->tanggal_pesan,
+                        'lampiran' => [
+                            'link' => $pesan->link_lampiran,
+                            'file' => $pesan->file_lampiran
+                                ? Storage::disk('public')->url($pesan->file_lampiran)
+                                : null,
+                        ],
 
                         'pengirim' => $pesan->pengirim ? [
                             'id_user' => $pesan->pengirim->id_user,
