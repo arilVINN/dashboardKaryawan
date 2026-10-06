@@ -2,42 +2,44 @@
     $isCompact = $compact ?? false;
     $cellPadding = $isCompact ? 'px-4 py-3' : 'px-6 py-4';
 
+
+
     // Data dummy tugas
     $dummyTugas = [
         [
-            'no' => '01',
             'judul' => 'Slicing UI Dashboard Staff',
             'tenggat' => '30/09/2026',
-            'status' => 'On going',
-            'status_class' => 'bg-blue-100 text-blue-700',
-            'progress' => '75%',
+            'status' => 'Sudah di-Acc',
+            'status_class' => 'bg-[#CCF4DB] text-emerald-700',
             'link' => url('/tugas/detail/1'),
         ],
         [
-            'no' => '02',
             'judul' => 'Integrasi API Autentikasi',
             'tenggat' => '02/10/2026',
-            'status' => 'Pending',
-            'status_class' => 'bg-amber-100 text-amber-700',
-            'progress' => '20%',
+            'status' => 'Berjalan',
+            'status_class' => 'bg-[#DFE4EA] text-black-700',
             'link' => url('/tugas/detail/2'),
         ],
         [
-            'no' => '03',
             'judul' => 'Perbaikan Responsif Mobile',
             'tenggat' => '05/10/2026',
-            'status' => 'Done',
-            'status_class' => 'bg-emerald-100 text-emerald-700',
-            'progress' => '100%',
+            'status' => 'Baru',
+            'status_class' => 'bg-[#C0E7FF] text-blue-700',
+
             'link' => url('/tugas/detail/3'),
         ],
         [
-            'no' => '04',
             'judul' => 'Testing Flow Notifikasi & Pesan',
             'tenggat' => '08/10/2026',
-            'status' => 'On going',
-            'status_class' => 'bg-blue-100 text-blue-700',
-            'progress' => '50%',
+            'status' => 'Menunggu Acc',
+            'status_class' => 'bg-[#FFF7ED] text-[#C2410C]',
+            'link' => url('/tugas/detail/4'),
+        ],
+        [
+            'judul' => 'Testing Flow',
+            'tenggat' => '08/10/2026',
+            'status' => 'Telat',
+            'status_class' => 'bg-red-100 text-red-700',
             'link' => url('/tugas/detail/4'),
         ],
     ];
@@ -51,20 +53,15 @@
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-100 text-slate-500">
                     <tr>
-                        <th class="px-4 py-3 font-medium whitespace-nowrap">No</th>
                         <th class="px-4 py-3 font-medium whitespace-nowrap">Judul Tugas</th>
                         <th class="px-4 py-3 font-medium whitespace-nowrap">Tenggat Waktu</th>
                         <th class="px-4 py-3 font-medium whitespace-nowrap">Status</th>
-                        <th class="px-4 py-3 font-medium whitespace-nowrap">Progress</th>
-                        <th class="px-4 py-3 font-medium whitespace-nowrap">Aksi</th>
+                        <th class="px-4 py-3 font-medium whitespace-nowrap text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                     @foreach ($dummyTugas as $tugas)
                         <tr class="hover:bg-slate-50 transition">
-                            <td class="{{ $cellPadding }} whitespace-nowrap text-slate-600">
-                                {{ $tugas['no'] }}
-                            </td>
                             <td class="{{ $cellPadding }} font-medium text-slate-800 whitespace-nowrap">
                                 {{ $tugas['judul'] }}
                             </td>
@@ -77,9 +74,7 @@
                                     {{ $tugas['status'] }}
                                 </span>
                             </td>
-                            <td class="{{ $cellPadding }} whitespace-nowrap text-slate-600">
-                                {{ $tugas['progress'] }}
-                            </td>
+
                             <td class="{{ $cellPadding }} whitespace-nowrap text-center">
                                 <a href="{{ $tugas['link'] }}"
                                     class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">

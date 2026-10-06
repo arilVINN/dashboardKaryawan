@@ -2,7 +2,7 @@
     <nav aria-label="Breadcrumb" role="navigation">
         <ul class="flex flex-wrap items-center my-1">
             <li class="inline-flex items-center">
-                <a href="https://eliteai.tools" aria-label="home"
+                <a href="{{ url()->previous() }}" aria-label="home"
                     class="inline-flex items-center font-medium text-gray-700">
                     <svg class="w-4 h-4 mx-2 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none"
                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"
@@ -19,7 +19,7 @@
                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
                 </svg>
-                <a href="/" class="font-medium text-gray-700">
+                <a href="{{ url()->previous() }}" class="font-medium text-gray-700">
                     Daftar Pesan
                 </a>
             </li>
@@ -29,7 +29,7 @@
                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
                 </svg>
-                <a href="hrd/pesan" class="font-medium text-gray-700">
+                <a href="{{ url()->previous() }}" class="font-medium text-gray-700">
                     Detail Pesan
                 </a>
             </li>

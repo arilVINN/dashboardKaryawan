@@ -17,13 +17,13 @@
         @include('component.topbar')
 
         <main class="flex-1 overflow-y-auto p-8">
-            <h1 class="text-2xl font-bold text-gray-800">Status tugas tugas staff</h1>
+            <h1 class="text-2xl font-bold text-gray-800">Status Tugas Staff</h1>
             @include('component.statusbar')
 
             <h1 class="text-2xl font-bold text-gray-800 pt-5">Notifikasi</h1>
             @include('component.notifikasi')
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start mt-6">
+            <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 items-start mt-6">
                 @include('component.tableTugas',['compact' => true])
                 @include('component.tablePesan',['compact' => true])
             </div>

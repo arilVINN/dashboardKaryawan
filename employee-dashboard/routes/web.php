@@ -12,6 +12,11 @@ Route::get('/', function () {
     return view('staff.dashboard');
 })->name('dashboard');
 
+Route::get('/login', function () {
+    return view('login');
+})->name('login');
+
+//staff route
 Route::get('/tugas', function () {
     return view('staff.tugas');
 })->name('tugas');
@@ -32,9 +37,7 @@ Route::get('/profile', function () {
     return view('staff.detailProfile');
 })->name('profile');
 
-Route::get('/login', function () {
-    return view('login');
-})->name('login');
+
 
 Route::prefix('staff')->middleware(EnsureStaffRole::class)->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -55,7 +58,21 @@ Route::get('/hrd/pesan', function () {
     return view('hrd.pesan');
 })->name('pesan');
 
+Route::get('/hrd/detailPesan/{id}', function () {
+    return view('hrd.detailPesan');
+})->name('detailPesan');
 
+Route::get('/hrd/detailDivisi/{id}', function () {
+    return view('hrd.detailDivisi');
+})->name('detailDivisi');
+
+Route::get('/hrd/detailDivisi', function () {
+    return view('hrd.detailDivisi');
+})->name('detailDivisi');
+
+Route::get('/hrd/detailKaryawan', function () {
+    return view('hrd.detailKaryawan');
+})->name('detailKaryawan');
 
 // 1. Route untuk proses form login
 Route::post('/login-proses', function (Request $request) {

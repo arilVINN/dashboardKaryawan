@@ -9,7 +9,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <a href="{{ url('/hrd/detailKaryawan') }}" class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between hover:bg-blue-100 transition">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Total Karyawan</span>
             <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['karyawan'] }}</span>
@@ -20,9 +20,9 @@
             </path>
         </svg>
 
-    </div>
+    </a>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <a href="{{url('/hrd/manajemenDivisi')}}" class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between hover:bg-blue-100 transition">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Total Divisi</span>
             <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['divisi'] }}</span>
@@ -31,7 +31,7 @@
             <circle cx="12" cy="12" r="10"></circle>
             <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6"></path>
         </svg>
-    </div>
+    </a>
 
     <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
@@ -76,7 +76,7 @@
 
 </div>
 
-<!-- Script pembuat grafik diletakkan langsung di dalam komponen ini -->
+<!-- Script grafik  -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
