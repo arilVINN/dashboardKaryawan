@@ -1,40 +1,28 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Dashboard Kepala Divisi - PT SILINDO</title>
-
-    @vite('resources/css/app.css')
+    <title>Dashboard Kadiv</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body class="bg-gray-100 flex h-screen overflow-hidden">
-
-    {{-- =========================================================
-         SIDEBAR
-         Menggunakan sidebar utama project
-    ========================================================== --}}
+    
     @include('component_kadiv.sidebar')
 
-
-    {{-- =========================================================
-         CONTENT AREA
-    ========================================================== --}}
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
-
-        {{-- Topbar utama project --}}
+        
         @include('component_kadiv.topbar')
-
-
         {{-- =====================================================
              MAIN CONTENT
         ====================================================== --}}
         <main class="flex-1 overflow-y-auto p-8">
             <h1 class="text-2xl font-bold text-gray-800">Status Tugas Divisi</h1>
-            @include('component_kadiv.statusbar')
-
+            <div class="px-8">
+                @include('component_kadiv.statusbar')
+            </div>
 
             {{-- =================================================
                  MANAJEMEN STAFF
@@ -43,8 +31,6 @@
                 Manajemen Staff
             </h1>
             @include('component_kadiv.tabelstaff')
-
-
 
             {{-- =================================================
                  FILTER + PAGINATION
@@ -73,7 +59,6 @@
                     Filter
 
                 </button>
-
 
                 <div class="flex items-center gap-2">
 
@@ -117,11 +102,11 @@
 
             </div>
 
-
             @include('component_kadiv.tabelpdant')
-
         </main>
 
+        </main>
+        
     </div>
 
 </body>

@@ -16,7 +16,7 @@
             <!-- Header Profil (Mirip Screenshot) -->
             <div class="flex items-center gap-6 mb-10">
                 <div id="prof-inisial" class="w-24 h-24 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-4xl font-bold shrink-0">
-                    U
+U
                 </div>
                 <div>
                     <h1 id="hdr-nama" class="text-2xl font-bold text-slate-900 leading-tight">Memuat...</h1>
@@ -140,6 +140,11 @@
                                 <button type="submit" class="px-5 py-2 bg-[#044564] text-white text-sm font-semibold rounded-lg hover:bg-[#03344b]">Perbarui Password</button>
                             </div>
                         </form>
+                    </div>
+
+                    <!-- Tombol Keluar (Opsional, tambahan jika mau di paling bawah) -->
+                    <div class="pt-2 text-right">
+                        <button id="btn-logout" class="px-5 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700">Logout dari Perangkat</button>
                     </div>
                 </div>
             </div>
@@ -277,6 +282,20 @@
                     alert('Kesalahan jaringan.');
                 }
             });
+
+            // 5. Logout
+            const btnLogout = document.getElementById('btn-logout');
+            if (btnLogout) {
+                btnLogout.addEventListener('click', async function() {
+                    if(!confirm("Apakah Anda yakin ingin logout?")) return;
+                    try {
+                        await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+                    } catch(e) {}
+                    localStorage.removeItem('staff_token');
+                    window.location.href = '/login';
+                });
+            }
+
         });
     </script>
 </body>

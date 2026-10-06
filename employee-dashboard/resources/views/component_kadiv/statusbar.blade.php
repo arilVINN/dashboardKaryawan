@@ -1,6 +1,6 @@
-<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 pt-5">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
-    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
+    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Tugas Yang Belum</span>
             <span id="stat-berjalan" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
@@ -13,7 +13,7 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
+    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Tugas Belum Di-acc</span>
             <span id="stat-pending" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
@@ -24,7 +24,7 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
+    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Tugas Selesai</span>
             <span id="stat-selesai" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
@@ -34,16 +34,11 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-xs bg-white p-4 flex flex-col justify-center">
+    <div class="rounded-md drop-shadow-md bg-white p-4 flex flex-col justify-center">
         <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">Presentase</span>
         <div class="flex items-center gap-3">
             <div class="relative w-14 h-14 shrink-0">
-                <svg class="block h-14 w-14 -rotate-90" viewBox="0 0 56 56" role="img" aria-label="Grafik persentase tugas">
-                    <circle cx="28" cy="28" r="22" fill="none" stroke="#e2e8f0" stroke-width="8"></circle>
-                    <circle id="ring-berjalan" cx="28" cy="28" r="22" fill="none" stroke="#22c55e" stroke-width="8"></circle>
-                    <circle id="ring-pending" cx="28" cy="28" r="22" fill="none" stroke="#eab308" stroke-width="8"></circle>
-                    <circle id="ring-selesai" cx="28" cy="28" r="22" fill="none" stroke="#3b82f6" stroke-width="8"></circle>
-                </svg>
+                <canvas id="miniChart" class="block h-14 w-14"></canvas>
             </div>
             <div class="flex-1 space-y-1 text-[10px] font-bold text-slate-600">
                 <div class="flex justify-between items-center">
@@ -69,7 +64,14 @@
     </div>
 
 </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     async function loadKadivStatusbar() {
         const token = localStorage.getItem('staff_token');
@@ -109,19 +111,44 @@
             document.getElementById('pct-pending').textContent = percentage(pending) + '%';
             document.getElementById('pct-selesai').textContent = percentage(selesai) + '%';
 
-            const circumference = 2 * Math.PI * 22;
-            let offset = 0;
-            [
-                ['ring-berjalan', belum],
-                ['ring-pending', pending],
-                ['ring-selesai', selesai]
-            ].forEach(([id, count]) => {
-                const ring = document.getElementById(id);
-                const length = total > 0 ? (count / total) * circumference : 0;
-                ring.setAttribute('stroke-dasharray', `${length} ${circumference - length}`);
-                ring.setAttribute('stroke-dashoffset', `${-offset}`);
-                offset += length;
-            });
+            const chartCanvas = document.getElementById('miniChart');
+            if (chartCanvas) {
+                if (window.kadivMiniChart instanceof Chart) {
+                    window.kadivMiniChart.destroy();
+                }
+
+                window.kadivMiniChart = new Chart(chartCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Yang Belum', 'Belum Di-acc', 'Selesai'],
+                        datasets: [{
+                            data: [belum, pending, selesai],
+                            backgroundColor: [
+                                '#22c55e',
+                                '#eab308',
+                                '#3b82f6'
+                            ],
+                            borderWidth: 0,
+                            cutout: '60%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: false
+                            }
+                        },
+                        layout: {
+                            padding: 0
+                        }
+                    }
+                });
+            }
         } catch (error) {
             console.error('Gagal memuat statistik Kadiv:', error);
         }
