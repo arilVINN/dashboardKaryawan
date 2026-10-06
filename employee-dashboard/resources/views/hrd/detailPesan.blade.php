@@ -4,92 +4,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Pesan HRD - PT Silindo</title>
-
-    @vite('resources/css/app.css')
+    <title>{{ $pesan->judul_pesan }} - Pesan HRD</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-white flex h-screen overflow-hidden">
-
+<body class="bg-gray-100 flex h-screen overflow-hidden">
     @include('component_hrd.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
-
         @include('component.topbar')
+        @include('component.breadcrumbs')
 
-        <main class="flex-1 overflow-y-auto px-10 py-8">
-            <h1 class="text-2xl font-bold text-slate-900 mb-6">Pesan</h1>
+        <main class="flex-1 overflow-y-auto px-6 py-8 lg:px-10">
+            <a href="{{ route('hrd.pesan') }}" class="text-sm font-medium text-cyan-700 hover:underline">
+                &larr; Kembali ke daftar pesan
+            </a>
 
-            <div class="space-y-4 bg-white p-5 rounded-3xl w-full drop-shadow-2xl">
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-900 leading-snug">lorem ipsum</h2>
-                    <p class="text-sm font-semibold text-slate-900 mt-1">tenggat : 21 sep 2026, 16.00</p>
-                    <p class="text-sm font-semibold text-slate-900">status : on going</p>
-                </div>
+            <h1 class="text-2xl font-bold text-slate-900 mt-5 mb-6">Detail Pesan</h1>
 
-                <div class="text-sm text-slate-800 leading-relaxed text-justify pt-2">
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque pharetra ut lectus vel luctus.
-                        Aenean pellentesque sapien placerat justo tincidunt, sit amet laoreet lectus dapibus. Etiam
-                        fermentum erat faucibus, auctor nisi vitae, aliquet quam. Cras eget lacus et mauris gravida
-                        aliquet. Proin auctor arcu nec dapibus accumsan. Quisque nec mauris leo. Pellentesque eu
-                        pellentesque arcu, ac varius diam. Phasellus a libero sem. Pellentesque placerat at odio eu
-                        tempor. Ut non eros tortor. Aenean tincidunt sit amet risus vel imperdiet. Vestibulum posuere
-                        facilisis urna, quis pulvinar nisl porttitor ut. Ut sollicitudin ullamcorper eros.
+            <section class="space-y-5 bg-white p-5 sm:p-7 rounded-2xl shadow-lg">
+                <header class="border-b border-slate-200 pb-4">
+                    <div class="flex flex-wrap gap-2 items-center mb-2">
+                        <span class="px-2.5 py-1 bg-cyan-50 text-cyan-700 rounded-full text-xs font-bold">
+                            {{ ucfirst($pesan->tipe ?? 'pesan') }}
+                        </span>
+                        <span id="pesan-tanggal" class="text-xs text-slate-500">{{ $pesan->tanggal_pesan }}</span>
+                    </div>
+                    <h2 id="pesan-judul" class="text-2xl font-bold text-slate-900">{{ $pesan->judul_pesan }}</h2>
+                    <p id="pesan-pengirim" class="text-sm text-slate-600 mt-2">
+                        Dari {{ $pesan->pengirim?->karyawan?->nama ?? $pesan->pengirim?->username ?? 'Pengguna tidak tersedia' }}
+                        kepada {{ $pesan->penerima?->karyawan?->nama ?? $pesan->penerima?->username ?? 'Pengguna tidak tersedia' }}
                     </p>
-                </div>
+                </header>
 
-                <hr class="border-t border-slate-300 my-6">
+                @if ($pesan->tugas)
+                    <p class="text-sm text-slate-600">
+                        Terkait tugas:
+                        <a href="{{ url('/kadiv/tugas/' . $pesan->tugas->id_tugas) }}"
+                            class="text-cyan-700 hover:underline">
+                            {{ $pesan->tugas->judul_tugas }}
+                        </a>
+                    </p>
+                @endif
 
-                <div>
-                    <button type="button" id="btn-toggle-balas"
-                        class="px-6 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-semibold rounded-lg shadow-sm transition">
-                        Balas Pesan
-                    </button>
-                </div>
+                <div id="pesan-lampiran" class="hidden"></div>
 
-            </div>
-            <div id="form-balasan" class="hidden pt-2 space-y-4 max-w-xl transition-all">
-                <h2 class="text-xl font-bold text-slate-900">Balasan</h2>
+                @foreach ($thread as $item)
+                    <article class="rounded-xl border border-slate-200 p-4 {{ $item->id_pesan === $pesan->id_pesan ? 'bg-cyan-50/50' : 'bg-slate-50' }}">
+                        <div class="flex flex-wrap justify-between gap-2 text-xs text-slate-500 mb-2">
+                            <span>{{ $item->pengirim?->karyawan?->nama ?? $item->pengirim?->username ?? 'Pengguna tidak tersedia' }}</span>
+                            <time>{{ $item->tanggal_pesan }}</time>
+                        </div>
+                        <p class="text-sm text-slate-800 whitespace-pre-wrap break-words">{{ $item->deskripsi }}</p>
 
-                <form action="#" method="POST" class="space-y-4">
-                    @csrf
+                        @if ($item->link_lampiran)
+                            <p class="mt-3 text-sm">
+                                <a href="{{ $item->link_lampiran }}" target="_blank" rel="noopener noreferrer"
+                                    class="text-cyan-700 hover:underline">Buka tautan lampiran</a>
+                            </p>
+                        @endif
+                        @if ($item->file_lampiran)
+                            <p class="mt-3 text-sm">
+                                <a href="{{ Storage::disk('public')->url($item->file_lampiran) }}" target="_blank"
+                                    rel="noopener noreferrer" class="text-cyan-700 hover:underline">Unduh lampiran</a>
+                            </p>
+                        @endif
+                    </article>
+                @endforeach
+            </section>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-900 mb-1.5">Pesan</label>
-                        <input type="text" name="pesan_balasan" placeholder="Tulis balasan pesan..."
-                            class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-cyan-500">
-                    </div>
-
-                    <div class="flex items-center gap-4 pt-1">
-                        <button type="reset"
-                            class="px-7 py-2 bg-[#d32f2f] hover:bg-[#b71c1c] text-white text-sm font-medium rounded-lg shadow-sm transition">
-                            reset
+            @if ($canReply)
+                <section class="mt-6 max-w-3xl">
+                    <h2 class="text-xl font-bold text-slate-900 mb-3">Balas Pesan</h2>
+                    <form id="formBalasPesan" action="{{ route('hrd.detailPesan.balas', $pesan->id_pesan) }}"
+                        method="POST" class="space-y-3">
+                        @csrf
+                        <label for="deskripsiBalasan" class="sr-only">Isi balasan</label>
+                        <textarea id="deskripsiBalasan" name="deskripsi" rows="4" maxlength="10000" required
+                            placeholder="Tulis balasan..."
+                            class="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"></textarea>
+                        <button type="submit" id="btnBalasPesan"
+                            class="px-6 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-semibold rounded-lg shadow-sm transition">
+                            Kirim Balasan
                         </button>
-
-                        <button type="submit"
-                            class="px-7 py-2 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-medium rounded-lg shadow-sm transition">
-                            submit
+                        <p id="errorBalasPesan" class="hidden text-sm text-red-600" role="alert"></p>
+                    </form>
+                </section>
+            @endif
                         </button>
-                    </div>
-                </form>
-            </div>
+                        <p id="errorBalasPesan" class="hidden text-sm text-red-600" role="alert"></p>
+                    </form>
+                </section>
+            @else
+                <p class="mt-5 text-sm text-slate-500">Surat ini tidak dapat dibalas melalui sistem.</p>
+            @endif
         </main>
-
     </div>
 
-    <script>
-        const btnToggle = document.getElementById('btn-toggle-balas');
-        const formBalasan = document.getElementById('form-balasan');
-        const btnBatal = document.getElementById('btn-batal');
+    @if ($canReply)
+        <script>
+            const form = document.getElementById('formBalasPesan');
+            const button = document.getElementById('btnBalasPesan');
+            const error = document.getElementById('errorBalasPesan');
 
-        btnToggle.addEventListener('click', () => {
-            formBalasan.classList.remove('hidden');
-            btnToggle.classList.add('hidden');
+            if (form && button && error) {
+                form.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    const formData = new FormData(form);
+                    button.disabled = true;
+                    error.classList.add('hidden');
+
+                    try {
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                            },
+                            body: formData
+                        });
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            const validationErrors = result.errors ? Object.values(result.errors).flat().join('\n') : '';
+                            throw new Error(validationErrors || result.message || 'Balasan gagal dikirim.');
+                        }
+
+                        window.location.reload();
+                    } catch (exception) {
+                        error.textContent = exception.message || 'Terjadi kesalahan saat mengirim balasan.';
+                        error.classList.remove('hidden');
+                    } finally {
+                        button.disabled = false;
+                    }
+                });
+            }
+
+            const messageId = window.location.pathname.split('/').filter(Boolean).pop();
+            const token = sessionStorage.getItem('staff_token');
+            const btnToggle = document.getElementById('btn-toggle-balas');
+            const formBalasan = document.getElementById('form-balasan');
+            const formSubmit = document.getElementById('form-submit-balasan');
+            const pesanInput = document.getElementById('pesanInput');
+            const lampiranInput = document.getElementById('lampiranBalas');
+
+            if (btnToggle && formBalasan && formSubmit) {
+                btnToggle.addEventListener('click', () => {
+                    formBalasan.classList.toggle('hidden');
+                });
+
+                let isFormDirty = false;
+                const updateDirtyState = () => {
+                    isFormDirty = (pesanInput?.value.trim().length || 0) > 0 || (lampiranInput?.files.length || 0) > 0;
+                };
+
+                pesanInput?.addEventListener('input', updateDirtyState);
+                lampiranInput?.addEventListener('change', () => {
+                    const file = lampiranInput.files[0];
+                    if (file && file.size > 20 * 1024 * 1024) {
+                        alert('Ukuran file maksimal 20 MB');
+                        lampiranInput.value = '';
+                    }
+                    updateDirtyState();
+                });
+                formSubmit.addEventListener('reset', () => {
+                    isFormDirty = false;
+                });
+
+                formSubmit.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const file = lampiranInput?.files[0];
+                    if (file && file.size > 20 * 1024 * 1024) {
+                        alert('Ukuran file maksimal 20 MB');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/hrd/pesan/' + encodeURIComponent(messageId) + '/balas', {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+                            body: new FormData(formSubmit)
+                        });
+                        const result = await response.json();
+                        if (!response.ok) throw new Error(result.message || 'Balasan gagal dikirim.');
+
+                        formSubmit.reset();
+                        isFormDirty = false;
+                        formBalasan.classList.add('hidden');
+                        window.location.reload();
+                    } catch (submitError) {
+                        alert(submitError.message || 'Terjadi kesalahan saat mengirim balasan.');
+                    }
+                });
+
+                document.addEventListener('click', (event) => {
+                    const link = event.target.closest('a');
+                    if (!link || !isFormDirty || link.target === '_blank' || link.getAttribute('href')?.startsWith('#')) return;
+                    if (!confirm('Perubahan belum disimpan. Yakin ingin meninggalkan halaman ini?')) {
+                        event.preventDefault();
+                    } else {
+                        isFormDirty = false;
+                    }
+                });
+
+                window.addEventListener('beforeunload', (event) => {
+                    if (!isFormDirty) return;
+                    event.preventDefault();
+                    event.returnValue = '';
+                });
+            }
+        </script>
+    @endif
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                        },
+                        body: JSON.stringify({
+                            deskripsi: form.elements.deskripsi.value,
+                        }),
+                    });
+                    const result = await response.json();
+
+        pesanInput.addEventListener('input', () => {
+            isFormDirty = pesanInput.value.trim().length > 0 || lampiranInput.files.length > 0;
+        });
+        lampiranInput.addEventListener('change', () => {
+            const file = lampiranInput.files[0];
+            if (file && file.size > 20 * 1024 * 1024) {
+                alert('Ukuran file maksimal 20 MB');
+                lampiranInput.value = '';
+            }
+            isFormDirty = pesanInput.value.trim().length > 0 || lampiranInput.files.length > 0;
+        });
+        formSubmit.addEventListener('reset', () => {
+            isFormDirty = false;
         });
 
-    </script>
+        formSubmit.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const file = lampiranInput.files[0];
+            if (file && file.size > 20 * 1024 * 1024) {
+                alert('Ukuran file maksimal 20 MB');
+                return;
+            }
 
+            try {
+                const response = await fetch('/api/hrd/pesan/' + encodeURIComponent(messageId) + '/balas', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+                    body: new FormData(formSubmit)
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || 'Balasan gagal dikirim.');
+
+                formSubmit.reset();
+                isFormDirty = false;
+                formBalasan.classList.add('hidden');
+                window.location.reload();
+            } catch (error) {
+                alert(error.message || 'Terjadi kesalahan saat mengirim balasan.');
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            const link = event.target.closest('a');
+            if (!link || !isFormDirty || link.target === '_blank' || link.getAttribute('href')?.startsWith('#')) return;
+            if (!confirm('Perubahan belum disimpan. Yakin ingin meninggalkan halaman ini?')) {
+                event.preventDefault();
+            } else {
+                isFormDirty = false;
+            }
+        });
+
+        window.addEventListener('beforeunload', (event) => {
+            if (!isFormDirty) return;
+            event.preventDefault();
+            event.returnValue = '';
+        });
+
+        window.location.reload();
 </body>
 
 </html>

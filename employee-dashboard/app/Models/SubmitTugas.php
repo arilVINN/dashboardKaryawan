@@ -20,6 +20,8 @@ class SubmitTugas extends Model
         'file_hasil',
         'catatan_karyawan',
         'catatan_revisi',
+        'file_revisi',
+        'deadline_revisi',
         'tanggal_submit',
         'status_review',
         'tugas_id_tugas',

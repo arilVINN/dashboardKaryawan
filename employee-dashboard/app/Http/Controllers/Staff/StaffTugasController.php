@@ -28,7 +28,7 @@ class StaffTugasController extends Controller
     {
         $karyawanId = $request->user()->karyawan_id_karyawan;
 
-        $tugas = Tugas::with('submitTugas')->where('id_tugas', $id)
+        $tugas = Tugas::with(['submitTugas', 'pesans.pengirim'])->where('id_tugas', $id)
                       ->where('karyawan_id_karyawan', $karyawanId)
                       ->first();
 

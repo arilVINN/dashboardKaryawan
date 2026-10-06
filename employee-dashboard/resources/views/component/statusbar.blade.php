@@ -1,9 +1,9 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Tugas Berjalan</span>
-            <span class="text-xl font-bold text-slate-800 mt-1">2/10 Tugas</span>
+            <span id="stat-berjalan" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
         </div>
         <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
@@ -12,10 +12,10 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Tugas Pending</span>
-            <span class="text-xl font-bold text-slate-800 mt-1">1/1 Tugas</span>
+            <span id="stat-pending" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
         </div>
         <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10"></circle>
@@ -23,10 +23,10 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Tugas Revisi</span>
-            <span class="text-xl font-bold text-slate-800 mt-1">0/2 Tugas</span>
+            <span class="text-sm font-bold text-slate-500">Tugas Telat</span>
+            <span id="stat-telat" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
         </div>
         <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10"></circle>
@@ -34,77 +34,102 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex flex-col justify-center">
+    <div class="rounded-md drop-shadow-xs bg-white p-4 flex flex-col justify-center">
         <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">Presentase</span>
-
         <div class="flex items-center gap-3">
             <div class="relative w-14 h-14 shrink-0">
                 <canvas id="miniChart"></canvas>
             </div>
-
             <div class="flex-1 space-y-1 text-[10px] font-bold text-slate-600">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
                         <span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span> Ongoing
                     </div>
-                    <span class="text-slate-800">60%</span>
+                    <span id="pct-berjalan" class="text-slate-800">0%</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
                         <span class="w-2.5 h-2.5 rounded-sm bg-yellow-500"></span> Pending
                     </div>
-                    <span class="text-slate-800">25%</span>
+                    <span id="pct-pending" class="text-slate-800">0%</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span> Revisi
+                        <span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span> Telat
                     </div>
-                    <span class="text-slate-800">15%</span>
+                    <span id="pct-telat" class="text-slate-800">0%</span>
                 </div>
             </div>
         </div>
     </div>
-
 </div>
 
-<!-- Script grafik  -->
+<!-- Script grafik & Ambil Data API -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('miniChart');
+    document.addEventListener('DOMContentLoaded', async function() {
+        const token = sessionStorage.getItem('staff_token');
+        if (!token) {
+            // Jika token tidak ada, tendang kembali ke login
+            window.location.href = '/login';
+            return;
+        }
 
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Ongoing', 'Pending', 'Revisi'],
-                    datasets: [{
-                        data: [60, 25, 15],
-                        backgroundColor: [
-                            '#22c55e', // text-green-500
-                            '#eab308', // text-yellow-500
-                            '#ef4444' // text-red-500
-                        ],
-                        borderWidth: 0,
-                        cutout: '60%' // Semakin besar, donat semakin tipis
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            enabled: false
-                        }
-                    },
-                    layout: {
-                        padding: 0
-                    }
+        try {
+            // Panggil API
+            const response = await fetch('/api/staff/dashboard', {
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Accept': 'application/json'
                 }
             });
+            const json = await response.json();
+            const s = json.data.statistik;
+
+            // 1. Tampilkan Angka Statistik Asli (Tanpa Tugas yang Selesai)
+            const tugasBerjalan = (s.tugas_baru || 0) + (s.tugas_berjalan || 0);
+            const tugasPending = (s.tugas_menunggu_acc || 0);
+            const tugasTelat = (s.tugas_telat || 0);
+            const totalAktif = tugasBerjalan + tugasPending + tugasTelat;
+            
+            document.getElementById('stat-berjalan').textContent = tugasBerjalan + '/' + totalAktif + ' Tugas';
+            document.getElementById('stat-pending').textContent = tugasPending + '/' + totalAktif + ' Tugas';
+            document.getElementById('stat-telat').textContent = tugasTelat + '/' + totalAktif + ' Tugas';
+
+            // 2. Hitung Persentase (Tanpa yang Selesai)
+            const pctBerjalan = totalAktif > 0 ? Math.round((tugasBerjalan / totalAktif) * 100) : 0;
+            const pctPending = totalAktif > 0 ? Math.round((tugasPending / totalAktif) * 100) : 0;
+            const pctTelat = totalAktif > 0 ? Math.round((tugasTelat / totalAktif) * 100) : 0;
+
+            document.getElementById('pct-berjalan').textContent = pctBerjalan + '%';
+            document.getElementById('pct-pending').textContent = pctPending + '%';
+            document.getElementById('pct-telat').textContent = pctTelat + '%';
+
+            // 3. Masukkan Data ke Grafik Lingkaran
+            const ctx = document.getElementById('miniChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Ongoing', 'Pending', 'Telat'],
+                        datasets: [{
+                            data: [pctBerjalan, pctPending, pctTelat], // Data dimasukkan ke sini
+                            backgroundColor: ['#22c55e', '#eab308', '#ef4444'],
+                            borderWidth: 0,
+                            cutout: '60%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        layout: { padding: 0 }
+                    }
+                });
+            }
+
+        } catch (error) {
+            console.error('Gagal memuat statistik:', error);
         }
     });
 </script>

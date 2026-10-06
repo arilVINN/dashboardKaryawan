@@ -13,7 +13,6 @@
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs')
         <main class="flex-1 overflow-auto p-8 pt6 items-center">
             @include('component_hrd.pesanbar')
             @include('component_hrd.tabelPesan')

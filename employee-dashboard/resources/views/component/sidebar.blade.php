@@ -30,8 +30,8 @@
         <a href="{{ url('/tugas') }}"
            class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('tugas*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5h8m-8 7h8m-8 7h8M3 17l2 2l4-4"/>
-                <rect width="6" height="6" x="3" y="4" rx="1"></rect>
+                <rect x="3" y="4" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"></rect>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5h8M13 12h8M13 19h8M3 17l2 2 4-4"></path>
             </svg>
             <span class="sidebar-text whitespace-nowrap transition-all duration-200">Tugas</span>
         </a>
@@ -43,11 +43,14 @@
             </svg>
             <span class="sidebar-text whitespace-nowrap transition-all duration-200">Pesan</span>
         </a>
+
     </nav>
 </aside>
 
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+
         const sidebar = document.getElementById('sidebar');
         const btnToggle = document.getElementById('btn-sidebar-toggle');
         const texts = document.querySelectorAll('.sidebar-text');
@@ -74,13 +77,17 @@
             profileBtn.addEventListener('click', function (e) {
                 e.stopPropagation();
                 profileMenu.classList.toggle('hidden');
-                if (dropdownArrow) dropdownArrow.classList.toggle('rotate-180');
+                if (dropdownArrow) {
+                    dropdownArrow.classList.toggle('rotate-180');
+                }
             });
 
             document.addEventListener('click', function (e) {
                 if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
                     profileMenu.classList.add('hidden');
-                    if (dropdownArrow) dropdownArrow.classList.remove('rotate-180');
+                    if (dropdownArrow) {
+                        dropdownArrow.classList.remove('rotate-180');
+                    }
                 }
             });
         }

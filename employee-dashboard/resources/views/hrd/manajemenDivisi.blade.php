@@ -14,7 +14,6 @@
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs')
         <main class="flex-1 overflow-y auto p-8 pt-6">
             @include('component_hrd.tabelDivisi')
 
