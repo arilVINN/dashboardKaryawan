@@ -68,7 +68,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', async function() {
-        const token = localStorage.getItem('staff_token');
+        const token = sessionStorage.getItem('staff_token');
         if (!token) {
             // Jika token tidak ada, tendang kembali ke login
             window.location.href = '/login';

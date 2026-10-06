@@ -150,6 +150,8 @@ class StaffApiTest extends TestCase
             'tanggal_pesan' => '2026-09-30',
             'pengirim_id_user' => $this->kadiv->id_user,
             'penerima_id_user' => $this->staff->id_user,
+            'file_lampiran' => 'pesan/kadiv-file.pdf',
+            'link_lampiran' => 'https://example.com/panduan',
         ]);
 
         Pesan::create([
@@ -177,7 +179,9 @@ class StaffApiTest extends TestCase
                 ->getJson('/api/staff/pesan/PSN-DIRECT')
                 ->assertOk()
                 ->assertJsonPath('data.id_pesan', 'PSN-DIRECT')
-                ->assertJsonPath('data.penerima.id_user', $this->staff->id_user);
+                ->assertJsonPath('data.penerima.id_user', $this->staff->id_user)
+                ->assertJsonPath('data.lampiran.link', 'https://example.com/panduan')
+                ->assertJsonPath('data.lampiran.file', '/storage/pesan/kadiv-file.pdf');
 
             $this->withToken($token)
                 ->getJson('/api/staff/pesan/PSN-OTHER')
@@ -194,6 +198,7 @@ class StaffApiTest extends TestCase
             'tanggal_pesan' => '2026-09-30',
             'pengirim_id_user' => $this->kadiv->id_user,
             'penerima_id_user' => $this->staff->id_user,
+            'file_lampiran' => 'pesan/root.pdf',
         ]);
         Pesan::create([
             'id_pesan' => 'PSN-LETTER',
@@ -203,6 +208,17 @@ class StaffApiTest extends TestCase
             'tanggal_pesan' => '2026-09-30',
             'pengirim_id_user' => $this->kadiv->id_user,
             'penerima_id_user' => $this->staff->id_user,
+        ]);
+        Pesan::create([
+            'id_pesan' => 'PSN-KADIV-REPLY',
+            'judul_pesan' => 'Lampiran dari Kadiv',
+            'deskripsi' => 'Berikut file pendukung.',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-09-30',
+            'balasan_dari_id_pesan' => 'PSN-REPLY',
+            'pengirim_id_user' => $this->kadiv->id_user,
+            'penerima_id_user' => $this->staff->id_user,
+            'file_lampiran' => 'pesan/reply.pdf',
         ]);
 
         $token = $this->staff->createToken('staff-reply')->plainTextToken;
@@ -229,8 +245,10 @@ class StaffApiTest extends TestCase
         $this->withToken($token)
             ->getJson('/api/staff/pesan/PSN-REPLY')
             ->assertOk()
-            ->assertJsonCount(1, 'data.balasan')
-            ->assertJsonPath('data.balasan.0.deskripsi', 'Progres sudah 80 persen.');
+            ->assertJsonCount(2, 'data.balasan')
+            ->assertJsonFragment(['file' => '/storage/pesan/reply.pdf'])
+            ->assertJsonPath('data.lampiran.file', '/storage/pesan/root.pdf')
+            ->assertJsonFragment(['deskripsi' => 'Progres sudah 80 persen.']);
 
         $this->withToken($token)
             ->getJson('/api/staff/pesan/PSN-LETTER')

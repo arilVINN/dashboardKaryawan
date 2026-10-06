@@ -26,6 +26,9 @@ Route::middleware([
     // Kadiv dashboard & messaging endpoints
     Route::middleware('role:kadiv')->prefix('kadiv')->group(function (): void {
         Route::get('/dashboard', [KadivDashboardController::class, 'index']);
+        Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
+        Route::put('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update']);
+        Route::put('/profile/password', [\App\Http\Controllers\Staff\ProfileController::class, 'updatePassword']);
         Route::get('/pesan', [KadivMessageController::class, 'index']);
         Route::get('/pesan/{id_pesan}', [KadivMessageController::class, 'show']);
         Route::post('/pesan/{id_pesan}/balas', [KadivMessageController::class, 'balas']);
@@ -55,6 +58,7 @@ Route::middleware([
 
         // Manajemen Tugas
         Route::get('/tugas', [KadivTaskController::class, 'index']);
+        Route::get('/tugas/{id}', [KadivTaskController::class, 'show']);
         Route::post('/tugas', [KadivTaskController::class, 'store']);
         Route::post('/tugas/{id}', [KadivTaskController::class, 'update']); // Some clients use POST for PUT when uploading files
         Route::put('/tugas/{id}', [KadivTaskController::class, 'update']);

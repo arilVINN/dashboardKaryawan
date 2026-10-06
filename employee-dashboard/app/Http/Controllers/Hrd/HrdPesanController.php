@@ -145,7 +145,7 @@ class HrdPesanController extends Controller
     {
         $user = $request->user();
         $message = Pesan::query()
-            ->with(['pengirim.karyawan', 'penerima.karyawan', 'tugas', 'balasan.pengirim.karyawan', 'balasan.penerima.karyawan', 'balasanDari'])
+            ->with(['pengirim.karyawan', 'penerima.karyawan', 'tugas', 'balasanDari'])
             ->whereKey($id_pesan)
             ->where(function ($query) use ($user): void {
                 $query->where('pengirim_id_user', $user->id_user)
@@ -159,6 +159,11 @@ class HrdPesanController extends Controller
 
         $root = $message->balasanDari ?? $message;
         $thread = $root->id_pesan === $message->id_pesan ? $message : $root;
+        $replies = $thread->balasan()
+            ->with(['pengirim.karyawan', 'penerima.karyawan'])
+            ->orderBy('created_at')
+            ->orderBy('id_pesan')
+            ->get();
 
         $person = fn (?User2 $account) => $account ? [
             'id_user' => $account->id_user,
@@ -187,7 +192,7 @@ class HrdPesanController extends Controller
                     'judul_tugas' => $message->tugas->judul_tugas,
                 ] : null,
                 'can_reply' => ($root->tipe ?? 'pesan') === 'pesan',
-                'balasan' => $thread->balasan->map(fn (Pesan $reply) => [
+                'balasan' => $replies->map(fn (Pesan $reply) => [
                     'id_pesan' => $reply->id_pesan,
                     'balasan_dari_id_pesan' => $reply->balasan_dari_id_pesan,
                     'judul_pesan' => $reply->judul_pesan,
@@ -195,6 +200,12 @@ class HrdPesanController extends Controller
                     'tanggal_pesan' => $reply->tanggal_pesan,
                     'pengirim' => $person($reply->pengirim),
                     'penerima' => $person($reply->penerima),
+                    'lampiran' => [
+                        'link' => $reply->link_lampiran,
+                        'file' => $reply->file_lampiran
+                            ? Storage::disk('public')->url($reply->file_lampiran)
+                            : null,
+                    ],
                     'created_at' => $reply->created_at?->toISOString(),
                 ]),
                 'created_at' => $message->created_at?->toISOString(),
@@ -207,6 +218,7 @@ class HrdPesanController extends Controller
         $user = $request->user();
         $validated = $request->validate([
             'deskripsi' => ['required', 'string', 'max:10000'],
+            'file_lampiran' => ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
         ]);
 
         $message = Pesan::with(['pengirim', 'penerima', 'balasanDari', 'tugas'])
@@ -234,18 +246,31 @@ class HrdPesanController extends Controller
             return response()->json(['message' => 'Penerima balasan tidak dapat ditentukan.'], 422);
         }
 
-        $reply = Pesan::create([
-            'id_pesan' => $this->generateMessageId(),
-            'judul_pesan' => $root->judul_pesan,
-            'deskripsi' => $validated['deskripsi'],
-            'tipe' => 'pesan',
-            'tanggal_pesan' => now()->toDateString(),
-            'tugas_id_tugas' => $root->tugas_id_tugas,
-            'tugas_karyawan_id_karyawan' => $root->tugas_karyawan_id_karyawan,
-            'pengirim_id_user' => $user->id_user,
-            'penerima_id_user' => $recipient->id_user,
-            'balasan_dari_id_pesan' => $root->id_pesan,
-        ]);
+        $storedPath = $request->hasFile('file_lampiran')
+            ? $request->file('file_lampiran')->store('pesan-lampiran', 'public')
+            : null;
+
+        try {
+            $reply = Pesan::create([
+                'id_pesan' => $this->generateMessageId(),
+                'judul_pesan' => $root->judul_pesan,
+                'deskripsi' => $validated['deskripsi'],
+                'tipe' => 'pesan',
+                'file_lampiran' => $storedPath,
+                'tanggal_pesan' => now()->toDateString(),
+                'tugas_id_tugas' => $root->tugas_id_tugas,
+                'tugas_karyawan_id_karyawan' => $root->tugas_karyawan_id_karyawan,
+                'pengirim_id_user' => $user->id_user,
+                'penerima_id_user' => $recipient->id_user,
+                'balasan_dari_id_pesan' => $root->id_pesan,
+            ]);
+        } catch (\Throwable $exception) {
+            if ($storedPath) {
+                Storage::disk('public')->delete($storedPath);
+            }
+
+            throw $exception;
+        }
 
         PesanDikirim::dispatch($reply);
 
@@ -257,6 +282,7 @@ class HrdPesanController extends Controller
                 'tipe' => $reply->tipe,
                 'judul_pesan' => $reply->judul_pesan,
                 'deskripsi' => $reply->deskripsi,
+                'file_lampiran' => $storedPath ? Storage::disk('public')->url($storedPath) : null,
                 'pengirim_id_user' => $reply->pengirim_id_user,
                 'penerima_id_user' => $reply->penerima_id_user,
             ],

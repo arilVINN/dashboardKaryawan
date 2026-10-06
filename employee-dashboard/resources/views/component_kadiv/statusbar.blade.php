@@ -1,76 +1,68 @@
-@php
-    $total = ([
-        'Tugas belum' => '30',
-        'Acc' => '6',
-        'Selesai' => '50',
-        'Belum Selesai' => '50',
-    ]);
-@endphp
-
-
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
-    <a href="{{ url('#') }}" class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
+    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Total Tugas Selesai</span>
-            <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['Tugas belum'] }}</span>
+            <span class="text-sm font-bold text-slate-500">Tugas Yang Belum</span>
+            <span id="stat-berjalan" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
         </div>
+
         <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
-                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z">
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
             </path>
         </svg>
-    </a>
+    </div>
 
-    <a href="{{url('#')}}" class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between duration-300 hover:scale-105">
+    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Total Tugas Acc</span>
-            <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['Acc'] }}</span>
+            <span class="text-sm font-bold text-slate-500">Tugas Belum Di-acc</span>
+            <span id="stat-pending" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
         </div>
         <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10"></circle>
-            <path stroke-linecap="round" stroke-linejoin="round" 
-            d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6"></path>
         </svg>
-    </a>
+    </div>
 
-    <a href="{{url('#')}}" class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
+    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Total Tugas BelumSelesai</span>
-            <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['Belum Selesai'] }}</span>
+            <span class="text-sm font-bold text-slate-500">Tugas Selesai</span>
+            <span id="stat-selesai" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
         </div>
-        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+        <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-
-    </a>
+    </div>
 
     <div class="rounded-md drop-shadow-md bg-white p-4 flex flex-col justify-center">
         <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">Presentase</span>
-
         <div class="flex items-center gap-3">
             <div class="relative w-14 h-14 shrink-0">
-                <canvas id="miniChart"></canvas>
+                <svg class="block h-14 w-14 -rotate-90" viewBox="0 0 56 56" role="img" aria-label="Grafik persentase tugas">
+                    <circle cx="28" cy="28" r="22" fill="none" stroke="#e2e8f0" stroke-width="8"></circle>
+                    <circle id="ring-berjalan" cx="28" cy="28" r="22" fill="none" stroke="#22c55e" stroke-width="8"></circle>
+                    <circle id="ring-pending" cx="28" cy="28" r="22" fill="none" stroke="#eab308" stroke-width="8"></circle>
+                    <circle id="ring-selesai" cx="28" cy="28" r="22" fill="none" stroke="#3b82f6" stroke-width="8"></circle>
+                </svg>
             </div>
-
             <div class="flex-1 space-y-1 text-[10px] font-bold text-slate-600">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span> Selesai
+                        <span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span> Yang Belum
                     </div>
-                    <span class="text-slate-800">60%</span>
+                    <span id="pct-berjalan" class="text-slate-800">0%</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-yellow-500"></span> Pending
+                        <span class="w-2.5 h-2.5 rounded-sm bg-yellow-500"></span> Belum Di-acc
                     </div>
-                    <span class="text-slate-800">25%</span>
+                    <span id="pct-pending" class="text-slate-800">0%</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span> Belum Selesai
+                        <span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span> Selesai
                     </div>
-                    <span class="text-slate-800">15%</span>
+                    <span id="pct-selesai" class="text-slate-800">0%</span>
                 </div>
             </div>
         </div>
@@ -78,44 +70,66 @@
 
 </div>
 
-<!-- Script grafik  -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('miniChart');
+    async function loadKadivStatusbar() {
+        const token = sessionStorage.getItem('staff_token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
 
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Selesai', 'Pending', 'Belum Selesai'],
-                    datasets: [{
-                        data: [30, 30, 40,],
-                        backgroundColor: [
-                            '#22c55e', // text-green-500
-                            '#eab308', // text-yellow-500
-                            '#ef4444' // text-red-500
-                        ],
-                        borderWidth: 0,
-                        cutout: '60%' // Semakin besar, donat semakin tipis
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            enabled: false
-                        }
-                    },
-                    layout: {
-                        padding: 0
-                    }
+        try {
+            const response = await fetch('/api/kadiv/dashboard', {
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Accept': 'application/json'
                 }
             });
+
+            if (!response.ok) {
+                throw new Error('Gagal mengambil statistik tugas Kadiv: ' + response.status);
+            }
+
+            const json = await response.json();
+            const metrics = json.data.metrics;
+            const belum = (Number(metrics.tugas_baru) || 0)
+                + (Number(metrics.tugas_berjalan) || 0)
+                + (Number(metrics.tugas_telat) || 0);
+            const pending = Number(metrics.tugas_menunggu_di_acc) || 0;
+            const selesai = Number(metrics.tugas_sudah_di_acc) || 0;
+            const total = belum + pending + selesai;
+            const percentage = (count) => total > 0
+                ? Math.round((count / total) * 100)
+                : 0;
+
+            document.getElementById('stat-berjalan').textContent = belum + '/' + total + ' Tugas';
+            document.getElementById('stat-pending').textContent = pending + '/' + total + ' Tugas';
+            document.getElementById('stat-selesai').textContent = selesai + '/' + total + ' Tugas';
+            document.getElementById('pct-berjalan').textContent = percentage(belum) + '%';
+            document.getElementById('pct-pending').textContent = percentage(pending) + '%';
+            document.getElementById('pct-selesai').textContent = percentage(selesai) + '%';
+
+            const circumference = 2 * Math.PI * 22;
+            let offset = 0;
+            [
+                ['ring-berjalan', belum],
+                ['ring-pending', pending],
+                ['ring-selesai', selesai]
+            ].forEach(([id, count]) => {
+                const ring = document.getElementById(id);
+                const length = total > 0 ? (count / total) * circumference : 0;
+                ring.setAttribute('stroke-dasharray', `${length} ${circumference - length}`);
+                ring.setAttribute('stroke-dashoffset', `${-offset}`);
+                offset += length;
+            });
+        } catch (error) {
+            console.error('Gagal memuat statistik Kadiv:', error);
         }
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadKadivStatusbar);
+    } else {
+        loadKadivStatusbar();
+    }
 </script>

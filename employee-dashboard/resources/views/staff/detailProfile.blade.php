@@ -153,7 +153,7 @@ U
 
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
-            const token = localStorage.getItem('staff_token');
+            const token = sessionStorage.getItem('staff_token');
             if (!token) { window.location.href = '/login'; return; }
 
             // 1. Fetch Profile Data
@@ -291,7 +291,7 @@ U
                     try {
                         await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
                     } catch(e) {}
-                    localStorage.removeItem('staff_token');
+                    sessionStorage.removeItem('staff_token');
                     window.location.href = '/login';
                 });
             }
