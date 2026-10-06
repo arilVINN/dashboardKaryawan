@@ -42,23 +42,7 @@
                         Memuat deskripsi tugas...
                     </p>
 
-                    {{-- FILE DOCX --}}
-                    <div id="task-support-card" class="mt-6 items-center justify-between w-[299px] h-[62px] bg-white rounded-xl border border-gray-300 shadow-md px-5" style="display: none;">
-                        <div class="flex flex-col">
-                            <a id="detail-task-file" href="#" target="_blank" rel="noopener" class="text-black text-[15px] font-bold underline cursor-pointer">-</a>
-                            <span id="detail-task-file-type" class="text-gray-400 text-[13px] font-medium">-</span>
-                        </div>
-
-                        {{-- Ikon Microsoft Word --}}
-                        <div class="w-9 h-9 flex items-center justify-center border-l border-gray-200 pl-4">
-                            <svg class="w-8 h-8" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M18.5 3H7A2 2 0 005 5v22a2 2 0 002 2h18a2 2 0 002-2V11.5L18.5 3z" fill="#185ABD"/>
-                                <path d="M18.5 3v8.5H27L18.5 3z" fill="#4786E7"/>
-                                <path d="M7 13h10v12H7V13z" fill="#103F91"/>
-                                <text x="9.5" y="22" font-family="Arial" font-weight="bold" font-size="10" fill="white">W</text>
-                            </svg>
-                        </div>
-                    </div>
+                    <div id="task-support-card" class="mt-6 flex flex-wrap gap-4" style="display: none;"></div>
                 </section>
 
                 {{-- GARIS PEMISAH --}}
@@ -82,20 +66,7 @@
                             </p>
                         </div>
 
-                        {{-- FILE PDF --}}
-                        <div id="task-submission-card" class="items-center justify-between w-[299px] h-[62px] bg-white rounded-xl border border-gray-300 shadow-md px-5 shrink-0 ml-auto" style="display: none;">
-                            <div class="flex flex-col">
-                                <a id="detail-submission-file" href="#" target="_blank" rel="noopener" class="text-black text-[15px] font-bold underline cursor-pointer">-</a>
-                                <span id="detail-submission-file-type" class="text-gray-400 text-[13px] font-medium">-</span>
-                            </div>
-
-                            {{-- Ikon PDF --}}
-                            <div class="w-9 h-9 flex items-center justify-center border-l border-gray-200 pl-4">
-                                <div class="w-7 h-7 bg-[#E53935] rounded flex flex-col items-center justify-center text-white font-bold text-[9px] leading-tight shadow-sm">
-                                    <span>PDF</span>
-                                </div>
-                            </div>
-                        </div>
+                        <div id="task-submission-card" class="flex flex-wrap gap-4 shrink-0 ml-auto" style="display: none;"></div>
                     </div>
                 </section>
 
@@ -238,6 +209,65 @@
             const formatDate = (value) => value
                 ? new Date(value).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
                 : '-';
+            function appendAttachmentCard(container, filePath, label, href = null) {
+                if (typeof filePath !== 'string' || !filePath.trim() || filePath.trim() === '-') return false;
+
+                const value = filePath.trim();
+                let targetUrl;
+                try {
+                    targetUrl = new URL(href || (/^https?:\/\//i.test(value) ? value : '/storage/' + value.replace(/^\/+/, '')), window.location.origin);
+                } catch {
+                    return false;
+                }
+                if (!['http:', 'https:'].includes(targetUrl.protocol)) return false;
+
+                const isExternalLink = /^https?:\/\//i.test(value) && !href;
+                const fileName = isExternalLink
+                    ? (label || 'Link Referensi')
+                    : (value.split(/[?#]/)[0].split('/').pop() || label || 'Lampiran');
+                const extension = isExternalLink
+                    ? 'URL'
+                    : (fileName.includes('.') ? fileName.split('.').pop().toUpperCase() : 'FILE');
+                const iconColor = extension === 'PDF'
+                    ? 'text-red-500'
+                    : ['DOC', 'DOCX'].includes(extension)
+                        ? 'text-blue-600'
+                        : 'text-slate-600';
+                let iconSvg;
+
+                if (isExternalLink) {
+                    iconSvg = '<svg class="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>';
+                } else if (extension === 'PDF') {
+                    iconSvg = `<svg class="w-8 h-8 ${iconColor}" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8.5 17.5c-.3 0-.5-.2-.5-.5v-5c0-.3.2-.5.5-.5s.5.2.5.5v5c0 .3-.2.5-.5.5zm3 0c-1.1 0-2-.9-2-2v-1c0-1.1.9-2 2-2s2 .9 2 2v1c0 1.1-.9 2-2 2zm0-4c-.6 0-1 .4-1 1v1c0 .6.4 1 1 1s1-.4 1-1v-1c0-.6-.4-1-1-1zm3.5 4c-.3 0-.5-.2-.5-.5v-2h1.5c.3 0 .5-.2.5-.5s-.2-.5-.5-.5H14.5v-1.5c0-.3.2-.5.5-.5s.5.2.5.5v5c0 .3-.2.5-.5.5z"/></svg>`;
+                } else if (['DOC', 'DOCX'].includes(extension)) {
+                    iconSvg = `<svg class="w-8 h-8 ${iconColor}" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM9 13h1.5l1 3.5 1-3.5H14l-1.8 5H11L9 13z"/></svg>`;
+                } else {
+                    iconSvg = `<svg class="w-8 h-8 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
+                }
+
+                const card = document.createElement('a');
+                card.href = targetUrl.href;
+                card.target = '_blank';
+                card.rel = 'noopener noreferrer';
+                card.className = 'flex items-center gap-3 bg-white border border-slate-300 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition w-56 cursor-pointer';
+
+                const details = document.createElement('div');
+                details.className = 'flex-1 min-w-0';
+                const name = document.createElement('p');
+                name.className = 'text-sm font-bold text-slate-900 underline truncate';
+                name.textContent = fileName;
+                const type = document.createElement('p');
+                type.className = 'text-xs text-slate-400 mt-0.5';
+                type.textContent = extension;
+                details.append(name, type);
+                card.append(details);
+
+                const icon = document.createElement('span');
+                icon.innerHTML = iconSvg;
+                card.append(icon.firstElementChild);
+                container.appendChild(card);
+                return true;
+            }
 
             async function requestTask(method, payload) {
                 const headers = {
@@ -281,47 +311,43 @@
                     setText('detail-submission-status', 'status : ' + (submission?.status_review || 'belum dikumpulkan'));
                     setText('detail-submission-note', submission?.catatan_karyawan);
 
-                    const taskFile = document.getElementById('detail-task-file');
+                    const taskSupportCard = document.getElementById('task-support-card');
+                    taskSupportCard.replaceChildren();
                     const taskFileName = typeof task.file_pendukung === 'string'
                         ? task.file_pendukung.trim()
                         : '';
                     const taskLink = typeof task.link_pendukung === 'string'
                         ? task.link_pendukung.trim()
                         : '';
-                    const taskFilePath = taskFileName
-                        && taskFileName !== '-'
-                        ? '/storage/' + taskFileName.replace(/^\/+/, '')
-                        : (taskLink && taskLink !== '-' ? taskLink : '');
-                    if (taskFilePath) {
-                        document.getElementById('task-support-card').style.display = 'inline-flex';
-                        taskFile.href = taskFilePath;
-                        taskFile.textContent = taskFileName && taskFileName !== '-'
-                            ? taskFileName.split('/').pop()
-                            : taskLink;
-                        document.getElementById('detail-task-file-type').textContent =
-                            taskFileName && taskFileName !== '-' ? taskFileName.split('.').pop() : 'Link';
-                    }
+                    const hasTaskFile = appendAttachmentCard(
+                        taskSupportCard,
+                        taskFileName,
+                        task.judul_tugas || 'File Pendukung',
+                        taskFileName && taskFileName !== '-'
+                            ? '/storage/' + taskFileName.replace(/^\/+/, '')
+                            : null
+                    );
+                    const hasTaskLink = appendAttachmentCard(taskSupportCard, taskLink, 'Link Referensi');
+                    taskSupportCard.style.display = hasTaskFile || hasTaskLink ? 'flex' : 'none';
 
-                    const submissionFile = document.getElementById('detail-submission-file');
+                    const submissionCard = document.getElementById('task-submission-card');
+                    submissionCard.replaceChildren();
                     const submissionFileName = typeof submission?.file_hasil === 'string'
                         ? submission.file_hasil.trim()
                         : '';
                     const submissionLink = typeof submission?.link_submit === 'string'
                         ? submission.link_submit.trim()
                         : '';
-                    const submissionPath = submissionFileName
-                        && submissionFileName !== '-'
-                        ? '/storage/' + submissionFileName.replace(/^\/+/, '')
-                        : (submissionLink && submissionLink !== '-' ? submissionLink : '');
-                    if (submissionPath) {
-                        document.getElementById('task-submission-card').style.display = 'inline-flex';
-                        submissionFile.href = submissionPath;
-                        submissionFile.textContent = submissionFileName && submissionFileName !== '-'
-                            ? submissionFileName.split('/').pop()
-                            : submissionLink;
-                        document.getElementById('detail-submission-file-type').textContent =
-                            submissionFileName && submissionFileName !== '-' ? submissionFileName.split('.').pop() : 'Link';
-                    }
+                    const hasSubmissionFile = appendAttachmentCard(
+                        submissionCard,
+                        submissionFileName,
+                        'File Hasil',
+                        submissionFileName && submissionFileName !== '-'
+                            ? '/storage/' + submissionFileName.replace(/^\/+/, '')
+                            : null
+                    );
+                    const hasSubmissionLink = appendAttachmentCard(submissionCard, submissionLink, 'Link Pengumpulan');
+                    submissionCard.style.display = hasSubmissionFile || hasSubmissionLink ? 'flex' : 'none';
 
                     const revisions = submissions.filter((item) =>
                         item.status_review === 'revisi'
@@ -359,13 +385,15 @@
                                 ? revision.file_revisi.trim()
                                 : '';
                             if (revisionFile && revisionFile !== '-') {
-                                const link = document.createElement('a');
-                                link.href = '/storage/' + revisionFile.replace(/^\/+/, '');
-                                link.target = '_blank';
-                                link.rel = 'noopener';
-                                link.className = 'mt-4 inline-flex text-sm font-semibold text-cyan-700 underline';
-                                link.textContent = revisionFile.split('/').pop();
-                                item.appendChild(link);
+                                const revisionAttachment = document.createElement('div');
+                                revisionAttachment.className = 'mt-4 flex flex-wrap gap-4';
+                                appendAttachmentCard(
+                                    revisionAttachment,
+                                    revisionFile,
+                                    'File Revisi',
+                                    '/storage/' + revisionFile.replace(/^\/+/, '')
+                                );
+                                item.appendChild(revisionAttachment);
                             }
 
                             history.appendChild(item);
