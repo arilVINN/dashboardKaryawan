@@ -29,7 +29,7 @@
             // Looping data notifikasi maksimal 3
             notifikasi.slice(0, 3).forEach(n => {
                 const item = `
-                <div class="rounded-xl border border-slate-100 shadow-sm bg-white p-5 flex flex-col w-full max-w-sm">
+                <div class="rounded-xl border border-slate-200 shadow-sm bg-white p-5 flex flex-col w-full max-w-sm card-hover">
                     <div class="flex justify-start">
                         <span class="text-[11px] font-semibold bg-slate-100 text-slate-600 px-3 py-1 rounded-lg">
                             Notifikasi

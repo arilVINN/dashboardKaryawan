@@ -8,4 +8,32 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Brand palette (single source of truth for gradients + accents) */
+    --color-brand-900: #044564;
+    --color-brand-700: #0d7c9e;
+    --color-brand-500: #19a7ce;
+    --color-brand-50: #eef8fc;
+    --color-accent-600: #0097b2;
+    --color-accent-700: #008199;
+
+    /* Shared surface tokens */
+    --radius-card: 0.875rem; /* rounded-xl-ish, applied via utilities */
+    --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05);
+}
+
+/* Consistent keyboard focus across interactive shared components */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--color-accent-600);
+    outline-offset: 2px;
+}
+
+/* Subtle, uniform card hover for dashboard surfaces */
+.card-hover {
+    transition: box-shadow 150ms ease, transform 150ms ease;
+}
+.card-hover:hover {
+    box-shadow: 0 4px 12px rgb(15 23 42 / 0.08);
 }

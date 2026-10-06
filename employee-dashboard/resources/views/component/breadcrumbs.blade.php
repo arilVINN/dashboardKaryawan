@@ -5,10 +5,10 @@
 
 <div class="flex-0 p-1 pt-5 justify-start ml-5">
     <nav aria-label="Breadcrumb" role="navigation">
-        <ul class="flex flex-wrap items-center my-1">
+        <ul class="flex flex-wrap items-center my-1 text-sm">
             <!-- Level 1: Halaman Induk (Daftar Pesan) -->
             <li class="inline-flex items-center">
-                <a href="{{ url()->previous() }}" class="font-medium text-gray-700 hover:text-[#0097B2] transition">
+                <a href="{{ url()->previous() }}" class="font-medium text-slate-600 hover:text-[#0097B2] transition rounded focus-visible:outline-2">
                     Kembali
                 </a>
             </li>

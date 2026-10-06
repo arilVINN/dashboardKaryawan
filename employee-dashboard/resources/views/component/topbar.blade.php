@@ -2,7 +2,7 @@
     class="h-16 w-full bg-white border-b border-slate-200 px-8 flex items-center justify-end shrink-0 relative box-border">
     <div class="flex items-center gap-5">
 
-        <button class="text-slate-400 hover:text-slate-600 transition p-1.5 rounded-full hover:bg-slate-100">
+        <button class="text-slate-400 hover:text-slate-600 transition p-2 rounded-full hover:bg-slate-100" aria-label="Notifikasi">
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <path
                     d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
@@ -13,7 +13,7 @@
             <button id="profile-dropdown-btn" type="button"
                 class="flex items-center gap-2 cursor-pointer p-1 rounded-lg hover:bg-slate-100 transition focus:outline-none">
                 <div id="topbar-inisial"
-                    class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                    class="w-8 h-8 rounded-full bg-[#0097B2] text-white flex items-center justify-center font-bold text-sm shrink-0 ring-1 ring-slate-200">
                     U
                 </div>
                 <svg class="w-4 h-4 text-slate-500 transition-transform duration-200" id="dropdown-arrow" fill="none"
@@ -23,7 +23,7 @@
             </button>
 
             <div id="profile-dropdown-menu"
-                class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50 transition-all">
+                class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-md ring-1 ring-slate-200 py-2 z-50 transition-all">
                 <div class="px-4 py-2 border-b border-slate-100">
                     <p id="topbar-nama" class="text-sm font-semibold text-slate-800">Guest</p>
                     <p id="topbar-divisi" class="text-xs text-slate-500">Staff</p>

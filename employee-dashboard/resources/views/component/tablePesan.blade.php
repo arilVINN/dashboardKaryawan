@@ -4,12 +4,12 @@
 @endphp
 
 <div class="flex flex-col gap-3 w-full">
-    <h2 class="text-xl font-bold text-slate-800">Tabel Pesan</h2>
+    <h2 class="text-lg font-semibold tracking-tight text-slate-800">Tabel Pesan</h2>
     
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="{{ $isCompact ? 'overflow-hidden' : 'overflow-x-auto' }}">
             <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase text-xs tracking-wide">
                     <tr>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Pengirim</th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Topik / Judul</th>

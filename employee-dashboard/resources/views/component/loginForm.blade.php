@@ -53,20 +53,20 @@
             <div>
                 <label class="block text-sm font-bold text-slate-900 mb-1.5">Username</label>
                 <input type="text" name="username" placeholder="Masukan username anda" required
-                    class="w-full px-4 py-2.5 border border-slate-300 rounded-full text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0097B2] focus:border-transparent transition">
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0097B2] focus:border-transparent transition">
             </div>
 
             <div>
                 <label class="block text-sm font-bold text-slate-900 mb-1.5">Password</label>
                 <input type="password" name="password" placeholder="Masukan Password anda" required
-                    class="w-full px-4 py-2.5 border border-slate-300 rounded-full text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0097B2] focus:border-transparent transition">
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0097B2] focus:border-transparent transition">
             </div>
 
             <p id="login-error" class="text-xs text-red-500 text-center hidden"></p>
 
             <div class="pt-4 flex justify-center">
                 <button type="submit" id="btn-login"
-                    class="w-36 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-xs font-semibold rounded-lg shadow-sm hover:shadow transition">
+                    class="w-36 py-2.5 bg-[#0097B2] hover:bg-[#008199] disabled:opacity-70 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow transition">
                     Login
                 </button>
             </div>

@@ -1,8 +1,8 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
-    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
+    <div class="rounded-xl border border-slate-200 shadow-sm bg-white p-4 flex items-center justify-between card-hover">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Tugas Berjalan</span>
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tugas Berjalan</span>
             <span id="stat-berjalan" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
         </div>
         <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -12,9 +12,9 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
+    <div class="rounded-xl border border-slate-200 shadow-sm bg-white p-4 flex items-center justify-between card-hover">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Tugas Pending</span>
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tugas Pending</span>
             <span id="stat-pending" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
         </div>
         <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -23,9 +23,9 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
+    <div class="rounded-xl border border-slate-200 shadow-sm bg-white p-4 flex items-center justify-between card-hover">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Tugas Telat</span>
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tugas Telat</span>
             <span id="stat-telat" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
         </div>
         <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -34,8 +34,8 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-xs bg-white p-4 flex flex-col justify-center">
-        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">Presentase</span>
+    <div class="rounded-xl border border-slate-200 shadow-sm bg-white p-4 flex flex-col justify-center card-hover">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2.5">Presentase</span>
         <div class="flex items-center gap-3">
             <div class="relative w-14 h-14 shrink-0">
                 <canvas id="miniChart"></canvas>

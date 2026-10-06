@@ -18,9 +18,9 @@
         </button>
     </div>
 
-    <nav class="flex-1 p-3 space-y-2 overflow-y-auto">
+    <nav class="flex-1 p-3 space-y-1.5 overflow-y-auto">
         <a href="{{ url('/') }}"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ (request()->is('/') || request()->is('dashboard*')) ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ (request()->is('/') || request()->is('dashboard*')) ? 'bg-white/25 text-white font-semibold ring-1 ring-white/30' : 'text-slate-200 hover:bg-white/10 hover:text-white' }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
@@ -28,7 +28,7 @@
         </a>
 
         <a href="{{ url('/tugas') }}"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('tugas*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->is('tugas*') ? 'bg-white/25 text-white font-semibold ring-1 ring-white/30' : 'text-slate-200 hover:bg-white/10 hover:text-white' }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <rect x="3" y="4" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"></rect>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5h8M13 12h8M13 19h8M3 17l2 2 4-4"></path>
@@ -37,7 +37,7 @@
         </a>
 
         <a href="{{ url('/pesan') }}"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('pesan*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition {{ request()->is('pesan*') ? 'bg-white/25 text-white font-semibold ring-1 ring-white/30' : 'text-slate-200 hover:bg-white/10 hover:text-white' }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-3 12H7c-.55 0-1-.45-1-1s.45-1 1-1h10c.55 0 1 .45 1 1s-.45 1-1 1m0-3H7c-.55 0-1-.45-1-1s.45-1 1-1h10c.55 0 1 .45 1 1s-.45 1-1 1m0-3H7c-.55 0-1-.45-1-1s.45-1 1-1h10c.55 0 1 .45 1 1s-.45 1-1 1"></path>
             </svg>
