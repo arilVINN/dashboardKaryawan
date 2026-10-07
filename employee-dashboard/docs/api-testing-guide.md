@@ -350,11 +350,13 @@ Body JSON:
 ```
 
 `status_review`: `acc` (tugas → `sudah di-acc`) atau `revisi` (tugas → `berjalan`).
+Untuk `revisi`, sertakan `catatan_revisi` dan `deadline` (tanggal tenggat baru); `file_revisi` opsional.
 
 - `200` → `{ "message": "Review berhasil disimpan", "data": { "tugas": {}, "submit": {} } }`
 - `400` → belum ada file yang dikumpulkan staff
 - `403` → tugas sudah di-ACC sebelumnya
 - `404` → tidak ditemukan / di luar wewenang
+- `422` → validasi gagal
 
 ### GET `/api/kadiv/staff` — Daftar staff divisi
 

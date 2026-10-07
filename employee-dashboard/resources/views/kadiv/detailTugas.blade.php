@@ -27,7 +27,13 @@
 
                 {{-- TUGAS 1 --}}
                 <section>
-                    <h1 id="detail-task-id" class="text-[28px] leading-[36px] font-bold text-black">Tugas</h1>
+                    <div class="flex items-center justify-between gap-4">
+                        <h1 id="detail-task-id" class="text-[28px] leading-[36px] font-bold text-black">Tugas</h1>
+                        <button type="button" id="editTaskButton" data-modal-open="modalEditTugas" disabled
+                                class="h-9 px-5 rounded-[9px] bg-[#146C94] text-white text-sm font-medium hover:bg-[#0f5878] transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                            Edit Tugas
+                        </button>
+                    </div>
 
                     <h2 id="detail-task-title" class="mt-6 text-[28px] leading-[36px] font-bold text-black">Memuat tugas...</h2>
 
@@ -165,6 +171,55 @@
 
     </div>
 
+    {{-- MODAL EDIT TUGAS --}}
+    <div id="modalEditTugas" class="hidden fixed inset-0 z-50 bg-[rgba(86,94,116,0.4)] flex items-center justify-center p-4">
+        <form id="formEditTugas" class="bg-white rounded-xl w-full max-w-[420px] max-h-[90vh] flex flex-col shadow-[0_8px_16px_rgba(0,0,0,0.12)]">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC] rounded-t-xl">
+                <h3 class="text-base font-bold text-black">Edit Tugas</h3>
+                <button type="button" data-modal-close="modalEditTugas" class="text-[#565E74] hover:text-black text-2xl leading-none cursor-pointer">&times;</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+                <div>
+                    <label for="editJudulTugas" class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">JUDUL TUGAS</label>
+                    <input type="text" name="judul_tugas" id="editJudulTugas" required maxlength="100"
+                           class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
+                </div>
+
+                <div>
+                    <label for="editPenerimaTugas" class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">PENERIMA</label>
+                    <select name="karyawan_id_karyawan" id="editPenerimaTugas" required
+                            class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] bg-white outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
+                        <option value="">Memuat staff...</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="editDeskripsiTugas" class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">DESKRIPSI</label>
+                    <textarea name="deskripsi" id="editDeskripsiTugas" rows="4" required
+                              class="w-full resize-none rounded-lg border border-[#CBD5E1] px-3 py-2.5 text-sm text-[#283044] outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]"></textarea>
+                </div>
+
+                <div>
+                    <label for="editDeadlineTugas" class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">TENGGAT</label>
+                    <input type="datetime-local" name="deadline" id="editDeadlineTugas" required
+                           class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] outline-none cursor-pointer focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between px-6 py-4 border-t border-[#E2E8F0]">
+                <button type="button" data-modal-close="modalEditTugas"
+                        class="h-9 px-4 bg-[#E8E7E9] rounded-lg text-sm text-[#333335] hover:bg-[#D9D9D9] transition cursor-pointer">
+                    Batal
+                </button>
+                <button type="submit"
+                        class="h-9 px-4 bg-[#146C94] rounded-lg text-sm text-white font-bold hover:bg-[#0f5878] transition cursor-pointer">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+
     {{-- MODAL KONFIRMASI ACC --}}
     <div id="modalKonfirmasiAcc"
          class="hidden fixed inset-0 z-50 bg-[rgba(86,94,116,0.4)] flex items-center justify-center p-4">
@@ -199,10 +254,13 @@
 
     {{-- SCRIPT --}}
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
             const token = sessionStorage.getItem('staff_token');
             const taskId = @json($id);
             const formRevisi = document.getElementById('formRevisi');
+            const formEditTugas = document.getElementById('formEditTugas');
+            const editTaskButton = document.getElementById('editTaskButton');
+            const editPenerima = document.getElementById('editPenerimaTugas');
             const setText = (id, value) => {
                 document.getElementById(id).textContent = value || '-';
             };
@@ -287,6 +345,32 @@
                 return result;
             }
 
+            async function loadStaffOptions() {
+                const response = await fetch('/api/kadiv/staff', {
+                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || 'Gagal memuat daftar staff.');
+
+                editPenerima.replaceChildren();
+                (result.data || []).forEach((staff) => {
+                    if (staff.user?.role?.nama_role?.toLowerCase() === 'staff') {
+                        editPenerima.add(new Option(staff.nama, staff.id_karyawan));
+                    }
+                });
+            }
+
+            async function updateTask(payload) {
+                const response = await fetch('/api/kadiv/tugas/' + encodeURIComponent(taskId), {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+                    body: payload
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || 'Gagal mengubah tugas.');
+                return result;
+            }
+
             async function loadTaskDetail() {
                 if (!token) {
                     window.location.href = '/login';
@@ -301,6 +385,17 @@
                     const task = result.data;
                     const submissions = Array.isArray(task.submit_tugas) ? task.submit_tugas : [];
                     const submission = submissions[0];
+                    document.getElementById('editJudulTugas').value = task.judul_tugas || '';
+                    document.getElementById('editDeskripsiTugas').value = task.deskripsi || '';
+                    document.getElementById('editDeadlineTugas').value = task.deadline
+                        ? String(task.deadline).replace(' ', 'T').slice(0, 16)
+                        : '';
+                    const recipientId = String(task.karyawan_id_karyawan || task.karyawan?.id_karyawan || '');
+                    if (recipientId && !Array.from(editPenerima.options).some((option) => option.value === recipientId)) {
+                        editPenerima.add(new Option(task.karyawan?.nama || 'Staff saat ini', recipientId));
+                    }
+                    editPenerima.value = recipientId;
+                    editTaskButton.disabled = false;
                     setText('detail-task-id', 'Tugas ' + task.id_tugas);
                     setText('detail-task-title', task.judul_tugas);
                     setText('detail-task-deadline', 'tenggat : ' + formatDate(task.deadline));
@@ -413,7 +508,18 @@
                 }
             }
 
-            loadTaskDetail();
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                await loadStaffOptions();
+            } catch (error) {
+                console.error('Gagal memuat penerima tugas:', error);
+                editPenerima.replaceChildren(new Option('Staff gagal dimuat', ''));
+            }
+            await loadTaskDetail();
 
             // Toggle form revisi ↔ tombol
             document.querySelectorAll('[data-toggle-form]').forEach(function (btn) {
@@ -499,6 +605,21 @@
                     this.classList.add('hidden');
                     await loadTaskDetail();
                     alert('Revisi berhasil dikirim.');
+                } catch (error) {
+                    alert(error.message);
+                }
+            });
+
+            formEditTugas.addEventListener('submit', async function (event) {
+                event.preventDefault();
+                const payload = new FormData(formEditTugas);
+                payload.append('_method', 'PUT');
+                try {
+                    await updateTask(payload);
+                    document.getElementById('modalEditTugas').classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                    await loadTaskDetail();
+                    alert('Tugas berhasil diperbarui.');
                 } catch (error) {
                     alert(error.message);
                 }
