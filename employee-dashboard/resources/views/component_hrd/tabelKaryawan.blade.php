@@ -111,7 +111,7 @@
         class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="tutupModalKaryawan()"></div>
         <div id="modalBoxTambahKaryawan"
-            class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300">
+            class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300">
             <div class="flex items-center justify-between p-4 border-b border-dashed border-gray-300">
                 <h3 class="text-base font-bold text-slate-900">Tambah Karyawan</h3>
                 <button type="button" onclick="tutupModalKaryawan()" class="text-slate-400 hover:text-red-500"
@@ -119,51 +119,77 @@
             </div>
             <form id="formTambahKaryawan" onsubmit="submitFormKaryawan(event)" class="flex flex-col overflow-hidden">
                 @csrf
-                <div class="p-5 overflow-y-auto space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">NAMA KARYAWAN</label>
-                        <input type="text" name="nama" maxlength="100" required class="{{ $formControl }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">JENIS KELAMIN</label>
-                        <select name="jenis_kelamin" required class="{{ $formControl }}">
-                            <option value="Laki-laki">Laki-laki</option>
-                            <option value="Perempuan">Perempuan</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">TANGGAL LAHIR</label>
-                        <input type="date" name="tanggal_lahir" class="{{ $formControl }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">EMAIL</label>
-                        <input type="email" name="email" maxlength="100" class="{{ $formControl }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">NO. TELEPON</label>
-                        <input type="tel" name="no_telepon" maxlength="20" class="{{ $formControl }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">JABATAN</label>
-                        <input type="text" name="jabatan" maxlength="100" required class="{{ $formControl }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">DIVISI</label>
-                        <select name="divisi_id_divisi" required class="{{ $formControl }}">
-                            <option value="">Pilih divisi</option>
-                            @foreach ($daftarDivisi as $d)
-                                <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">USERNAME AKUN</label>
-                        <input type="text" name="username" maxlength="50" required class="{{ $formControl }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">PASSWORD (MIN. 6 KARAKTER)</label>
-                        <input type="password" name="password" minlength="6" required class="{{ $formControl }}">
-                    </div>
+                <div class="p-5 overflow-y-auto space-y-7">
+                    <section class="space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-4 w-1 rounded bg-[#0097B2]"></span>
+                            <h4 class="text-xs font-bold uppercase tracking-wide text-slate-600">Data Karyawan</h4>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                                <label class="text-xs font-bold text-slate-500">NAMA KARYAWAN</label>
+                                <input type="text" name="nama" maxlength="100" required class="{{ $formControl }}">
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">JENIS KELAMIN</label>
+                                <select name="jenis_kelamin" required class="{{ $formControl }}">
+                                    <option value="Laki-laki">Laki-laki</option>
+                                    <option value="Perempuan">Perempuan</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">TANGGAL LAHIR</label>
+                                <input type="date" name="tanggal_lahir" class="{{ $formControl }}">
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">NO. TELEPON</label>
+                                <input type="tel" name="no_telepon" maxlength="20" class="{{ $formControl }}">
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">EMAIL</label>
+                                <input type="email" name="email" maxlength="100" class="{{ $formControl }}">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-4 w-1 rounded bg-[#0097B2]"></span>
+                            <h4 class="text-xs font-bold uppercase tracking-wide text-slate-600">Kepegawaian</h4>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">JABATAN</label>
+                                <input type="text" name="jabatan" maxlength="100" required class="{{ $formControl }}">
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">DIVISI</label>
+                                <select name="divisi_id_divisi" required class="{{ $formControl }}">
+                                    <option value="">Pilih divisi</option>
+                                    @foreach ($daftarDivisi as $d)
+                                        <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-4 w-1 rounded bg-[#0097B2]"></span>
+                            <h4 class="text-xs font-bold uppercase tracking-wide text-slate-600">Akun Login</h4>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">USERNAME</label>
+                                <input type="text" name="username" maxlength="50" required class="{{ $formControl }}">
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">PASSWORD (MIN. 6)</label>
+                                <input type="password" name="password" minlength="6" required class="{{ $formControl }}">
+                            </div>
+                        </div>
+                    </section>
                 </div>
                 <div class="flex justify-end gap-2 p-4 border-t border-slate-100">
                     <button type="button" onclick="tutupModalKaryawan()"
@@ -180,7 +206,7 @@
         class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="tutupEditKaryawan()"></div>
         <div id="modalBoxEditKaryawan"
-            class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300">
+            class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300">
             <div class="flex items-center justify-between p-4 border-b border-dashed border-gray-300">
                 <h3 class="text-base font-bold text-slate-900">Edit Karyawan</h3>
                 <button type="button" onclick="tutupEditKaryawan()" class="text-slate-400 hover:text-red-500"
@@ -189,50 +215,76 @@
             <form id="formEditKaryawan" onsubmit="submitEditKaryawan(event)" class="flex flex-col overflow-hidden">
                 @csrf
                 <input type="hidden" name="id_karyawan">
-                <div class="p-5 overflow-y-auto space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">NAMA KARYAWAN</label>
-                        <input type="text" name="nama" maxlength="100" required class="{{ $formControl }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">JENIS KELAMIN</label>
-                        <select name="jenis_kelamin" required class="{{ $formControl }}">
-                            <option value="Laki-laki">Laki-laki</option>
-                            <option value="Perempuan">Perempuan</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">TANGGAL LAHIR</label>
-                        <input type="date" name="tanggal_lahir" class="{{ $formControl }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">EMAIL</label>
-                        <input type="email" name="email" maxlength="100" class="{{ $formControl }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">NO. TELEPON</label>
-                        <input type="tel" name="no_telepon" maxlength="20" class="{{ $formControl }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">JABATAN</label>
-                        <input type="text" name="jabatan" maxlength="100" required class="{{ $formControl }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">DIVISI</label>
-                        <select name="divisi_id_divisi" required class="{{ $formControl }}">
-                            @foreach ($daftarDivisi as $d)
-                                <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">USERNAME</label>
-                        <input type="text" name="username" maxlength="50" class="{{ $formControl }}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-2">PASSWORD BARU (OPSIONAL)</label>
-                        <input type="password" name="password" minlength="6" class="{{ $formControl }}">
-                    </div>
+                <div class="p-5 overflow-y-auto space-y-7">
+                    <section class="space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-4 w-1 rounded bg-[#0097B2]"></span>
+                            <h4 class="text-xs font-bold uppercase tracking-wide text-slate-600">Data Karyawan</h4>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1.5 sm:col-span-2">
+                                <label class="text-xs font-bold text-slate-500">NAMA KARYAWAN</label>
+                                <input type="text" name="nama" maxlength="100" required class="{{ $formControl }}">
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">JENIS KELAMIN</label>
+                                <select name="jenis_kelamin" required class="{{ $formControl }}">
+                                    <option value="Laki-laki">Laki-laki</option>
+                                    <option value="Perempuan">Perempuan</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">TANGGAL LAHIR</label>
+                                <input type="date" name="tanggal_lahir" class="{{ $formControl }}">
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">NO. TELEPON</label>
+                                <input type="tel" name="no_telepon" maxlength="20" class="{{ $formControl }}">
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">EMAIL</label>
+                                <input type="email" name="email" maxlength="100" class="{{ $formControl }}">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-4 w-1 rounded bg-[#0097B2]"></span>
+                            <h4 class="text-xs font-bold uppercase tracking-wide text-slate-600">Kepegawaian</h4>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">JABATAN</label>
+                                <input type="text" name="jabatan" maxlength="100" required class="{{ $formControl }}">
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">DIVISI</label>
+                                <select name="divisi_id_divisi" required class="{{ $formControl }}">
+                                    @foreach ($daftarDivisi as $d)
+                                        <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-4 w-1 rounded bg-[#0097B2]"></span>
+                            <h4 class="text-xs font-bold uppercase tracking-wide text-slate-600">Akun Login</h4>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">USERNAME</label>
+                                <input type="text" name="username" maxlength="50" class="{{ $formControl }}">
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-500">PASSWORD BARU (OPSIONAL)</label>
+                                <input type="password" name="password" minlength="6" class="{{ $formControl }}">
+                            </div>
+                        </div>
+                    </section>
                 </div>
                 <div class="flex justify-end gap-2 p-4 border-t border-slate-100">
                     <button type="button" onclick="tutupEditKaryawan()"
