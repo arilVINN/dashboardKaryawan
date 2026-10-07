@@ -169,17 +169,8 @@ Route::post('/profile', function (Request $request) {
 
 
 //route hrd 
-<<<<<<< Updated upstream
-Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
-    Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
-=======
 Route::prefix('hrd')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('hrd.dashboard', [
-            'divisis' => Divisi::all(),
-        ]);
-    })->name('hrd.dashboard');
->>>>>>> Stashed changes
+    Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
 
     Route::get('/profile', function () {
         return view('hrd.profile');
