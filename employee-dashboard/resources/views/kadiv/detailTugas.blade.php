@@ -19,7 +19,7 @@
 
         {{-- TOPBAR --}}
         @include('component_kadiv.topbar')
-        @include('component.breadcrumbs')
+        @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/kadiv/tugas'), 'currentPage' => 'Detail Tugas'])
 
         {{-- CONTENT --}}
         <main class="flex-1 overflow-y-auto">

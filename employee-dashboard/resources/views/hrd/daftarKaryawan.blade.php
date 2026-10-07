@@ -14,20 +14,20 @@
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs')
+        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Karyawan'])
         <main class="flex-1 overflow-y-auto p-8 pt-6">
             <form method="GET" action="{{ url('/hrd/daftarKaryawan') }}"
-                class="flex flex-wrap items-end gap-3 bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4">
-                <div class="flex flex-col">
+                class="flex flex-wrap items-end gap-x-5 gap-y-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5 mb-6">
+                <div class="flex flex-col gap-1.5">
                     <label for="q" class="text-xs font-bold text-slate-500 mb-1">Cari Nama</label>
                     <input type="text" id="q" name="q" value="{{ request('q') }}" placeholder="Nama karyawan..."
-                        class="px-3 py-2 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                        class="h-10 w-full sm:w-64 px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
                 </div>
 
-                <div class="flex flex-col">
+                <div class="flex flex-col gap-1.5">
                     <label for="divisi" class="text-xs font-bold text-slate-500 mb-1">Divisi</label>
                     <select id="divisi" name="divisi"
-                        class="px-3 py-2 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                        class="h-10 w-full sm:w-48 px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
                         <option value="">Semua</option>
                         @foreach ($daftarDivisi as $d)
                             <option value="{{ $d->id_divisi }}" @selected(request('divisi') === $d->id_divisi)>{{ $d->nama_divisi }}</option>
@@ -35,10 +35,10 @@
                     </select>
                 </div>
 
-                <div class="flex flex-col">
+                <div class="flex flex-col gap-1.5">
                     <label for="jabatan" class="text-xs font-bold text-slate-500 mb-1">Jabatan</label>
                     <select id="jabatan" name="jabatan"
-                        class="px-3 py-2 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                        class="h-10 w-full sm:w-48 px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
                         <option value="">Semua</option>
                         @foreach ($daftarJabatan as $j)
                             <option value="{{ $j }}" @selected(request('jabatan') === $j)>{{ $j }}</option>
@@ -46,10 +46,10 @@
                     </select>
                 </div>
 
-                <div class="flex flex-col">
+                <div class="flex flex-col gap-1.5">
                     <label for="status" class="text-xs font-bold text-slate-500 mb-1">Status Akun</label>
                     <select id="status" name="status"
-                        class="px-3 py-2 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                        class="h-10 w-full sm:w-48 px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
                         <option value="">Semua</option>
                         <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
                         <option value="belum" @selected(request('status') === 'belum')>Belum ada akun</option>

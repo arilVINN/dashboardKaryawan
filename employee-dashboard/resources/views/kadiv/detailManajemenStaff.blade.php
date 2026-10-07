@@ -19,7 +19,7 @@
         <main class="flex-1 overflow-y-auto">
             <div class="px-9 pt-7 pb-16">
 
-                @include('component.breadcrumbs')
+                @include('component.breadcrumbs', ['parentText' => 'Manajemen Staff', 'parentUrl' => url('/kadiv/manajemenStaff'), 'currentPage' => 'Detail Staff'])
 
                 <div class="mt-4 flex items-center justify-between">
                     <div class="flex items-center gap-4">

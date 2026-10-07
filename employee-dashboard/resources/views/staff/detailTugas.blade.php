@@ -15,7 +15,7 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         @include('component.topbar')
-        @include('component.breadcrumbs')
+        @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/tugas'), 'currentPage' => 'Detail Tugas'])
 
         <main class="flex-1 overflow-y-auto px-10 py-8">
             <h1 class="text-xl font-bold text-slate-900 mb-8">Tugas</h1>

@@ -172,4 +172,48 @@ class HrdListUiTest extends TestCase
 
         $this->assertStringContainsString(url('/hrd/daftarKaryawan'), $html);
     }
+
+    // ---- breadcrumbs ----
+
+    public function test_breadcrumb_component_renders_supplied_parent_and_current(): void
+    {
+        $html = view('component.breadcrumbs', [
+            'parentText' => 'Dashboard',
+            'parentUrl' => url('/hrd/dashboard'),
+            'currentPage' => 'Karyawan',
+        ])->render();
+
+        $this->assertStringContainsString('data-breadcrumb-parent="Dashboard"', $html);
+        $this->assertStringContainsString('data-breadcrumb-current="Karyawan"', $html);
+        $this->assertStringContainsString('href="' . url('/hrd/dashboard') . '"', $html);
+    }
+
+    public function test_hrd_list_pages_show_relevant_breadcrumbs(): void
+    {
+        $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan')
+            ->assertSee('data-breadcrumb-parent="Dashboard"', false)
+            ->assertSee('data-breadcrumb-current="Karyawan"', false);
+
+        $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi')
+            ->assertSee('data-breadcrumb-parent="Dashboard"', false)
+            ->assertSee('data-breadcrumb-current="Manajemen Divisi"', false);
+    }
+
+    public function test_hrd_detail_pesan_breadcrumb_points_to_pesan(): void
+    {
+        \App\Models\Pesan::create([
+            'id_pesan' => 'PSN-BC-1',
+            'judul_pesan' => 'Halo',
+            'deskripsi' => 'Isi pesan',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => now()->toDateString(),
+            'pengirim_id_user' => $this->hrd->id_user,
+            'penerima_id_user' => $this->hrd->id_user,
+        ]);
+
+        $this->actingAs($this->hrd)->get('/hrd/detailPesan/PSN-BC-1')
+            ->assertOk()
+            ->assertSee('data-breadcrumb-parent="Pesan"', false)
+            ->assertSee('data-breadcrumb-current="Detail Pesan"', false);
+    }
 }
