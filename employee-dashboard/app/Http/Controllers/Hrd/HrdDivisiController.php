@@ -201,10 +201,11 @@ class HrdDivisiController extends Controller
         $query = Divisi::withCount('karyawans');
 
         if ($request->filled('q')) {
-            $kata = $request->input('q');
+            // LOWER(...) so the search is case-insensitive on Postgres too.
+            $kata = mb_strtolower((string) $request->input('q'));
             $query->where(function ($q) use ($kata): void {
-                $q->where('kode_divisi', 'like', '%' . $kata . '%')
-                    ->orWhere('nama_divisi', 'like', '%' . $kata . '%');
+                $q->whereRaw('LOWER(kode_divisi) LIKE ?', ['%' . $kata . '%'])
+                    ->orWhereRaw('LOWER(nama_divisi) LIKE ?', ['%' . $kata . '%']);
             });
         }
 

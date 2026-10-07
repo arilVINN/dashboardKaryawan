@@ -7,6 +7,7 @@ use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -251,5 +252,29 @@ class HrdListFilteringTest extends TestCase
         $response = $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi?q=Operasional')->assertOk();
 
         $this->assertSame(['DIV-OPS'], $response->viewData('divisis')->pluck('id_divisi')->all());
+    }
+
+    // ---- case-insensitive search (Postgres LIKE is case-sensitive) ----
+
+    public function test_staff_search_is_case_insensitive(): void
+    {
+        // SQLite LIKE is case-insensitive by default; turn that off so this
+        // test reproduces Postgres and fails if search is not normalised.
+        DB::statement('PRAGMA case_sensitive_like = ON');
+
+        $response = $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?q=budi')->assertOk();
+
+        $this->assertSame(['KRY-B'], $this->staffIds($response));
+    }
+
+    public function test_divisi_search_is_case_insensitive(): void
+    {
+        DB::statement('PRAGMA case_sensitive_like = ON');
+
+        $byNama = $this->actingAs($this->hrd)->get('/hrd/daftarDivisi?q=operasional')->assertOk();
+        $this->assertSame(['DIV-OPS'], $this->divisiIds($byNama));
+
+        $byKode = $this->actingAs($this->hrd)->get('/hrd/daftarDivisi?q=it')->assertOk();
+        $this->assertSame(['DIV-IT'], $this->divisiIds($byKode));
     }
 }

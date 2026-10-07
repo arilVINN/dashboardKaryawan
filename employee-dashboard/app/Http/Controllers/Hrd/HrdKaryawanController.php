@@ -25,7 +25,7 @@ class HrdKaryawanController extends Controller
             ->withCount('tugas')
             ->when($request->filled('divisi'), fn ($q) => $q->where('divisi_id_divisi', $request->divisi))
             ->when($request->filled('jabatan'), fn ($q) => $q->where('jabatan', $request->jabatan))
-            ->when($request->filled('q'), fn ($q) => $q->where('nama', 'like', '%' . $request->q . '%'))
+            ->when($request->filled('q'), fn ($q) => $q->whereRaw('LOWER(nama) LIKE ?', ['%' . mb_strtolower($request->q) . '%']))
             ->when($request->input('status') === 'aktif', fn ($q) => $q->whereHas('user'))
             ->when($request->input('status') === 'belum', fn ($q) => $q->whereDoesntHave('user'));
 
