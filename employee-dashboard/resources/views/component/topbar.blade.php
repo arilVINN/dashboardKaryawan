@@ -1,3 +1,11 @@
+@php
+    // Sumber kebenaran: user yang login via session (semua role).
+    $topbarUser = auth()->user();
+    $topbarNama = $topbarUser?->karyawan?->nama ?? $topbarUser?->username ?? 'Guest';
+    $topbarDivisi = $topbarUser?->karyawan?->divisi?->nama_divisi ?? $topbarUser?->role?->nama_role ?? 'Staff';
+    $topbarInitial = $topbarUser ? mb_strtoupper(mb_substr($topbarNama, 0, 1)) : 'U';
+@endphp
+
 <header
     class="h-16 w-full bg-white border-b border-slate-200 px-8 flex items-center justify-end shrink-0 relative box-border">
     <div class="flex items-center gap-5">
@@ -14,7 +22,7 @@
                 class="flex items-center gap-2 cursor-pointer p-1 rounded-lg hover:bg-slate-100 transition focus:outline-none">
                 <div id="topbar-inisial"
                     class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
-                    U
+                    {{ $topbarInitial }}
                 </div>
                 <svg class="w-4 h-4 text-slate-500 transition-transform duration-200" id="dropdown-arrow" fill="none"
                     stroke="currentColor" viewBox="0 0 24 24">
@@ -25,8 +33,8 @@
             <div id="profile-dropdown-menu"
                 class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50 transition-all">
                 <div class="px-4 py-2 border-b border-slate-100">
-                    <p id="topbar-nama" class="text-sm font-semibold text-slate-800">Guest</p>
-                    <p id="topbar-divisi" class="text-xs text-slate-500">Staff</p>
+                    <p id="topbar-nama" class="text-sm font-semibold text-slate-800">{{ $topbarNama }}</p>
+                    <p id="topbar-divisi" class="text-xs text-slate-500">{{ $topbarDivisi }}</p>
                 </div>
                 <div class="py-1">
                     <a href="{{ url('/profile') }}"
@@ -39,15 +47,19 @@
                     </a>
                 </div>
                 <div class="border-t border-slate-100 pt-1">
-                    <button type="button" id="btn-logout-topbar"
-                        class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left">
-                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                            </path>
-                        </svg>
-                        Keluar
-                    </button>
+                    <form method="POST" action="{{ route('logout') }}"
+                        onsubmit="if (!confirm('Apakah Anda yakin ingin keluar?')) return false; sessionStorage.removeItem('staff_token'); return true;">
+                        @csrf
+                        <button type="submit" id="btn-logout-topbar"
+                            class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left">
+                            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
+                            </svg>
+                            Keluar
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -56,8 +68,10 @@
 </header>
 
 <script>
-    // Fetch nama & divisi user untuk topbar
+    // Fallback token hanya bila halaman tidak dirender dari session (mis. alur token).
     (async function loadTopbar() {
+        if ({{ $topbarUser ? 'true' : 'false' }}) return;
+
         const token = sessionStorage.getItem('staff_token');
         if (!token) return;
 
@@ -75,25 +89,4 @@
         } catch (e) {}
     })();
 
-    // Logout
-    const btnLogoutTopbar = document.getElementById('btn-logout-topbar');
-    if (btnLogoutTopbar) {
-        btnLogoutTopbar.addEventListener('click', async function() {
-            const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
-            if (!confirmLogout) return;
-
-            const token = sessionStorage.getItem('staff_token');
-            try {
-                if (token) {
-                    await fetch('/api/logout', {
-                        method: 'POST',
-                        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-                    });
-                }
-            } catch (e) {}
-
-            sessionStorage.removeItem('staff_token');
-            window.location.href = '/login';
-        });
-    }
 </script>
