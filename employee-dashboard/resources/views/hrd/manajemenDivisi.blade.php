@@ -17,17 +17,17 @@
         @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Manajemen Divisi'])
         <main class="flex-1 overflow-y-auto p-8 pt-6">
             <form method="GET" action="{{ url('/hrd/manajemenDivisi') }}"
-                class="flex flex-wrap items-end gap-x-5 gap-y-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5 mb-6">
+                class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5 mb-6">
                 <div class="flex flex-col gap-1.5">
                     <label for="q" class="text-xs font-bold text-slate-500 mb-1">Cari Kode/Nama</label>
                     <input type="text" id="q" name="q" value="{{ request('q') }}" placeholder="Kode atau nama divisi..."
-                        class="h-10 w-full sm:w-64 px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                        class="h-10 w-full sm:w-56 px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
                 </div>
 
                 <div class="flex flex-col gap-1.5">
                     <label for="status" class="text-xs font-bold text-slate-500 mb-1">Status</label>
                     <select id="status" name="status"
-                        class="h-10 w-full sm:w-48 px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                        class="h-10 w-full sm:w-56 px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
                         <option value="">Semua</option>
                         <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
                         <option value="nonaktif" @selected(request('status') === 'nonaktif')>Nonaktif</option>
@@ -41,11 +41,11 @@
                     <input type="hidden" name="dir" value="{{ request('dir') }}">
                 @endif
 
-                <div class="flex gap-2">
+                <div class="flex gap-2 sm:ml-auto">
                     <button type="submit"
-                        class="px-4 py-2 bg-[#004A65] text-white text-sm font-medium rounded-md hover:bg-[#003347] transition">Terapkan</button>
+                        class="h-10 inline-flex items-center px-4 bg-[#004A65] text-white text-sm font-medium rounded-md hover:bg-[#003347] transition">Terapkan</button>
                     <a href="{{ url('/hrd/manajemenDivisi') }}"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Reset</a>
+                        class="h-10 inline-flex items-center px-4 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Reset</a>
                 </div>
             </form>
 
