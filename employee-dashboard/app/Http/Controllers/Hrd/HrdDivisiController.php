@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Hrd;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use App\Models\Divisi;
 use App\Models\Karyawan;
@@ -188,7 +189,11 @@ class HrdDivisiController extends Controller
         ]);
     }
 
-    public function listPage(Request $request)
+    /**
+     * Query daftar divisi dengan sortir + filter dari query string.
+     * Dipakai bersama oleh daftarDivisi dan manajemenDivisi.
+     */
+    private function divisiListQuery(Request $request): Builder
     {
         $sort = $request->input('sort');
         $dir = $request->input('dir') === 'desc' ? 'desc' : 'asc';
@@ -221,8 +226,20 @@ class HrdDivisiController extends Controller
                 $query->orderBy('id_divisi', 'desc');
         }
 
-        $divisis = $query->paginate(5)->withQueryString();
+        return $query;
+    }
+
+    public function listPage(Request $request)
+    {
+        $divisis = $this->divisiListQuery($request)->paginate(5)->withQueryString();
 
         return view('hrd.daftarDivisi', compact('divisis'));
+    }
+
+    public function manajemenPage(Request $request)
+    {
+        $divisis = $this->divisiListQuery($request)->get();
+
+        return view('hrd.manajemenDivisi', compact('divisis'));
     }
 }

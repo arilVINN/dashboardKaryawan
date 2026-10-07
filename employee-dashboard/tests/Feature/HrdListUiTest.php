@@ -128,4 +128,27 @@ class HrdListUiTest extends TestCase
         $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan')
             ->assertDontSee('Tidak ada data yang cocok dengan filter.');
     }
+
+    // ---- manajemen divisi (shared tabelDivisi component) ----
+
+    public function test_manajemen_divisi_marks_sortable_columns_and_chips(): void
+    {
+        $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi')
+            ->assertOk()
+            ->assertSee('data-sort="kode"', false)
+            ->assertSee('data-sort="nama"', false)
+            ->assertSee('data-sort="staff"', false)
+            ->assertDontSee('data-sort="status"', false);
+
+        $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi?status=aktif')
+            ->assertSee('data-filter-chip="status"', false);
+    }
+
+    public function test_dashboard_divisi_table_stays_non_sortable(): void
+    {
+        // tabelDivisi is shared; the dashboard must not get the sortable markup.
+        $this->actingAs($this->hrd)->get('/hrd/dashboard')
+            ->assertOk()
+            ->assertDontSee('data-sort=', false);
+    }
 }

@@ -214,4 +214,42 @@ class HrdListFilteringTest extends TestCase
         $byKode = $this->actingAs($this->hrd)->get('/hrd/daftarDivisi?q=IT')->assertOk();
         $this->assertSame(['DIV-IT'], $this->divisiIds($byKode));
     }
+
+    // ---- manajemen divisi (sidebar page) ----
+
+    public function test_manajemen_divisi_sorts_by_nama(): void
+    {
+        $response = $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi?sort=nama&dir=asc')
+            ->assertOk()
+            ->assertViewIs('hrd.manajemenDivisi');
+
+        $this->assertSame(
+            ['DIV-OPS', 'DIV-HR', 'DIV-IT'],
+            $response->viewData('divisis')->pluck('id_divisi')->all()
+        );
+    }
+
+    public function test_manajemen_divisi_sorts_by_staff_count(): void
+    {
+        $response = $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi?sort=staff&dir=desc')->assertOk();
+
+        $this->assertSame(
+            ['DIV-HR', 'DIV-IT', 'DIV-OPS'],
+            $response->viewData('divisis')->pluck('id_divisi')->all()
+        );
+    }
+
+    public function test_manajemen_divisi_filters_by_status(): void
+    {
+        $response = $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi?status=nonaktif')->assertOk();
+
+        $this->assertSame(['DIV-OPS'], $response->viewData('divisis')->pluck('id_divisi')->all());
+    }
+
+    public function test_manajemen_divisi_searches_kode_or_nama(): void
+    {
+        $response = $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi?q=Operasional')->assertOk();
+
+        $this->assertSame(['DIV-OPS'], $response->viewData('divisis')->pluck('id_divisi')->all());
+    }
 }

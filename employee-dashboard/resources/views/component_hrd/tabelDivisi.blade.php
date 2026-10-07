@@ -3,6 +3,7 @@
     $cellPadding = $isCompact ? 'px-4 py-3' : 'px-6 py-4';
 
     $divisis = $divisis ?? [];
+    $sortable = $sortable ?? false;
 @endphp
 
 <div class="flex flex-col gap-3 w-full mt-2">
@@ -20,8 +21,14 @@
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
                     <tr>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Kode Divisi</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Nama Divisi</th>
+                        @if ($sortable)
+                            <x-sort-th column="kode" label="Kode Divisi" :padding="$cellPadding" />
+                            <x-sort-th column="nama" label="Nama Divisi" :padding="$cellPadding" />
+                            <x-sort-th column="staff" label="Jumlah Staff" :padding="$cellPadding" />
+                        @else
+                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Kode Divisi</th>
+                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Nama Divisi</th>
+                        @endif
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Status</th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Aksi</th>
                     </tr>
@@ -35,6 +42,11 @@
                             <td class="{{ $cellPadding }} text-slate-700">
                                 {{ $divisi->nama_divisi }}
                             </td>
+                            @if ($sortable)
+                                <td class="{{ $cellPadding }} text-slate-700">
+                                    {{ $divisi->karyawans_count ?? 0 }}
+                                </td>
+                            @endif
                             <td class="{{ $cellPadding }} whitespace-nowrap">
                                 @if (($divisi->status_aktif ?? 'Aktif') === 'Aktif')
                                     <span
@@ -64,8 +76,14 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="p-4 text-center text-slate-500">
-                                Belum ada data divisi.
+                            <td colspan="{{ $sortable ? 5 : 4 }}" class="p-4 text-center text-slate-500">
+                                @if (collect(request()->query())->except(['page', 'sort', 'dir'])->filter()->isNotEmpty())
+                                    <span>Tidak ada data yang cocok dengan filter.</span>
+                                    <a href="{{ url()->current() }}"
+                                        class="mt-1 inline-block text-sm text-[#0097B2] hover:underline">Reset filter</a>
+                                @else
+                                    Belum ada data divisi.
+                                @endif
                             </td>
                         </tr>
                     @endforelse

@@ -177,11 +177,7 @@ Route::post('/profile', function (Request $request) {
 Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
 
-    Route::get('/manajemenDivisi', function () {
-        return view('hrd.manajemenDivisi', [
-            'divisis' => Divisi::all(),
-        ]);
-    })->name('hrd.manajemenDivisi');
+    Route::get('/manajemenDivisi', [HrdDivisiController::class, 'manajemenPage'])->name('hrd.manajemenDivisi');
 
     Route::get('/pesan', [HrdPesanController::class, 'page'])->name('hrd.pesan');
 
