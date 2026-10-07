@@ -151,4 +151,25 @@ class HrdListUiTest extends TestCase
             ->assertOk()
             ->assertDontSee('data-sort=', false);
     }
+
+    // ---- navigation vs dashboard cards ----
+
+    public function test_dashboard_stat_cards_are_not_links(): void
+    {
+        // Stat cards are display-only; page access lives in the sidebar.
+        $html = view('component_hrd.statusbar', [
+            'total' => ['karyawan' => 1, 'divisi' => 2, 'pesan' => 3],
+            'tugasBuckets' => ['ongoing' => 1, 'pending' => 1, 'revisi' => 1],
+        ])->render();
+
+        $this->assertStringContainsString('Total Karyawan', $html);
+        $this->assertStringNotContainsString('<a ', $html);
+    }
+
+    public function test_sidebar_links_to_staff_list(): void
+    {
+        $html = view('component_hrd.sidebar')->render();
+
+        $this->assertStringContainsString(url('/hrd/daftarKaryawan'), $html);
+    }
 }
