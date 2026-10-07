@@ -74,6 +74,35 @@ class HrdManagementApiTest extends TestCase
         $this->assertDatabaseMissing('users2', ['id_user' => $staff->id_user]);
     }
 
+    public function test_hrd_can_send_message_to_staff_from_message_page(): void
+    {
+        $staff = $this->createAccount('EMP-STAFF', 'Staff', 'DIV-IT', 'ROLE-STAFF', 'staff');
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/pesan')
+            ->assertOk()
+            ->assertSee('Kirim Pesan')
+            ->assertSee('formKirimPesanHrd');
+
+        $this->actingAs($this->hrd)
+            ->postJson('/api/hrd/pesan', [
+                'penerima_id_user' => $staff->id_user,
+                'tipe' => 'pesan',
+                'judul_pesan' => 'Informasi HRD',
+                'deskripsi' => 'Mohon perbarui data karyawan.',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('message', 'Pesan/Surat berhasil dikirim');
+
+        $this->assertDatabaseHas('pesans', [
+            'pengirim_id_user' => $this->hrd->id_user,
+            'penerima_id_user' => $staff->id_user,
+            'judul_pesan' => 'Informasi HRD',
+            'tipe' => 'pesan',
+        ]);
+        Event::assertDispatched(PesanDikirim::class);
+    }
+
     public function test_hrd_can_edit_division_and_delete_only_empty_divisions(): void
     {
         $this->createAccount('EMP-STAFF', 'Staff', 'DIV-IT', 'ROLE-STAFF', 'staff');
@@ -142,6 +171,69 @@ class HrdManagementApiTest extends TestCase
             ->get('/hrd/manajemenDivisi')
             ->assertOk()
             ->assertSee('Pemasaran');
+    }
+
+    public function test_hrd_dashboard_totals_reflect_database_counts(): void
+    {
+        $staff = $this->createAccount('EMP-STAFF', 'Staff', 'DIV-IT', 'ROLE-STAFF', 'staff');
+        $otherStaff = $this->createAccount('EMP-OTHER', 'Staff Lain', 'DIV-IT', 'ROLE-STAFF', 'other');
+        Divisi::create([
+            'id_divisi' => 'DIV-NEW',
+            'kode_divisi' => 'NEW',
+            'nama_divisi' => 'Divisi Baru',
+            'status_aktif' => 'Aktif',
+        ]);
+        Pesan::create([
+            'id_pesan' => 'PSN-DASHBOARD',
+            'judul_pesan' => 'Informasi dashboard',
+            'deskripsi' => 'Pesan untuk perhitungan dashboard.',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => now()->toDateString(),
+            'pengirim_id_user' => $this->hrd->id_user,
+            'penerima_id_user' => $staff->id_user,
+        ]);
+        Pesan::create([
+            'id_pesan' => 'PSN-DASHBOARD-2',
+            'judul_pesan' => 'Balasan dashboard',
+            'deskripsi' => 'Pesan kedua yang melibatkan HRD.',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => now()->toDateString(),
+            'pengirim_id_user' => $staff->id_user,
+            'penerima_id_user' => $this->hrd->id_user,
+        ]);
+        Pesan::create([
+            'id_pesan' => 'PSN-DASHBOARD-3',
+            'judul_pesan' => 'Pesan antar-staff',
+            'deskripsi' => 'Pesan yang tidak melibatkan HRD.',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => now()->toDateString(),
+            'pengirim_id_user' => $staff->id_user,
+            'penerima_id_user' => $otherStaff->id_user,
+        ]);
+        Pesan::create([
+            'id_pesan' => 'PSN-DASHBOARD-4',
+            'judul_pesan' => 'Pesan antar-staff lainnya',
+            'deskripsi' => 'Pesan lain yang tidak melibatkan HRD.',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => now()->toDateString(),
+            'pengirim_id_user' => $otherStaff->id_user,
+            'penerima_id_user' => $staff->id_user,
+        ]);
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/pesan')
+            ->assertOk()
+            ->assertSee('PSN-DASHBOARD')
+            ->assertSee('PSN-DASHBOARD-2')
+            ->assertSee('PSN-DASHBOARD-3')
+            ->assertSee('PSN-DASHBOARD-4');
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/dashboard')
+            ->assertOk()
+            ->assertSee('data-dashboard-metric="total-staff">3</span>', false)
+            ->assertSee('data-dashboard-metric="total-divisi">3</span>', false)
+            ->assertSee('data-dashboard-metric="total-pesan">4</span>', false);
     }
 
     public function test_division_detail_shows_its_staff_and_can_add_a_staff_member(): void
@@ -218,7 +310,7 @@ class HrdManagementApiTest extends TestCase
         $this->assertDatabaseMissing('users2', ['id_user' => $staff->id_user]);
     }
 
-    public function test_hrd_message_page_lists_only_its_messages_and_supports_secure_replies(): void
+    public function test_hrd_can_monitor_all_messages_and_reply_to_participating_threads(): void
     {
         $sender = $this->createAccount('EMP-KADIV', 'Ketua Divisi', 'DIV-IT', 'ROLE-KADIV', 'kadiv');
         $otherUser = $this->createAccount('EMP-OTHER', 'Staff Lain', 'DIV-IT', 'ROLE-STAFF', 'other');
@@ -236,7 +328,7 @@ class HrdManagementApiTest extends TestCase
         Pesan::create([
             'id_pesan' => 'PSN-PRIVATE',
             'judul_pesan' => 'Pesan pribadi',
-            'deskripsi' => 'Tidak boleh terlihat HRD.',
+            'deskripsi' => 'Pesan antar pengguna untuk dipantau HRD.',
             'tipe' => 'pesan',
             'tanggal_pesan' => '2026-10-06',
             'pengirim_id_user' => $sender->id_user,
@@ -247,7 +339,7 @@ class HrdManagementApiTest extends TestCase
             ->get('/hrd/pesan')
             ->assertOk()
             ->assertSee('Permintaan data karyawan')
-            ->assertDontSee('Pesan pribadi')
+            ->assertSee('Pesan pribadi')
             ->assertSee('Ketua Divisi');
 
         $this->actingAs($this->hrd)
@@ -255,13 +347,27 @@ class HrdManagementApiTest extends TestCase
             ->assertOk()
             ->assertViewIs('hrd.daftarPesan')
             ->assertSee('Daftar Pesan')
-            ->assertDontSee('Pusat Pesan &amp; Komunikasi');
+            ->assertDontSee('Pusat Pesan &amp; Komunikasi')
+            ->assertSee('PSN-PRIVATE');
+
+        $this->actingAs($this->hrd)
+            ->getJson('/api/hrd/pesan')
+            ->assertOk()
+            ->assertJsonPath('data.metrics.total', 2)
+            ->assertJsonCount(2, 'data.list_pesan');
 
         $this->actingAs($this->hrd)
             ->get('/hrd/detailPesan/PSN-HRD-001')
             ->assertOk()
             ->assertSee('Mohon data terbaru.')
             ->assertSee('Balas Pesan');
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/detailPesan/PSN-PRIVATE')
+            ->assertOk()
+            ->assertSee('Pesan antar pengguna untuk dipantau HRD.')
+            ->assertDontSee('Balas Pesan')
+            ->assertSee('tidak dapat dibalas');
 
         $this->actingAs($otherUser)
             ->get('/hrd/detailPesan/PSN-HRD-001')
