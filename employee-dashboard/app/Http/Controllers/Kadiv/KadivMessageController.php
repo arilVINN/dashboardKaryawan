@@ -26,6 +26,9 @@ class KadivMessageController extends Controller
             'tipe' => ['nullable', Rule::in(['pesan', 'surat'])],
             'arah' => ['nullable', Rule::in(['masuk', 'keluar'])],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'sort' => ['nullable', Rule::in(['tanggal', 'judul', 'pengirim'])],
+            'dir' => ['nullable', Rule::in(['asc', 'desc'])],
+            'q' => ['nullable', 'string', 'max:200'],
         ]);
 
         $query = Pesan::query()
@@ -45,7 +48,34 @@ class KadivMessageController extends Controller
             $query->where('pengirim_id_user', $user->id_user);
         }
 
-        $messages = $query->latest('created_at')->paginate($validated['per_page'] ?? 15);
+        // Cari judul/deskripsi (case-insensitive, aman untuk Postgres & SQLite).
+        if (! empty($validated['q'])) {
+            $kata = mb_strtolower($validated['q']);
+            $query->where(function ($w) use ($kata): void {
+                $w->whereRaw('LOWER(judul_pesan) LIKE ?', ['%' . $kata . '%'])
+                    ->orWhereRaw('LOWER(deskripsi) LIKE ?', ['%' . $kata . '%']);
+            });
+        }
+
+        // Sortir (default tetap created_at desc seperti sebelumnya).
+        $dir = ($validated['dir'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+        switch ($validated['sort'] ?? null) {
+            case 'tanggal':
+                $query->orderBy('tanggal_pesan', $dir)->orderBy('id_pesan', $dir);
+                break;
+            case 'judul':
+                $query->orderBy('judul_pesan', $dir)->orderBy('id_pesan');
+                break;
+            case 'pengirim':
+                $query->orderByRaw(
+                    '(select k.nama from karyawans k inner join users2 u on u.karyawan_id_karyawan = k.id_karyawan where u.id_user = pesans.pengirim_id_user) ' . $dir
+                );
+                break;
+            default:
+                $query->latest('created_at');
+        }
+
+        $messages = $query->paginate($validated['per_page'] ?? 15);
 
         return response()->json([
             'data' => collect($messages->items())->map(
