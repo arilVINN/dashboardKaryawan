@@ -401,6 +401,20 @@ class KadivApiTest extends TestCase
             ->assertSee('data-sort-indicator="nama"', false);
     }
 
+    public function test_kadiv_pages_require_authentication(): void
+    {
+        $this->get('/kadiv/dashboard')->assertRedirect('/login');
+        $this->get('/kadiv/tugas')->assertRedirect('/login');
+        $this->get('/kadiv/pesan')->assertRedirect('/login');
+    }
+
+    public function test_kadiv_pages_are_forbidden_for_non_kadiv(): void
+    {
+        $staff = $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+
+        $this->actingAs($staff)->get('/kadiv/dashboard')->assertForbidden();
+    }
+
     private function makeMessage(
         string $id,
         string $judul,
