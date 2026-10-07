@@ -27,14 +27,16 @@ class AuthController extends Controller
 
         if ($user) {
             $passwordInfo = password_get_info($user->password);
-            $passwordMatches = ! empty($user->password) && (
-                $passwordInfo['algo'] !== 0
-                    ? Hash::check($credentials['password'], $user->password)
-                    : hash_equals($user->password, $credentials['password'])
-            );
 
-            if ($passwordMatches && $passwordInfo['algo'] === 0) {
-                $user->forceFill(['password' => Hash::make($credentials['password'])])->save();
+            // Only real password hashes may authenticate. Plaintext (or any
+            // non-hashed) values are treated as invalid: never compared with
+            // hash_equals and never silently auto-upgraded, so a legacy or
+            // leaked plaintext column cannot be used to log in.
+            $storedIsHashed = ! empty($user->password)
+                && ! in_array($passwordInfo['algo'], [null, 0], true);
+
+            if ($storedIsHashed) {
+                $passwordMatches = Hash::check($credentials['password'], $user->password);
             }
         }
 
