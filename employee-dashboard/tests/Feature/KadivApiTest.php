@@ -11,6 +11,7 @@ use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -202,6 +203,86 @@ class KadivApiTest extends TestCase
         $this->actingAs($staff)
             ->getJson('/api/kadiv/dashboard')
             ->assertForbidden();
+    }
+
+    public function test_tugas_list_sorts_by_judul(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+
+        $this->createTask('T-1', 'ST-1', Tugas::STATUS_BARU);
+        $this->createTask('T-2', 'ST-1', Tugas::STATUS_BARU);
+        $this->createTask('T-3', 'ST-1', Tugas::STATUS_BARU);
+        Tugas::where('id_tugas', 'T-1')->update(['judul_tugas' => 'Gamma']);
+        Tugas::where('id_tugas', 'T-2')->update(['judul_tugas' => 'Alpha']);
+        Tugas::where('id_tugas', 'T-3')->update(['judul_tugas' => 'Beta']);
+
+        $asc = $this->actingAs($kadiv)->getJson('/api/kadiv/tugas?sort=judul&dir=asc')->assertOk();
+        $this->assertSame(['T-2', 'T-3', 'T-1'], collect($asc->json('data'))->pluck('id_tugas')->all());
+
+        $desc = $this->actingAs($kadiv)->getJson('/api/kadiv/tugas?sort=judul&dir=desc')->assertOk();
+        $this->assertSame(['T-1', 'T-3', 'T-2'], collect($desc->json('data'))->pluck('id_tugas')->all());
+    }
+
+    public function test_tugas_list_sorts_by_tanggal(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+
+        $this->createTask('T-1', 'ST-1', Tugas::STATUS_BARU, '2026-01-10');
+        $this->createTask('T-2', 'ST-1', Tugas::STATUS_BARU, '2026-01-05');
+        $this->createTask('T-3', 'ST-1', Tugas::STATUS_BARU, '2026-01-20');
+
+        $asc = $this->actingAs($kadiv)->getJson('/api/kadiv/tugas?sort=tanggal&dir=asc')->assertOk();
+        $this->assertSame(['T-2', 'T-1', 'T-3'], collect($asc->json('data'))->pluck('id_tugas')->all());
+    }
+
+    public function test_tugas_list_filters_by_status_and_staff(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+        $this->createAccount('ST-2', 'Staff Lain', 'DIV-IT', 'ROLE-STAFF', 'staff.lain');
+
+        $this->createTask('T-1', 'ST-1', Tugas::STATUS_BARU);
+        $this->createTask('T-2', 'ST-2', Tugas::STATUS_SUDAH_ACC);
+
+        $byStatus = $this->actingAs($kadiv)
+            ->getJson('/api/kadiv/tugas?status=' . urlencode('sudah di-acc'))
+            ->assertOk();
+        $this->assertSame(['T-2'], collect($byStatus->json('data'))->pluck('id_tugas')->all());
+
+        $byStaff = $this->actingAs($kadiv)->getJson('/api/kadiv/tugas?staff=ST-1')->assertOk();
+        $this->assertSame(['T-1'], collect($byStaff->json('data'))->pluck('id_tugas')->all());
+    }
+
+    public function test_tugas_list_searches_judul_case_insensitively(): void
+    {
+        // Force SQLite LIKE to be case-sensitive so this mirrors Postgres.
+        DB::statement('PRAGMA case_sensitive_like = ON');
+
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+
+        $this->createTask('T-1', 'ST-1', Tugas::STATUS_BARU);
+        $this->createTask('T-2', 'ST-1', Tugas::STATUS_BARU);
+        Tugas::where('id_tugas', 'T-1')->update(['judul_tugas' => 'Bikin API']);
+        Tugas::where('id_tugas', 'T-2')->update(['judul_tugas' => 'Laporan']);
+
+        $response = $this->actingAs($kadiv)->getJson('/api/kadiv/tugas?q=bikin')->assertOk();
+        $this->assertSame(['T-1'], collect($response->json('data'))->pluck('id_tugas')->all());
+    }
+
+    public function test_kadiv_tugas_page_renders_sort_filter_controls(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+
+        $this->actingAs($kadiv)->get('/kadiv/tugas')
+            ->assertOk()
+            ->assertSee('id="kadivTaskSearch"', false)
+            ->assertSee('id="kadivTaskStatus"', false)
+            ->assertSee('id="kadivTaskStaff"', false)
+            ->assertSee('setKadivTaskSort', false)
+            ->assertSee('data-sort-indicator="judul"', false);
     }
 
     private function createAccount(
