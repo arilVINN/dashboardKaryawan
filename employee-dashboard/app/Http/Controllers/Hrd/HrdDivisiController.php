@@ -188,11 +188,40 @@ class HrdDivisiController extends Controller
         ]);
     }
 
-    public function listPage()
+    public function listPage(Request $request)
     {
-        $divisis = Divisi::withCount('karyawans')
-            ->orderBy('id_divisi', 'desc')
-            ->paginate(5);
+        $sort = $request->input('sort');
+        $dir = $request->input('dir') === 'desc' ? 'desc' : 'asc';
+
+        $query = Divisi::withCount('karyawans');
+
+        if ($request->filled('q')) {
+            $kata = $request->input('q');
+            $query->where(function ($q) use ($kata): void {
+                $q->where('kode_divisi', 'like', '%' . $kata . '%')
+                    ->orWhere('nama_divisi', 'like', '%' . $kata . '%');
+            });
+        }
+
+        if (in_array($request->input('status'), ['aktif', 'nonaktif'], true)) {
+            $query->whereRaw('LOWER(status_aktif) = ?', [$request->input('status')]);
+        }
+
+        switch ($sort) {
+            case 'kode':
+                $query->orderBy('kode_divisi', $dir)->orderBy('id_divisi');
+                break;
+            case 'nama':
+                $query->orderBy('nama_divisi', $dir)->orderBy('id_divisi');
+                break;
+            case 'staff':
+                $query->orderBy('karyawans_count', $dir)->orderBy('id_divisi');
+                break;
+            default:
+                $query->orderBy('id_divisi', 'desc');
+        }
+
+        $divisis = $query->paginate(5)->withQueryString();
 
         return view('hrd.daftarDivisi', compact('divisis'));
     }
