@@ -144,6 +144,26 @@ class HrdManagementApiTest extends TestCase
             ->assertSee('Pemasaran');
     }
 
+    public function test_hrd_dashboard_widgets_use_real_database_metrics(): void
+    {
+        $expected = [
+            'karyawan' => Karyawan::count(),
+            'divisi' => Divisi::count(),
+            'pesan' => Pesan::count(),
+        ];
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/dashboard')
+            ->assertOk()
+            ->assertViewIs('hrd.dashboard')
+            ->assertViewHas('total', fn ($total) => $total == $expected)
+            ->assertViewHas('tugasBuckets', fn ($buckets) => isset(
+                $buckets['ongoing'],
+                $buckets['pending'],
+                $buckets['revisi']
+            ));
+    }
+
     public function test_division_detail_shows_its_staff_and_can_add_a_staff_member(): void
     {
         $this->actingAs($this->hrd)

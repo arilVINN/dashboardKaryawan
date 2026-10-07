@@ -1,9 +1,13 @@
 @php
-    $total = ([
-        'karyawan' => '30',
-        'divisi' => '6',
-        'pesan' => '50',
-    ]);
+    // Data nyata dari HrdDashboardController (fallback 0 bila komponen dipakai tanpa data).
+    $total = $total ?? ['karyawan' => 0, 'divisi' => 0, 'pesan' => 0];
+    $tugasBuckets = $tugasBuckets ?? ['ongoing' => 0, 'pending' => 0, 'revisi' => 0];
+    $bucketTotal = array_sum($tugasBuckets);
+    $persen = [
+        'ongoing' => $bucketTotal > 0 ? (int) round($tugasBuckets['ongoing'] / $bucketTotal * 100) : 0,
+        'pending' => $bucketTotal > 0 ? (int) round($tugasBuckets['pending'] / $bucketTotal * 100) : 0,
+        'revisi' => $bucketTotal > 0 ? (int) round($tugasBuckets['revisi'] / $bucketTotal * 100) : 0,
+    ];
 @endphp
 
 
@@ -56,19 +60,19 @@
                     <div class="flex items-center gap-1.5">
                         <span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span> Ongoing
                     </div>
-                    <span class="text-slate-800">60%</span>
+                    <span class="text-slate-800">{{ $persen['ongoing'] }}%</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
                         <span class="w-2.5 h-2.5 rounded-sm bg-yellow-500"></span> Pending
                     </div>
-                    <span class="text-slate-800">25%</span>
+                    <span class="text-slate-800">{{ $persen['pending'] }}%</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
                         <span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span> Revisi
                     </div>
-                    <span class="text-slate-800">15%</span>
+                    <span class="text-slate-800">{{ $persen['revisi'] }}%</span>
                 </div>
             </div>
         </div>
@@ -88,7 +92,7 @@
                 data: {
                     labels: ['Ongoing', 'Pending', 'Revisi'],
                     datasets: [{
-                        data: [60, 25, 15],
+                        data: [{{ $persen['ongoing'] }}, {{ $persen['pending'] }}, {{ $persen['revisi'] }}],
                         backgroundColor: [
                             '#22c55e', // text-green-500
                             '#eab308', // text-yellow-500

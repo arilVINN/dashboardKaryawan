@@ -11,6 +11,7 @@ use App\Http\Controllers\Hrd\HrdKaryawanController;
 use App\Http\Controllers\Hrd\HrdDivisiController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
+use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Models\Divisi;
 
 
@@ -174,11 +175,7 @@ Route::post('/profile', function (Request $request) {
 
 //route hrd 
 Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('hrd.dashboard', [
-            'divisis' => Divisi::all(),
-        ]);
-    })->name('hrd.dashboard');
+    Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
 
     Route::get('/manajemenDivisi', function () {
         return view('hrd.manajemenDivisi', [
