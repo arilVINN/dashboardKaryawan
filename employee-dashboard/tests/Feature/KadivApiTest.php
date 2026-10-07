@@ -347,6 +347,57 @@ class KadivApiTest extends TestCase
             ->assertSee('data-sort-indicator="judul"', false);
     }
 
+    public function test_staff_list_sorts_by_nama_tugas_and_login(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-A', 'Abby', 'DIV-IT', 'ROLE-STAFF', 'abby', '2026-02-01 08:00:00');
+        $this->createAccount('ST-Z', 'Zed', 'DIV-IT', 'ROLE-STAFF', 'zed', '2026-01-01 08:00:00');
+        $this->createTask('T-1', 'ST-Z', Tugas::STATUS_BARU);
+        $this->createTask('T-2', 'ST-Z', Tugas::STATUS_BARU);
+        $this->createTask('T-3', 'ST-A', Tugas::STATUS_BARU);
+
+        $this->actingAs($kadiv)->getJson('/api/kadiv/dashboard?sort=nama&dir=asc')
+            ->assertOk()
+            ->assertJsonCount(2, 'data.staff')
+            ->assertJsonPath('data.staff.0.nama', 'Abby')
+            ->assertJsonPath('data.staff.1.nama', 'Zed');
+
+        $this->actingAs($kadiv)->getJson('/api/kadiv/dashboard?sort=tugas&dir=desc')
+            ->assertOk()
+            ->assertJsonPath('data.staff.0.nama', 'Zed')
+            ->assertJsonPath('data.staff.1.nama', 'Abby');
+
+        $this->actingAs($kadiv)->getJson('/api/kadiv/dashboard?sort=login&dir=asc')
+            ->assertOk()
+            ->assertJsonPath('data.staff.0.nama', 'Zed')
+            ->assertJsonPath('data.staff.1.nama', 'Abby');
+    }
+
+    public function test_staff_list_searches_nama_case_insensitively(): void
+    {
+        DB::statement('PRAGMA case_sensitive_like = ON');
+
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-A', 'Abby', 'DIV-IT', 'ROLE-STAFF', 'abby');
+        $this->createAccount('ST-Z', 'Zed', 'DIV-IT', 'ROLE-STAFF', 'zed');
+
+        $this->actingAs($kadiv)->getJson('/api/kadiv/dashboard?q=abby')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.staff')
+            ->assertJsonPath('data.staff.0.nama', 'Abby');
+    }
+
+    public function test_kadiv_manajemen_staff_page_renders_sort_filter_controls(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+
+        $this->actingAs($kadiv)->get('/kadiv/manajemenStaff')
+            ->assertOk()
+            ->assertSee('id="kadivStaffSearch"', false)
+            ->assertSee('setKadivStaffSort', false)
+            ->assertSee('data-sort-indicator="nama"', false);
+    }
+
     private function makeMessage(
         string $id,
         string $judul,
