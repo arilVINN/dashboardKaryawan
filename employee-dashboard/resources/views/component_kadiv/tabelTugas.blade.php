@@ -115,46 +115,59 @@
         </div>
 
         {{-- BODY --}}
-        <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+        <div class="flex-1 overflow-y-auto px-6 py-5 space-y-6">
 
-            <div>
-                <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">1. JUDUL TUGAS</label>
-                <input type="text" name="judul" required placeholder="Judul tugas"
-                       class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] placeholder:text-[#94A3B8] outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
-            </div>
+            <section class="space-y-4">
+                <div class="flex items-center gap-2">
+                    <span class="h-4 w-1 rounded bg-[#19A7CE]"></span>
+                    <h4 class="text-xs font-bold uppercase tracking-wide text-[#565E74]">Informasi Tugas</h4>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">JUDUL TUGAS</label>
+                    <input type="text" name="judul" required placeholder="Judul tugas"
+                           class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] placeholder:text-[#94A3B8] outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">DESKRIPSI</label>
+                    <textarea name="deskripsi" rows="4" placeholder="Tulis deskripsi tugas..."
+                              class="w-full resize-none rounded-lg border border-[#CBD5E1] px-3 py-2.5 text-sm text-[#283044] placeholder:text-[#94A3B8] outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]"></textarea>
+                </div>
+            </section>
 
-            <div>
-                <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">2. TUJUAN PENERIMA</label>
-                <div class="space-y-3">
-
+            <section class="space-y-4">
+                <div class="flex items-center gap-2">
+                    <span class="h-4 w-1 rounded bg-[#19A7CE]"></span>
+                    <h4 class="text-xs font-bold uppercase tracking-wide text-[#565E74]">Penugasan</h4>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">PENERIMA</label>
                     <select name="penerima" required
                             id="penerimaTugas"
                             class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] bg-white outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
                         <option value="">Memuat staff...</option>
                     </select>
                 </div>
-            </div>
+                <div>
+                    <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">TENGGAT</label>
+                    <input type="datetime-local" name="tenggat" required
+                           class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] outline-none cursor-pointer focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
+                </div>
+            </section>
 
-            <div>
-                <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">3. DESKRIPSI</label>
-                <textarea name="deskripsi" rows="4" placeholder="Tulis deskripsi tugas..."
-                          class="w-full resize-none rounded-lg border border-[#CBD5E1] px-3 py-2.5 text-sm text-[#283044] placeholder:text-[#94A3B8] outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]"></textarea>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">TENGGAT</label>
-                <input type="datetime-local" name="tenggat" required
-                       class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] outline-none cursor-pointer focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
-            </div>
-
-            <div class="bg-[#F1F5F9] rounded-lg p-4">
-                <label for="fileTugas"
-                       class="flex flex-col items-center justify-center text-center gap-1 h-[110px] rounded-lg border-2 border-dashed border-[#CBD5E1] bg-white cursor-pointer hover:border-[#19A7CE] transition">
-                    <span id="namaFileTugas" class="text-sm font-bold text-[#283044] px-3 truncate max-w-full">Pilih File</span>
-                    <span class="text-xs text-[#94A3B8]">Maks 20 MB</span>
-                </label>
-                <input id="fileTugas" type="file" name="lampiran" class="hidden">
-            </div>
+            <section class="space-y-4">
+                <div class="flex items-center gap-2">
+                    <span class="h-4 w-1 rounded bg-[#19A7CE]"></span>
+                    <h4 class="text-xs font-bold uppercase tracking-wide text-[#565E74]">Lampiran</h4>
+                </div>
+                <div class="bg-[#F1F5F9] rounded-lg p-4">
+                    <label for="fileTugas"
+                           class="flex flex-col items-center justify-center text-center gap-1 h-[110px] rounded-lg border-2 border-dashed border-[#CBD5E1] bg-white cursor-pointer hover:border-[#19A7CE] transition">
+                        <span id="namaFileTugas" class="text-sm font-bold text-[#283044] px-3 truncate max-w-full">Pilih File</span>
+                        <span class="text-xs text-[#94A3B8]">Maks 20 MB</span>
+                    </label>
+                    <input id="fileTugas" type="file" name="lampiran" class="hidden">
+                </div>
+            </section>
         </div>
 
         {{-- FOOTER --}}

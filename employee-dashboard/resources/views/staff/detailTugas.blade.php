@@ -57,6 +57,7 @@
 
                     <form id="form-submit-tugas" class="space-y-4 max-w-xl">
                         <div>
+                            <label class="block text-sm font-semibold text-slate-900 mb-1.5">File Hasil</label>
                             <input type="file" id="file_tugas" name="file_tugas"
                                 class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
                         </div>

@@ -101,4 +101,11 @@ class StaffTugasFilterTest extends TestCase
             ->assertSee('setStaffPesanSort', false)
             ->assertSee('data-sort-indicator="tanggal"', false);
     }
+
+    public function test_staff_tugas_detail_has_labeled_file_field(): void
+    {
+        $this->get('/tugas/detail/T-1')
+            ->assertOk()
+            ->assertSee('File Hasil');
+    }
 }
