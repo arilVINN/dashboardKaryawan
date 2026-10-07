@@ -152,11 +152,6 @@ Route::post('/login-proses', function (Request $request) {
 })->name('login.proses');
 
 
-// 2. Route untuk halaman profil
-Route::get('/profile', function () {
-    return view('staff.detailProfile');
-});
-
 Route::post('/profile', function (Request $request) {
     $validated = $request->validate([
         'nama' => ['required', 'string', 'max:255'],
@@ -174,8 +169,12 @@ Route::post('/profile', function (Request $request) {
 
 
 //route hrd 
-Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
+Route::prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
+
+    Route::get('/profile', function () {
+        return view('hrd.profile');
+    })->name('hrd.profile');
 
     Route::get('/manajemenDivisi', function () {
         return view('hrd.manajemenDivisi', [
