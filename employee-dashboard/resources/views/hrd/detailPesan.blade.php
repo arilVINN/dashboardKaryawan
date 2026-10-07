@@ -90,11 +90,6 @@
                         <p id="errorBalasPesan" class="hidden text-sm text-red-600" role="alert"></p>
                     </form>
                 </section>
-            @endif
-                        </button>
-                        <p id="errorBalasPesan" class="hidden text-sm text-red-600" role="alert"></p>
-                    </form>
-                </section>
             @else
                 <p class="mt-5 text-sm text-slate-500">Surat ini tidak dapat dibalas melalui sistem.</p>
             @endif
@@ -216,78 +211,6 @@
         </script>
     @endif
 
-                try {
-                    const response = await fetch(form.action, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
-                        },
-                        body: JSON.stringify({
-                            deskripsi: form.elements.deskripsi.value,
-                        }),
-                    });
-                    const result = await response.json();
-
-        pesanInput.addEventListener('input', () => {
-            isFormDirty = pesanInput.value.trim().length > 0 || lampiranInput.files.length > 0;
-        });
-        lampiranInput.addEventListener('change', () => {
-            const file = lampiranInput.files[0];
-            if (file && file.size > 20 * 1024 * 1024) {
-                alert('Ukuran file maksimal 20 MB');
-                lampiranInput.value = '';
-            }
-            isFormDirty = pesanInput.value.trim().length > 0 || lampiranInput.files.length > 0;
-        });
-        formSubmit.addEventListener('reset', () => {
-            isFormDirty = false;
-        });
-
-        formSubmit.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const file = lampiranInput.files[0];
-            if (file && file.size > 20 * 1024 * 1024) {
-                alert('Ukuran file maksimal 20 MB');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/hrd/pesan/' + encodeURIComponent(messageId) + '/balas', {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
-                    body: new FormData(formSubmit)
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message || 'Balasan gagal dikirim.');
-
-                formSubmit.reset();
-                isFormDirty = false;
-                formBalasan.classList.add('hidden');
-                window.location.reload();
-            } catch (error) {
-                alert(error.message || 'Terjadi kesalahan saat mengirim balasan.');
-            }
-        });
-
-        document.addEventListener('click', (event) => {
-            const link = event.target.closest('a');
-            if (!link || !isFormDirty || link.target === '_blank' || link.getAttribute('href')?.startsWith('#')) return;
-            if (!confirm('Perubahan belum disimpan. Yakin ingin meninggalkan halaman ini?')) {
-                event.preventDefault();
-            } else {
-                isFormDirty = false;
-            }
-        });
-
-        window.addEventListener('beforeunload', (event) => {
-            if (!isFormDirty) return;
-            event.preventDefault();
-            event.returnValue = '';
-        });
-
-        window.location.reload();
 </body>
 
 </html>
