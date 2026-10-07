@@ -34,25 +34,12 @@
                     </select>
                 </div>
 
-                <div class="flex flex-col">
-                    <label for="sort" class="text-xs font-bold text-slate-500 mb-1">Urutkan</label>
-                    <select id="sort" name="sort"
-                        class="px-3 py-2 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
-                        <option value="" @selected(!request('sort'))>Terbaru (default)</option>
-                        <option value="kode" @selected(request('sort') === 'kode')>Kode Divisi</option>
-                        <option value="nama" @selected(request('sort') === 'nama')>Nama Divisi</option>
-                        <option value="staff" @selected(request('sort') === 'staff')>Jumlah Staff</option>
-                    </select>
-                </div>
-
-                <div class="flex flex-col">
-                    <label for="dir" class="text-xs font-bold text-slate-500 mb-1">Arah</label>
-                    <select id="dir" name="dir"
-                        class="px-3 py-2 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
-                        <option value="asc" @selected(request('dir', 'asc') === 'asc')>Naik (A-Z)</option>
-                        <option value="desc" @selected(request('dir') === 'desc')>Turun (Z-A)</option>
-                    </select>
-                </div>
+                @if (request()->filled('sort'))
+                    <input type="hidden" name="sort" value="{{ request('sort') }}">
+                @endif
+                @if (request()->filled('dir'))
+                    <input type="hidden" name="dir" value="{{ request('dir') }}">
+                @endif
 
                 <div class="flex gap-2">
                     <button type="submit"
@@ -61,6 +48,29 @@
                         class="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Reset</a>
                 </div>
             </form>
+
+            @php
+                $activeFilters = [];
+                if (request()->filled('q')) {
+                    $q = request()->query();
+                    unset($q['q'], $q['page']);
+                    $activeFilters[] = ['name' => 'q', 'label' => 'Cari: "' . request('q') . '"', 'url' => url()->current() . '?' . http_build_query($q)];
+                }
+                if (request()->filled('status')) {
+                    $q = request()->query();
+                    unset($q['status'], $q['page']);
+                    $activeFilters[] = ['name' => 'status', 'label' => 'Status: ' . ucfirst(request('status')), 'url' => url()->current() . '?' . http_build_query($q)];
+                }
+            @endphp
+
+            @if (!empty($activeFilters))
+                <div class="flex flex-wrap items-center gap-2 mb-4">
+                    <span class="text-xs font-bold text-slate-500 uppercase">Filter aktif:</span>
+                    @foreach ($activeFilters as $chip)
+                        <x-filter-chip :name="$chip['name']" :label="$chip['label']" :remove-url="$chip['url']" />
+                    @endforeach
+                </div>
+            @endif
 
             @include('component_hrd.tabelDaftarDivisi', ['divisis' => $divisis, 'compact' => true])
             <div class="px-1 mt-2">{{ $divisis->links() }}</div>

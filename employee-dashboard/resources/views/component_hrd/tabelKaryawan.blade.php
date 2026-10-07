@@ -14,10 +14,10 @@
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
                     <tr>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">ID Karyawan</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Nama Karyawan</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Divisi</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Jabatan</th>
+                        <x-sort-th column="id" label="ID Karyawan" :padding="$cellPadding" />
+                        <x-sort-th column="nama" label="Nama Karyawan" :padding="$cellPadding" default="nama" />
+                        <x-sort-th column="divisi" label="Divisi" :padding="$cellPadding" />
+                        <x-sort-th column="jabatan" label="Jabatan" :padding="$cellPadding" />
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Status</th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Aksi</th>
                     </tr>
@@ -61,7 +61,15 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-10 text-center text-slate-400">Belum ada karyawan.</td>
+                            <td colspan="6" class="px-6 py-10 text-center text-slate-400">
+                                @if (collect(request()->query())->except(['page', 'sort', 'dir'])->filter()->isNotEmpty())
+                                    <span>Tidak ada data yang cocok dengan filter.</span>
+                                    <a href="{{ url()->current() }}"
+                                        class="mt-1 inline-block text-sm text-[#0097B2] hover:underline">Reset filter</a>
+                                @else
+                                    Belum ada karyawan.
+                                @endif
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>

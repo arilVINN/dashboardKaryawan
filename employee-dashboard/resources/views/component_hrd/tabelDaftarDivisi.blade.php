@@ -13,8 +13,9 @@
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
                     <tr>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Kode Divisi</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Nama Divisi</th>
+                        <x-sort-th column="kode" label="Kode Divisi" :padding="$cellPadding" />
+                        <x-sort-th column="nama" label="Nama Divisi" :padding="$cellPadding" />
+                        <x-sort-th column="staff" label="Jumlah Staff" :padding="$cellPadding" />
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Status</th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Aksi</th>
                     </tr>
@@ -27,6 +28,10 @@
                             </td>
                             <td class="{{ $cellPadding }} text-slate-700">
                                 {{ $divisi->nama_divisi }}
+                            </td>
+
+                            <td class="{{ $cellPadding }} text-slate-700">
+                                {{ $divisi->karyawans_count ?? 0 }}
                             </td>
 
                             <td class="{{ $cellPadding }} whitespace-nowrap">
@@ -50,7 +55,15 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-10 text-center text-slate-400">Belum ada divisi.</td>
+                            <td colspan="5" class="px-6 py-10 text-center text-slate-400">
+                                @if (collect(request()->query())->except(['page', 'sort', 'dir'])->filter()->isNotEmpty())
+                                    <span>Tidak ada data yang cocok dengan filter.</span>
+                                    <a href="{{ url()->current() }}"
+                                        class="mt-1 inline-block text-sm text-[#0097B2] hover:underline">Reset filter</a>
+                                @else
+                                    Belum ada divisi.
+                                @endif
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
