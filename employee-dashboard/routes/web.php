@@ -186,9 +186,7 @@ Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
 
     Route::get('/detailDivisi/{id}', [HrdDivisiController::class, 'detailPage'])->name('hrd.detailDivisi');
 
-    Route::get('/detailKaryawan', function () {
-        return view('hrd.detailKaryawan');
-    })->name('hrd.detailKaryawan');
+    Route::get('/detailKaryawan/{id}', [HrdKaryawanController::class, 'detailPage'])->name('hrd.detailKaryawan');
 
     Route::get('/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage'])->name('hrd.daftarKaryawan');
     Route::get('/daftarDivisi', [HrdDivisiController::class, 'listPage'])->name('hrd.daftarDivisi');

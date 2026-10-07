@@ -48,4 +48,13 @@ class HrdKaryawanController extends Controller
 
         return view('hrd.daftarKaryawan', compact('karyawan', 'daftarDivisi', 'daftarJabatan'));
     }
+
+    public function detailPage(string $id)
+    {
+        $karyawan = Karyawan::with(['divisi', 'user.role', 'tugas'])
+            ->where('id_karyawan', $id)
+            ->firstOrFail();
+
+        return view('hrd.detailKaryawan', compact('karyawan'));
+    }
 }

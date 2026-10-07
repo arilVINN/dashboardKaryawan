@@ -105,7 +105,7 @@
                 </div>
             @endif
 
-            @include('component_hrd.tabelKaryawan', ['karyawan' => $karyawan])
+            @include('component_hrd.tabelKaryawan', ['karyawan' => $karyawan, 'daftarDivisi' => $daftarDivisi])
             <div class="px-1 mt-2">{{ $karyawan->links() }}</div>
 
         </main>
