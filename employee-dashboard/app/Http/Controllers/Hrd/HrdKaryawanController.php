@@ -6,26 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Tugas;
-use App\Queries\HrdKaryawanQuery;
-use Illuminate\Http\Request;
 
 class HrdKaryawanController extends Controller
 {
-    public function karyawanPage(Request $request)
+    public function karyawanPage()
     {
-        $karyawan = (new HrdKaryawanQuery)
-            ->apply($request->only(['divisi', 'jabatan', 'status', 'q', 'sort', 'dir']))
-            ->paginate(6)
-            ->withQueryString();
-
+        // Rows, filters, sorting, and pagination now live in the
+        // App\Livewire\Hrd\KaryawanTable component; the page only supplies
+        // the divisi list for the CRUD modals.
         $daftarDivisi = Divisi::orderBy('nama_divisi')->get();
-        $daftarJabatan = Karyawan::query()
-            ->whereNotNull('jabatan')
-            ->distinct()
-            ->orderBy('jabatan')
-            ->pluck('jabatan');
 
-        return view('hrd.daftarKaryawan', compact('karyawan', 'daftarDivisi', 'daftarJabatan'));
+        return view('hrd.daftarKaryawan', compact('daftarDivisi'));
     }
 
     public function detailPage(string $id)

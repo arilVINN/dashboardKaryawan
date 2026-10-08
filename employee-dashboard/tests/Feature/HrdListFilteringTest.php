@@ -73,11 +73,6 @@ class HrdListFilteringTest extends TestCase
         ]);
     }
 
-    private function staffIds($response): array
-    {
-        return $response->viewData('karyawan')->getCollection()->pluck('id_karyawan')->all();
-    }
-
     private function divisiIds($response): array
     {
         return $response->viewData('divisis')->getCollection()->pluck('id_divisi')->all();
@@ -105,68 +100,9 @@ class HrdListFilteringTest extends TestCase
     }
 
 
-    public function test_staff_list_defaults_to_name_ascending(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan')->assertOk();
-
-        $this->assertSame(
-            ['KRY-A', 'KRY-B', 'KRY-C', 'KRY-D', 'KRY-HRD'],
-            $this->staffIds($response)
-        );
-    }
-
-    public function test_staff_list_sorts_by_id(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?sort=id&dir=desc')->assertOk();
-
-        $this->assertSame(['KRY-HRD', 'KRY-D', 'KRY-C', 'KRY-B', 'KRY-A'], $this->staffIds($response));
-    }
-
-    public function test_staff_list_sorts_by_jabatan(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?sort=jabatan&dir=asc')->assertOk();
-
-        $this->assertSame(['KRY-C', 'KRY-B', 'KRY-HRD', 'KRY-D', 'KRY-A'], $this->staffIds($response));
-    }
-
-    public function test_staff_list_sorts_by_divisi(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?sort=divisi&dir=asc')->assertOk();
-
-        // Operasional < Sumber Daya Manusia < Teknologi Informasi (tie broken by id).
-        $this->assertSame(['KRY-D', 'KRY-B', 'KRY-HRD', 'KRY-A', 'KRY-C'], $this->staffIds($response));
-    }
-
-
-    public function test_staff_list_filters_by_divisi(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?divisi=DIV-IT')->assertOk();
-
-        $this->assertSame(['KRY-A', 'KRY-C'], $this->staffIds($response));
-    }
-
-    public function test_staff_list_filters_by_jabatan(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?jabatan=Analyst')->assertOk();
-
-        $this->assertSame(['KRY-C'], $this->staffIds($response));
-    }
-
-    public function test_staff_list_filters_by_account_status(): void
-    {
-        $aktif = $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?status=aktif')->assertOk();
-        $this->assertSame(['KRY-A', 'KRY-B', 'KRY-HRD'], $this->staffIds($aktif));
-
-        $belum = $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?status=belum')->assertOk();
-        $this->assertSame(['KRY-C', 'KRY-D'], $this->staffIds($belum));
-    }
-
-    public function test_staff_list_searches_by_name(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?q=Budi')->assertOk();
-
-        $this->assertSame(['KRY-B'], $this->staffIds($response));
-    }
+    // NOTE: Karyawan sort/filter/search assertions moved to
+    // tests/Feature/Livewire/Hrd/KaryawanTableTest.php — the list now renders
+    // inside the App\Livewire\Hrd\KaryawanTable component.
 
 
     public function test_divisi_list_sorts_by_kode(): void
@@ -248,16 +184,8 @@ class HrdListFilteringTest extends TestCase
     }
 
 
-    public function test_staff_search_is_case_insensitive(): void
-    {
-        // SQLite LIKE is case-insensitive by default; turn that off so this
-        // test reproduces Postgres and fails if search is not normalised.
-        DB::statement('PRAGMA case_sensitive_like = ON');
-
-        $response = $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?q=budi')->assertOk();
-
-        $this->assertSame(['KRY-B'], $this->staffIds($response));
-    }
+    // NOTE: the case-insensitive Karyawan search assertion moved to
+    // tests/Feature/Livewire/Hrd/KaryawanTableTest.php.
 
     public function test_divisi_search_is_case_insensitive(): void
     {
