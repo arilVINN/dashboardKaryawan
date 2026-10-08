@@ -101,4 +101,24 @@ class TugasTableTest extends TestCase
     {
         Livewire::actingAs($this->staff)->test(TugasTable::class)->assertForbidden();
     }
+
+    public function test_create_for_semua_with_empty_division_fails(): void
+    {
+        Divisi::create(['id_divisi' => 'DIV-EMPTY', 'kode_divisi' => 'EMP', 'nama_divisi' => 'Kosong', 'status_aktif' => 'Aktif']);
+        Karyawan::create(['id_karyawan' => 'KD-2', 'nama' => 'Kadiv Kosong', 'jenis_kelamin' => 'Laki-laki', 'jabatan' => 'Kadiv', 'divisi_id_divisi' => 'DIV-EMPTY']);
+        $kadiv2 = User2::create([
+            'id_user' => 'USR-KD-2', 'username' => 'kadiv.kosong', 'password' => Hash::make('pass123'),
+            'role_id_role' => 'ROLE-KADIV', 'karyawan_id_karyawan' => 'KD-2',
+        ]);
+
+        Livewire::actingAs($kadiv2)->test(TugasTable::class)
+            ->set('judul', 'Bulk')
+            ->set('deskripsi', 'd')
+            ->set('tenggat', now()->addWeek()->toDateTimeString())
+            ->set('recipient', 'semua')
+            ->call('createTask')
+            ->assertHasErrors('recipient');
+
+        $this->assertDatabaseMissing('tugas', ['judul_tugas' => 'Bulk']);
+    }
 }

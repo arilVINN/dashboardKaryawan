@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Livewire\Kadiv;
 
+use App\Events\PesanDikirim;
 use App\Livewire\Kadiv\PesanTable;
 use App\Models\Divisi;
 use App\Models\Karyawan;
@@ -9,6 +10,7 @@ use App\Models\Pesan;
 use App\Models\Role;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -88,5 +90,23 @@ class PesanTableTest extends TestCase
             ->assertHasErrors();
 
         $this->assertDatabaseMissing('pesans', ['deskripsi' => 'x']);
+    }
+
+    public function test_send_dispatches_pesan_dikirim(): void
+    {
+        Event::fake([PesanDikirim::class]);
+
+        Livewire::actingAs($this->kadiv)->test(PesanTable::class)
+            ->set('recipientUserId', $this->abby->id_user)
+            ->set('isi', 'Halo staff')
+            ->call('sendMessage')
+            ->assertHasNoErrors();
+
+        Event::assertDispatched(PesanDikirim::class);
+    }
+
+    public function test_non_kadiv_is_forbidden(): void
+    {
+        Livewire::actingAs($this->abby)->test(PesanTable::class)->assertForbidden();
     }
 }

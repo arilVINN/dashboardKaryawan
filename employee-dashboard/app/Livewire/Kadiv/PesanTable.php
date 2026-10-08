@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Kadiv;
 
+use App\Events\PesanDikirim;
 use App\Models\Pesan;
 use App\Models\User2;
 use App\Presenters\MessagePresenter;
@@ -19,7 +20,7 @@ class PesanTable extends Component
     public string $search = '';
 
     #[Url]
-    public string $sort = 'tanggal';
+    public string $sort = '';
 
     #[Url]
     public string $dir = 'desc';
@@ -108,7 +109,7 @@ class PesanTable extends Component
             return;
         }
 
-        Pesan::create([
+        $message = Pesan::create([
             'id_pesan' => $this->generateMessageId(),
             'judul_pesan' => Str::limit($this->isi, 200, '') ?: 'Pesan baru',
             'deskripsi' => $this->isi,
@@ -117,6 +118,8 @@ class PesanTable extends Component
             'pengirim_id_user' => $kadiv->id_user,
             'penerima_id_user' => $recipient->id_user,
         ]);
+
+        PesanDikirim::dispatch($message);
 
         $this->reset(['recipientUserId', 'isi']);
         session()->flash('pesan_success', 'Pesan berhasil dikirim.');

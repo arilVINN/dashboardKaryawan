@@ -98,7 +98,7 @@
 {{-- MODAL KIRIM PESAN --}}
 <div id="modalKirimPesan" class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" data-modal-close="modalKirimPesan"></div>
-    <form wire:submit="sendMessage"
+    <form wire:submit="sendMessage" data-modal-panel
         class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transition-all duration-300">
         <div class="flex items-center justify-between p-4 border-b border-dashed border-gray-300">
             <h3 class="text-base font-bold text-slate-900">Kirim Pesan</h3>

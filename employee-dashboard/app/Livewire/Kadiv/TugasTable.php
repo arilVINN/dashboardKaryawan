@@ -21,7 +21,7 @@ class TugasTable extends Component
     public string $search = '';
 
     #[Url]
-    public string $sort = 'tanggal';
+    public string $sort = '';
 
     #[Url]
     public string $dir = 'desc';
