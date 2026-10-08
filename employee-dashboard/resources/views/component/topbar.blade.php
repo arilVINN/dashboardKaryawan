@@ -60,7 +60,7 @@
                 </div>
                 <div class="border-t border-slate-100 pt-1">
                     <form method="POST" action="{{ route('logout') }}"
-                        onsubmit="if (!confirm('Apakah Anda yakin ingin keluar?')) return false; sessionStorage.removeItem('staff_token'); return true;">
+                        onsubmit="if (!confirm('Apakah Anda yakin ingin keluar?')) return false; localStorage.removeItem('staff_token'); return true;">
                         @csrf
                         <button type="submit" id="btn-logout-topbar"
                             class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left">
@@ -84,7 +84,7 @@
     (async function loadTopbar() {
         if ({{ $topbarUser ? 'true' : 'false' }}) return;
 
-        const token = sessionStorage.getItem('staff_token');
+        const token = localStorage.getItem('staff_token');
         if (!token) return;
 
         const response = await fetch(@json($topbarProfileEndpoint), {
@@ -102,25 +102,10 @@
             ? profile.nama.charAt(0).toUpperCase()
             : 'U';
     })().catch(error => console.error('Gagal memuat identitas pengguna:', error));
-
-    const btnLogoutTopbar = document.getElementById('btn-logout-topbar');
-    if (btnLogoutTopbar) {
-        btnLogoutTopbar.addEventListener('click', async function() {
-            const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
-            if (!confirmLogout) return;
-
-            const token = sessionStorage.getItem('staff_token');
-            try {
-                if (token) {
-                    await fetch('/api/logout', {
-                        method: 'POST',
-                        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-                    });
-                }
-            } catch (e) {}
-
-            sessionStorage.removeItem('staff_token');
-            window.location.href = '/login';
-        });
-    }
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'staff_token') {
+            window.location.reload();
+        }
+    });
 </script>
+

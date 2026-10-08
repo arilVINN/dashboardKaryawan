@@ -143,9 +143,12 @@ U
                     </div>
 
                     <!-- Tombol Keluar (Opsional, tambahan jika mau di paling bawah) -->
-                    <div class="pt-2 text-right">
-                        <button id="btn-logout" class="px-5 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700">Logout dari Perangkat</button>
-                    </div>
+                    <form method="POST" action="/logout" onsubmit="if(!confirm('Apakah Anda yakin ingin logout?')) return false; localStorage.removeItem('staff_token'); return true;">
+                        @csrf
+                        <div class="pt-2 text-right">
+                            <button type="submit" id="btn-logout" class="px-5 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700">Logout dari Perangkat</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </main>
@@ -153,7 +156,7 @@ U
 
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
-            const token = sessionStorage.getItem('staff_token');
+            const token = localStorage.getItem('staff_token');
             if (!token) { window.location.href = '/login'; return; }
 
             // 1. Fetch Profile Data
@@ -283,20 +286,10 @@ U
                 }
             });
 
-            // 5. Logout
-            const btnLogout = document.getElementById('btn-logout');
-            if (btnLogout) {
-                btnLogout.addEventListener('click', async function() {
-                    if(!confirm("Apakah Anda yakin ingin logout?")) return;
-                    try {
-                        await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
-                    } catch(e) {}
-                    sessionStorage.removeItem('staff_token');
-                    window.location.href = '/login';
-                });
-            }
+
 
         });
     </script>
 </body>
 </html>
+

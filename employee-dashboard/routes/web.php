@@ -12,7 +12,6 @@ use App\Http\Controllers\Hrd\HrdDivisiController;
 use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
-use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Models\Divisi;
 
 

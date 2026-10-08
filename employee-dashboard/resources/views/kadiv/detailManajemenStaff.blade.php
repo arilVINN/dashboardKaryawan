@@ -61,7 +61,7 @@
 
 <script>
     async function loadKadivStaffDetail() {
-        const token = sessionStorage.getItem('staff_token');
+        const token = localStorage.getItem('staff_token');
         if (!token) {
             window.location.href = '/login';
             return;

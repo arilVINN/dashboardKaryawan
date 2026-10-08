@@ -132,7 +132,7 @@
 
     <script>
         (function () {
-            const token = sessionStorage.getItem('staff_token');
+            const token = localStorage.getItem('staff_token');
             const modal = document.getElementById('modalKirimPesanHrd');
             const modalBox = document.getElementById('modalBoxPesanHrd');
             const form = document.getElementById('formKirimPesanHrd');
@@ -225,3 +225,4 @@
         })();
     </script>
 </div>
+

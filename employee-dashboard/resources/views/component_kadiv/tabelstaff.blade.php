@@ -53,7 +53,7 @@
 
     async function loadKadivStaffTable() {
         const rows = document.getElementById('kadiv-staff-rows');
-        const token = sessionStorage.getItem('staff_token');
+        const token = localStorage.getItem('staff_token');
         if (!token) {
             window.location.href = '/login';
             return;
@@ -165,3 +165,4 @@
         loadKadivStaffTable();
     });
 </script>
+

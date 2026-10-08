@@ -5,7 +5,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async function() {
-        const token = sessionStorage.getItem('staff_token');
+        const token = localStorage.getItem('staff_token');
         const container = document.getElementById('notifikasi-container');
         if (!token || !container) return;
 
