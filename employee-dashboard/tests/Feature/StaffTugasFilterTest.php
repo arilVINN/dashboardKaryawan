@@ -84,7 +84,8 @@ class StaffTugasFilterTest extends TestCase
 
     public function test_staff_tugas_page_renders_sort_filter_controls(): void
     {
-        $this->get('/tugas')
+        $this->actingAs($this->staff)
+            ->get('/tugas')
             ->assertOk()
             ->assertSee('id="staffTugasSearch"', false)
             ->assertSee('id="staffTugasStatus"', false)
@@ -94,7 +95,8 @@ class StaffTugasFilterTest extends TestCase
 
     public function test_staff_pesan_page_renders_sort_filter_controls(): void
     {
-        $this->get('/pesan')
+        $this->actingAs($this->staff)
+            ->get('/pesan')
             ->assertOk()
             ->assertSee('id="staffPesanSearch"', false)
             ->assertSee('id="staffPesanJenis"', false)
@@ -104,7 +106,8 @@ class StaffTugasFilterTest extends TestCase
 
     public function test_staff_tugas_detail_has_labeled_file_field(): void
     {
-        $this->get('/tugas/detail/T-1')
+        $this->actingAs($this->staff)
+            ->get('/tugas/detail/T-1')
             ->assertOk()
             ->assertSee('File Hasil');
     }

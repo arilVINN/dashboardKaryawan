@@ -15,36 +15,38 @@ use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Models\Divisi;
 
 
-Route::get('/', function () {
-    return view('staff.dashboard');
-})->name('dashboard');
-
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('gateway.throttle:5,1')
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-//staff route
-Route::get('/tugas', function () {
-    return view('staff.tugas');
-})->name('tugas');
+// staff route (session auth + staff role)
+Route::middleware(['auth', 'role:staff'])->group(function () {
+    Route::get('/', function () {
+        return view('staff.dashboard');
+    })->name('dashboard');
 
-Route::get('/pesan', function () {
-    return view('staff.pesan');
-})->name('pesan');
+    Route::get('/tugas', function () {
+        return view('staff.tugas');
+    })->name('tugas');
 
-Route::get('/pesan/detail/{id?}', function () {
-    return view('staff.detailPesan');
-})->name('pesan.detail');
+    Route::get('/pesan', function () {
+        return view('staff.pesan');
+    })->name('pesan');
 
-Route::get('/tugas/detail/{id?}', function () {
-    return view('staff.detailTugas');
-})->name('tugas.detail');
+    Route::get('/pesan/detail/{id?}', function () {
+        return view('staff.detailPesan');
+    })->name('pesan.detail');
 
-Route::get('/profile', function () {
-    return view('staff.detailProfile');
-})->name('profile');
+    Route::get('/tugas/detail/{id?}', function () {
+        return view('staff.detailTugas');
+    })->name('tugas.detail');
+
+    Route::get('/profile', function () {
+        return view('staff.detailProfile');
+    })->name('profile');
+});
 
 Route::prefix('staff')->middleware(EnsureStaffRole::class)->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -145,11 +147,7 @@ Route::post('/login-proses', function (Request $request) {
 })->name('login.proses');
 
 
-// 2. Route untuk halaman profil
-Route::get('/profile', function () {
-    return view('staff.detailProfile');
-});
-
+// 2. Route untuk menyimpan profil
 Route::post('/profile', function (Request $request) {
     $validated = $request->validate([
         'nama' => ['required', 'string', 'max:255'],
