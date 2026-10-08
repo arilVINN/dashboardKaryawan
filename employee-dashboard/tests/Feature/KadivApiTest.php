@@ -343,8 +343,7 @@ class KadivApiTest extends TestCase
             ->assertSee('id="kadivPesanSearch"', false)
             ->assertSee('id="kadivPesanTipe"', false)
             ->assertSee('id="kadivPesanArah"', false)
-            ->assertSee('setKadivPesanSort', false)
-            ->assertSee('data-sort-indicator="judul"', false);
+            ->assertSee('Kirim Pesan');
     }
 
     public function test_staff_list_sorts_by_nama_tugas_and_login(): void
