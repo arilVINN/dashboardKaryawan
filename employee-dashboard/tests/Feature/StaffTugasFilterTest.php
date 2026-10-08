@@ -89,8 +89,9 @@ class StaffTugasFilterTest extends TestCase
             ->assertOk()
             ->assertSee('id="staffTugasSearch"', false)
             ->assertSee('id="staffTugasStatus"', false)
-            ->assertSee('setStaffTugasSort', false)
-            ->assertSee('data-sort-indicator="judul"', false);
+            ->assertSee('wire:click="sortBy(\'judul\')"', false)
+            ->assertDontSee('setStaffTugasSort', false)
+            ->assertDontSee('data-sort-indicator', false);
     }
 
     public function test_staff_pesan_page_renders_sort_filter_controls(): void
