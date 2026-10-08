@@ -62,7 +62,7 @@
                                 <div class="flex items-center justify-center gap-3">
                                     <a href="{{ url('/hrd/detailKaryawan/' . $k->id_karyawan) }}"
                                         class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
-                                        Lihat Detail
+                                        Detail
                                     </a>
                                     <button type="button" data-staff-edit
                                         data-id="{{ $k->id_karyawan }}"
