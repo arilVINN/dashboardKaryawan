@@ -76,7 +76,7 @@
                 </a>
 
                 <form method="POST" action="{{ route('logout') }}"
-                      onsubmit="if (!confirm('Apakah Anda yakin ingin keluar?')) return false; localStorage.removeItem('staff_token'); return true;"
+                      onsubmit="if (!confirm('Apakah Anda yakin ingin keluar?')) return false; sessionStorage.removeItem('staff_token'); return true;"
                       class="border-t border-slate-100">
                     @csrf
                     <button type="submit" id="kadiv-logout"
@@ -95,7 +95,7 @@
         const profileBtn = document.getElementById('profile-dropdown-btn');
         const profileMenu = document.getElementById('profile-dropdown-menu');
         const dropdownArrow = document.getElementById('dropdown-arrow');
-        const token = localStorage.getItem('staff_token');
+        const token = sessionStorage.getItem('staff_token');
         const serverUser = {{ $authUser ? 'true' : 'false' }};
 
         // Fallback token hanya bila halaman tidak dirender dari session.
@@ -136,10 +136,5 @@
                 }
             });
         }
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'staff_token') {
-                window.location.reload();
-            }
-        });
     });
 </script>

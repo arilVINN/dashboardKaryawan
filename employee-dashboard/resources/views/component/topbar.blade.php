@@ -59,19 +59,15 @@
                     </a>
                 </div>
                 <div class="border-t border-slate-100 pt-1">
-                    <form method="POST" action="{{ route('logout') }}"
-                        onsubmit="if (!confirm('Apakah Anda yakin ingin keluar?')) return false; localStorage.removeItem('staff_token'); return true;">
-                        @csrf
-                        <button type="submit" id="btn-logout-topbar"
-                            class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left">
-                            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                                </path>
-                            </svg>
-                            Keluar
-                        </button>
-                    </form>
+                    <button type="button" id="btn-logout-topbar"
+                        class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left">
+                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                            </path>
+                        </svg>
+                        Keluar
+                    </button>
                 </div>
             </div>
         </div>
@@ -84,7 +80,7 @@
     (async function loadTopbar() {
         if ({{ $topbarUser ? 'true' : 'false' }}) return;
 
-        const token = localStorage.getItem('staff_token');
+        const token = sessionStorage.getItem('staff_token');
         if (!token) return;
 
         const response = await fetch(@json($topbarProfileEndpoint), {
@@ -102,10 +98,5 @@
             ? profile.nama.charAt(0).toUpperCase()
             : 'U';
     })().catch(error => console.error('Gagal memuat identitas pengguna:', error));
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'staff_token') {
-            window.location.reload();
-        }
-    });
 </script>
 

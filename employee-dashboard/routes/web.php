@@ -55,8 +55,8 @@ Route::prefix('staff')->middleware(EnsureStaffRole::class)->group(function () {
 
 
 
-// ================= KADIV (auth + role) ================= //
-Route::middleware(['auth', 'role:kadiv'])->prefix('kadiv')->group(function () {
+// ================= KADIV (token-based, no session auth) ================= //
+Route::prefix('kadiv')->group(function () {
     // Dashboard
     Route::get('/dashboard', function () {
         return view('kadiv.dashboard');
@@ -161,8 +161,8 @@ Route::post('/profile', function (Request $request) {
 
 
 
-//route hrd 
-Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
+//route hrd (token-based, no session auth)
+Route::prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
     Route::get('/profile', function () {
         return view('hrd.profile');

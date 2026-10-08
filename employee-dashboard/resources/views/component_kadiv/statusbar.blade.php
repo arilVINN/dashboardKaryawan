@@ -72,7 +72,7 @@
 
 <script>
     async function loadKadivStatusbar() {
-        const token = localStorage.getItem('staff_token');
+        const token = sessionStorage.getItem('staff_token');
         if (!token) {
             window.location.href = '/login';
             return;

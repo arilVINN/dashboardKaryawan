@@ -102,7 +102,7 @@
     }
 
     async function loadStaffTugas() {
-        const token = localStorage.getItem('staff_token');
+        const token = sessionStorage.getItem('staff_token');
         const tbody = document.getElementById('tbody-tugas');
         if (!token || !tbody) return;
 

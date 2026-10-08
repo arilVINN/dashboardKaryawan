@@ -157,7 +157,7 @@
     }
 
     async function loadStaffPesan() {
-        const token = localStorage.getItem('staff_token');
+        const token = sessionStorage.getItem('staff_token');
         const tbody = document.getElementById('tbody-pesan');
         if (!token || !tbody) return;
 

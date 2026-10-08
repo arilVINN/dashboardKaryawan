@@ -254,7 +254,7 @@
 
 <script>
     async function loadKadivProfile() {
-        const token = localStorage.getItem('staff_token');
+        const token = sessionStorage.getItem('staff_token');
         if (!token) {
             window.location.href = '/login';
             return;
@@ -291,7 +291,7 @@
 
     document.getElementById('kadiv-password-form').addEventListener('submit', async function (event) {
         event.preventDefault();
-        const token = localStorage.getItem('staff_token');
+        const token = sessionStorage.getItem('staff_token');
         const data = new FormData(this);
         if (data.get('new_password') !== data.get('confirm_password')) {
             alert('Konfirmasi password baru tidak sama.');

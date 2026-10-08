@@ -139,7 +139,7 @@
 <script>
     const modalPesan = document.getElementById('modalKirimPesan');
     const modalBoxPesan = document.getElementById('modalBoxPesan');
-    const kadivMessageToken = localStorage.getItem('staff_token');
+    const kadivMessageToken = sessionStorage.getItem('staff_token');
 
     const filterSearch = document.getElementById('kadivPesanSearch');
     const filterTipe = document.getElementById('kadivPesanTipe');

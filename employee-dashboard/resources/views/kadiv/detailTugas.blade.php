@@ -255,7 +255,7 @@
     {{-- SCRIPT --}}
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
-            const token = localStorage.getItem('staff_token');
+            const token = sessionStorage.getItem('staff_token');
             const taskId = @json($id);
             const formRevisi = document.getElementById('formRevisi');
             const formEditTugas = document.getElementById('formEditTugas');

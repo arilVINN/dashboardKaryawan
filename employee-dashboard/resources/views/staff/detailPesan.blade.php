@@ -108,7 +108,7 @@
         }
 
         async function loadDetailPesan() {
-            const token = localStorage.getItem('staff_token');
+            const token = sessionStorage.getItem('staff_token');
             if (!token || !pesanId) return;
 
             try {
@@ -233,7 +233,7 @@
 
         formSubmit.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const token = localStorage.getItem('staff_token');
+            const token = sessionStorage.getItem('staff_token');
             if (!token) return alert('Silakan login terlebih dahulu');
             
             const isiBalasan = pesanInput.value.trim();

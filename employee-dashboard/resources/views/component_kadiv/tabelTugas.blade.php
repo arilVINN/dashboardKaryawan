@@ -188,7 +188,7 @@
 
 <script>
 (function () {
-    const token = localStorage.getItem('staff_token');
+    const token = sessionStorage.getItem('staff_token');
     const taskRows = document.getElementById('kadiv-tugas-list');
     const staffSelect = document.getElementById('penerimaTugas');
     const taskForm = document.getElementById('formTugasBaru');

@@ -122,7 +122,7 @@
         }
 
         async function loadDetailTugas() {
-            const token = localStorage.getItem('staff_token');
+            const token = sessionStorage.getItem('staff_token');
             if (!token || !tugasId) { window.location.href = '/login'; return; }
 
             try {
@@ -274,7 +274,7 @@
             const btnSubmit = document.getElementById('btn-submit-tugas');
             if (btnSubmit.disabled) return;
 
-            const token = localStorage.getItem('staff_token');
+            const token = sessionStorage.getItem('staff_token');
             if (!token) return alert('Sesi habis, silakan login ulang.');
 
             const fileInput = document.getElementById('file_tugas');
