@@ -70,6 +70,14 @@ class WebLoginTest extends TestCase
             ->assertSee('action="/login"', false)
             ->assertSee('name="_token"', false);
 
+<<<<<<< Updated upstream
+=======
+        $this->get('/hrd/dashboard')
+            ->assertRedirect('/login');
+
+        config(['session.driver' => 'database']);
+
+>>>>>>> Stashed changes
         $this->postJson('/login', [
             'username' => 'hrduser',
             'password' => 'pass123',
@@ -77,6 +85,10 @@ class WebLoginTest extends TestCase
             ->assertOk()
             ->assertJsonPath('role', 'hrd')
             ->assertJsonStructure(['access_token']);
+
+        $this->assertTrue(
+            DB::table('sessions')->where('user_id', 'USR-HRD')->exists()
+        );
 
         $this->assertAuthenticatedAs($user, 'web');
 
