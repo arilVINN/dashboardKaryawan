@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Tugas;
 use App\Models\SubmitTugas;
+use App\Queries\StaffTugasQuery;
 use Illuminate\Support\Str;
 
 class StaffTugasController extends Controller
@@ -13,34 +14,9 @@ class StaffTugasController extends Controller
     // GET /staff/tugas
     public function index(Request $request)
     {
-        $karyawanId = $request->user()->karyawan_id_karyawan;
-
-        $query = Tugas::where('karyawan_id_karyawan', $karyawanId);
-
-        if ($request->filled('q')) {
-            $query->whereRaw('LOWER(judul_tugas) LIKE ?', ['%' . mb_strtolower($request->input('q')) . '%']);
-        }
-
-        if (in_array($request->input('status'), Tugas::ALL_STATUSES, true)) {
-            $query->statusEfektif($request->input('status'));
-        }
-
-        $dir = $request->input('dir') === 'asc' ? 'asc' : 'desc';
-        switch ($request->input('sort')) {
-            case 'judul':
-                $query->orderBy('judul_tugas', $dir);
-                break;
-            case 'tenggat':
-                $query->orderBy('deadline', $dir);
-                break;
-            case 'status':
-                $query->orderBy('status', $dir);
-                break;
-            default:
-                $query->orderBy('tanggal_update', 'desc')->orderBy('tanggal_dibuat', 'desc');
-        }
-
-        $tugas = $query->get();
+        $tugas = StaffTugasQuery::forStaff($request->user())
+            ->apply($request->only(['sort', 'dir', 'status', 'q']))
+            ->get();
 
         return response()->json([
             'message' => 'Daftar tugas Anda',
