@@ -81,8 +81,10 @@ class StaffPesanQuery
         }
 
         $q = $filters['q'] ?? null;
-        if ($q !== null && trim((string) $q) !== '') {
-            $needle = mb_strtolower(trim((string) $q));
+        if ($q !== null && $q !== '') {
+            // The old client-side search filtered on the raw (untrimmed) value:
+            // only an empty string skips the filter, whitespace-only still filters.
+            $needle = mb_strtolower((string) $q);
             $items = $items->filter(function (array $item) use ($needle): bool {
                 return str_contains(mb_strtolower((string) $item['judul']), $needle)
                     || str_contains(mb_strtolower((string) $item['pengirim']), $needle);

@@ -45,7 +45,7 @@ class StaffTugasFilterTest extends TestCase
             'id_tugas' => $id,
             'karyawan_id_karyawan' => 'KRY-S',
             'judul_tugas' => $judul,
-            'deskripsi' => $judul . ' desc',
+            'deskripsi' => $judul.' desc',
             'deadline' => $deadline,
             'progress' => '0',
             'status' => $status,
@@ -101,8 +101,9 @@ class StaffTugasFilterTest extends TestCase
             ->assertOk()
             ->assertSee('id="staffPesanSearch"', false)
             ->assertSee('id="staffPesanJenis"', false)
-            ->assertSee('setStaffPesanSort', false)
-            ->assertSee('data-sort-indicator="tanggal"', false);
+            ->assertSee('wire:click="sortBy(\'tanggal\')"', false)
+            ->assertDontSee('setStaffPesanSort', false)
+            ->assertDontSee('data-sort-indicator', false);
     }
 
     public function test_staff_tugas_detail_has_labeled_file_field(): void

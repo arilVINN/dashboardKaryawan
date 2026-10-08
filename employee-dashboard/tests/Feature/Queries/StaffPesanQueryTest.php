@@ -155,4 +155,13 @@ class StaffPesanQueryTest extends TestCase
         // abby (thread) before zed (direct).
         $this->assertSame(['tugas', 'langsung'], $items->pluck('jenis')->all());
     }
+
+    public function test_whitespace_only_q_still_filters(): void
+    {
+        // The old client-side search filtered on the raw (untrimmed) value,
+        // so only an empty string skips the filter; whitespace-only filters to nothing.
+        $this->assertCount(2, StaffPesanQuery::forStaff($this->staff)->unified([]));
+        $this->assertCount(2, StaffPesanQuery::forStaff($this->staff)->unified(['q' => '']));
+        $this->assertCount(0, StaffPesanQuery::forStaff($this->staff)->unified(['q' => '   ']));
+    }
 }
