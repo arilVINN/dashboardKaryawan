@@ -7,7 +7,6 @@ use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -73,12 +72,6 @@ class HrdListFilteringTest extends TestCase
         ]);
     }
 
-    private function divisiIds($response): array
-    {
-        return $response->viewData('divisis')->getCollection()->pluck('id_divisi')->all();
-    }
-
-
     public function test_staff_list_requires_authentication(): void
     {
         $this->get('/hrd/daftarKaryawan')->assertRedirect('/login');
@@ -105,96 +98,14 @@ class HrdListFilteringTest extends TestCase
     // inside the App\Livewire\Hrd\KaryawanTable component.
 
 
-    public function test_divisi_list_sorts_by_kode(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/daftarDivisi?sort=kode&dir=asc')->assertOk();
-
-        $this->assertSame(['DIV-HR', 'DIV-IT', 'DIV-OPS'], $this->divisiIds($response));
-    }
-
-    public function test_divisi_list_sorts_by_nama(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/daftarDivisi?sort=nama&dir=asc')->assertOk();
-
-        $this->assertSame(['DIV-OPS', 'DIV-HR', 'DIV-IT'], $this->divisiIds($response));
-    }
-
-    public function test_divisi_list_sorts_by_staff_count(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/daftarDivisi?sort=staff&dir=desc')->assertOk();
-
-        // DIV-HR and DIV-IT each have 2 staff (tie broken by id asc), DIV-OPS has 1.
-        $this->assertSame(['DIV-HR', 'DIV-IT', 'DIV-OPS'], $this->divisiIds($response));
-    }
-
-
-    public function test_divisi_list_filters_by_status(): void
-    {
-        $aktif = $this->actingAs($this->hrd)->get('/hrd/daftarDivisi?status=aktif')->assertOk();
-        $this->assertSame(['DIV-IT', 'DIV-HR'], $this->divisiIds($aktif));
-
-        $nonaktif = $this->actingAs($this->hrd)->get('/hrd/daftarDivisi?status=nonaktif')->assertOk();
-        $this->assertSame(['DIV-OPS'], $this->divisiIds($nonaktif));
-    }
-
-    public function test_divisi_list_searches_kode_or_nama(): void
-    {
-        $byNama = $this->actingAs($this->hrd)->get('/hrd/daftarDivisi?q=Operasional')->assertOk();
-        $this->assertSame(['DIV-OPS'], $this->divisiIds($byNama));
-
-        $byKode = $this->actingAs($this->hrd)->get('/hrd/daftarDivisi?q=IT')->assertOk();
-        $this->assertSame(['DIV-IT'], $this->divisiIds($byKode));
-    }
-
-
-    public function test_manajemen_divisi_sorts_by_nama(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi?sort=nama&dir=asc')
-            ->assertOk()
-            ->assertViewIs('hrd.manajemenDivisi');
-
-        $this->assertSame(
-            ['DIV-OPS', 'DIV-HR', 'DIV-IT'],
-            $response->viewData('divisis')->pluck('id_divisi')->all()
-        );
-    }
-
-    public function test_manajemen_divisi_sorts_by_staff_count(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi?sort=staff&dir=desc')->assertOk();
-
-        $this->assertSame(
-            ['DIV-HR', 'DIV-IT', 'DIV-OPS'],
-            $response->viewData('divisis')->pluck('id_divisi')->all()
-        );
-    }
-
-    public function test_manajemen_divisi_filters_by_status(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi?status=nonaktif')->assertOk();
-
-        $this->assertSame(['DIV-OPS'], $response->viewData('divisis')->pluck('id_divisi')->all());
-    }
-
-    public function test_manajemen_divisi_searches_kode_or_nama(): void
-    {
-        $response = $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi?q=Operasional')->assertOk();
-
-        $this->assertSame(['DIV-OPS'], $response->viewData('divisis')->pluck('id_divisi')->all());
-    }
+    // NOTE: Divisi sort/filter/search assertions moved to
+    // tests/Feature/Livewire/Hrd/DivisiTableTest.php — both lists now render
+    // inside the App\Livewire\Hrd\DivisiTable component.
 
 
     // NOTE: the case-insensitive Karyawan search assertion moved to
     // tests/Feature/Livewire/Hrd/KaryawanTableTest.php.
 
-    public function test_divisi_search_is_case_insensitive(): void
-    {
-        DB::statement('PRAGMA case_sensitive_like = ON');
-
-        $byNama = $this->actingAs($this->hrd)->get('/hrd/daftarDivisi?q=operasional')->assertOk();
-        $this->assertSame(['DIV-OPS'], $this->divisiIds($byNama));
-
-        $byKode = $this->actingAs($this->hrd)->get('/hrd/daftarDivisi?q=it')->assertOk();
-        $this->assertSame(['DIV-IT'], $this->divisiIds($byKode));
-    }
+    // NOTE: the case-insensitive Divisi search assertion moved to
+    // tests/Feature/Livewire/Hrd/DivisiTableTest.php.
 }

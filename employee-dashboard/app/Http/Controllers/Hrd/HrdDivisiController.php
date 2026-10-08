@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Tugas;
-use App\Queries\HrdDivisiQuery;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\Rule;
@@ -188,22 +187,16 @@ class HrdDivisiController extends Controller
         ]);
     }
 
-    public function listPage(Request $request)
+    public function listPage()
     {
-        $divisis = (new HrdDivisiQuery)
-            ->apply($request->only(['status', 'q', 'sort', 'dir']))
-            ->paginate(5)
-            ->withQueryString();
-
-        return view('hrd.daftarDivisi', compact('divisis'));
+        // Rows, filters, sorting, and pagination now live in the
+        // App\Livewire\Hrd\DivisiTable component.
+        return view('hrd.daftarDivisi');
     }
 
-    public function manajemenPage(Request $request)
+    public function manajemenPage()
     {
-        $divisis = (new HrdDivisiQuery)
-            ->apply($request->only(['status', 'q', 'sort', 'dir']))
-            ->get();
-
-        return view('hrd.manajemenDivisi', compact('divisis'));
+        // Same component in manage mode (see the view).
+        return view('hrd.manajemenDivisi');
     }
 }

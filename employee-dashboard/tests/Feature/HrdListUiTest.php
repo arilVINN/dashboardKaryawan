@@ -60,10 +60,10 @@ class HrdListUiTest extends TestCase
     {
         $this->actingAs($this->hrd)->get('/hrd/daftarDivisi')
             ->assertOk()
-            ->assertSee('data-sort="kode"', false)
-            ->assertSee('data-sort="nama"', false)
-            ->assertSee('data-sort="staff"', false)
-            ->assertDontSee('data-sort="status"', false);
+            ->assertSee('wire:click="sortBy(\'kode\')"', false)
+            ->assertSee('wire:click="sortBy(\'nama\')"', false)
+            ->assertSee('wire:click="sortBy(\'staff\')"', false)
+            ->assertDontSee('wire:click="sortBy(\'status\')"', false);
     }
 
 
@@ -113,10 +113,10 @@ class HrdListUiTest extends TestCase
     {
         $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi')
             ->assertOk()
-            ->assertSee('data-sort="kode"', false)
-            ->assertSee('data-sort="nama"', false)
-            ->assertSee('data-sort="staff"', false)
-            ->assertDontSee('data-sort="status"', false);
+            ->assertSee('wire:click="sortBy(\'kode\')"', false)
+            ->assertSee('wire:click="sortBy(\'nama\')"', false)
+            ->assertSee('wire:click="sortBy(\'staff\')"', false)
+            ->assertDontSee('wire:click="sortBy(\'status\')"', false);
 
         $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi?status=aktif')
             ->assertSee('data-filter-chip="status"', false);
