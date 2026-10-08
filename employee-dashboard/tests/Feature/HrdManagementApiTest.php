@@ -278,6 +278,39 @@ class HrdManagementApiTest extends TestCase
             ->assertDontSee('Budi Santoso');
     }
 
+    public function test_staff_added_to_hr_division_appears_on_hr_kadiv_dashboard(): void
+    {
+        Divisi::create([
+            'id_divisi' => 'DIV-HR',
+            'kode_divisi' => 'HR',
+            'nama_divisi' => 'Human Resources',
+            'status_aktif' => 'Aktif',
+        ]);
+        $kadiv = $this->createAccount('EMP-KADIV-HR', 'Kadiv HR', 'DIV-HR', 'ROLE-KADIV', 'kadivhr');
+
+        $this->actingAs($this->hrd)
+            ->postJson('/hrd/staff', [
+                'nama' => 'Staff HR Baru',
+                'jenis_kelamin' => 'Perempuan',
+                'jabatan' => 'Staff HR',
+                'username' => 'staffhrbaru',
+                'password' => 'password',
+                'divisi_id_divisi' => 'DIV-HR',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.karyawan.divisi_id_divisi', 'DIV-HR')
+            ->assertJsonPath('data.user.role', 'ROLE-STAFF');
+
+        $this->actingAs($kadiv)
+            ->getJson('/api/kadiv/dashboard')
+            ->assertOk()
+            ->assertJsonPath('data.divisi.id_divisi', 'DIV-HR')
+            ->assertJsonFragment([
+                'nama' => 'Staff HR Baru',
+                'jumlah_tugas_dikerjakan' => 0,
+            ]);
+    }
+
     public function test_staff_can_be_edited_and_deleted_from_web_division_detail(): void
     {
         $staff = $this->createAccount('EMP-STAFF', 'Staff Lama', 'DIV-EMPTY', 'ROLE-STAFF', 'stafflama');

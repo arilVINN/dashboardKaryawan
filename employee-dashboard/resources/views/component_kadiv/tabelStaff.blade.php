@@ -1,40 +1,10 @@
-<form id="kadivStaffFilter" onsubmit="return false;"
-    class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5 mt-4">
-    <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-        <label for="kadivStaffSearch" class="text-xs font-bold text-slate-500">Cari Nama</label>
-        <input type="text" id="kadivStaffSearch" placeholder="Nama staff..."
-            class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
-    </div>
-    <div class="flex shrink-0 gap-2 sm:ml-auto">
-        <button type="button" id="kadivStaffApply"
-            class="h-10 inline-flex items-center px-4 bg-[#004A65] text-white text-sm font-medium rounded-md hover:bg-[#003347] transition">Terapkan</button>
-        <button type="button" id="kadivStaffReset"
-            class="h-10 inline-flex items-center px-4 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Reset</button>
-    </div>
-</form>
-
 <div class="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
     <table class="w-full min-w-[650px] text-left text-sm text-slate-600">
         <thead class="bg-slate-100 text-xs uppercase text-slate-500">
             <tr>
-                <th class="px-4 py-3 font-medium">
-                    <button type="button" onclick="setKadivStaffSort('nama')"
-                        class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                        Nama Staff <span data-sort-indicator="nama" class="text-slate-300">&#8597;</span>
-                    </button>
-                </th>
-                <th class="px-4 py-3 text-center font-medium">
-                    <button type="button" onclick="setKadivStaffSort('tugas')"
-                        class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                        Tugas <span data-sort-indicator="tugas" class="text-slate-300">&#8597;</span>
-                    </button>
-                </th>
-                <th class="px-4 py-3 text-center font-medium">
-                    <button type="button" onclick="setKadivStaffSort('login')"
-                        class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                        Terakhir Login <span data-sort-indicator="login" class="text-slate-300">&#8597;</span>
-                    </button>
-                </th>
+                <th class="px-4 py-3 font-medium">Nama Staff</th>
+                <th class="px-4 py-3 text-center font-medium">Tugas</th>
+                <th class="px-4 py-3 text-center font-medium">Terakhir Login</th>
                 <th class="px-4 py-3 text-center font-medium">Aksi</th>
             </tr>
         </thead>
@@ -47,28 +17,21 @@
 </div>
 
 <script>
-    const kadivStaffSearch = document.getElementById('kadivStaffSearch');
-    let kadivStaffSort = null;
-    let kadivStaffDir = 'asc';
+    let kadivStaffLoading = false;
 
     async function loadKadivStaffTable() {
         const rows = document.getElementById('kadiv-staff-rows');
+        if (!rows || kadivStaffLoading) return;
+
         const token = sessionStorage.getItem('staff_token');
         if (!token) {
             window.location.href = '/login';
             return;
         }
 
+        kadivStaffLoading = true;
         try {
-            const params = new URLSearchParams();
-            if (kadivStaffSort) {
-                params.set('sort', kadivStaffSort);
-                params.set('dir', kadivStaffDir);
-            }
-            if (kadivStaffSearch && kadivStaffSearch.value) params.set('q', kadivStaffSearch.value);
-            const query = params.toString();
-
-            const response = await fetch('/api/kadiv/dashboard' + (query ? '?' + query : ''), {
+            const response = await fetch('/api/kadiv/dashboard', {
                 headers: {
                     'Authorization': 'Bearer ' + token,
                     'Accept': 'application/json'
@@ -120,49 +83,22 @@
                 row.appendChild(actionCell);
                 rows.appendChild(row);
             });
-            updateKadivStaffSortIndicators();
         } catch (error) {
             console.error('Gagal memuat staff Kadiv:', error);
             rows.innerHTML = '<tr><td colspan="4" class="h-28 px-4 text-center text-red-600">Data staff gagal dimuat. Silakan muat ulang halaman.</td></tr>';
+        } finally {
+            kadivStaffLoading = false;
         }
     }
 
-    function updateKadivStaffSortIndicators() {
-        document.querySelectorAll('[data-sort-indicator]').forEach((el) => {
-            if (el.dataset.sortIndicator === kadivStaffSort) {
-                el.textContent = kadivStaffDir === 'asc' ? '\u25B2' : '\u25BC';
-                el.classList.remove('text-slate-300');
-                el.classList.add('text-[#004A65]');
-            } else {
-                el.textContent = '\u2195';
-                el.classList.add('text-slate-300');
-                el.classList.remove('text-[#004A65]');
-            }
-        });
-    }
-
-    window.setKadivStaffSort = function (col) {
-        if (kadivStaffSort === col) {
-            kadivStaffDir = kadivStaffDir === 'asc' ? 'desc' : 'asc';
-        } else {
-            kadivStaffSort = col;
-            kadivStaffDir = 'asc';
-        }
-        loadKadivStaffTable();
-    };
+    window.addEventListener('focus', loadKadivStaffTable);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) loadKadivStaffTable();
+    });
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', loadKadivStaffTable);
     } else {
         loadKadivStaffTable();
     }
-
-    document.getElementById('kadivStaffApply')?.addEventListener('click', () => loadKadivStaffTable());
-    document.getElementById('kadivStaffReset')?.addEventListener('click', () => {
-        if (kadivStaffSearch) kadivStaffSearch.value = '';
-        kadivStaffSort = null;
-        kadivStaffDir = 'asc';
-        loadKadivStaffTable();
-    });
 </script>
-
