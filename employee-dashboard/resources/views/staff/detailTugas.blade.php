@@ -235,7 +235,7 @@
                 if (st === 'sudah di-acc' || st === 'sudah acc') {
                     formSubmit.classList.add('hidden');
                     statusDisabled.classList.remove('hidden');
-                    statusDisabledText.textContent = '✅ Tugas ini sudah selesai dan telah disetujui oleh Kadiv.';
+                    statusDisabledText.textContent = 'Tugas ini telah disetujui oleh Kadiv.';
                 } else if (st === 'menunggu acc' || st === 'menunggu di-acc') {
                     formSubmit.querySelectorAll('input, button').forEach(control => {
                         control.disabled = true;
@@ -312,3 +312,4 @@
 
 </body>
 </html>
+

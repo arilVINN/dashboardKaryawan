@@ -13,6 +13,20 @@ class WebLoginTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_hrd_profile_uses_the_hrd_sidebar_and_profile_api(): void
+    {
+        $this->withoutVite();
+
+        $this->get('/hrd/profile')
+            ->assertOk()
+            ->assertViewIs('hrd.profile')
+            ->assertSee('Profil Saya')
+            ->assertSee('Manajemen Divisi')
+            ->assertSee('href="' . route('hrd.profile') . '"', false)
+            ->assertSee('/api/hrd/profile', false)
+            ->assertDontSee('Guest');
+    }
+
     public function test_hrd_can_log_in_from_the_web_form_and_open_the_hrd_dashboard(): void
     {
         $this->withoutVite();
@@ -56,9 +70,14 @@ class WebLoginTest extends TestCase
             ->assertSee('action="/login"', false)
             ->assertSee('name="_token"', false);
 
+<<<<<<< Updated upstream
+=======
         $this->get('/hrd/dashboard')
             ->assertRedirect('/login');
 
+        config(['session.driver' => 'database']);
+
+>>>>>>> Stashed changes
         $this->postJson('/login', [
             'username' => 'hrduser',
             'password' => 'pass123',
@@ -67,10 +86,21 @@ class WebLoginTest extends TestCase
             ->assertJsonPath('role', 'hrd')
             ->assertJsonStructure(['access_token']);
 
+        $this->assertTrue(
+            DB::table('sessions')->where('user_id', 'USR-HRD')->exists()
+        );
+
         $this->assertAuthenticatedAs($user, 'web');
 
         $this->get('/hrd/dashboard')
             ->assertOk()
-            ->assertViewIs('hrd.dashboard');
+            ->assertViewIs('hrd.dashboard')
+            ->assertSee('href="' . route('hrd.profile') . '"', false);
+
+        $this->get('/hrd/profile')
+            ->assertOk()
+            ->assertViewIs('hrd.profile')
+            ->assertSee('Manajemen Divisi')
+            ->assertSee('/api/hrd/profile', false);
     }
 }

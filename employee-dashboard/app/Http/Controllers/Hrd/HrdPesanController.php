@@ -15,13 +15,7 @@ class HrdPesanController extends Controller
     public function page(Request $request)
     {
         $user = $request->user();
-        $pesans = Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
-            ->where(function ($query) use ($user): void {
-                $query->where('penerima_id_user', $user->id_user)
-                    ->orWhere('pengirim_id_user', $user->id_user);
-            })
-            ->orderByDesc('created_at')
-            ->get();
+        $pesans = $this->allMessages();
 
         return view('hrd.pesan', [
             'pesans' => $pesans,
@@ -29,6 +23,20 @@ class HrdPesanController extends Controller
             'pesanMasuk' => $pesans->where('penerima_id_user', $user->id_user)->count(),
             'pesanKeluar' => $pesans->where('pengirim_id_user', $user->id_user)->count(),
         ]);
+    }
+
+    public function daftarPage(Request $request)
+    {
+        $pesans = $this->allMessages();
+
+        return view('hrd.daftarPesan', compact('pesans'));
+    }
+
+    private function allMessages()
+    {
+        return Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
+            ->orderByDesc('created_at')
+            ->get();
     }
 
     public function detailPage(Request $request, string $id_pesan)
@@ -43,19 +51,17 @@ class HrdPesanController extends Controller
             'balasanDari',
         ])
             ->whereKey($id_pesan)
-            ->where(function ($query) use ($user): void {
-                $query->where('pengirim_id_user', $user->id_user)
-                    ->orWhere('penerima_id_user', $user->id_user);
-            })
             ->firstOrFail();
 
         $root = $pesan->balasanDari ?? $pesan;
         $thread = $root->balasan->prepend($root)->sortBy('created_at');
+        $isParticipant = $pesan->pengirim_id_user === $user->id_user
+            || $pesan->penerima_id_user === $user->id_user;
 
         return view('hrd.detailPesan', [
             'pesan' => $pesan,
             'thread' => $thread,
-            'canReply' => ($root->tipe ?? 'pesan') === 'pesan',
+            'canReply' => $isParticipant && ($root->tipe ?? 'pesan') === 'pesan',
         ]);
     }
 
@@ -67,26 +73,15 @@ class HrdPesanController extends Controller
     {
         $user = $request->user();
 
-        // Mengambil semua pesan/surat di mana HRD ini sebagai pengirim atau penerima
-        // Karena ini Pusat Pesan Global HRD, bisa jadi mereka melihat semua pesan,
-        // tapi sesuai schema dan wewenang, asumsikan mereka melihat pesan milik mereka.
-        // Jika HRD bisa melihat seluruh pesan perusahaan:
-        // $query = Pesan::query(); 
-        
-        // Kita asumsikan HRD adalah pusat, jadi tampilkan pesan masuk/keluar mereka:
         $query = Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
-            ->where(function ($query) use ($user): void {
-                $query->where('penerima_id_user', $user->id_user)
-                    ->orWhere('pengirim_id_user', $user->id_user);
-            })
             ->orderBy('created_at', 'desc');
 
         $pesan = $query->get();
 
         $metrics = [
             'total' => $pesan->count(),
-            'belum_dibaca' => $pesan->where('penerima_id_user', $user->id_user)->where('status', 'belum_dibaca')->count(),
-            'selesai' => $pesan->where('penerima_id_user', $user->id_user)->where('status', 'dibaca')->count(),
+            'belum_dibaca' => $pesan->where('status', 'belum_dibaca')->count(),
+            'selesai' => $pesan->where('status', 'dibaca')->count(),
         ];
 
         return response()->json([
@@ -133,8 +128,7 @@ class HrdPesanController extends Controller
             'link_lampiran' => $validated['link_lampiran'] ?? null,
         ]);
 
-        // Opsional: Dispatch event
-        // PesanDikirim::dispatch($pesan);
+        PesanDikirim::dispatch($pesan);
 
         return response()->json([
             'message' => 'Pesan/Surat berhasil dikirim',
@@ -147,10 +141,6 @@ class HrdPesanController extends Controller
         $message = Pesan::query()
             ->with(['pengirim.karyawan', 'penerima.karyawan', 'tugas', 'balasanDari'])
             ->whereKey($id_pesan)
-            ->where(function ($query) use ($user): void {
-                $query->where('pengirim_id_user', $user->id_user)
-                    ->orWhere('penerima_id_user', $user->id_user);
-            })
             ->first();
 
         if (! $user instanceof User2 || ! $message) {
@@ -158,6 +148,8 @@ class HrdPesanController extends Controller
         }
 
         $root = $message->balasanDari ?? $message;
+        $isParticipant = $message->pengirim_id_user === $user->id_user
+            || $message->penerima_id_user === $user->id_user;
         $thread = $root->id_pesan === $message->id_pesan ? $message : $root;
         $replies = $thread->balasan()
             ->with(['pengirim.karyawan', 'penerima.karyawan'])
@@ -191,7 +183,7 @@ class HrdPesanController extends Controller
                     'id_tugas' => $message->tugas->id_tugas,
                     'judul_tugas' => $message->tugas->judul_tugas,
                 ] : null,
-                'can_reply' => ($root->tipe ?? 'pesan') === 'pesan',
+                'can_reply' => $isParticipant && ($root->tipe ?? 'pesan') === 'pesan',
                 'balasan' => $replies->map(fn (Pesan $reply) => [
                     'id_pesan' => $reply->id_pesan,
                     'balasan_dari_id_pesan' => $reply->balasan_dari_id_pesan,

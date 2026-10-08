@@ -56,4 +56,20 @@ class Karyawan extends Model
             'id_karyawan'
         );
     }
+
+    public function hasRole(string $roleName): bool
+    {
+        return strtolower($this->user?->role?->nama_role ?? '') === strtolower($roleName);
+    }
+
+    public function isKadiv(): bool
+    {
+        return $this->hasRole('kadiv')
+            || preg_match('/^kepala\s+divisi(?:\s|$)/i', trim($this->jabatan ?? '')) === 1;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->hasRole('staff');
+    }
 }

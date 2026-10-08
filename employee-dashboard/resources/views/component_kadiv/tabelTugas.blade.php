@@ -186,7 +186,6 @@
     </form>
 </div>
 
-{{-- Buka/tutup + animasi ditangani script global di app.js. Di sini hanya nama file + validasi 20 MB --}}
 <script>
 (function () {
     const token = sessionStorage.getItem('staff_token');
@@ -264,10 +263,12 @@
 
                 const actionCell = document.createElement('td');
                 actionCell.className = '{{ $cellPadding }} whitespace-nowrap text-center text-xs';
+
                 const action = document.createElement('a');
                 action.href = '/kadiv/detailTugas/' + encodeURIComponent(task.id_tugas);
                 action.className = 'text-[#0c88a9] hover:text-[#104958] transition font-medium';
                 action.textContent = 'Detail';
+
                 actionCell.appendChild(action);
                 row.appendChild(actionCell);
                 taskRows.appendChild(row);
@@ -282,14 +283,18 @@
     async function loadStaffOptions() {
         try {
             const result = await apiRequest('/api/kadiv/staff');
-            staffSelect.replaceChildren(new Option('-- Pilih Staff --', ''));
+            const staffOptions = [];
             (result.data || []).forEach((staff) => {
                 const account = staff.user;
                 if (account?.role?.nama_role?.toLowerCase() === 'staff') {
-                    staffSelect.add(new Option(staff.nama, staff.id_karyawan));
+                    staffOptions.push({ value: staff.id_karyawan, label: staff.nama });
                 }
             });
-            staffSelect.add(new Option('Semua anggota divisi', 'semua'));
+
+            staffSelect.replaceChildren(new Option('Semua anggota divisi', 'semua'));
+            staffOptions.forEach((staff) => {
+                staffSelect.add(new Option(staff.label, staff.value));
+            });
         } catch (error) {
             console.error('Gagal memuat penerima tugas:', error);
             staffSelect.replaceChildren(new Option('Staff gagal dimuat', ''));
@@ -425,7 +430,7 @@
         });
     }
 
-    // nama file + validasi 5 MB
+    // nama file + validasi 20 MB
     const input = document.getElementById('fileTugas');
     const label = document.getElementById('namaFileTugas');
     input.addEventListener('change', function () {
@@ -441,3 +446,4 @@
     });
 })();
 </script>
+

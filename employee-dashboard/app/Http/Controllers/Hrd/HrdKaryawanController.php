@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Karyawan;
 use App\Models\Divisi;
+use App\Models\Tugas;
 
 class HrdKaryawanController extends Controller
 {
@@ -55,6 +56,9 @@ class HrdKaryawanController extends Controller
             ->where('id_karyawan', $id)
             ->firstOrFail();
 
-        return view('hrd.detailKaryawan', compact('karyawan'));
+        $totalTugas   = $karyawan->tugas->count();
+        $tugasSelesai = $karyawan->tugas->where('status', Tugas::STATUS_SUDAH_ACC)->count();
+
+        return view('hrd.detailKaryawan', compact('karyawan', 'totalTugas', 'tugasSelesai'));
     }
 }

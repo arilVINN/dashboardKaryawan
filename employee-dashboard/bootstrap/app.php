@@ -57,5 +57,11 @@ $middleware->validateCsrfTokens(except: [
                     'data'    => $data,
                 ], $statusCode);
             }
+            if ($e instanceof \Illuminate\Session\TokenMismatchException) {
+                if ($request->expectsJson() || $request->isXmlHttpRequest()) {
+                    return response()->json(['message' => 'CSRF token mismatch.'], 419);
+                }
+                return redirect()->route('login')->withErrors(['message' => 'Sesi telah kadaluarsa. Silakan login kembali.']);
+            }
         });
     })->create();

@@ -20,9 +20,9 @@ class HrdDivisiController extends Controller
             ->where('id_divisi', $id)
             ->firstOrFail();
 
-        $anggotaDivisi = $divisi->karyawans;
+        $anggotaDivisi = $divisi->karyawans->sortBy('nama')->values();
         $ketuaDivisi = $anggotaDivisi->first(function ($karyawan) {
-            return strtolower($karyawan->user->role->nama_role ?? '') === 'kadiv';
+            return $karyawan->isKadiv();
         });
 
         return view('hrd.detailDivisi', compact('divisi', 'anggotaDivisi', 'ketuaDivisi'));
@@ -168,8 +168,7 @@ class HrdDivisiController extends Controller
             $totalTugas += $karyawan->tugas->count();
             $tugasSelesai += $karyawan->tugas->where('status', Tugas::STATUS_SUDAH_ACC)->count();
 
-            // Identifikasi Ketua Divisi (role kadiv)
-            if ($karyawan->user && $karyawan->user->role && $karyawan->user->role->nama_role === 'kadiv') {
+            if ($karyawan->isKadiv()) {
                 $ketuaDivisi = $karyawan->nama;
             }
         }

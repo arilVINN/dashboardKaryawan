@@ -57,10 +57,12 @@ Route::prefix('staff')->middleware(EnsureStaffRole::class)->group(function () {
 
 // ================= KADIV (auth + role) ================= //
 Route::middleware(['auth', 'role:kadiv'])->prefix('kadiv')->group(function () {
+    // Dashboard
     Route::get('/dashboard', function () {
         return view('kadiv.dashboard');
     })->name('kadiv.dashboard');
 
+    // Manajemen Staff
     Route::get('/manajemenStaff', function () {
         return view('kadiv.manajemenStaff');
     })->name('kadiv.manajemenStaff');
@@ -69,10 +71,12 @@ Route::middleware(['auth', 'role:kadiv'])->prefix('kadiv')->group(function () {
         return view('kadiv.detailManajemenStaff', ['id' => $id]);
     })->name('kadiv.manajemenStaff.show');
 
+    // Profil
     Route::get('/profile', function () {
         return view('kadiv.profile');
     })->name('kadiv.profile');
 
+    // Tugas
     Route::get('/tugas', function () {
         return view('kadiv.tugas');
     })->name('kadiv.tugas');
@@ -107,6 +111,7 @@ Route::middleware(['auth', 'role:kadiv'])->prefix('kadiv')->group(function () {
             ->with('success', 'Revisi berhasil dikirim.');
     })->name('kadiv.revisiTugas');
 
+    // Pesan
     Route::get('/pesan', function () {
         return view('kadiv.pesan');
     })->name('kadiv.pesan');
@@ -161,7 +166,7 @@ Route::post('/profile', function (Request $request) {
 
 
 
-//route hrd 
+//route hrd
 Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
 
