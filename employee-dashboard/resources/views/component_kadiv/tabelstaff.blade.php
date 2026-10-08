@@ -17,14 +17,19 @@
 </div>
 
 <script>
+    let kadivStaffLoading = false;
+
     async function loadKadivStaffTable() {
         const rows = document.getElementById('kadiv-staff-rows');
+        if (!rows || kadivStaffLoading) return;
+
         const token = sessionStorage.getItem('staff_token');
         if (!token) {
             window.location.href = '/login';
             return;
         }
 
+        kadivStaffLoading = true;
         try {
             const response = await fetch('/api/kadiv/dashboard', {
                 headers: {
@@ -81,8 +86,15 @@
         } catch (error) {
             console.error('Gagal memuat staff Kadiv:', error);
             rows.innerHTML = '<tr><td colspan="4" class="h-28 px-4 text-center text-red-600">Data staff gagal dimuat. Silakan muat ulang halaman.</td></tr>';
+        } finally {
+            kadivStaffLoading = false;
         }
     }
+
+    window.addEventListener('focus', loadKadivStaffTable);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) loadKadivStaffTable();
+    });
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', loadKadivStaffTable);
