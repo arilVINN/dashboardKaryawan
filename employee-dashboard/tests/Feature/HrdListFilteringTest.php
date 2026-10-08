@@ -32,7 +32,6 @@ class HrdListFilteringTest extends TestCase
         Divisi::create(['id_divisi' => 'DIV-HR', 'kode_divisi' => 'HR', 'nama_divisi' => 'Sumber Daya Manusia', 'status_aktif' => 'Aktif']);
         Divisi::create(['id_divisi' => 'DIV-OPS', 'kode_divisi' => 'OPS', 'nama_divisi' => 'Operasional', 'status_aktif' => 'Nonaktif']);
 
-        // KRY-A / KRY-B have accounts (aktif); KRY-C / KRY-D do not (belum).
         $this->staffUser = $this->makeKaryawan('KRY-A', 'Andi Wijaya', 'DIV-IT', 'Software Engineer', 'andi');
         $this->makeKaryawan('KRY-B', 'Budi Santoso', 'DIV-HR', 'HR Specialist', 'budi');
         $this->makeKaryawan('KRY-C', 'Citra Lestari', 'DIV-IT', 'Analyst');
@@ -84,7 +83,6 @@ class HrdListFilteringTest extends TestCase
         return $response->viewData('divisis')->getCollection()->pluck('id_divisi')->all();
     }
 
-    // ---- access control ----
 
     public function test_staff_list_requires_authentication(): void
     {
@@ -106,7 +104,6 @@ class HrdListFilteringTest extends TestCase
         $this->actingAs($this->staffUser)->get('/hrd/daftarDivisi')->assertForbidden();
     }
 
-    // ---- staff sorting ----
 
     public function test_staff_list_defaults_to_name_ascending(): void
     {
@@ -140,7 +137,6 @@ class HrdListFilteringTest extends TestCase
         $this->assertSame(['KRY-D', 'KRY-B', 'KRY-HRD', 'KRY-A', 'KRY-C'], $this->staffIds($response));
     }
 
-    // ---- staff filtering ----
 
     public function test_staff_list_filters_by_divisi(): void
     {
@@ -172,7 +168,6 @@ class HrdListFilteringTest extends TestCase
         $this->assertSame(['KRY-B'], $this->staffIds($response));
     }
 
-    // ---- divisi sorting ----
 
     public function test_divisi_list_sorts_by_kode(): void
     {
@@ -196,7 +191,6 @@ class HrdListFilteringTest extends TestCase
         $this->assertSame(['DIV-HR', 'DIV-IT', 'DIV-OPS'], $this->divisiIds($response));
     }
 
-    // ---- divisi filtering ----
 
     public function test_divisi_list_filters_by_status(): void
     {
@@ -216,7 +210,6 @@ class HrdListFilteringTest extends TestCase
         $this->assertSame(['DIV-IT'], $this->divisiIds($byKode));
     }
 
-    // ---- manajemen divisi (sidebar page) ----
 
     public function test_manajemen_divisi_sorts_by_nama(): void
     {
@@ -254,7 +247,6 @@ class HrdListFilteringTest extends TestCase
         $this->assertSame(['DIV-OPS'], $response->viewData('divisis')->pluck('id_divisi')->all());
     }
 
-    // ---- case-insensitive search (Postgres LIKE is case-sensitive) ----
 
     public function test_staff_search_is_case_insensitive(): void
     {

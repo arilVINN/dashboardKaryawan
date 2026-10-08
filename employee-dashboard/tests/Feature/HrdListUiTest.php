@@ -41,7 +41,6 @@ class HrdListUiTest extends TestCase
         ]);
     }
 
-    // ---- sortable headers ----
 
     public function test_staff_list_marks_sortable_columns_and_leaves_status_plain(): void
     {
@@ -80,7 +79,6 @@ class HrdListUiTest extends TestCase
             ->assertDontSee('data-sort="status"', false);
     }
 
-    // ---- active filter chips ----
 
     public function test_active_filter_chips_render_only_when_filtered(): void
     {
@@ -107,7 +105,6 @@ class HrdListUiTest extends TestCase
             ->assertSee('data-filter-chip="status"', false);
     }
 
-    // ---- empty states ----
 
     public function test_staff_list_shows_filtered_empty_state(): void
     {
@@ -129,7 +126,6 @@ class HrdListUiTest extends TestCase
             ->assertDontSee('Tidak ada data yang cocok dengan filter.');
     }
 
-    // ---- manajemen divisi (shared tabelDivisi component) ----
 
     public function test_manajemen_divisi_marks_sortable_columns_and_chips(): void
     {
@@ -152,7 +148,6 @@ class HrdListUiTest extends TestCase
             ->assertDontSee('data-sort=', false);
     }
 
-    // ---- navigation vs dashboard cards ----
 
     public function test_dashboard_stat_cards_are_not_links(): void
     {
@@ -173,7 +168,6 @@ class HrdListUiTest extends TestCase
         $this->assertStringContainsString(url('/hrd/daftarKaryawan'), $html);
     }
 
-    // ---- breadcrumbs ----
 
     public function test_breadcrumb_component_renders_supplied_parent_and_current(): void
     {

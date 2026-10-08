@@ -83,7 +83,6 @@
     let staffTugasSort = null;
     let staffTugasDir = 'asc';
 
-    // Utility untuk warna status
     const STATUS_CLASS = {
         'baru':         'bg-[#C0E7FF] text-blue-700',
         'berjalan':     'bg-[#DFE4EA] text-black-700',
@@ -94,7 +93,6 @@
         'telat':        'bg-red-100 text-red-700',
     };
 
-    // Ubah tiap awal kata jadi kapital (misal: "menunggu acc" -> "Menunggu Acc")
     function ucwords(str) {
         return (str + '').replace(/_/g, ' ').replace(/^(.)|\s+(.)/g, function ($1) {
             return $1.toUpperCase();

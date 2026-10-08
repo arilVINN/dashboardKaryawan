@@ -47,7 +47,6 @@ class HrdStaffCrudTest extends TestCase
         ]);
     }
 
-    // ---- staff list CRUD controls ----
 
     public function test_karyawan_list_shows_crud_controls_and_endpoints(): void
     {
@@ -69,7 +68,6 @@ class HrdStaffCrudTest extends TestCase
             ->assertSee('Teknologi Informasi');
     }
 
-    // ---- staff detail page ----
 
     public function test_staff_detail_page_shows_profile_and_task_list(): void
     {

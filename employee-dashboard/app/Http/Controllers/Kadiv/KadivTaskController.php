@@ -32,17 +32,14 @@ class KadivTaskController extends Controller
             $query->where('karyawan_id_karyawan', $request->input('staff'));
         }
 
-        // Filter status efektif (termasuk turunan "telat").
         if (in_array($request->input('status'), Tugas::ALL_STATUSES, true)) {
             $query->statusEfektif($request->input('status'));
         }
 
-        // Cari judul (case-insensitive, aman untuk Postgres & SQLite).
         if ($request->filled('q')) {
             $query->whereRaw('LOWER(judul_tugas) LIKE ?', ['%' . mb_strtolower($request->input('q')) . '%']);
         }
 
-        // Sortir (default tetap tanggal_dibuat desc seperti sebelumnya).
         $dir = $request->input('dir') === 'asc' ? 'asc' : 'desc';
         switch ($request->input('sort')) {
             case 'judul':

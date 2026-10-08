@@ -17,17 +17,14 @@ class StaffTugasController extends Controller
 
         $query = Tugas::where('karyawan_id_karyawan', $karyawanId);
 
-        // Cari judul (case-insensitive).
         if ($request->filled('q')) {
             $query->whereRaw('LOWER(judul_tugas) LIKE ?', ['%' . mb_strtolower($request->input('q')) . '%']);
         }
 
-        // Filter status efektif (termasuk turunan "telat").
         if (in_array($request->input('status'), Tugas::ALL_STATUSES, true)) {
             $query->statusEfektif($request->input('status'));
         }
 
-        // Sortir (default terbaru seperti sebelumnya).
         $dir = $request->input('dir') === 'asc' ? 'asc' : 'desc';
         switch ($request->input('sort')) {
             case 'judul':

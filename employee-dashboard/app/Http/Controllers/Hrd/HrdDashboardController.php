@@ -55,7 +55,6 @@ class HrdDashboardController extends Controller
             ]);
         }
 
-        // Widget presentase tugas (dinamis): Ongoing / Pending / Revisi.
         // Revisi = tugas "berjalan" yang submission terakhirnya diminta revisi.
         $ongoingBase = Tugas::statusEfektif(Tugas::STATUS_BERJALAN);
 

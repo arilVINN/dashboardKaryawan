@@ -1,5 +1,4 @@
 @php
-    // Data nyata dari HrdDashboardController (fallback 0 bila komponen dipakai tanpa data).
     $total = $total ?? ['karyawan' => 0, 'divisi' => 0, 'pesan' => 0];
     $tugasBuckets = $tugasBuckets ?? ['ongoing' => 0, 'pending' => 0, 'revisi' => 0];
     $bucketTotal = array_sum($tugasBuckets);

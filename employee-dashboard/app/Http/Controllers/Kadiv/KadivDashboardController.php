@@ -56,12 +56,10 @@ class KadivDashboardController extends Controller
             ->with('user:id_user,karyawan_id_karyawan,last_login_at')
             ->withCount('tugas');
 
-        // Cari nama staff (case-insensitive).
         if ($request->filled('q')) {
             $staffQuery->whereRaw('LOWER(nama) LIKE ?', ['%' . mb_strtolower($request->input('q')) . '%']);
         }
 
-        // Sortir (default nama asc seperti sebelumnya).
         switch ($request->input('sort')) {
             case 'tugas':
                 $staffQuery->orderBy('tugas_count', $dir)->orderBy('nama');

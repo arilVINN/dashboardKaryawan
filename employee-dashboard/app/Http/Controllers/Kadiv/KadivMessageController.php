@@ -48,7 +48,6 @@ class KadivMessageController extends Controller
             $query->where('pengirim_id_user', $user->id_user);
         }
 
-        // Cari judul/deskripsi (case-insensitive, aman untuk Postgres & SQLite).
         if (! empty($validated['q'])) {
             $kata = mb_strtolower($validated['q']);
             $query->where(function ($w) use ($kata): void {
@@ -57,7 +56,6 @@ class KadivMessageController extends Controller
             });
         }
 
-        // Sortir (default tetap created_at desc seperti sebelumnya).
         $dir = ($validated['dir'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
         switch ($validated['sort'] ?? null) {
             case 'tanggal':
