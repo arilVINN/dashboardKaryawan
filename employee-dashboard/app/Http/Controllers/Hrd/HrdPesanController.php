@@ -17,8 +17,9 @@ class HrdPesanController extends Controller
         $user = $request->user();
         $pesans = $this->allMessages();
 
+        // Rows, filters, sorting, and pagination now live in the
+        // App\Livewire\Hrd\PesanTable component; the page only needs metrics.
         return view('hrd.pesan', [
-            'pesans' => $pesans,
             'totalPesan' => $pesans->count(),
             'pesanMasuk' => $pesans->where('penerima_id_user', $user->id_user)->count(),
             'pesanKeluar' => $pesans->where('pengirim_id_user', $user->id_user)->count(),
@@ -27,9 +28,9 @@ class HrdPesanController extends Controller
 
     public function daftarPage(Request $request)
     {
-        $pesans = $this->allMessages();
-
-        return view('hrd.daftarPesan', compact('pesans'));
+        // Rows, filters, sorting, and pagination now live in the
+        // App\Livewire\Hrd\PesanTable component.
+        return view('hrd.daftarPesan');
     }
 
     private function allMessages()

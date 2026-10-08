@@ -16,7 +16,8 @@
         @include('component.topbar')
         @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Daftar Pesan'])
         <main class="flex-1 overflow-y auto p-8 pt-6">
-            @include('component_hrd.tabelPesan')
+            <livewire:hrd.pesan-table />
+            @include('component_hrd.pesanModal')
         </main>
         
 

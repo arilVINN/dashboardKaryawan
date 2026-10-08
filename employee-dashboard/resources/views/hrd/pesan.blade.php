@@ -15,7 +15,8 @@
         @include('component.topbar')
         <main class="flex-1 overflow-auto p-8 pt6 items-center">
             @include('component_hrd.pesanbar')
-            @include('component_hrd.tabelPesan')
+            <livewire:hrd.pesan-table />
+            @include('component_hrd.pesanModal')
 
         </main>
 
