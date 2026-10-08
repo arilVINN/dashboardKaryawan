@@ -63,12 +63,15 @@ class HrdStaffController extends Controller
                 ], 404);
             }
 
-            $roleId = $request->role_id_role
-                ?? Role::whereRaw('LOWER(nama_role) = ?', ['staff'])->value('id_role');
+            $jabatanRole = $this->roleNameForJabatan($request->jabatan);
+            $roleId = $jabatanRole
+                ? Role::whereRaw('LOWER(nama_role) = ?', [$jabatanRole])->value('id_role')
+                : ($request->role_id_role
+                    ?? Role::whereRaw('LOWER(nama_role) = ?', ['staff'])->value('id_role'));
 
             if (!$roleId) {
                 return response()->json([
-                    'message' => 'Role staff belum tersedia. Tambahkan role staff terlebih dahulu.'
+                    'message' => 'Role ' . ($jabatanRole ?? 'staff') . ' belum tersedia. Tambahkan role tersebut terlebih dahulu.'
                 ], 422);
             }
 
@@ -208,6 +211,23 @@ class HrdStaffController extends Controller
             }
         }
 
+        if (isset($validated['jabatan'])) {
+            $jabatanRole = $this->roleNameForJabatan($validated['jabatan']);
+
+            if ($jabatanRole && $karyawan->user) {
+                $roleId = Role::whereRaw('LOWER(nama_role) = ?', [$jabatanRole])->value('id_role');
+
+                if (!$roleId) {
+                    return response()->json([
+                        'message' => 'Role ' . $jabatanRole . ' belum tersedia. Tambahkan role tersebut terlebih dahulu.',
+                        'errors' => ['jabatan' => ['Role ' . $jabatanRole . ' belum tersedia.']],
+                    ], 422);
+                }
+
+                $validated['role_id_role'] = $roleId;
+            }
+        }
+
         if (array_intersect(['username', 'password', 'role_id_role'], array_keys($validated)) && !$karyawan->user) {
             return response()->json(['message' => 'Akun login staff tidak ditemukan'], 409);
         }
@@ -260,5 +280,20 @@ class HrdStaffController extends Controller
         }
 
         return response()->json(['message' => 'Staff dan akun login berhasil dihapus']);
+    }
+
+    private function roleNameForJabatan(string $jabatan): ?string
+    {
+        $normalized = mb_strtolower(trim($jabatan));
+
+        if (preg_match('/^kepala\s+divisi(?:\s|$)/i', $normalized) === 1) {
+            return 'kadiv';
+        }
+
+        if (in_array($normalized, ['staff', 'wakil kepala divisi'], true)) {
+            return 'staff';
+        }
+
+        return null;
     }
 }

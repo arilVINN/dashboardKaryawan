@@ -56,16 +56,6 @@ class HrdKaryawanController extends Controller
             ->where('id_karyawan', $id)
             ->firstOrFail();
 
-        return view('hrd.detailKaryawan', compact('karyawan'));
-    }
-
-
-    public function detailPage($id)
-    {
-        $karyawan = Karyawan::with(['divisi', 'user.role', 'tugas'])
-            ->where('id_karyawan', $id)
-            ->firstOrFail();
-
         $totalTugas   = $karyawan->tugas->count();
         $tugasSelesai = $karyawan->tugas->where('status', Tugas::STATUS_SUDAH_ACC)->count();
 

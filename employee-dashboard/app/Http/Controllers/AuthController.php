@@ -50,10 +50,11 @@ class AuthController extends Controller
         $user->update(['last_login_at' => now()]);
 
         $isApiRequest = $request->is('api/*');
-        // if (! $isApiRequest) {
-        //     Auth::login($user);
-        //     $request->session()->regenerate();
-        // }
+
+        if (! $isApiRequest) {
+            Auth::login($user);
+            $request->session()->regenerate();
+        }
 
         if ($request->expectsJson() || $isApiRequest) {
             $token = $user->createToken('auth_token')->plainTextToken;

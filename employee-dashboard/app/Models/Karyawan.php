@@ -64,7 +64,8 @@ class Karyawan extends Model
 
     public function isKadiv(): bool
     {
-        return $this->hasRole('kadiv');
+        return $this->hasRole('kadiv')
+            || preg_match('/^kepala\s+divisi(?:\s|$)/i', trim($this->jabatan ?? '')) === 1;
     }
 
     public function isStaff(): bool

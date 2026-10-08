@@ -172,10 +172,10 @@ Route::prefix('hrd')->group(function () {
 
     Route::get('/manajemenDivisi', [HrdDivisiController::class, 'manajemenPage'])->name('hrd.manajemenDivisi');
 
-    Route::get('/pesan', [HrdPesanController::class, 'page'])->name('hrd.pesan');
+    Route::get('/pesan', [HrdPesanController::class, 'page'])->middleware('auth')->name('hrd.pesan');
 
-    Route::get('/detailPesan/{id_pesan}', [HrdPesanController::class, 'detailPage'])->name('hrd.detailPesan');
-    Route::post('/detailPesan/{id_pesan}/balas', [HrdPesanController::class, 'balas'])->name('hrd.detailPesan.balas');
+    Route::get('/detailPesan/{id_pesan}', [HrdPesanController::class, 'detailPage'])->middleware('auth')->name('hrd.detailPesan');
+    Route::post('/detailPesan/{id_pesan}/balas', [HrdPesanController::class, 'balas'])->middleware('auth')->name('hrd.detailPesan.balas');
 
     Route::get('/detailDivisi/{id}', [HrdDivisiController::class, 'detailPage'])->name('hrd.detailDivisi');
 

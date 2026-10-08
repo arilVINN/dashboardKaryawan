@@ -58,7 +58,9 @@
                         Profil Saya
                     </a>
                 </div>
-                <div class="border-t border-slate-100 pt-1">
+                <form id="topbar-logout-form" method="POST" action="{{ route('logout') }}"
+                    class="border-t border-slate-100 pt-1">
+                    @csrf
                     <button type="button" id="btn-logout-topbar"
                         class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left">
                         <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,7 +70,7 @@
                         </svg>
                         Keluar
                     </button>
-                </div>
+                </form>
             </div>
         </div>
 
@@ -98,5 +100,30 @@
             ? profile.nama.charAt(0).toUpperCase()
             : 'U';
     })().catch(error => console.error('Gagal memuat identitas pengguna:', error));
-</script>
 
+    document.getElementById('btn-logout-topbar')?.addEventListener('click', async function () {
+        const form = document.getElementById('topbar-logout-form');
+        const token = sessionStorage.getItem('staff_token');
+        this.disabled = true;
+
+        if (token) {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Accept': 'application/json',
+                    },
+                });
+                if (!response.ok) {
+                    throw new Error('Gagal mengakhiri token login.');
+                }
+            } catch (error) {
+                console.error('Gagal mencabut token login:', error);
+            }
+        }
+
+        sessionStorage.removeItem('staff_token');
+        HTMLFormElement.prototype.submit.call(form);
+    });
+</script>
