@@ -12,8 +12,9 @@ use App\Http\Controllers\Staff\PesanController;
 use App\Http\Controllers\Staff\StaffTugasController;
 use Illuminate\Support\Facades\Route;
 
-// Public – login (no token required, throttled against brute-force)
-Route::middleware('gateway.throttle:5,1')->post('/login', [AuthController::class, 'login']);
+// Public – login (no token required; brute-force protection lives in
+// AuthController@login, scoped per username + IP and cleared on success)
+Route::post('/login', [AuthController::class, 'login']);
 
 // Protected – token auth + throttling for every authenticated endpoint
 Route::middleware([

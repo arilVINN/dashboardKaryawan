@@ -16,8 +16,9 @@ use App\Models\Divisi;
 
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+// Brute-force protection lives in AuthController@login (per username + IP,
+// cleared on success) — no blanket per-IP route throttle here.
 Route::post('/login', [AuthController::class, 'login'])
-    ->middleware('gateway.throttle:5,1')
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 

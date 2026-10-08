@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use App\Models\User2;
 
 class AuthController extends Controller
@@ -20,6 +22,20 @@ class AuthController extends Controller
             'username' => 'required|string|alpha_num:ascii|max:50',
             'password' => 'required|string',
         ]);
+
+        // Brute-force protection scoped to username + IP (instead of the
+        // blanket per-IP route throttle): one account's failures — or a
+        // neighbour's logins on a shared network — must not lock out other
+        // usernames, and a success clears the budget it belongs to.
+        $throttleKey = 'login:'.Str::lower($credentials['username']).'|'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $retryAfter = RateLimiter::availableIn($throttleKey);
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'Too Many Attempts.'], 429, ['Retry-After' => $retryAfter]);
+            }
+            abort(429, 'Too Many Attempts.');
+        }
 
         $user = User2::with('role')->where('username', $credentials['username'])->first();
 
@@ -41,11 +57,14 @@ class AuthController extends Controller
         }
 
         if (!$passwordMatches) {
+            RateLimiter::hit($throttleKey, 60);
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json(['message' => 'Username atau password salah'], 401);
             }
             return back()->withErrors(['username' => 'Username atau password salah']);
         }
+
+        RateLimiter::clear($throttleKey);
 
         $user->update(['last_login_at' => now()]);
 
