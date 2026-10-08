@@ -48,7 +48,8 @@
             </p>
         </div>
 
-        <form id="form-login" class="space-y-5 max-w-sm mx-auto w-full">
+        <form id="form-login" method="POST" action="{{ $action }}" class="space-y-5 max-w-sm mx-auto w-full">
+            @csrf
             <div>
                 <label class="block text-sm font-bold text-slate-900 mb-1.5">Username</label>
                 <input type="text" name="username" placeholder="Masukan username anda" required
@@ -79,8 +80,6 @@
 document.getElementById('form-login').addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    const username = document.querySelector('input[name="username"]').value;
-    const password = document.querySelector('input[name="password"]').value;
     const errorEl = document.getElementById('login-error');
     const btnLogin = document.getElementById('btn-login');
 
@@ -89,13 +88,20 @@ document.getElementById('form-login').addEventListener('submit', async function(
     btnLogin.textContent = 'Memproses...';
 
     try {
-        const response = await fetch('/api/login', {
+        const formData = new FormData(this);
+        const response = await fetch(this.action, {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
+                'X-CSRF-TOKEN': formData.get('_token'),
             },
-            body: JSON.stringify({ username: username, password: password })
+            body: JSON.stringify({
+                _token: formData.get('_token'),
+                username: formData.get('username'),
+                password: formData.get('password'),
+            })
         });
 
         const data = await response.json();

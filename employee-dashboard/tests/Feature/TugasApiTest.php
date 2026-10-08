@@ -134,6 +134,7 @@ class TugasApiTest extends TestCase
              ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", [
                  'status_review' => 'revisi',
                  'catatan_revisi' => 'Perbaiki bagian ini',
+                 'deadline' => now()->addDays(5)->toDateString(),
              ])
              ->assertStatus(200);
 

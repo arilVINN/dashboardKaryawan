@@ -20,8 +20,7 @@
             
             <div class="px-9 pt-7 pb-16">
 
-                @include('component.breadcrumbs')
-                
+                @include('component.breadcrumbs', ['parentText' => 'Manajemen Staff', 'parentUrl' => url('/kadiv/manajemenStaff'), 'currentPage' => 'Detail Staff'])
                 <div class="mt-4 flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div class="w-14 h-14 rounded-full bg-[#19A7CE] text-white text-xl font-bold flex items-center justify-center">

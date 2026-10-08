@@ -11,6 +11,7 @@ use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -202,6 +203,234 @@ class KadivApiTest extends TestCase
         $this->actingAs($staff)
             ->getJson('/api/kadiv/dashboard')
             ->assertForbidden();
+    }
+
+    public function test_tugas_list_sorts_by_judul(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+
+        $this->createTask('T-1', 'ST-1', Tugas::STATUS_BARU);
+        $this->createTask('T-2', 'ST-1', Tugas::STATUS_BARU);
+        $this->createTask('T-3', 'ST-1', Tugas::STATUS_BARU);
+        Tugas::where('id_tugas', 'T-1')->update(['judul_tugas' => 'Gamma']);
+        Tugas::where('id_tugas', 'T-2')->update(['judul_tugas' => 'Alpha']);
+        Tugas::where('id_tugas', 'T-3')->update(['judul_tugas' => 'Beta']);
+
+        $asc = $this->actingAs($kadiv)->getJson('/api/kadiv/tugas?sort=judul&dir=asc')->assertOk();
+        $this->assertSame(['T-2', 'T-3', 'T-1'], collect($asc->json('data'))->pluck('id_tugas')->all());
+
+        $desc = $this->actingAs($kadiv)->getJson('/api/kadiv/tugas?sort=judul&dir=desc')->assertOk();
+        $this->assertSame(['T-1', 'T-3', 'T-2'], collect($desc->json('data'))->pluck('id_tugas')->all());
+    }
+
+    public function test_tugas_list_sorts_by_tanggal(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+
+        $this->createTask('T-1', 'ST-1', Tugas::STATUS_BARU, '2026-01-10');
+        $this->createTask('T-2', 'ST-1', Tugas::STATUS_BARU, '2026-01-05');
+        $this->createTask('T-3', 'ST-1', Tugas::STATUS_BARU, '2026-01-20');
+
+        $asc = $this->actingAs($kadiv)->getJson('/api/kadiv/tugas?sort=tanggal&dir=asc')->assertOk();
+        $this->assertSame(['T-2', 'T-1', 'T-3'], collect($asc->json('data'))->pluck('id_tugas')->all());
+    }
+
+    public function test_tugas_list_filters_by_status_and_staff(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+        $this->createAccount('ST-2', 'Staff Lain', 'DIV-IT', 'ROLE-STAFF', 'staff.lain');
+
+        $this->createTask('T-1', 'ST-1', Tugas::STATUS_BARU);
+        $this->createTask('T-2', 'ST-2', Tugas::STATUS_SUDAH_ACC);
+
+        $byStatus = $this->actingAs($kadiv)
+            ->getJson('/api/kadiv/tugas?status=' . urlencode('sudah di-acc'))
+            ->assertOk();
+        $this->assertSame(['T-2'], collect($byStatus->json('data'))->pluck('id_tugas')->all());
+
+        $byStaff = $this->actingAs($kadiv)->getJson('/api/kadiv/tugas?staff=ST-1')->assertOk();
+        $this->assertSame(['T-1'], collect($byStaff->json('data'))->pluck('id_tugas')->all());
+    }
+
+    public function test_tugas_list_searches_judul_case_insensitively(): void
+    {
+        // Force SQLite LIKE to be case-sensitive so this mirrors Postgres.
+        DB::statement('PRAGMA case_sensitive_like = ON');
+
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+
+        $this->createTask('T-1', 'ST-1', Tugas::STATUS_BARU);
+        $this->createTask('T-2', 'ST-1', Tugas::STATUS_BARU);
+        Tugas::where('id_tugas', 'T-1')->update(['judul_tugas' => 'Bikin API']);
+        Tugas::where('id_tugas', 'T-2')->update(['judul_tugas' => 'Laporan']);
+
+        $response = $this->actingAs($kadiv)->getJson('/api/kadiv/tugas?q=bikin')->assertOk();
+        $this->assertSame(['T-1'], collect($response->json('data'))->pluck('id_tugas')->all());
+    }
+
+    public function test_kadiv_tugas_page_renders_sort_filter_controls(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+
+        $this->actingAs($kadiv)->get('/kadiv/tugas')
+            ->assertOk()
+            ->assertSee('id="kadivTaskSearch"', false)
+            ->assertSee('id="kadivTaskStatus"', false)
+            ->assertSee('id="kadivTaskStaff"', false)
+            ->assertSee('setKadivTaskSort', false)
+            ->assertSee('data-sort-indicator="judul"', false)
+            ->assertSee('Informasi Tugas')
+            ->assertSee('Penugasan')
+            ->assertSee('Lampiran');
+    }
+
+    public function test_pesan_list_sorts_by_judul_and_filters_by_arah(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $staff = $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+
+        $this->makeMessage('P-1', 'Gamma', $staff->id_user, $kadiv->id_user);
+        $this->makeMessage('P-2', 'Alpha', $staff->id_user, $kadiv->id_user);
+        $this->makeMessage('P-3', 'Beta', $kadiv->id_user, $staff->id_user);
+
+        $asc = $this->actingAs($kadiv)->getJson('/api/kadiv/pesan?sort=judul&dir=asc&per_page=100')->assertOk();
+        $this->assertSame(['P-2', 'P-3', 'P-1'], collect($asc->json('data'))->pluck('id_pesan')->all());
+
+        $masuk = $this->actingAs($kadiv)->getJson('/api/kadiv/pesan?arah=masuk&per_page=100')->assertOk();
+        $this->assertSame(
+            ['P-1', 'P-2'],
+            collect($masuk->json('data'))->pluck('id_pesan')->sort()->values()->all()
+        );
+    }
+
+    public function test_pesan_list_sorts_by_pengirim(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $abby = $this->createAccount('ST-A', 'Abby', 'DIV-IT', 'ROLE-STAFF', 'abby');
+        $zed = $this->createAccount('ST-Z', 'Zed', 'DIV-IT', 'ROLE-STAFF', 'zed');
+
+        $this->makeMessage('P-A', 'From Abby', $abby->id_user, $kadiv->id_user);
+        $this->makeMessage('P-Z', 'From Zed', $zed->id_user, $kadiv->id_user);
+        // Default order is created_at desc → Zed first; sorting by sender must flip it.
+        Pesan::where('id_pesan', 'P-A')->update(['created_at' => '2026-09-01 08:00:00']);
+        Pesan::where('id_pesan', 'P-Z')->update(['created_at' => '2026-09-02 08:00:00']);
+
+        $asc = $this->actingAs($kadiv)->getJson('/api/kadiv/pesan?sort=pengirim&dir=asc&per_page=100')->assertOk();
+        $this->assertSame(['P-A', 'P-Z'], collect($asc->json('data'))->pluck('id_pesan')->all());
+    }
+
+    public function test_pesan_list_searches_judul_and_deskripsi_case_insensitively(): void
+    {
+        DB::statement('PRAGMA case_sensitive_like = ON');
+
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $staff = $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+
+        $this->makeMessage('P-1', 'Laporan Bulanan', $staff->id_user, $kadiv->id_user);
+        $this->makeMessage('P-2', 'Rapat', $staff->id_user, $kadiv->id_user);
+
+        $response = $this->actingAs($kadiv)->getJson('/api/kadiv/pesan?q=laporan&per_page=100')->assertOk();
+        $this->assertSame(['P-1'], collect($response->json('data'))->pluck('id_pesan')->all());
+    }
+
+    public function test_kadiv_pesan_page_renders_sort_filter_controls(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+
+        $this->actingAs($kadiv)->get('/kadiv/pesan')
+            ->assertOk()
+            ->assertSee('id="kadivPesanSearch"', false)
+            ->assertSee('id="kadivPesanTipe"', false)
+            ->assertSee('id="kadivPesanArah"', false)
+            ->assertSee('setKadivPesanSort', false)
+            ->assertSee('data-sort-indicator="judul"', false);
+    }
+
+    public function test_staff_list_sorts_by_nama_tugas_and_login(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-A', 'Abby', 'DIV-IT', 'ROLE-STAFF', 'abby', '2026-02-01 08:00:00');
+        $this->createAccount('ST-Z', 'Zed', 'DIV-IT', 'ROLE-STAFF', 'zed', '2026-01-01 08:00:00');
+        $this->createTask('T-1', 'ST-Z', Tugas::STATUS_BARU);
+        $this->createTask('T-2', 'ST-Z', Tugas::STATUS_BARU);
+        $this->createTask('T-3', 'ST-A', Tugas::STATUS_BARU);
+
+        $this->actingAs($kadiv)->getJson('/api/kadiv/dashboard?sort=nama&dir=asc')
+            ->assertOk()
+            ->assertJsonCount(2, 'data.staff')
+            ->assertJsonPath('data.staff.0.nama', 'Abby')
+            ->assertJsonPath('data.staff.1.nama', 'Zed');
+
+        $this->actingAs($kadiv)->getJson('/api/kadiv/dashboard?sort=tugas&dir=desc')
+            ->assertOk()
+            ->assertJsonPath('data.staff.0.nama', 'Zed')
+            ->assertJsonPath('data.staff.1.nama', 'Abby');
+
+        $this->actingAs($kadiv)->getJson('/api/kadiv/dashboard?sort=login&dir=asc')
+            ->assertOk()
+            ->assertJsonPath('data.staff.0.nama', 'Zed')
+            ->assertJsonPath('data.staff.1.nama', 'Abby');
+    }
+
+    public function test_staff_list_searches_nama_case_insensitively(): void
+    {
+        DB::statement('PRAGMA case_sensitive_like = ON');
+
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-A', 'Abby', 'DIV-IT', 'ROLE-STAFF', 'abby');
+        $this->createAccount('ST-Z', 'Zed', 'DIV-IT', 'ROLE-STAFF', 'zed');
+
+        $this->actingAs($kadiv)->getJson('/api/kadiv/dashboard?q=abby')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.staff')
+            ->assertJsonPath('data.staff.0.nama', 'Abby');
+    }
+
+    public function test_kadiv_manajemen_staff_page_renders_sort_filter_controls(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+
+        $this->actingAs($kadiv)->get('/kadiv/manajemenStaff')
+            ->assertOk()
+            ->assertSee('id="kadivStaffSearch"', false)
+            ->assertSee('setKadivStaffSort', false)
+            ->assertSee('data-sort-indicator="nama"', false);
+    }
+
+    public function test_kadiv_pages_require_authentication(): void
+    {
+        $this->get('/kadiv/dashboard')->assertRedirect('/login');
+        $this->get('/kadiv/tugas')->assertRedirect('/login');
+        $this->get('/kadiv/pesan')->assertRedirect('/login');
+    }
+
+    public function test_kadiv_pages_are_forbidden_for_non_kadiv(): void
+    {
+        $staff = $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+
+        $this->actingAs($staff)->get('/kadiv/dashboard')->assertForbidden();
+    }
+
+    private function makeMessage(
+        string $id,
+        string $judul,
+        string $pengirimId,
+        string $penerimaId,
+        string $tipe = 'pesan'
+    ): void {
+        Pesan::create([
+            'id_pesan' => $id,
+            'judul_pesan' => $judul,
+            'deskripsi' => $judul . ' body',
+            'tipe' => $tipe,
+            'tanggal_pesan' => '2026-09-30',
+            'pengirim_id_user' => $pengirimId,
+            'penerima_id_user' => $penerimaId,
+        ]);
     }
 
     private function createAccount(

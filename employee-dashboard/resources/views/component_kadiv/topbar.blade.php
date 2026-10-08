@@ -1,5 +1,14 @@
 @php
-    $user = session('user_session');
+    // Sumber kebenaran: user yang login via session (semua role).
+    $authUser = auth()->user();
+    $kadivNama = $authUser?->karyawan?->nama
+        ?? $authUser?->username
+        ?? session('user_session.nama')
+        ?? 'User';
+    $kadivEmail = $authUser?->karyawan?->email
+        ?? session('user_session.email')
+        ?? '';
+    $kadivInitial = mb_strtoupper(mb_substr($kadivNama, 0, 1));
 @endphp
 
 <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-slate-200 shrink-0">
@@ -33,7 +42,7 @@
                     id="profile-dropdown-btn"
                     class="flex items-center gap-2 cursor-pointer">
                 <div id="kadiv-topbar-initial" class="w-9 h-9 rounded-full bg-[#19A7CE] flex items-center justify-center text-white font-bold text-sm">
-                    {{ strtoupper(substr($user['nama'] ?? 'U', 0, 1)) }}
+                    {{ $kadivInitial }}
                 </div>
 
                 <svg id="dropdown-arrow"
@@ -54,10 +63,10 @@
 
                 <div class="px-4 py-3 border-b border-slate-100">
                     <p id="kadiv-topbar-name" class="text-sm font-bold text-[#2A4B6A] truncate">
-                        {{ $user['nama'] ?? 'User' }}
+                        {{ $kadivNama }}
                     </p>
                     <p id="kadiv-topbar-email" class="text-xs text-slate-500 truncate">
-                        {{ $user['email'] ?? '' }}
+                        {{ $kadivEmail }}
                     </p>
                 </div>
 
@@ -66,10 +75,15 @@
                     Profil
                 </a>
 
-                <a id="kadiv-logout" href="{{ url('/login') }}"
-                   class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition border-t border-slate-100">
-                    Logout
-                </a>
+                <form method="POST" action="{{ route('logout') }}"
+                      onsubmit="if (!confirm('Apakah Anda yakin ingin keluar?')) return false; sessionStorage.removeItem('staff_token'); return true;"
+                      class="border-t border-slate-100">
+                    @csrf
+                    <button type="submit" id="kadiv-logout"
+                            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition">
+                        Logout
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -82,8 +96,10 @@
         const profileMenu = document.getElementById('profile-dropdown-menu');
         const dropdownArrow = document.getElementById('dropdown-arrow');
         const token = sessionStorage.getItem('staff_token');
+        const serverUser = {{ $authUser ? 'true' : 'false' }};
 
-        if (token) {
+        // Fallback token hanya bila halaman tidak dirender dari session.
+        if (token && !serverUser) {
             fetch('/api/kadiv/profile', {
                 headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
             })
@@ -100,24 +116,6 @@
                 })
                 .catch(error => console.error('Gagal memuat identitas Kadiv:', error));
         }
-
-        document.getElementById('kadiv-logout').addEventListener('click', async function (event) {
-            event.preventDefault();
-            try {
-                if (token) {
-                    const response = await fetch('/api/logout', {
-                        method: 'POST',
-                        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-                    });
-                    if (!response.ok) throw new Error('Logout backend gagal: ' + response.status);
-                }
-            } catch (error) {
-                console.error('Gagal melakukan logout Kadiv:', error);
-            } finally {
-                sessionStorage.removeItem('staff_token');
-                window.location.href = this.href;
-            }
-        });
 
         if (profileBtn && profileMenu) {
 
