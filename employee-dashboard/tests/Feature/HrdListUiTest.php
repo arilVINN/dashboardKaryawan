@@ -41,46 +41,31 @@ class HrdListUiTest extends TestCase
         ]);
     }
 
-    // ---- sortable headers ----
 
     public function test_staff_list_marks_sortable_columns_and_leaves_status_plain(): void
     {
         $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan')
             ->assertOk()
-            ->assertSee('data-sort="id"', false)
-            ->assertSee('data-sort="nama"', false)
-            ->assertSee('data-sort="divisi"', false)
-            ->assertSee('data-sort="jabatan"', false)
-            ->assertDontSee('data-sort="status"', false);
+            ->assertSee('wire:click="sortBy(\'id\')"', false)
+            ->assertSee('wire:click="sortBy(\'nama\')"', false)
+            ->assertSee('wire:click="sortBy(\'divisi\')"', false)
+            ->assertSee('wire:click="sortBy(\'jabatan\')"', false)
+            ->assertDontSee('wire:click="sortBy(\'status\')"', false);
     }
 
-    public function test_staff_default_name_header_offers_desc_toggle(): void
-    {
-        // Default sort is nama ascending, so the Nama header should link to desc.
-        $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan')
-            ->assertSee('data-sort="nama" data-dir="desc"', false);
-    }
-
-    public function test_staff_header_direction_reflects_current_sort(): void
-    {
-        $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?sort=jabatan&dir=asc')
-            ->assertSee('data-sort="jabatan" data-dir="desc"', false);
-
-        $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?sort=jabatan&dir=desc')
-            ->assertSee('data-sort="jabatan" data-dir="asc"', false);
-    }
+    // NOTE: header direction toggling moved to
+    // tests/Feature/Livewire/Hrd/KaryawanTableTest.php (test_sort_header_toggles_direction).
 
     public function test_divisi_list_marks_sortable_columns(): void
     {
         $this->actingAs($this->hrd)->get('/hrd/daftarDivisi')
             ->assertOk()
-            ->assertSee('data-sort="kode"', false)
-            ->assertSee('data-sort="nama"', false)
-            ->assertSee('data-sort="staff"', false)
-            ->assertDontSee('data-sort="status"', false);
+            ->assertSee('wire:click="sortBy(\'kode\')"', false)
+            ->assertSee('wire:click="sortBy(\'nama\')"', false)
+            ->assertSee('wire:click="sortBy(\'staff\')"', false)
+            ->assertDontSee('wire:click="sortBy(\'status\')"', false);
     }
 
-    // ---- active filter chips ----
 
     public function test_active_filter_chips_render_only_when_filtered(): void
     {
@@ -92,14 +77,9 @@ class HrdListUiTest extends TestCase
             ->assertDontSee('data-filter-chip', false);
     }
 
-    public function test_chip_remove_link_drops_only_its_own_filter(): void
-    {
-        $base = url('/hrd/daftarKaryawan');
-
-        $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?divisi=DIV-IT&status=aktif')
-            ->assertSee('data-remove-href="' . $base . '?status=aktif"', false)
-            ->assertSee('data-remove-href="' . $base . '?divisi=DIV-IT"', false);
-    }
+    // NOTE: per-filter removal moved to
+    // tests/Feature/Livewire/Hrd/KaryawanTableTest.php
+    // (test_filter_chips_render_and_clear_only_their_own_filter).
 
     public function test_divisi_list_renders_filter_chip_for_status(): void
     {
@@ -107,7 +87,6 @@ class HrdListUiTest extends TestCase
             ->assertSee('data-filter-chip="status"', false);
     }
 
-    // ---- empty states ----
 
     public function test_staff_list_shows_filtered_empty_state(): void
     {
@@ -129,16 +108,15 @@ class HrdListUiTest extends TestCase
             ->assertDontSee('Tidak ada data yang cocok dengan filter.');
     }
 
-    // ---- manajemen divisi (shared tabelDivisi component) ----
 
     public function test_manajemen_divisi_marks_sortable_columns_and_chips(): void
     {
         $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi')
             ->assertOk()
-            ->assertSee('data-sort="kode"', false)
-            ->assertSee('data-sort="nama"', false)
-            ->assertSee('data-sort="staff"', false)
-            ->assertDontSee('data-sort="status"', false);
+            ->assertSee('wire:click="sortBy(\'kode\')"', false)
+            ->assertSee('wire:click="sortBy(\'nama\')"', false)
+            ->assertSee('wire:click="sortBy(\'staff\')"', false)
+            ->assertDontSee('wire:click="sortBy(\'status\')"', false);
 
         $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi?status=aktif')
             ->assertSee('data-filter-chip="status"', false);
@@ -152,7 +130,6 @@ class HrdListUiTest extends TestCase
             ->assertDontSee('data-sort=', false);
     }
 
-    // ---- navigation vs dashboard cards ----
 
     public function test_dashboard_stat_cards_are_not_links(): void
     {
@@ -160,6 +137,9 @@ class HrdListUiTest extends TestCase
         $html = view('component_hrd.statusbar', [
             'total' => ['karyawan' => 1, 'divisi' => 2, 'pesan' => 3],
             'tugasBuckets' => ['ongoing' => 1, 'pending' => 1, 'revisi' => 1],
+            'totalStaff' => 1,
+            'totalDivisi' => 2,
+            'totalPesanPerusahaan' => 3,
         ])->render();
 
         $this->assertStringContainsString('Total Karyawan', $html);
@@ -173,7 +153,6 @@ class HrdListUiTest extends TestCase
         $this->assertStringContainsString(url('/hrd/daftarKaryawan'), $html);
     }
 
-    // ---- breadcrumbs ----
 
     public function test_breadcrumb_component_renders_supplied_parent_and_current(): void
     {

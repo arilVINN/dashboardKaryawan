@@ -25,7 +25,7 @@
                 Manajemen Staff
             </h1>
 
-            @include('component_kadiv.tabelstaff')
+            <livewire:kadiv.staff-table />
 
         </main>
 

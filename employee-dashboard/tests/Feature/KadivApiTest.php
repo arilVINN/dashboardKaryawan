@@ -281,11 +281,8 @@ class KadivApiTest extends TestCase
             ->assertSee('id="kadivTaskSearch"', false)
             ->assertSee('id="kadivTaskStatus"', false)
             ->assertSee('id="kadivTaskStaff"', false)
-            ->assertSee('setKadivTaskSort', false)
-            ->assertSee('data-sort-indicator="judul"', false)
-            ->assertSee('Informasi Tugas')
-            ->assertSee('Penugasan')
-            ->assertSee('Lampiran');
+            ->assertSee('Tugas Divisi')
+            ->assertSee('Tambah Tugas');
     }
 
     public function test_pesan_list_sorts_by_judul_and_filters_by_arah(): void
@@ -346,8 +343,7 @@ class KadivApiTest extends TestCase
             ->assertSee('id="kadivPesanSearch"', false)
             ->assertSee('id="kadivPesanTipe"', false)
             ->assertSee('id="kadivPesanArah"', false)
-            ->assertSee('setKadivPesanSort', false)
-            ->assertSee('data-sort-indicator="judul"', false);
+            ->assertSee('Kirim Pesan');
     }
 
     public function test_staff_list_sorts_by_nama_tugas_and_login(): void
@@ -390,15 +386,14 @@ class KadivApiTest extends TestCase
             ->assertJsonPath('data.staff.0.nama', 'Abby');
     }
 
-    public function test_kadiv_manajemen_staff_page_renders_sort_filter_controls(): void
+    public function test_kadiv_manajemen_staff_page_renders_staff_table(): void
     {
         $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
 
         $this->actingAs($kadiv)->get('/kadiv/manajemenStaff')
             ->assertOk()
-            ->assertSee('id="kadivStaffSearch"', false)
-            ->assertSee('setKadivStaffSort', false)
-            ->assertSee('data-sort-indicator="nama"', false);
+            ->assertSee('Nama Staff')
+            ->assertSee('id="kadiv-staff-rows"', false);
     }
 
     public function test_kadiv_pages_require_authentication(): void

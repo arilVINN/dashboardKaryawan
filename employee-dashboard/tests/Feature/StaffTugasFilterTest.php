@@ -45,7 +45,7 @@ class StaffTugasFilterTest extends TestCase
             'id_tugas' => $id,
             'karyawan_id_karyawan' => 'KRY-S',
             'judul_tugas' => $judul,
-            'deskripsi' => $judul . ' desc',
+            'deskripsi' => $judul.' desc',
             'deadline' => $deadline,
             'progress' => '0',
             'status' => $status,
@@ -84,27 +84,32 @@ class StaffTugasFilterTest extends TestCase
 
     public function test_staff_tugas_page_renders_sort_filter_controls(): void
     {
-        $this->get('/tugas')
+        $this->actingAs($this->staff)
+            ->get('/tugas')
             ->assertOk()
             ->assertSee('id="staffTugasSearch"', false)
             ->assertSee('id="staffTugasStatus"', false)
-            ->assertSee('setStaffTugasSort', false)
-            ->assertSee('data-sort-indicator="judul"', false);
+            ->assertSee('wire:click="sortBy(\'judul\')"', false)
+            ->assertDontSee('setStaffTugasSort', false)
+            ->assertDontSee('data-sort-indicator', false);
     }
 
     public function test_staff_pesan_page_renders_sort_filter_controls(): void
     {
-        $this->get('/pesan')
+        $this->actingAs($this->staff)
+            ->get('/pesan')
             ->assertOk()
             ->assertSee('id="staffPesanSearch"', false)
             ->assertSee('id="staffPesanJenis"', false)
-            ->assertSee('setStaffPesanSort', false)
-            ->assertSee('data-sort-indicator="tanggal"', false);
+            ->assertSee('wire:click="sortBy(\'tanggal\')"', false)
+            ->assertDontSee('setStaffPesanSort', false)
+            ->assertDontSee('data-sort-indicator', false);
     }
 
     public function test_staff_tugas_detail_has_labeled_file_field(): void
     {
-        $this->get('/tugas/detail/T-1')
+        $this->actingAs($this->staff)
+            ->get('/tugas/detail/T-1')
             ->assertOk()
             ->assertSee('File Hasil');
     }

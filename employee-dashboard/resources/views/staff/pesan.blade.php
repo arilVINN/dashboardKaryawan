@@ -26,7 +26,7 @@
             </div>
 
             <div class="w-full">
-                @include('component.tablePesan')
+                <livewire:staff.pesan-table />
             </div>
         </main>
 

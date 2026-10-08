@@ -22,7 +22,7 @@
         {{-- MAIN CONTENT --}}
         <main class="flex-1 overflow-y-auto p-6 lg:p-8 pb-16">
 
-            @include('component_kadiv.tabelPesan')
+            <livewire:kadiv.pesan-table />
 
         </main>
 

@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Pesan;
 use App\Models\Tugas;
 use App\Models\User2;
+use App\Presenters\MessagePresenter;
+use App\Queries\KadivMessageQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,55 +33,13 @@ class KadivMessageController extends Controller
             'q' => ['nullable', 'string', 'max:200'],
         ]);
 
-        $query = Pesan::query()
-            ->with(['pengirim.karyawan', 'penerima.karyawan', 'tugas'])
-            ->where(function ($query) use ($user): void {
-                $query->where('pengirim_id_user', $user->id_user)
-                    ->orWhere('penerima_id_user', $user->id_user);
-            });
-
-        if (isset($validated['tipe'])) {
-            $query->where('tipe', $validated['tipe']);
-        }
-
-        if (($validated['arah'] ?? null) === 'masuk') {
-            $query->where('penerima_id_user', $user->id_user);
-        } elseif (($validated['arah'] ?? null) === 'keluar') {
-            $query->where('pengirim_id_user', $user->id_user);
-        }
-
-        // Cari judul/deskripsi (case-insensitive, aman untuk Postgres & SQLite).
-        if (! empty($validated['q'])) {
-            $kata = mb_strtolower($validated['q']);
-            $query->where(function ($w) use ($kata): void {
-                $w->whereRaw('LOWER(judul_pesan) LIKE ?', ['%' . $kata . '%'])
-                    ->orWhereRaw('LOWER(deskripsi) LIKE ?', ['%' . $kata . '%']);
-            });
-        }
-
-        // Sortir (default tetap created_at desc seperti sebelumnya).
-        $dir = ($validated['dir'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
-        switch ($validated['sort'] ?? null) {
-            case 'tanggal':
-                $query->orderBy('tanggal_pesan', $dir)->orderBy('id_pesan', $dir);
-                break;
-            case 'judul':
-                $query->orderBy('judul_pesan', $dir)->orderBy('id_pesan');
-                break;
-            case 'pengirim':
-                $query->orderByRaw(
-                    '(select k.nama from karyawans k inner join users2 u on u.karyawan_id_karyawan = k.id_karyawan where u.id_user = pesans.pengirim_id_user) ' . $dir
-                );
-                break;
-            default:
-                $query->latest('created_at');
-        }
-
-        $messages = $query->paginate($validated['per_page'] ?? 15);
+        $messages = KadivMessageQuery::forUser($user)
+            ->apply($request->only(['tipe', 'arah', 'sort', 'dir', 'q']))
+            ->paginate($validated['per_page'] ?? 15);
 
         return response()->json([
             'data' => collect($messages->items())->map(
-                fn (Pesan $message) => $this->messageData($message, $user)
+                fn (Pesan $message) => MessagePresenter::for($message, $user)
             ),
             'meta' => [
                 'current_page' => $messages->currentPage(),
@@ -114,12 +74,12 @@ class KadivMessageController extends Controller
         }
 
         $root = $message->balasanDari ?? $message;
-        $data = $this->messageData($message, $user);
+        $data = MessagePresenter::for($message, $user);
         $data['can_reply'] = ($root->tipe ?? 'pesan') === 'pesan';
         $data['balasan'] = ($root->id_pesan === $message->id_pesan
             ? $message->balasan
             : $root->balasan
-        )->map(fn (Pesan $reply) => $this->messageData($reply, $user));
+        )->map(fn (Pesan $reply) => MessagePresenter::for($reply, $user));
 
         return response()->json([
             'data' => $data,
@@ -290,41 +250,10 @@ class KadivMessageController extends Controller
 
         return response()->json([
             'message' => ucfirst($validated['tipe']).' berhasil dikirim.',
-            'data' => $this->messageData($message, $user),
+            'data' => MessagePresenter::for($message, $user),
         ], 201);
     }
 
-    private function messageData(Pesan $message, User2 $user): array
-    {
-        $person = fn (?User2 $account) => $account ? [
-            'id_user' => $account->id_user,
-            'username' => $account->username,
-            'nama' => $account->karyawan?->nama,
-        ] : null;
-
-        return [
-            'id_pesan' => $message->id_pesan,
-            'tipe' => $message->tipe ?? 'pesan',
-            'arah' => $message->pengirim_id_user === $user->id_user ? 'keluar' : 'masuk',
-            'judul_pesan' => $message->judul_pesan,
-            'deskripsi' => $message->deskripsi,
-            'tanggal_pesan' => $message->tanggal_pesan,
-            'pengirim' => $person($message->pengirim),
-            'penerima' => $person($message->penerima),
-            'lampiran' => [
-                'link' => $message->link_lampiran,
-                'file' => $message->file_lampiran
-                    ? Storage::disk('public')->url($message->file_lampiran)
-                    : null,
-            ],
-            'tugas' => $message->tugas ? [
-                'id_tugas' => $message->tugas->id_tugas,
-                'judul_tugas' => $message->tugas->judul_tugas,
-            ] : null,
-            'balasan_dari_id_pesan' => $message->balasan_dari_id_pesan,
-            'created_at' => $message->created_at?->toISOString(),
-        ];
-    }
 
     private function authenticatedKadiv(Request $request): ?User2
     {

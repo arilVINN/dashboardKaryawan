@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Hrd;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use App\Models\Divisi;
 use App\Models\Karyawan;
@@ -188,58 +187,16 @@ class HrdDivisiController extends Controller
         ]);
     }
 
-    /**
-     * Query daftar divisi dengan sortir + filter dari query string.
-     * Dipakai bersama oleh daftarDivisi dan manajemenDivisi.
-     */
-    private function divisiListQuery(Request $request): Builder
+    public function listPage()
     {
-        $sort = $request->input('sort');
-        $dir = $request->input('dir') === 'desc' ? 'desc' : 'asc';
-
-        $query = Divisi::withCount('karyawans');
-
-        if ($request->filled('q')) {
-            // LOWER(...) so the search is case-insensitive on Postgres too.
-            $kata = mb_strtolower((string) $request->input('q'));
-            $query->where(function ($q) use ($kata): void {
-                $q->whereRaw('LOWER(kode_divisi) LIKE ?', ['%' . $kata . '%'])
-                    ->orWhereRaw('LOWER(nama_divisi) LIKE ?', ['%' . $kata . '%']);
-            });
-        }
-
-        if (in_array($request->input('status'), ['aktif', 'nonaktif'], true)) {
-            $query->whereRaw('LOWER(status_aktif) = ?', [$request->input('status')]);
-        }
-
-        switch ($sort) {
-            case 'kode':
-                $query->orderBy('kode_divisi', $dir)->orderBy('id_divisi');
-                break;
-            case 'nama':
-                $query->orderBy('nama_divisi', $dir)->orderBy('id_divisi');
-                break;
-            case 'staff':
-                $query->orderBy('karyawans_count', $dir)->orderBy('id_divisi');
-                break;
-            default:
-                $query->orderBy('id_divisi', 'desc');
-        }
-
-        return $query;
+        // Rows, filters, sorting, and pagination now live in the
+        // App\Livewire\Hrd\DivisiTable component.
+        return view('hrd.daftarDivisi');
     }
 
-    public function listPage(Request $request)
+    public function manajemenPage()
     {
-        $divisis = $this->divisiListQuery($request)->paginate(5)->withQueryString();
-
-        return view('hrd.daftarDivisi', compact('divisis'));
-    }
-
-    public function manajemenPage(Request $request)
-    {
-        $divisis = $this->divisiListQuery($request)->get();
-
-        return view('hrd.manajemenDivisi', compact('divisis'));
+        // Same component in manage mode (see the view).
+        return view('hrd.manajemenDivisi');
     }
 }

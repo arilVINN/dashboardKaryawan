@@ -9,15 +9,11 @@ use App\Http\Controllers\KadivController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Hrd\HrdKaryawanController;
 use App\Http\Controllers\Hrd\HrdDivisiController;
-use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
+use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Models\Divisi;
 
-
-Route::get('/', function () {
-    return view('staff.dashboard');
-})->name('dashboard');
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
@@ -25,26 +21,32 @@ Route::post('/login', [AuthController::class, 'login'])
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-//staff route
-Route::get('/tugas', function () {
-    return view('staff.tugas');
-})->name('tugas');
+// staff route (session auth + staff role)
+Route::middleware(['auth', 'role:staff'])->group(function () {
+    Route::get('/', function () {
+        return view('staff.dashboard');
+    })->name('dashboard');
 
-Route::get('/pesan', function () {
-    return view('staff.pesan');
-})->name('pesan');
+    Route::get('/tugas', function () {
+        return view('staff.tugas');
+    })->name('tugas');
 
-Route::get('/pesan/detail/{id?}', function () {
-    return view('staff.detailPesan');
-})->name('pesan.detail');
+    Route::get('/pesan', function () {
+        return view('staff.pesan');
+    })->name('pesan');
 
-Route::get('/tugas/detail/{id?}', function () {
-    return view('staff.detailTugas');
-})->name('tugas.detail');
+    Route::get('/pesan/detail/{id?}', function () {
+        return view('staff.detailPesan');
+    })->name('pesan.detail');
 
-Route::get('/profile', function () {
-    return view('staff.detailProfile');
-})->name('profile');
+    Route::get('/tugas/detail/{id?}', function () {
+        return view('staff.detailTugas');
+    })->name('tugas.detail');
+
+    Route::get('/profile', function () {
+        return view('staff.detailProfile');
+    })->name('profile');
+});
 
 Route::prefix('staff')->middleware(EnsureStaffRole::class)->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -55,8 +57,8 @@ Route::prefix('staff')->middleware(EnsureStaffRole::class)->group(function () {
 
 
 
-// ================= KADIV (token-based, no session auth) ================= //
-Route::prefix('kadiv')->group(function () {
+// ================= KADIV (auth + role) ================= //
+Route::middleware(['auth', 'role:kadiv'])->prefix('kadiv')->group(function () {
     // Dashboard
     Route::get('/dashboard', function () {
         return view('kadiv.dashboard');
@@ -145,6 +147,7 @@ Route::post('/login-proses', function (Request $request) {
 })->name('login.proses');
 
 
+// 2. Route untuk menyimpan profil
 Route::post('/profile', function (Request $request) {
     $validated = $request->validate([
         'nama' => ['required', 'string', 'max:255'],
@@ -161,21 +164,20 @@ Route::post('/profile', function (Request $request) {
 
 
 
-//route hrd (token-based, no session auth)
-Route::prefix('hrd')->group(function () {
+//route hrd
+Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
+
     Route::get('/profile', function () {
         return view('hrd.profile');
     })->name('hrd.profile');
 
     Route::get('/manajemenDivisi', [HrdDivisiController::class, 'manajemenPage'])->name('hrd.manajemenDivisi');
 
-    Route::get('/manajemenDivisi', [HrdDivisiController::class, 'manajemenPage'])->name('hrd.manajemenDivisi');
+    Route::get('/pesan', [HrdPesanController::class, 'page'])->name('hrd.pesan');
 
-    Route::get('/pesan', [HrdPesanController::class, 'page'])->middleware('auth')->name('hrd.pesan');
-
-    Route::get('/detailPesan/{id_pesan}', [HrdPesanController::class, 'detailPage'])->middleware('auth')->name('hrd.detailPesan');
-    Route::post('/detailPesan/{id_pesan}/balas', [HrdPesanController::class, 'balas'])->middleware('auth')->name('hrd.detailPesan.balas');
+    Route::get('/detailPesan/{id_pesan}', [HrdPesanController::class, 'detailPage'])->name('hrd.detailPesan');
+    Route::post('/detailPesan/{id_pesan}/balas', [HrdPesanController::class, 'balas'])->name('hrd.detailPesan.balas');
 
     Route::get('/detailDivisi/{id}', [HrdDivisiController::class, 'detailPage'])->name('hrd.detailDivisi');
 
@@ -205,6 +207,3 @@ Route::prefix('hrd')->group(function () {
     Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
 });
 
-Route::get('/hrd/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage']);
-Route::get('/hrd/daftarDivisi', [HrdDivisiController::class, 'listPage']);
-Route::get('/hrd/detailKaryawan/{id}', [HrdKaryawanController::class, 'detailPage']);
