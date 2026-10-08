@@ -7,17 +7,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-white flex h-screen overflow-hidden">
-
+<body class="bg-gray-100 flex h-screen overflow-hidden">
     @include('component_hrd.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs')
+        @include('component.breadcrumbs', ['parentText' => 'Karyawan', 'parentUrl' => url('/hrd/daftarKaryawan'), 'currentPage' => 'Detail Karyawan'])
 
         <main class="flex-1 overflow-y-auto p-8 pt-6 bg-slate-50 space-y-6">
-
-
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 flex items-center gap-5">
                 <div class="w-20 h-20 rounded-full bg-[#0097B2] text-white text-3xl font-bold flex items-center justify-center shrink-0">
                     {{ strtoupper(substr($karyawan->nama, 0, 1)) }}
@@ -37,20 +34,17 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
                     <h2 class="text-lg font-bold text-slate-800 mb-4">Informasi Pribadi</h2>
                     <dl class="space-y-3 text-sm">
                         @php
                             $info = [
                                 'Jenis Kelamin' => $karyawan->jenis_kelamin,
-                                'Tanggal Lahir' => $karyawan->tanggal_lahir
-                                    ? \Carbon\Carbon::parse($karyawan->tanggal_lahir)->format('d M Y') : null,
-                                'No. Telepon'   => $karyawan->no_telepon,
-                                'Email'         => $karyawan->email,
-                                'Alamat'        => $karyawan->alamat,
-                                'Tanggal Rekrut'=> $karyawan->tanggal_rekrut
-                                    ? \Carbon\Carbon::parse($karyawan->tanggal_rekrut)->format('d M Y') : null,
+                                'Tanggal Lahir' => $karyawan->tanggal_lahir ? \Carbon\Carbon::parse($karyawan->tanggal_lahir)->format('d M Y') : null,
+                                'No. Telepon' => $karyawan->no_telepon,
+                                'Email' => $karyawan->email,
+                                'Alamat' => $karyawan->alamat,
+                                'Tanggal Rekrut' => $karyawan->tanggal_rekrut ? \Carbon\Carbon::parse($karyawan->tanggal_rekrut)->format('d M Y') : null,
                             ];
                         @endphp
                         @foreach ($info as $label => $nilai)
@@ -119,8 +113,4 @@
                     </tbody>
                 </table>
             </div>
-
         </main>
-    </div>
-</body>
-</html>

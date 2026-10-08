@@ -48,12 +48,34 @@ class KadivDashboardController extends Controller
             ->statusEfektif(Tugas::STATUS_TELAT)
             ->count();
 
-        $staff = Karyawan::query()
+        $dir = $request->input('dir') === 'desc' ? 'desc' : 'asc';
+
+        $staffQuery = Karyawan::query()
             ->where('divisi_id_divisi', $divisionId)
             ->whereHas('user.role', fn ($query) => $query->whereRaw('LOWER(nama_role) = ?', ['staff']))
             ->with('user:id_user,karyawan_id_karyawan,last_login_at')
-            ->withCount('tugas')
-            ->orderBy('nama')
+            ->withCount('tugas');
+
+        // Cari nama staff (case-insensitive).
+        if ($request->filled('q')) {
+            $staffQuery->whereRaw('LOWER(nama) LIKE ?', ['%' . mb_strtolower($request->input('q')) . '%']);
+        }
+
+        // Sortir (default nama asc seperti sebelumnya).
+        switch ($request->input('sort')) {
+            case 'tugas':
+                $staffQuery->orderBy('tugas_count', $dir)->orderBy('nama');
+                break;
+            case 'login':
+                $staffQuery->orderByRaw(
+                    '(select last_login_at from users2 where users2.karyawan_id_karyawan = karyawans.id_karyawan) ' . $dir
+                )->orderBy('nama');
+                break;
+            default:
+                $staffQuery->orderBy('nama', $dir);
+        }
+
+        $staff = $staffQuery
             ->get()
             ->map(fn (Karyawan $employee) => [
                 'id_karyawan' => $employee->id_karyawan,

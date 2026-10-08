@@ -15,14 +15,62 @@
         </button>
     </div>
     
+    <form id="kadivPesanFilter" onsubmit="return false;"
+        class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
+            <label for="kadivPesanSearch" class="text-xs font-bold text-slate-500">Cari</label>
+            <input type="text" id="kadivPesanSearch" placeholder="Judul / isi pesan..."
+                class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+        </div>
+        <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
+            <label for="kadivPesanTipe" class="text-xs font-bold text-slate-500">Tipe</label>
+            <select id="kadivPesanTipe"
+                class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                <option value="">Semua</option>
+                <option value="pesan">Pesan</option>
+                <option value="surat">Surat</option>
+            </select>
+        </div>
+        <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
+            <label for="kadivPesanArah" class="text-xs font-bold text-slate-500">Arah</label>
+            <select id="kadivPesanArah"
+                class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                <option value="">Semua</option>
+                <option value="masuk">Masuk</option>
+                <option value="keluar">Keluar</option>
+            </select>
+        </div>
+        <div class="flex shrink-0 gap-2 sm:ml-auto">
+            <button type="button" id="kadivPesanApply"
+                class="h-10 inline-flex items-center px-4 bg-[#004A65] text-white text-sm font-medium rounded-md hover:bg-[#003347] transition">Terapkan</button>
+            <button type="button" id="kadivPesanReset"
+                class="h-10 inline-flex items-center px-4 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Reset</button>
+        </div>
+    </form>
+
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="{{ $isCompact ? 'overflow-hidden' : 'overflow-x-auto' }}">
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
                     <tr>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Isi Pesan</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Pengirim</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Tanggal</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
+                            <button type="button" onclick="setKadivPesanSort('judul')"
+                                class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                Isi Pesan <span data-sort-indicator="judul" class="text-slate-300">&#8597;</span>
+                            </button>
+                        </th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">
+                            <button type="button" onclick="setKadivPesanSort('pengirim')"
+                                class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                Pengirim <span data-sort-indicator="pengirim" class="text-slate-300">&#8597;</span>
+                            </button>
+                        </th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">
+                            <button type="button" onclick="setKadivPesanSort('tanggal')"
+                                class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                Tanggal <span data-sort-indicator="tanggal" class="text-slate-300">&#8597;</span>
+                            </button>
+                        </th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -93,10 +141,25 @@
     const modalBoxPesan = document.getElementById('modalBoxPesan');
     const kadivMessageToken = sessionStorage.getItem('staff_token');
 
+    const filterSearch = document.getElementById('kadivPesanSearch');
+    const filterTipe = document.getElementById('kadivPesanTipe');
+    const filterArah = document.getElementById('kadivPesanArah');
+    let kadivPesanSort = null;
+    let kadivPesanDir = 'asc';
+
     async function loadKadivMessages() {
         const rows = document.getElementById('kadiv-pesan-list');
         try {
-            const response = await fetch('/api/kadiv/pesan?per_page=100', {
+            const params = new URLSearchParams({ per_page: '100' });
+            if (kadivPesanSort) {
+                params.set('sort', kadivPesanSort);
+                params.set('dir', kadivPesanDir);
+            }
+            if (filterSearch && filterSearch.value) params.set('q', filterSearch.value);
+            if (filterTipe && filterTipe.value) params.set('tipe', filterTipe.value);
+            if (filterArah && filterArah.value) params.set('arah', filterArah.value);
+
+            const response = await fetch('/api/kadiv/pesan?' + params.toString(), {
                 headers: { 'Authorization': 'Bearer ' + kadivMessageToken, 'Accept': 'application/json' }
             });
             const result = await response.json();
@@ -135,6 +198,7 @@
                 row.appendChild(actionCell);
                 rows.appendChild(row);
             });
+            updateSortIndicators();
         } catch (error) {
             console.error('Gagal memuat pesan Kadiv:', error);
             rows.innerHTML = '<tr><td colspan="4" class="{{ $cellPadding }} text-center text-red-600">Pesan gagal dimuat.</td></tr>';
@@ -161,12 +225,46 @@
         }
     }
 
+    function updateSortIndicators() {
+        document.querySelectorAll('[data-sort-indicator]').forEach((el) => {
+            if (el.dataset.sortIndicator === kadivPesanSort) {
+                el.textContent = kadivPesanDir === 'asc' ? '\u25B2' : '\u25BC';
+                el.classList.remove('text-slate-300');
+                el.classList.add('text-[#004A65]');
+            } else {
+                el.textContent = '\u2195';
+                el.classList.add('text-slate-300');
+                el.classList.remove('text-[#004A65]');
+            }
+        });
+    }
+
+    window.setKadivPesanSort = function (col) {
+        if (kadivPesanSort === col) {
+            kadivPesanDir = kadivPesanDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            kadivPesanSort = col;
+            kadivPesanDir = 'asc';
+        }
+        loadKadivMessages();
+    };
+
     if (!kadivMessageToken) {
         window.location.href = '/login';
     } else {
         loadKadivMessages();
         loadKadivMessageRecipients();
     }
+
+    document.getElementById('kadivPesanApply')?.addEventListener('click', () => loadKadivMessages());
+    document.getElementById('kadivPesanReset')?.addEventListener('click', () => {
+        if (filterSearch) filterSearch.value = '';
+        if (filterTipe) filterTipe.value = '';
+        if (filterArah) filterArah.value = '';
+        kadivPesanSort = null;
+        kadivPesanDir = 'asc';
+        loadKadivMessages();
+    });
 
     document.getElementById('formKirimPesan').addEventListener('submit', async function (event) {
         event.preventDefault();

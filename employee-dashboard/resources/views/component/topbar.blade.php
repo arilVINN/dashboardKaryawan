@@ -2,9 +2,10 @@
     $topbarUser = auth()->user();
     $topbarEmployee = $topbarUser?->karyawan;
     $pageRole = request()->is('hrd/*') ? 'hrd' : (request()->is('kadiv/*') ? 'kadiv' : 'staff');
-    $topbarName = $topbarEmployee?->nama ?? $topbarUser?->username ?? ucfirst($pageRole);
+    $topbarNama = $topbarEmployee?->nama ?? $topbarUser?->username ?? 'Guest';
+    $topbarDivisi = $topbarEmployee?->divisi?->nama_divisi ?? $topbarUser?->role?->nama_role ?? ucfirst($pageRole);
     $topbarRole = $topbarUser?->role?->nama_role ?? $pageRole;
-    $topbarInitial = mb_strtoupper(mb_substr($topbarName, 0, 1));
+    $topbarInitial = $topbarUser ? mb_strtoupper(mb_substr($topbarNama, 0, 1)) : 'U';
     $topbarProfileUrl = match ($pageRole) {
         'hrd' => route('hrd.profile'),
         'kadiv' => route('kadiv.profile'),
@@ -44,8 +45,8 @@
             <div id="profile-dropdown-menu"
                 class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50 transition-all">
                 <div class="px-4 py-2 border-b border-slate-100">
-                    <p id="topbar-nama" class="text-sm font-semibold text-slate-800">{{ $topbarName }}</p>
-                    <p id="topbar-divisi" class="text-xs text-slate-500">{{ ucfirst($topbarRole) }}</p>
+                    <p id="topbar-nama" class="text-sm font-semibold text-slate-800">{{ $topbarNama }}</p>
+                    <p id="topbar-divisi" class="text-xs text-slate-500">{{ $topbarDivisi }}</p>
                 </div>
                 <div class="py-1">
                     <a href="{{ $topbarProfileUrl }}"
@@ -75,7 +76,10 @@
 </header>
 
 <script>
+    // Fallback token hanya bila halaman tidak dirender dari session (mis. alur token).
     (async function loadTopbar() {
+        if ({{ $topbarUser ? 'true' : 'false' }}) return;
+
         const token = sessionStorage.getItem('staff_token');
         if (!token) return;
 
@@ -94,25 +98,5 @@
             ? profile.nama.charAt(0).toUpperCase()
             : 'U';
     })().catch(error => console.error('Gagal memuat identitas pengguna:', error));
-
-    const btnLogoutTopbar = document.getElementById('btn-logout-topbar');
-    if (btnLogoutTopbar) {
-        btnLogoutTopbar.addEventListener('click', async function() {
-            const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
-            if (!confirmLogout) return;
-
-            const token = sessionStorage.getItem('staff_token');
-            try {
-                if (token) {
-                    await fetch('/api/logout', {
-                        method: 'POST',
-                        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-                    });
-                }
-            } catch (e) {}
-
-            sessionStorage.removeItem('staff_token');
-            window.location.href = '/login';
-        });
-    }
 </script>
+

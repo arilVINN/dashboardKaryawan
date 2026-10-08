@@ -6,14 +6,64 @@
 <div class="flex flex-col gap-3">
     <h2 class="text-xl font-bold text-slate-800">Tabel Tugas</h2>
 
+    @unless ($isCompact)
+        <form id="staffTugasFilter" onsubmit="return false;"
+            class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+            <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
+                <label for="staffTugasSearch" class="text-xs font-bold text-slate-500">Cari Judul</label>
+                <input type="text" id="staffTugasSearch" placeholder="Judul tugas..."
+                    class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+            </div>
+            <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
+                <label for="staffTugasStatus" class="text-xs font-bold text-slate-500">Status</label>
+                <select id="staffTugasStatus"
+                    class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                    <option value="">Semua</option>
+                    <option value="baru">Baru</option>
+                    <option value="berjalan">Berjalan</option>
+                    <option value="menunggu di-acc">Menunggu di-acc</option>
+                    <option value="sudah di-acc">Sudah di-acc</option>
+                    <option value="telat">Telat</option>
+                </select>
+            </div>
+            <div class="flex shrink-0 gap-2 sm:ml-auto">
+                <button type="button" id="staffTugasApply"
+                    class="h-10 inline-flex items-center px-4 bg-[#004A65] text-white text-sm font-medium rounded-md hover:bg-[#003347] transition">Terapkan</button>
+                <button type="button" id="staffTugasReset"
+                    class="h-10 inline-flex items-center px-4 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Reset</button>
+            </div>
+        </form>
+    @endunless
+
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <div class="{{ $isCompact ? 'overflow-hidden' : 'overflow-x-auto' }}">
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-100 text-slate-500">
                     <tr>
-                        <th class="px-4 py-3 font-medium whitespace-nowrap">Judul Tugas</th>
-                        <th class="px-4 py-3 font-medium whitespace-nowrap">Tenggat Waktu</th>
-                        <th class="px-4 py-3 font-medium whitespace-nowrap">Status</th>
+                        @if (!$isCompact)
+                            <th class="px-4 py-3 font-medium whitespace-nowrap">
+                                <button type="button" onclick="setStaffTugasSort('judul')"
+                                    class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                    Judul Tugas <span data-sort-indicator="judul" class="text-slate-300">&#8597;</span>
+                                </button>
+                            </th>
+                            <th class="px-4 py-3 font-medium whitespace-nowrap">
+                                <button type="button" onclick="setStaffTugasSort('tenggat')"
+                                    class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                    Tenggat Waktu <span data-sort-indicator="tenggat" class="text-slate-300">&#8597;</span>
+                                </button>
+                            </th>
+                            <th class="px-4 py-3 font-medium whitespace-nowrap">
+                                <button type="button" onclick="setStaffTugasSort('status')"
+                                    class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                    Status <span data-sort-indicator="status" class="text-slate-300">&#8597;</span>
+                                </button>
+                            </th>
+                        @else
+                            <th class="px-4 py-3 font-medium whitespace-nowrap">Judul Tugas</th>
+                            <th class="px-4 py-3 font-medium whitespace-nowrap">Tenggat Waktu</th>
+                            <th class="px-4 py-3 font-medium whitespace-nowrap">Status</th>
+                        @endif
                         <th class="px-4 py-3 font-medium whitespace-nowrap text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -28,36 +78,51 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', async function() {
+    const staffTugasSearch = document.getElementById('staffTugasSearch');
+    const staffTugasStatus = document.getElementById('staffTugasStatus');
+    let staffTugasSort = null;
+    let staffTugasDir = 'asc';
+
+    // Utility untuk warna status
+    const STATUS_CLASS = {
+        'baru':         'bg-[#C0E7FF] text-blue-700',
+        'berjalan':     'bg-[#DFE4EA] text-black-700',
+        'menunggu acc': 'bg-[#FFF7ED] text-[#C2410C]',
+        'menunggu_acc': 'bg-[#FFF7ED] text-[#C2410C]',
+        'sudah acc':    'bg-[#CCF4DB] text-emerald-700',
+        'sudah_acc':    'bg-[#CCF4DB] text-emerald-700',
+        'telat':        'bg-red-100 text-red-700',
+    };
+
+    // Ubah tiap awal kata jadi kapital (misal: "menunggu acc" -> "Menunggu Acc")
+    function ucwords(str) {
+        return (str + '').replace(/_/g, ' ').replace(/^(.)|\s+(.)/g, function ($1) {
+            return $1.toUpperCase();
+        });
+    }
+
+    async function loadStaffTugas() {
         const token = sessionStorage.getItem('staff_token');
         const tbody = document.getElementById('tbody-tugas');
         if (!token || !tbody) return;
 
-        // Utility untuk warna status
-        const STATUS_CLASS = {
-            'baru':         'bg-[#C0E7FF] text-blue-700',
-            'berjalan':     'bg-[#DFE4EA] text-black-700',
-            'menunggu acc': 'bg-[#FFF7ED] text-[#C2410C]',
-            'menunggu_acc': 'bg-[#FFF7ED] text-[#C2410C]',
-            'sudah acc':    'bg-[#CCF4DB] text-emerald-700',
-            'sudah_acc':    'bg-[#CCF4DB] text-emerald-700',
-            'telat':        'bg-red-100 text-red-700',
-        };
-
-        // Fungsi mengubah huruf pertama tiap kata jadi kapital (misal: "menunggu acc" -> "Menunggu Acc")
-        function ucwords(str) {
-            return (str + '').replace(/_/g, ' ').replace(/^(.)|\s+(.)/g, function ($1) {
-                return $1.toUpperCase();
-            });
-        }
+        const isCompact = {{ $isCompact ? 'true' : 'false' }};
 
         try {
-            const res = await fetch('/api/staff/tugas', {
+            const params = new URLSearchParams();
+            if (staffTugasSort) {
+                params.set('sort', staffTugasSort);
+                params.set('dir', staffTugasDir);
+            }
+            if (staffTugasSearch && staffTugasSearch.value) params.set('q', staffTugasSearch.value);
+            if (staffTugasStatus && staffTugasStatus.value) params.set('status', staffTugasStatus.value);
+            const query = params.toString();
+
+            const res = await fetch('/api/staff/tugas' + (query ? '?' + query : ''), {
                 headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
             });
             const json = await res.json();
             let tugas = json.data;
-            const isCompact = {{ $isCompact ? 'true' : 'false' }};
 
             tbody.innerHTML = ''; // Hapus tulisan loading
 
@@ -66,20 +131,15 @@
                 return;
             }
 
-            // Urutkan tugas berdasarkan yang terbaru
-            tugas.sort((a, b) => new Date(b.tanggal_update || b.tanggal_dibuat) - new Date(a.tanggal_update || a.tanggal_dibuat));
-            
-            // Jika dipanggil dari Dashboard (compact), hanya tampilkan 4 terbaru
+            // Server sudah mengurutkan; hanya batasi 4 baris untuk tampilan dashboard.
             if (isCompact) {
                 tugas = tugas.slice(0, 4);
             }
 
-            // Looping untuk memunculkan semua tugas
             tugas.forEach(t => {
                 const statusRaw = (t.status || 'baru').toLowerCase();
                 const sc = STATUS_CLASS[statusRaw] || 'bg-slate-100 text-slate-700';
-                
-                // Format Tanggal (cth: YYYY-MM-DD ke DD/MM/YYYY)
+
                 let deadline = '-';
                 if (t.deadline) {
                     const d = new Date(t.deadline);
@@ -108,13 +168,51 @@
                             </a>
                         </td>
                     </tr>`;
-                
+
                 tbody.innerHTML += rowHtml;
             });
 
+            updateStaffTugasSortIndicators();
         } catch (error) {
             console.error('Gagal meload tugas', error);
             tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-red-500">Gagal mengambil data tugas</td></tr>';
         }
+    }
+
+    function updateStaffTugasSortIndicators() {
+        document.querySelectorAll('[data-sort-indicator]').forEach((el) => {
+            if (el.dataset.sortIndicator === staffTugasSort) {
+                el.textContent = staffTugasDir === 'asc' ? '\u25B2' : '\u25BC';
+                el.classList.remove('text-slate-300');
+                el.classList.add('text-[#004A65]');
+            } else {
+                el.textContent = '\u2195';
+                el.classList.add('text-slate-300');
+                el.classList.remove('text-[#004A65]');
+            }
+        });
+    }
+
+    window.setStaffTugasSort = function (col) {
+        if (staffTugasSort === col) {
+            staffTugasDir = staffTugasDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            staffTugasSort = col;
+            staffTugasDir = 'asc';
+        }
+        loadStaffTugas();
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        loadStaffTugas();
+        document.getElementById('staffTugasApply')?.addEventListener('click', loadStaffTugas);
+        document.getElementById('staffTugasReset')?.addEventListener('click', () => {
+            if (staffTugasSearch) staffTugasSearch.value = '';
+            if (staffTugasStatus) staffTugasStatus.value = '';
+            staffTugasSort = null;
+            staffTugasDir = 'asc';
+            loadStaffTugas();
+        });
     });
 </script>
+

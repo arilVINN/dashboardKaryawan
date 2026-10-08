@@ -91,7 +91,6 @@ Route::middleware([
         Route::put('/staff/{id}', [HrdStaffController::class, 'update']);
         Route::patch('/staff/{id}', [HrdStaffController::class, 'update']);
         Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
-        
     });
     
 });

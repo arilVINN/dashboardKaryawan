@@ -173,7 +173,7 @@ class HrdManagementApiTest extends TestCase
             ->assertSee('Pemasaran');
     }
 
-    public function test_hrd_dashboard_totals_reflect_database_counts(): void
+    public function test_hrd_dashboard_widgets_use_real_database_metrics(): void
     {
         $staff = $this->createAccount('EMP-STAFF', 'Staff', 'DIV-IT', 'ROLE-STAFF', 'staff');
         $otherStaff = $this->createAccount('EMP-OTHER', 'Staff Lain', 'DIV-IT', 'ROLE-STAFF', 'other');
@@ -219,21 +219,28 @@ class HrdManagementApiTest extends TestCase
             'pengirim_id_user' => $otherStaff->id_user,
             'penerima_id_user' => $staff->id_user,
         ]);
-
-        $this->actingAs($this->hrd)
-            ->get('/hrd/pesan')
-            ->assertOk()
-            ->assertSee('PSN-DASHBOARD')
-            ->assertSee('PSN-DASHBOARD-2')
-            ->assertSee('PSN-DASHBOARD-3')
-            ->assertSee('PSN-DASHBOARD-4');
+        $expected = [
+            'karyawan' => Karyawan::count(),
+            'divisi' => Divisi::count(),
+            'pesan' => Pesan::count(),
+        ];
 
         $this->actingAs($this->hrd)
             ->get('/hrd/dashboard')
             ->assertOk()
-            ->assertSee('data-dashboard-metric="total-staff">3</span>', false)
-            ->assertSee('data-dashboard-metric="total-divisi">3</span>', false)
-            ->assertSee('data-dashboard-metric="total-pesan">4</span>', false);
+        $this->actingAs($this->hrd)
+            ->get('/hrd/dashboard')
+            ->assertOk()
+            ->assertViewIs('hrd.dashboard')
+            ->assertViewHas('total', fn ($total) => $total == $expected)
+            ->assertViewHas('tugasBuckets', fn ($buckets) => isset(
+                $buckets['ongoing'],
+                $buckets['pending'],
+                $buckets['revisi']
+            ))
+            ->assertSee('data-dashboard-metric="total-staff"', false)
+            ->assertSee('data-dashboard-metric="total-divisi"', false)
+            ->assertSee('data-dashboard-metric="total-pesan"', false);
     }
 
     public function test_division_detail_shows_its_staff_and_can_add_a_staff_member(): void

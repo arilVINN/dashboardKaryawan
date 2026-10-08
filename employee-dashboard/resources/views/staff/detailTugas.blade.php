@@ -15,7 +15,7 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         @include('component.topbar')
-        @include('component.breadcrumbs')
+        @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/tugas'), 'currentPage' => 'Detail Tugas'])
 
         <main class="flex-1 overflow-y-auto px-10 py-8">
             <h1 class="text-xl font-bold text-slate-900 mb-8">Tugas</h1>
@@ -57,6 +57,7 @@
 
                     <form id="form-submit-tugas" class="space-y-4 max-w-xl">
                         <div>
+                            <label class="block text-sm font-semibold text-slate-900 mb-1.5">File Hasil</label>
                             <input type="file" id="file_tugas" name="file_tugas"
                                 class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
                         </div>
@@ -311,3 +312,4 @@
 
 </body>
 </html>
+
