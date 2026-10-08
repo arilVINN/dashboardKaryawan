@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Tugas;
 use App\Models\Karyawan;
+use App\Queries\KadivTugasQuery;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -20,42 +21,9 @@ class KadivTaskController extends Controller
         $userKadiv = $request->user();
         $divisiId = $userKadiv->karyawan->divisi_id_divisi;
 
-        // Ambil ID semua karyawan di divisi tersebut
-        $karyawanIds = Karyawan::where('divisi_id_divisi', $divisiId)->pluck('id_karyawan');
-
-        // Ambil semua tugas milik karyawan di divisi tersebut
-        $query = Tugas::with(['karyawan', 'submitTugas'])
-            ->whereIn('karyawan_id_karyawan', $karyawanIds);
-
-        // Filter staff penerima (tetap dibatasi ke divisi Kadiv).
-        if ($request->filled('staff') && $karyawanIds->contains($request->input('staff'))) {
-            $query->where('karyawan_id_karyawan', $request->input('staff'));
-        }
-
-        if (in_array($request->input('status'), Tugas::ALL_STATUSES, true)) {
-            $query->statusEfektif($request->input('status'));
-        }
-
-        if ($request->filled('q')) {
-            $query->whereRaw('LOWER(judul_tugas) LIKE ?', ['%' . mb_strtolower($request->input('q')) . '%']);
-        }
-
-        $dir = $request->input('dir') === 'asc' ? 'asc' : 'desc';
-        switch ($request->input('sort')) {
-            case 'judul':
-                $query->orderBy('judul_tugas', $dir);
-                break;
-            case 'status':
-                $query->orderBy('status', $dir);
-                break;
-            case 'tanggal':
-                $query->orderBy('deadline', $dir);
-                break;
-            default:
-                $query->orderBy('tanggal_dibuat', 'desc');
-        }
-
-        $tugas = $query->get();
+        $tugas = KadivTugasQuery::forDivision($divisiId)
+            ->apply($request->only(['sort', 'dir', 'status', 'staff', 'q']))
+            ->get();
 
         return response()->json([
             'message' => 'Berhasil mengambil daftar tugas divisi',
