@@ -8,7 +8,7 @@
         <h3 class="text-lg font-semibold text-slate-800">Anggota Divisi</h3>
         <button onclick="bukaModalAnggota()" type="button"
             class="px-6 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-semibold rounded-lg shadow-sm transition">
-            Tambah Staff
+            Tambah Karyawan
         </button>
     </div>
 
@@ -93,7 +93,7 @@
                         </path>
                     </svg>
                 </div>
-            <h3 class="text-base font-bold text-slate-900">Tambah Staff ke {{ $divisi->nama_divisi }}</h3>
+            <h3 class="text-base font-bold text-slate-900">Tambah Karyawan ke {{ $divisi->nama_divisi }}</h3>
             <button type="button" onclick="tutupModalAnggota()" class="text-slate-400 hover:text-red-500 transition"
                 aria-label="Tutup">
                 &times;
@@ -104,7 +104,7 @@
             @csrf
             <div class="p-5 overflow-y-auto space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-2">NAMA STAFF</label>
+                    <label class="block text-xs font-bold text-slate-500 mb-2">NAMA KARYAWAN</label>
                     <input type="text" name="nama" maxlength="100" required
                         class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
                         placeholder="Masukkan nama">
@@ -136,9 +136,13 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-2">JABATAN</label>
-                    <input type="text" name="jabatan" maxlength="100" required
-                        class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                        placeholder="Masukkan jabatan">
+                    <select name="jabatan" required
+                        class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
+                        <option value="">Pilih jabatan</option>
+                        <option value="Kepala Divisi">Kepala Divisi</option>
+                        <option value="Wakil Kepala Divisi">Wakil Kepala Divisi</option>
+                        <option value="Staff">Staff</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-2">USERNAME AKUN</label>
@@ -182,7 +186,7 @@
             <input type="hidden" name="id_karyawan">
             <div class="p-5 overflow-y-auto space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-2">NAMA STAFF</label>
+                    <label class="block text-xs font-bold text-slate-500 mb-2">NAMA KARYAWAN</label>
                     <input type="text" name="nama" maxlength="100" required
                         class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
                 </div>
@@ -210,8 +214,13 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-2">JABATAN</label>
-                    <input type="text" name="jabatan" maxlength="100" required
+                    <select name="jabatan" required
                         class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
+                        <option value="">Pilih jabatan</option>
+                        <option value="Kepala Divisi">Kepala Divisi</option>
+                        <option value="Wakil Kepala Divisi">Wakil Kepala Divisi</option>
+                        <option value="Staff">Staff</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-2">USERNAME</label>
@@ -266,7 +275,12 @@
         const fields = ['id', 'nama', 'jenisKelamin', 'tanggalLahir', 'email', 'noTelepon', 'jabatan', 'username'];
         for (const field of fields) {
             const name = field === 'id' ? 'id_karyawan' : field.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-            form.elements[name].value = button.dataset[field] || '';
+            const value = button.dataset[field] || '';
+            const input = form.elements[name];
+            if (name === 'jabatan' && value && !Array.from(input.options).some(option => option.value === value)) {
+                input.add(new Option(value, value), 1);
+            }
+            input.value = value;
         }
         showModal(modalEditAnggota, modalBoxEditAnggota);
     }

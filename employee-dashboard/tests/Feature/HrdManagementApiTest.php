@@ -61,6 +61,52 @@ class HrdManagementApiTest extends TestCase
             ->assertJsonPath('message', 'Role staff hanya boleh kadiv atau staff');
     }
 
+    public function test_head_division_position_assigns_kadiv_role_and_appears_as_division_head(): void
+    {
+        $this->actingAs($this->hrd)
+            ->get('/hrd/detailDivisi/DIV-EMPTY')
+            ->assertOk()
+            ->assertSee('value="Kepala Divisi"', false)
+            ->assertSee('value="Wakil Kepala Divisi"', false)
+            ->assertSee('value="Staff"', false);
+
+        $response = $this->actingAs($this->hrd)
+            ->postJson('/hrd/staff', [
+                'nama' => 'Kepala Baru',
+                'jenis_kelamin' => 'Laki-laki',
+                'jabatan' => 'Kepala Divisi',
+                'divisi_id_divisi' => 'DIV-EMPTY',
+                'username' => 'kepalabaru',
+                'password' => 'password',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.karyawan.jabatan', 'Kepala Divisi')
+            ->assertJsonPath('data.user.role', 'ROLE-KADIV');
+
+        $employeeId = $response->json('data.karyawan.id_karyawan');
+
+        $this->assertDatabaseHas('users2', [
+            'username' => 'kepalabaru',
+            'role_id_role' => 'ROLE-KADIV',
+        ]);
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/detailDivisi/DIV-EMPTY')
+            ->assertOk()
+            ->assertSee('Kepala Baru');
+
+        $this->actingAs($this->hrd)
+            ->putJson('/hrd/staff/' . $employeeId, ['jabatan' => 'Wakil Kepala Divisi'])
+            ->assertOk()
+            ->assertJsonPath('data.jabatan', 'Wakil Kepala Divisi')
+            ->assertJsonPath('data.user.role.nama_role', 'Staff');
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/detailDivisi/DIV-EMPTY')
+            ->assertOk()
+            ->assertSee('Belum ditentukan');
+    }
+
     public function test_hrd_can_delete_staff_and_login_account(): void
     {
         $staff = $this->createAccount('EMP-STAFF', 'Staff', 'DIV-IT', 'ROLE-STAFF', 'staff');
