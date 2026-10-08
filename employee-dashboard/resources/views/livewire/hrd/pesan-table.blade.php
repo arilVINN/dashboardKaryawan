@@ -86,7 +86,7 @@
                                 Pengirim / Penerima <span class="{{ $sort === 'pengirim' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('pengirim') }}</span>
                             </button>
                         </th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Jenis</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Arah</th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
                             <button type="button" wire:click="sortBy('tanggal')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Tanggal <span class="{{ $sort === 'tanggal' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('tanggal') }}</span>
@@ -113,9 +113,17 @@
                                 {{ $contact?->karyawan?->nama ?? $contact?->username ?? 'Pengguna tidak tersedia' }}
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap">
-                                <span class="px-2.5 py-1 bg-cyan-50 text-cyan-700 rounded-full text-xs font-bold">
-                                    {{ ucfirst($pesan->tipe ?? 'pesan') }}
-                                </span>
+                                @if ($isIncoming)
+                                    <span data-arah="masuk"
+                                        class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                        Masuk
+                                    </span>
+                                @else
+                                    <span data-arah="keluar"
+                                        class="px-2.5 py-1 bg-[#C0E7FF] text-blue-700 rounded-full text-xs font-bold">
+                                        Keluar
+                                    </span>
+                                @endif
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap text-slate-600">
                                 {{ $pesan->tanggal_pesan }}

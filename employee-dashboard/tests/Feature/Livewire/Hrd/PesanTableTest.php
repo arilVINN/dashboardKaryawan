@@ -122,6 +122,14 @@ class PesanTableTest extends TestCase
             ->assertSee('bukaModalPesanHrd()', false);
     }
 
+    public function test_renders_arah_pills_instead_of_jenis_column(): void
+    {
+        Livewire::actingAs($this->hrd)->test(PesanTable::class)
+            ->assertSee('data-arah="masuk"', false)
+            ->assertSee('data-arah="keluar"', false)
+            ->assertDontSee('>Jenis</th>', false);
+    }
+
     public function test_filter_chips_clear_only_their_own_filter(): void
     {
         Livewire::actingAs($this->hrd)->test(PesanTable::class)
