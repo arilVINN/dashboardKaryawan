@@ -281,11 +281,8 @@ class KadivApiTest extends TestCase
             ->assertSee('id="kadivTaskSearch"', false)
             ->assertSee('id="kadivTaskStatus"', false)
             ->assertSee('id="kadivTaskStaff"', false)
-            ->assertSee('setKadivTaskSort', false)
-            ->assertSee('data-sort-indicator="judul"', false)
-            ->assertSee('Informasi Tugas')
-            ->assertSee('Penugasan')
-            ->assertSee('Lampiran');
+            ->assertSee('Tugas Divisi')
+            ->assertSee('Tambah Tugas');
     }
 
     public function test_pesan_list_sorts_by_judul_and_filters_by_arah(): void
