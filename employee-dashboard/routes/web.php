@@ -170,6 +170,10 @@ Route::post('/profile', function (Request $request) {
 Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
 
+    Route::get('/profile', function () {
+        return view('hrd.profile');
+    })->name('hrd.profile');
+
     Route::get('/manajemenDivisi', [HrdDivisiController::class, 'manajemenPage'])->name('hrd.manajemenDivisi');
 
     Route::get('/pesan', [HrdPesanController::class, 'page'])->name('hrd.pesan');
@@ -184,9 +188,7 @@ Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
     Route::get('/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage'])->name('hrd.daftarKaryawan');
     Route::get('/daftarDivisi', [HrdDivisiController::class, 'listPage'])->name('hrd.daftarDivisi');
 
-    Route::get('/daftarPesan', function () {
-        return redirect()->route('hrd.pesan');
-    })->name('hrd.daftarPesan');
+    Route::get('/daftarPesan', [HrdPesanController::class, 'daftarPage'])->name('hrd.daftarPesan');
 
     Route::get('/divisi-page', function () {
         return view('hrd.divisi', [

@@ -17,7 +17,22 @@ class WebLoginTest extends TestCase
     {
         $this->withoutVite();
 
-        $this->get('/hrd/profile')
+        Role::create(['id_role' => 'ROLE-HRD', 'nama_role' => 'hrd']);
+        DB::table('divisis')->insert([
+            'id_divisi' => 'DIV-HR', 'kode_divisi' => 'HR', 'nama_divisi' => 'Human Resources',
+            'status_aktif' => 'aktif', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('karyawans')->insert([
+            'id_karyawan' => 'EMP-HRD', 'nama' => 'HRD User', 'jenis_kelamin' => 'Laki-laki',
+            'email' => 'hrd@example.test', 'jabatan' => 'HRD', 'divisi_id_divisi' => 'DIV-HR',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $user = User2::create([
+            'id_user' => 'USR-HRD', 'username' => 'hrduser', 'password' => Hash::make('pass123'),
+            'role_id_role' => 'ROLE-HRD', 'karyawan_id_karyawan' => 'EMP-HRD',
+        ]);
+
+        $this->actingAs($user)->get('/hrd/profile')
             ->assertOk()
             ->assertViewIs('hrd.profile')
             ->assertSee('Profil Saya')
@@ -70,14 +85,11 @@ class WebLoginTest extends TestCase
             ->assertSee('action="/login"', false)
             ->assertSee('name="_token"', false);
 
-<<<<<<< Updated upstream
-=======
         $this->get('/hrd/dashboard')
             ->assertRedirect('/login');
 
         config(['session.driver' => 'database']);
 
->>>>>>> Stashed changes
         $this->postJson('/login', [
             'username' => 'hrduser',
             'password' => 'pass123',

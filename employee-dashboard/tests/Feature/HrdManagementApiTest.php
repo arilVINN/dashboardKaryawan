@@ -274,9 +274,6 @@ class HrdManagementApiTest extends TestCase
         $this->actingAs($this->hrd)
             ->get('/hrd/dashboard')
             ->assertOk()
-        $this->actingAs($this->hrd)
-            ->get('/hrd/dashboard')
-            ->assertOk()
             ->assertViewIs('hrd.dashboard')
             ->assertViewHas('total', fn ($total) => $total == $expected)
             ->assertViewHas('tugasBuckets', fn ($buckets) => isset(

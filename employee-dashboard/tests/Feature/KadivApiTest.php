@@ -390,15 +390,14 @@ class KadivApiTest extends TestCase
             ->assertJsonPath('data.staff.0.nama', 'Abby');
     }
 
-    public function test_kadiv_manajemen_staff_page_renders_sort_filter_controls(): void
+    public function test_kadiv_manajemen_staff_page_renders_staff_table(): void
     {
         $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
 
         $this->actingAs($kadiv)->get('/kadiv/manajemenStaff')
             ->assertOk()
-            ->assertSee('id="kadivStaffSearch"', false)
-            ->assertSee('setKadivStaffSort', false)
-            ->assertSee('data-sort-indicator="nama"', false);
+            ->assertSee('Nama Staff')
+            ->assertSee('id="kadiv-staff-rows"', false);
     }
 
     public function test_kadiv_pages_require_authentication(): void

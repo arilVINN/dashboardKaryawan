@@ -155,6 +155,9 @@ class HrdListUiTest extends TestCase
         $html = view('component_hrd.statusbar', [
             'total' => ['karyawan' => 1, 'divisi' => 2, 'pesan' => 3],
             'tugasBuckets' => ['ongoing' => 1, 'pending' => 1, 'revisi' => 1],
+            'totalStaff' => 1,
+            'totalDivisi' => 2,
+            'totalPesanPerusahaan' => 3,
         ])->render();
 
         $this->assertStringContainsString('Total Karyawan', $html);
