@@ -15,7 +15,35 @@ class StaffTugasController extends Controller
     {
         $karyawanId = $request->user()->karyawan_id_karyawan;
 
-        $tugas = Tugas::where('karyawan_id_karyawan', $karyawanId)->get();
+        $query = Tugas::where('karyawan_id_karyawan', $karyawanId);
+
+        // Cari judul (case-insensitive).
+        if ($request->filled('q')) {
+            $query->whereRaw('LOWER(judul_tugas) LIKE ?', ['%' . mb_strtolower($request->input('q')) . '%']);
+        }
+
+        // Filter status efektif (termasuk turunan "telat").
+        if (in_array($request->input('status'), Tugas::ALL_STATUSES, true)) {
+            $query->statusEfektif($request->input('status'));
+        }
+
+        // Sortir (default terbaru seperti sebelumnya).
+        $dir = $request->input('dir') === 'asc' ? 'asc' : 'desc';
+        switch ($request->input('sort')) {
+            case 'judul':
+                $query->orderBy('judul_tugas', $dir);
+                break;
+            case 'tenggat':
+                $query->orderBy('deadline', $dir);
+                break;
+            case 'status':
+                $query->orderBy('status', $dir);
+                break;
+            default:
+                $query->orderBy('tanggal_update', 'desc')->orderBy('tanggal_dibuat', 'desc');
+        }
+
+        $tugas = $query->get();
 
         return response()->json([
             'message' => 'Daftar tugas Anda',

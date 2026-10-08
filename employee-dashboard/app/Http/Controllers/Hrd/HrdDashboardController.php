@@ -55,10 +55,36 @@ class HrdDashboardController extends Controller
             ]);
         }
 
+        // Widget presentase tugas (dinamis): Ongoing / Pending / Revisi.
+        // Revisi = tugas "berjalan" yang submission terakhirnya diminta revisi.
+        $ongoingBase = Tugas::statusEfektif(Tugas::STATUS_BERJALAN);
+
+        $revisiTugas = (clone $ongoingBase)
+            ->whereHas('submitTugas', fn ($q) => $q->where('status_review', 'revisi'))
+            ->count();
+
+        $ongoingTugas = (clone $ongoingBase)
+            ->whereDoesntHave('submitTugas', fn ($q) => $q->where('status_review', 'revisi'))
+            ->count();
+
+        $pendingTugas = Tugas::statusEfektif(Tugas::STATUS_BARU)->count()
+            + Tugas::statusEfektif(Tugas::STATUS_MENUNGGU_ACC)->count();
+
+        $total = [
+            'karyawan' => $totalStaff,
+            'divisi' => $totalDivisi,
+            'pesan' => $totalPesanPerusahaan,
+        ];
+
+        $tugasBuckets = [
+            'ongoing' => $ongoingTugas,
+            'pending' => $pendingTugas,
+            'revisi' => $revisiTugas,
+        ];
+
         // Halaman Blade
         $divisis = Divisi::withCount('karyawans')
-            ->orderBy('id_divisi', 'desc')
-            ->limit(5)
+            ->orderBy('id_divisi')
             ->get();
 
         $pesan = Pesan::orderBy('tanggal_pesan', 'desc')
@@ -67,6 +93,8 @@ class HrdDashboardController extends Controller
             ->get();
 
         return view('hrd.dashboard', compact(
+            'total',
+            'tugasBuckets',
             'totalStaff',
             'totalDivisi',
             'persentaseTugas',

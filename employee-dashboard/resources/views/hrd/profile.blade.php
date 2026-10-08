@@ -95,7 +95,7 @@
 
     <script>
         (async function loadHrdProfile() {
-            const token = localStorage.getItem('staff_token') || sessionStorage.getItem('staff_token');
+            const token = sessionStorage.getItem('staff_token') || sessionStorage.getItem('staff_token');
             const errorElement = document.getElementById('hrd-profile-error');
             if (!token) {
                 errorElement.textContent = 'Sesi login tidak ditemukan. Silakan login kembali.';
@@ -143,3 +143,4 @@
 </body>
 
 </html>
+

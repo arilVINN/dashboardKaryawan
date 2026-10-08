@@ -89,7 +89,7 @@ document.getElementById('form-login').addEventListener('submit', async function(
 
     try {
         const formData = new FormData(this);
-        const response = await fetch('/api/login', {
+        const response = await fetch('/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -103,10 +103,17 @@ document.getElementById('form-login').addEventListener('submit', async function(
             })
         });
 
+        if (response.status === 419) {
+            errorEl.textContent = 'Sesi kadaluarsa. Memuat ulang halaman...';
+            errorEl.classList.remove('hidden');
+            setTimeout(() => window.location.reload(), 1500);
+            return;
+        }
+
         const data = await response.json();
 
         if (response.ok && data.access_token) {
-            localStorage.removeItem('staff_token');
+            sessionStorage.removeItem('staff_token');
             sessionStorage.setItem('staff_token', data.access_token);
             
             // Arahkan berdasarkan role
@@ -131,3 +138,4 @@ document.getElementById('form-login').addEventListener('submit', async function(
     btnLogin.textContent = 'Login';
 });
 </script>
+

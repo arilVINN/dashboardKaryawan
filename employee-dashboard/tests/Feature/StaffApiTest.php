@@ -13,6 +13,7 @@ use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class StaffApiTest extends TestCase
@@ -181,7 +182,7 @@ class StaffApiTest extends TestCase
                 ->assertJsonPath('data.id_pesan', 'PSN-DIRECT')
                 ->assertJsonPath('data.penerima.id_user', $this->staff->id_user)
                 ->assertJsonPath('data.lampiran.link', 'https://example.com/panduan')
-                ->assertJsonPath('data.lampiran.file', '/storage/pesan/kadiv-file.pdf');
+                ->assertJsonPath('data.lampiran.file', Storage::disk('public')->url('pesan/kadiv-file.pdf'));
 
             $this->withToken($token)
                 ->getJson('/api/staff/pesan/PSN-OTHER')
@@ -246,8 +247,8 @@ class StaffApiTest extends TestCase
             ->getJson('/api/staff/pesan/PSN-REPLY')
             ->assertOk()
             ->assertJsonCount(2, 'data.balasan')
-            ->assertJsonFragment(['file' => '/storage/pesan/reply.pdf'])
-            ->assertJsonPath('data.lampiran.file', '/storage/pesan/root.pdf')
+            ->assertJsonFragment(['file' => Storage::disk('public')->url('pesan/reply.pdf')])
+            ->assertJsonPath('data.lampiran.file', Storage::disk('public')->url('pesan/root.pdf'))
             ->assertJsonFragment(['deskripsi' => 'Progres sudah 80 persen.']);
 
         $this->withToken($token)

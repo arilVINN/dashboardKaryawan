@@ -1,27 +1,32 @@
 @props([
     'parentText' => 'Kembali',
-    'currentPage' => 'Detail'
+    'parentUrl' => null,
+    'currentPage' => 'Detail',
 ])
 
-<div class="flex-0 p-1 pt-5 justify-start ml-5">
+@php
+    // Prefer an explicit, relevant parent page over browser history.
+    $backUrl = $parentUrl ?: url()->previous();
+@endphp
+
+<div class="px-8 pt-4">
     <nav aria-label="Breadcrumb" role="navigation">
-        <ul class="flex flex-wrap items-center my-1">
-            <!-- Level 1: Halaman Induk (Daftar Pesan) -->
+        <ul class="flex flex-wrap items-center gap-1 text-sm">
             <li class="inline-flex items-center">
-                <a href="{{ url()->previous() }}" class="font-medium text-gray-700 hover:text-[#0097B2] transition">
-                    Kembali
+                <a href="{{ $backUrl }}" data-breadcrumb-parent="{{ $parentText }}"
+                    class="font-medium text-gray-700 hover:text-[#0097B2] transition">
+                    {{ $parentText }}
                 </a>
             </li>
 
-            <!-- Level 2: Halaman yang sedang dibuka (Detail Pesan) -->
             <li class="flex items-center">
                 <svg class="w-4 h-4 mx-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
                 </svg>
-                <span class="font-semibold text-slate-900">
-                    Detail
-                </span> 
+                <span class="font-semibold text-slate-900" data-breadcrumb-current="{{ $currentPage }}">
+                    {{ $currentPage }}
+                </span>
             </li>
         </ul>
     </nav>
