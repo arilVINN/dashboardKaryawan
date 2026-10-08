@@ -6,8 +6,8 @@
 <div class="flex flex-col gap-3 w-full mt-2">
     <div class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5">
         <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-            <label for="karyawanSearch" class="text-xs font-bold text-slate-500">Cari Nama</label>
-            <input id="karyawanSearch" type="text" wire:model.live.debounce.300ms="search" placeholder="Nama karyawan..."
+            <label for="hrdKaryawanSearch" class="text-xs font-bold text-slate-500">Cari Nama</label>
+            <input id="hrdKaryawanSearch" type="text" wire:model.live.debounce.300ms="search" placeholder="Nama karyawan..."
                 class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
         </div>
         <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
