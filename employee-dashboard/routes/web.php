@@ -9,6 +9,7 @@ use App\Http\Controllers\KadivController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Hrd\HrdKaryawanController;
 use App\Http\Controllers\Hrd\HrdDivisiController;
+use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
 use App\Http\Controllers\Hrd\HrdDashboardController;
@@ -145,11 +146,6 @@ Route::post('/login-proses', function (Request $request) {
 })->name('login.proses');
 
 
-// 2. Route untuk halaman profil
-Route::get('/profile', function () {
-    return view('staff.detailProfile');
-});
-
 Route::post('/profile', function (Request $request) {
     $validated = $request->validate([
         'nama' => ['required', 'string', 'max:255'],
@@ -169,6 +165,11 @@ Route::post('/profile', function (Request $request) {
 //route hrd 
 Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
+    Route::get('/profile', function () {
+        return view('hrd.profile');
+    })->name('hrd.profile');
+
+    Route::get('/manajemenDivisi', [HrdDivisiController::class, 'manajemenPage'])->name('hrd.manajemenDivisi');
 
     Route::get('/manajemenDivisi', [HrdDivisiController::class, 'manajemenPage'])->name('hrd.manajemenDivisi');
 
@@ -184,9 +185,7 @@ Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
     Route::get('/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage'])->name('hrd.daftarKaryawan');
     Route::get('/daftarDivisi', [HrdDivisiController::class, 'listPage'])->name('hrd.daftarDivisi');
 
-    Route::get('/daftarPesan', function () {
-        return redirect()->route('hrd.pesan');
-    })->name('hrd.daftarPesan');
+    Route::get('/daftarPesan', [HrdPesanController::class, 'daftarPage'])->name('hrd.daftarPesan');
 
     Route::get('/divisi-page', function () {
         return view('hrd.divisi', [
@@ -207,3 +206,6 @@ Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
     Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
 });
 
+Route::get('/hrd/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage']);
+Route::get('/hrd/daftarDivisi', [HrdDivisiController::class, 'listPage']);
+Route::get('/hrd/detailKaryawan/{id}', [HrdKaryawanController::class, 'detailPage']);

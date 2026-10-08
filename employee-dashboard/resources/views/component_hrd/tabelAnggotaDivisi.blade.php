@@ -86,6 +86,13 @@
     <div id="modalBoxTambah"
         class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300">
         <div class="flex items-center justify-between p-4 border-b border-dashed border-gray-300 shrink-0">
+            <div class="bg-cyan-100 p-1.5 rounded text-cyan-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z">
+                        </path>
+                    </svg>
+                </div>
             <h3 class="text-base font-bold text-slate-900">Tambah Staff ke {{ $divisi->nama_divisi }}</h3>
             <button type="button" onclick="tutupModalAnggota()" class="text-slate-400 hover:text-red-500 transition"
                 aria-label="Tutup">

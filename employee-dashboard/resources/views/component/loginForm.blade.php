@@ -89,9 +89,8 @@ document.getElementById('form-login').addEventListener('submit', async function(
 
     try {
         const formData = new FormData(this);
-        const response = await fetch(this.action, {
+        const response = await fetch('/api/login', {
             method: 'POST',
-            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',

@@ -1,9 +1,21 @@
 @php
-    // Sumber kebenaran: user yang login via session (semua role).
     $topbarUser = auth()->user();
-    $topbarNama = $topbarUser?->karyawan?->nama ?? $topbarUser?->username ?? 'Guest';
-    $topbarDivisi = $topbarUser?->karyawan?->divisi?->nama_divisi ?? $topbarUser?->role?->nama_role ?? 'Staff';
+    $topbarEmployee = $topbarUser?->karyawan;
+    $pageRole = request()->is('hrd/*') ? 'hrd' : (request()->is('kadiv/*') ? 'kadiv' : 'staff');
+    $topbarNama = $topbarEmployee?->nama ?? $topbarUser?->username ?? 'Guest';
+    $topbarDivisi = $topbarEmployee?->divisi?->nama_divisi ?? $topbarUser?->role?->nama_role ?? ucfirst($pageRole);
+    $topbarRole = $topbarUser?->role?->nama_role ?? $pageRole;
     $topbarInitial = $topbarUser ? mb_strtoupper(mb_substr($topbarNama, 0, 1)) : 'U';
+    $topbarProfileUrl = match ($pageRole) {
+        'hrd' => route('hrd.profile'),
+        'kadiv' => route('kadiv.profile'),
+        default => url('/profile'),
+    };
+    $topbarProfileEndpoint = match ($pageRole) {
+        'hrd' => '/api/hrd/profile',
+        'kadiv' => '/api/kadiv/profile',
+        default => '/api/staff/profile',
+    };
 @endphp
 
 <header
@@ -37,7 +49,7 @@
                     <p id="topbar-divisi" class="text-xs text-slate-500">{{ $topbarDivisi }}</p>
                 </div>
                 <div class="py-1">
-                    <a href="{{ url('/profile') }}"
+                    <a href="{{ $topbarProfileUrl }}"
                         class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition">
                         <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -75,18 +87,40 @@
         const token = sessionStorage.getItem('staff_token');
         if (!token) return;
 
-        try {
-            const res = await fetch('/api/staff/profile', {
-                headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-            });
-            const json = await res.json();
-            if (res.ok && json.data) {
-                const p = json.data;
-                document.getElementById('topbar-nama').textContent = p.nama || 'Guest';
-                document.getElementById('topbar-divisi').textContent = p.divisi || 'Staff';
-                document.getElementById('topbar-inisial').textContent = p.nama ? p.nama.charAt(0).toUpperCase() : 'U';
-            }
-        } catch (e) {}
-    })();
+        const response = await fetch(@json($topbarProfileEndpoint), {
+            headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+        });
+        const result = await response.json();
+        if (!response.ok || !result.data) {
+            throw new Error(result.message || 'Gagal memuat identitas pengguna.');
+        }
 
+        const profile = result.data;
+        document.getElementById('topbar-nama').textContent = profile.nama || 'Pengguna';
+        document.getElementById('topbar-divisi').textContent = @json(ucfirst($pageRole));
+        document.getElementById('topbar-inisial').textContent = profile.nama
+            ? profile.nama.charAt(0).toUpperCase()
+            : 'U';
+    })().catch(error => console.error('Gagal memuat identitas pengguna:', error));
+
+    const btnLogoutTopbar = document.getElementById('btn-logout-topbar');
+    if (btnLogoutTopbar) {
+        btnLogoutTopbar.addEventListener('click', async function() {
+            const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
+            if (!confirmLogout) return;
+
+            const token = sessionStorage.getItem('staff_token');
+            try {
+                if (token) {
+                    await fetch('/api/logout', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+                    });
+                }
+            } catch (e) {}
+
+            sessionStorage.removeItem('staff_token');
+            window.location.href = '/login';
+        });
+    }
 </script>

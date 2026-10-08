@@ -69,6 +69,7 @@ Route::middleware([
     // HRD‑only routes
     Route::middleware('role:hrd')->prefix('hrd')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Hrd\HrdDashboardController::class, 'index']);
+        Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
         
         Route::get('/pesan', [HrdPesanController::class, 'index']);
         Route::post('/pesan', [HrdPesanController::class, 'store']);
