@@ -22,7 +22,7 @@ class StaffTugasQuery
         $query = Tugas::where('karyawan_id_karyawan', $this->karyawanId);
 
         $q = $filters['q'] ?? null;
-        if ($q !== null && $q !== '') {
+        if ($q !== null && trim((string) $q) !== '') {
             $query->whereRaw('LOWER(judul_tugas) LIKE ?', ['%' . mb_strtolower($q) . '%']);
         }
 

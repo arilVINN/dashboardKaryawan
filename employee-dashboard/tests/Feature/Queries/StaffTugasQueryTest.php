@@ -76,4 +76,15 @@ class StaffTugasQueryTest extends TestCase
         // wildcard characters must not throw
         StaffTugasQuery::forStaff($this->staff)->apply(['q' => '%_%'])->get();
     }
+
+    public function test_whitespace_only_q_is_ignored(): void
+    {
+        $all = StaffTugasQuery::forStaff($this->staff)->apply([])->pluck('id_tugas')->all();
+
+        $this->assertCount(2, $all);
+        $this->assertSame(
+            $all,
+            StaffTugasQuery::forStaff($this->staff)->apply(['q' => '   '])->pluck('id_tugas')->all()
+        );
+    }
 }
