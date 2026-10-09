@@ -89,6 +89,14 @@ class PesanTable extends Component
         $this->resetPage();
     }
 
+    public function clearFilter(string $name): void
+    {
+        if (in_array($name, ['search', 'tipe', 'arah'], true)) {
+            $this->{$name} = '';
+            $this->resetPage();
+        }
+    }
+
     public function sendMessage(): void
     {
         $kadiv = $this->kadiv();
@@ -162,6 +170,29 @@ class PesanTable extends Component
             })
             ->get();
 
-        return view('livewire.kadiv.pesan-table', ['messages' => $messages, 'recipients' => $recipients]);
+        return view('livewire.kadiv.pesan-table', [
+            'messages' => $messages,
+            'recipients' => $recipients,
+            'chips' => $this->activeFilters(),
+        ]);
+    }
+
+    private function activeFilters(): array
+    {
+        $chips = [];
+
+        if ($this->search !== '') {
+            $chips[] = ['name' => 'q', 'label' => 'Cari: "'.$this->search.'"'];
+        }
+
+        if ($this->tipe !== '') {
+            $chips[] = ['name' => 'tipe', 'label' => 'Tipe: '.ucfirst($this->tipe)];
+        }
+
+        if ($this->arah !== '') {
+            $chips[] = ['name' => 'arah', 'label' => 'Arah: '.ucfirst($this->arah)];
+        }
+
+        return $chips;
     }
 }

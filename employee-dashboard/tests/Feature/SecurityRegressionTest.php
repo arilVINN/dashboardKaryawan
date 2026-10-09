@@ -249,6 +249,39 @@ class SecurityRegressionTest extends TestCase
         ])->assertStatus(429);
     }
 
+    public function test_successful_logins_do_not_consume_throttle_budget(): void
+    {
+        $this->createStaff('KRY-S1', 'staffsatu');
+
+        // Six consecutive successful logins must all succeed: success clears
+        // the attempt budget instead of consuming it.
+        for ($i = 0; $i < 6; $i++) {
+            $this->postJson('/api/login', [
+                'username' => 'staffsatu',
+                'password' => 'pass123',
+            ])->assertOk();
+        }
+    }
+
+    public function test_login_throttle_is_scoped_per_username(): void
+    {
+        $this->createStaff('KRY-S1', 'staffsatu');
+        $this->createStaff('KRY-S2', 'staffdua');
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/api/login', [
+                'username' => 'staffsatu',
+                'password' => 'salah',
+            ])->assertUnauthorized();
+        }
+
+        // Another username on the same IP still gets its own budget.
+        $this->postJson('/api/login', [
+            'username' => 'staffdua',
+            'password' => 'salah',
+        ])->assertUnauthorized();
+    }
+
     public function test_login_rejects_plaintext_stored_password(): void
     {
         $this->createStaff('KRY-S1', 'staffsatu');

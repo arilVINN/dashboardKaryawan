@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Events\PesanDikirim;
 use App\Models\Pesan;
 use App\Models\User2;
+use App\Queries\HrdPesanQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,10 +16,13 @@ class HrdPesanController extends Controller
     public function page(Request $request)
     {
         $user = $request->user();
-        $pesans = $this->allMessages();
+
+        // Rows, filters, sorting, and pagination now live in the
+        // App\Livewire\Hrd\PesanTable component; the page only needs metrics
+        // over the viewer's own (participant) messages.
+        $pesans = HrdPesanQuery::forHrd($user)->apply([])->get();
 
         return view('hrd.pesan', [
-            'pesans' => $pesans,
             'totalPesan' => $pesans->count(),
             'pesanMasuk' => $pesans->where('penerima_id_user', $user->id_user)->count(),
             'pesanKeluar' => $pesans->where('pengirim_id_user', $user->id_user)->count(),
@@ -27,16 +31,9 @@ class HrdPesanController extends Controller
 
     public function daftarPage(Request $request)
     {
-        $pesans = $this->allMessages();
-
-        return view('hrd.daftarPesan', compact('pesans'));
-    }
-
-    private function allMessages()
-    {
-        return Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
-            ->orderByDesc('created_at')
-            ->get();
+        // Rows, filters, sorting, and pagination now live in the
+        // App\Livewire\Hrd\PesanTable component.
+        return view('hrd.daftarPesan');
     }
 
     public function detailPage(Request $request, string $id_pesan)
@@ -58,6 +55,11 @@ class HrdPesanController extends Controller
         $isParticipant = $pesan->pengirim_id_user === $user->id_user
             || $pesan->penerima_id_user === $user->id_user;
 
+        // Same message as an unknown ID: never reveal that the thread exists.
+        if (! $isParticipant) {
+            abort(404);
+        }
+
         return view('hrd.detailPesan', [
             'pesan' => $pesan,
             'thread' => $thread,
@@ -73,7 +75,15 @@ class HrdPesanController extends Controller
     {
         $user = $request->user();
 
+        if (! $user instanceof User2) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
         $query = Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
+            ->where(function ($query) use ($user): void {
+                $query->where('pengirim_id_user', $user->id_user)
+                    ->orWhere('penerima_id_user', $user->id_user);
+            })
             ->orderBy('created_at', 'desc');
 
         $pesan = $query->get();
@@ -144,6 +154,12 @@ class HrdPesanController extends Controller
             ->first();
 
         if (! $user instanceof User2 || ! $message) {
+            return response()->json(['message' => 'Pesan tidak ditemukan.'], 404);
+        }
+
+        // Same message as an unknown ID: never reveal that the thread exists.
+        if ($message->pengirim_id_user !== $user->id_user
+            && $message->penerima_id_user !== $user->id_user) {
             return response()->json(['message' => 'Pesan tidak ditemukan.'], 404);
         }
 

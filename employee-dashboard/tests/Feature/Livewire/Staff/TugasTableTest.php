@@ -104,6 +104,20 @@ class TugasTableTest extends TestCase
             ->assertSet('dir', 'desc');
     }
 
+    public function test_filter_chips_render_and_clear_only_their_own_filter(): void
+    {
+        Livewire::actingAs($this->staff)->test(TugasTable::class)
+            ->set('search', 'alph')
+            ->set('status', Tugas::STATUS_BARU)
+            ->assertSee('data-filter-chip="q"', false)
+            ->assertSee('data-filter-chip="status"', false)
+            ->call('clearFilter', 'search')
+            ->assertSet('search', '')
+            ->assertSet('status', Tugas::STATUS_BARU)
+            ->assertDontSee('data-filter-chip="q"', false)
+            ->assertSee('data-filter-chip="status"', false);
+    }
+
     public function test_non_staff_is_forbidden(): void
     {
         $hrd = User2::where('username', 'hrdsatu')->first();

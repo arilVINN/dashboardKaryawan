@@ -63,6 +63,22 @@ class PesanTableTest extends TestCase
         ]);
     }
 
+    public function test_filter_chips_render_and_clear_only_their_own_filter(): void
+    {
+        Livewire::actingAs($this->kadiv)->test(PesanTable::class)
+            ->set('search', 'laporan')
+            ->set('tipe', 'pesan')
+            ->set('arah', 'masuk')
+            ->assertSee('data-filter-chip="q"', false)
+            ->assertSee('data-filter-chip="tipe"', false)
+            ->assertSee('data-filter-chip="arah"', false)
+            ->call('clearFilter', 'tipe')
+            ->assertSet('tipe', '')
+            ->assertSet('arah', 'masuk')
+            ->assertDontSee('data-filter-chip="tipe"', false)
+            ->assertSee('data-filter-chip="arah"', false);
+    }
+
     public function test_searches_and_sends(): void
     {
         Livewire::actingAs($this->kadiv)->test(PesanTable::class)

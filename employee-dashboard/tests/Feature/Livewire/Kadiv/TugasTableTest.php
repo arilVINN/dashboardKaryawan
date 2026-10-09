@@ -97,6 +97,23 @@ class TugasTableTest extends TestCase
         $this->assertSame(2, Tugas::where('judul_tugas', 'Bulk')->count());
     }
 
+    public function test_filter_chips_render_and_clear_only_their_own_filter(): void
+    {
+        Livewire::actingAs($this->kadiv)->test(TugasTable::class)
+            ->set('search', 'alpha')
+            ->set('status', Tugas::STATUS_BARU)
+            ->set('staff', 'ST-1')
+            ->assertSee('data-filter-chip="q"', false)
+            ->assertSee('data-filter-chip="status"', false)
+            ->assertSee('data-filter-chip="staff"', false)
+            ->assertSee('Staff: Staff One')
+            ->call('clearFilter', 'staff')
+            ->assertSet('staff', '')
+            ->assertSet('status', Tugas::STATUS_BARU)
+            ->assertDontSee('data-filter-chip="staff"', false)
+            ->assertSee('data-filter-chip="status"', false);
+    }
+
     public function test_non_kadiv_is_forbidden(): void
     {
         Livewire::actingAs($this->staff)->test(TugasTable::class)->assertForbidden();
