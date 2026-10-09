@@ -15,6 +15,21 @@
         </div>
     </div>
 
+    @if (!empty($chips))
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Filter aktif:</span>
+            @foreach ($chips as $chip)
+                <span data-filter-chip="{{ $chip['name'] }}"
+                    class="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-cyan-50 text-cyan-700 text-xs font-semibold border border-cyan-100">
+                    {{ $chip['label'] }}
+                    <button type="button" wire:click="clearFilter('search')"
+                        data-remove-filter="{{ $chip['name'] }}" title="Hapus filter"
+                        class="inline-flex items-center justify-center w-4 h-4 rounded-full text-cyan-500 hover:bg-cyan-200 hover:text-cyan-900">&times;</button>
+                </span>
+            @endforeach
+        </div>
+    @endif
+
     <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table class="w-full min-w-[650px] text-left text-sm text-slate-600">
             <thead class="bg-slate-100 text-xs uppercase text-slate-500">

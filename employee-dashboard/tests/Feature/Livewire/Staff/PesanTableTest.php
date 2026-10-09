@@ -106,6 +106,20 @@ class PesanTableTest extends TestCase
             ->assertDontSee('Desain Logo');
     }
 
+    public function test_filter_chips_render_and_clear_only_their_own_filter(): void
+    {
+        Livewire::actingAs($this->staff)->test(PesanTable::class)
+            ->set('search', 'rapat')
+            ->set('jenis', 'langsung')
+            ->assertSee('data-filter-chip="q"', false)
+            ->assertSee('data-filter-chip="jenis"', false)
+            ->call('clearFilter', 'jenis')
+            ->assertSet('jenis', '')
+            ->assertSet('search', 'rapat')
+            ->assertDontSee('data-filter-chip="jenis"', false)
+            ->assertSee('data-filter-chip="q"', false);
+    }
+
     public function test_non_staff_is_forbidden(): void
     {
         $hrd = User2::where('username', 'hrdsatu')->first();

@@ -65,6 +65,14 @@ class PesanTable extends Component
         $this->resetPage();
     }
 
+    public function clearFilter(string $name): void
+    {
+        if (in_array($name, ['search', 'jenis'], true)) {
+            $this->{$name} = '';
+            $this->resetPage();
+        }
+    }
+
     public function resetFilters(): void
     {
         $this->search = '';
@@ -92,6 +100,27 @@ class PesanTable extends Component
             ['path' => request()->url(), 'query' => request()->query()]
         );
 
-        return view('livewire.staff.pesan-table', ['rows' => $rows]);
+        return view('livewire.staff.pesan-table', [
+            'rows' => $rows,
+            'chips' => $this->activeFilters(),
+        ]);
+    }
+
+    private function activeFilters(): array
+    {
+        $chips = [];
+
+        if ($this->search !== '') {
+            $chips[] = ['name' => 'q', 'label' => 'Cari: "'.$this->search.'"'];
+        }
+
+        if ($this->jenis !== '') {
+            $chips[] = [
+                'name' => 'jenis',
+                'label' => 'Jenis: '.($this->jenis === 'langsung' ? 'Pesan Langsung' : 'Pesan Tugas'),
+            ];
+        }
+
+        return $chips;
     }
 }

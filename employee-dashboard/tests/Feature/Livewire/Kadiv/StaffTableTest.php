@@ -60,6 +60,17 @@ class StaffTableTest extends TestCase
             ->call('sortBy', 'tugas')->assertSet('dir', 'desc');
     }
 
+    public function test_filter_chip_renders_and_clears_search(): void
+    {
+        Livewire::actingAs($this->kadiv)->test(StaffTable::class)
+            ->set('search', 'ab')
+            ->assertSee('Abby')
+            ->assertSee('data-filter-chip="q"', false)
+            ->call('clearFilter', 'search')
+            ->assertSet('search', '')
+            ->assertDontSee('data-filter-chip="q"', false);
+    }
+
     public function test_non_kadiv_is_forbidden(): void
     {
         Livewire::actingAs($this->staff)->test(StaffTable::class)->assertForbidden();

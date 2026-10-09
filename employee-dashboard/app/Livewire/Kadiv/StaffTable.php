@@ -64,12 +64,32 @@ class StaffTable extends Component
         $this->resetPage();
     }
 
+    public function clearFilter(string $name): void
+    {
+        if ($name === 'search') {
+            $this->search = '';
+            $this->resetPage();
+        }
+    }
+
     public function render()
     {
         $rows = KadivStaffQuery::forDivision($this->divisionId())
             ->apply(['sort' => $this->sort, 'dir' => $this->dir, 'q' => $this->search])
             ->paginate(10);
 
-        return view('livewire.kadiv.staff-table', ['rows' => $rows]);
+        return view('livewire.kadiv.staff-table', [
+            'rows' => $rows,
+            'chips' => $this->activeFilters(),
+        ]);
+    }
+
+    private function activeFilters(): array
+    {
+        if ($this->search === '') {
+            return [];
+        }
+
+        return [['name' => 'q', 'label' => 'Cari: "'.$this->search.'"']];
     }
 }

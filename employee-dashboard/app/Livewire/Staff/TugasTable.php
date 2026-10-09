@@ -73,6 +73,14 @@ class TugasTable extends Component
         $this->resetPage();
     }
 
+    public function clearFilter(string $name): void
+    {
+        if (in_array($name, ['search', 'status'], true)) {
+            $this->{$name} = '';
+            $this->resetPage();
+        }
+    }
+
     public function render()
     {
         $rows = StaffTugasQuery::forStaff($this->staff())
@@ -84,6 +92,24 @@ class TugasTable extends Component
             ])
             ->paginate(10);
 
-        return view('livewire.staff.tugas-table', ['rows' => $rows]);
+        return view('livewire.staff.tugas-table', [
+            'rows' => $rows,
+            'chips' => $this->activeFilters(),
+        ]);
+    }
+
+    private function activeFilters(): array
+    {
+        $chips = [];
+
+        if ($this->search !== '') {
+            $chips[] = ['name' => 'q', 'label' => 'Cari: "'.$this->search.'"'];
+        }
+
+        if ($this->status !== '') {
+            $chips[] = ['name' => 'status', 'label' => 'Status: '.ucfirst($this->status)];
+        }
+
+        return $chips;
     }
 }

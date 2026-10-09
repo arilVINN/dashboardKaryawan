@@ -93,6 +93,14 @@ class TugasTable extends Component
         $this->resetPage();
     }
 
+    public function clearFilter(string $name): void
+    {
+        if (in_array($name, ['search', 'status', 'staff'], true)) {
+            $this->{$name} = '';
+            $this->resetPage();
+        }
+    }
+
     public function createTask(): void
     {
         $divisionId = $this->divisionId();
@@ -166,6 +174,30 @@ class TugasTable extends Component
 
         $staffOptions = KadivStaffQuery::forDivision($divisionId)->apply([])->get();
 
-        return view('livewire.kadiv.tugas-table', ['rows' => $rows, 'staffOptions' => $staffOptions]);
+        return view('livewire.kadiv.tugas-table', [
+            'rows' => $rows,
+            'staffOptions' => $staffOptions,
+            'chips' => $this->activeFilters($staffOptions),
+        ]);
+    }
+
+    private function activeFilters($staffOptions): array
+    {
+        $chips = [];
+
+        if ($this->search !== '') {
+            $chips[] = ['name' => 'q', 'label' => 'Cari: "'.$this->search.'"'];
+        }
+
+        if ($this->status !== '') {
+            $chips[] = ['name' => 'status', 'label' => 'Status: '.ucfirst($this->status)];
+        }
+
+        if ($this->staff !== '') {
+            $nama = $staffOptions->firstWhere('id_karyawan', $this->staff)?->nama ?? $this->staff;
+            $chips[] = ['name' => 'staff', 'label' => 'Staff: '.$nama];
+        }
+
+        return $chips;
     }
 }
