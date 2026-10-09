@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 use App\Models\User2;
 
 class AuthController extends Controller
@@ -47,7 +48,11 @@ class AuthController extends Controller
             return back()->withErrors(['username' => 'Username atau password salah']);
         }
 
-        $user->update(['last_login_at' => now()]);
+        try {
+            $user->update(['last_login_at' => now()]);
+        } catch (QueryException $exception) {
+            report($exception);
+        }
 
         $isApiRequest = $request->is('api/*');
 
