@@ -76,7 +76,7 @@
                 </a>
 
                 <form method="POST" action="{{ route('logout') }}"
-                      onsubmit="if (!confirm('Apakah Anda yakin ingin keluar?')) return false; sessionStorage.removeItem('staff_token'); return true;"
+                      onsubmit="if (!confirm('Apakah Anda yakin ingin keluar?')) return false; sessionStorage.removeItem('staff_token'); localStorage.removeItem('staff_token'); return true;"
                       class="border-t border-slate-100">
                     @csrf
                     <button type="submit" id="kadiv-logout"

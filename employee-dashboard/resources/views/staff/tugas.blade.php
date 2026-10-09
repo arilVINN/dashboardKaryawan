@@ -27,7 +27,7 @@
             </div>
 
             <div class="w-full">
-                <livewire:staff.tugas-table />
+                @include('component.tableTugas')
             </div>
         </main>
 

@@ -124,6 +124,7 @@
         }
 
         sessionStorage.removeItem('staff_token');
+        localStorage.removeItem('staff_token');
         HTMLFormElement.prototype.submit.call(form);
     });
 </script>
