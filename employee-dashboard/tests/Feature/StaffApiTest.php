@@ -12,6 +12,7 @@ use App\Models\Role;
 use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -87,6 +88,34 @@ class StaffApiTest extends TestCase
             ->assertJsonPath('data.statistik.completion_percentage', 20)
             ->assertJsonPath('data.pesan_terbaru.0.id_pesan', 'PSN-DASH')
             ->assertJsonPath('data.notifikasi_terbaru.0.id_notifikasi', 'NTF-DASH');
+    }
+
+    public function test_deadline_includes_time_when_determining_late_status(): void
+    {
+        $task = $this->createTask(
+            'TGS-DUE',
+            $this->staff->karyawan_id_karyawan,
+            Tugas::STATUS_BERJALAN,
+            '2026-10-09 16:00:00'
+        );
+
+        try {
+            Carbon::setTestNow('2026-10-09 16:00:00');
+            $this->actingAs($this->staff)
+                ->getJson('/staff/dashboard')
+                ->assertOk()
+                ->assertJsonPath('data.statistik.tugas_telat', 0);
+
+            Carbon::setTestNow('2026-10-09 16:00:01');
+            $this->actingAs($this->staff)
+                ->getJson('/staff/dashboard')
+                ->assertOk()
+                ->assertJsonPath('data.statistik.tugas_telat', 1);
+
+            $this->assertTrue($task->fresh()->isTelat());
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
     public function test_staff_can_list_and_open_messages_for_their_tasks(): void

@@ -97,7 +97,10 @@
                 const deadline = document.createElement('td');
                 deadline.className = 'px-6 py-4 text-center text-[#565E74]';
                 deadline.textContent = task.deadline
-                    ? new Date(task.deadline + 'T00:00:00').toLocaleDateString('id-ID')
+                    ? new Date(String(task.deadline).replace(' ', 'T')).toLocaleString('id-ID', {
+                        dateStyle: 'medium',
+                        timeStyle: 'short'
+                    })
                     : '-';
                 row.appendChild(deadline);
                 const approval = document.createElement('td');

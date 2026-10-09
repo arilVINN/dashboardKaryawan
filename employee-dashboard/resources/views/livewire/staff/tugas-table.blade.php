@@ -78,7 +78,7 @@
                         @php $st = $row->status_efektif; @endphp
                         <tr wire:key="tugas-{{ $row->id_tugas }}" class="hover:bg-slate-50 transition">
                             <td class="px-6 py-4 font-semibold text-slate-800 whitespace-nowrap">{{ $row->judul_tugas }}</td>
-                            <td class="px-6 py-4 text-slate-500 whitespace-nowrap">{{ $row->deadline ?? '-' }}</td>
+                            <td class="px-6 py-4 text-slate-500 whitespace-nowrap">{{ $row->deadline ? \Illuminate\Support\Carbon::parse($row->deadline)->format('d/m/Y H:i') : '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $statusClass[$st] ?? 'bg-slate-100 text-slate-700' }}">
                                     {{ $st }}

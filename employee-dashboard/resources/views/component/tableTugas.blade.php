@@ -140,11 +140,8 @@
 
                 let deadline = '-';
                 if (t.deadline) {
-                    const d = new Date(t.deadline);
-                    const tgl = String(d.getDate()).padStart(2, '0');
-                    const bln = String(d.getMonth() + 1).padStart(2, '0');
-                    const thn = d.getFullYear();
-                    deadline = `${tgl}/${bln}/${thn}`;
+                    deadline = new Date(String(t.deadline).replace(' ', 'T'))
+                        .toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
                 }
 
                 const rowHtml = `
@@ -213,4 +210,3 @@
         });
     });
 </script>
-

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Database\QueryException;
 use App\Models\User2;
 
 class AuthController extends Controller
@@ -66,7 +67,11 @@ class AuthController extends Controller
 
         RateLimiter::clear($throttleKey);
 
-        $user->update(['last_login_at' => now()]);
+        try {
+            $user->update(['last_login_at' => now()]);
+        } catch (QueryException $exception) {
+            report($exception);
+        }
 
         $isApiRequest = $request->is('api/*');
 

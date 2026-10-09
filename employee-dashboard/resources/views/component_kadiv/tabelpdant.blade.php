@@ -76,7 +76,10 @@
 
                     const deadline = document.createElement('span');
                     deadline.textContent = task.deadline
-                        ? new Date(task.deadline + 'T00:00:00').toLocaleDateString('id-ID')
+                        ? new Date(String(task.deadline).replace(' ', 'T')).toLocaleString('id-ID', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short'
+                        })
                         : '-';
                     row.appendChild(deadline);
 
@@ -155,4 +158,3 @@
         loadKadivTaskAndMessageTables();
     }
 </script>
-
