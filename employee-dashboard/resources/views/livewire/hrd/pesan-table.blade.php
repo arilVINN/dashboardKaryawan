@@ -99,6 +99,7 @@
                     @forelse ($rows as $pesan)
                         @php
                             $isIncoming = $pesan->penerima_id_user === $viewerId;
+                            $isOutgoing = $pesan->pengirim_id_user === $viewerId;
                             $contact = $isIncoming ? $pesan->pengirim : $pesan->penerima;
                         @endphp
                         <tr wire:key="pesan-{{ $pesan->id_pesan }}" class="hover:bg-slate-50 transition">
@@ -109,8 +110,16 @@
                                 {{ $pesan->judul_pesan }}
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap">
-                                <span class="text-slate-500">{{ $isIncoming ? 'Dari' : 'Kepada' }}:</span>
-                                {{ $contact?->karyawan?->nama ?? $contact?->username ?? 'Pengguna tidak tersedia' }}
+                                @if ($isIncoming)
+                                    <span class="text-slate-500">Dari:</span>
+                                    {{ $pesan->pengirim?->karyawan?->nama ?? $pesan->pengirim?->username ?? 'Pengguna tidak tersedia' }}
+                                @elseif ($isOutgoing)
+                                    <span class="text-slate-500">Kepada:</span>
+                                    {{ $pesan->penerima?->karyawan?->nama ?? $pesan->penerima?->username ?? 'Pengguna tidak tersedia' }}
+                                @else
+                                    <span class="text-slate-500">Dari {{ $pesan->pengirim?->karyawan?->nama ?? $pesan->pengirim?->username ?? '?' }} ke</span>
+                                    {{ $pesan->penerima?->karyawan?->nama ?? $pesan->penerima?->username ?? '?' }}
+                                @endif
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap">
                                 @if ($isIncoming)
@@ -118,10 +127,15 @@
                                         class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
                                         Masuk
                                     </span>
-                                @else
+                                @elseif ($isOutgoing)
                                     <span data-arah="keluar"
                                         class="px-2.5 py-1 bg-[#C0E7FF] text-blue-700 rounded-full text-xs font-bold">
                                         Keluar
+                                    </span>
+                                @else
+                                    <span data-arah="lainnya"
+                                        class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">
+                                        Lainnya
                                     </span>
                                 @endif
                             </td>

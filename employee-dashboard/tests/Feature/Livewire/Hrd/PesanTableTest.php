@@ -37,6 +37,16 @@ class PesanTableTest extends TestCase
         $this->pesan('P-IN', 'Butuh Revisi', $this->staffUser->id_user, $this->hrd->id_user, '2026-10-01', 'pesan', 'belum_dibaca');
         // Outgoing (HRD → staff), read, surat.
         $this->pesan('P-OUT', 'Surat Tugas', $this->hrd->id_user, $this->staffUser->id_user, '2026-10-02', 'surat', 'dibaca');
+        // Third-party (staff → staff): visible to HRD but neither masuk nor keluar.
+        Karyawan::create(['id_karyawan' => 'KRY-S2', 'nama' => 'Sari Wulandari', 'jenis_kelamin' => 'Perempuan', 'jabatan' => 'Staff', 'divisi_id_divisi' => 'DIV-IT']);
+        $sari = User2::create([
+            'id_user' => 'USR-KRY-S2',
+            'username' => 'sarisatu',
+            'password' => Hash::make('pass123'),
+            'role_id_role' => 'ROLE-STAFF',
+            'karyawan_id_karyawan' => 'KRY-S2',
+        ]);
+        $this->pesan('P-3RD', 'Koordinasi Shift', $this->staffUser->id_user, $sari->id_user, '2026-10-03', 'pesan', 'belum_dibaca');
     }
 
     private function account(string $id, string $nama, string $role, string $username): User2
@@ -128,6 +138,17 @@ class PesanTableTest extends TestCase
             ->assertSee('data-arah="masuk"', false)
             ->assertSee('data-arah="keluar"', false)
             ->assertDontSee('>Jenis</th>', false);
+    }
+
+    public function test_third_party_messages_get_a_neutral_pill_and_no_direction_filter_matches_them(): void
+    {
+        Livewire::actingAs($this->hrd)->test(PesanTable::class)
+            ->assertSee('Koordinasi Shift')
+            ->assertSee('data-arah="lainnya"', false)
+            ->set('arah', 'masuk')
+            ->assertDontSee('Koordinasi Shift')
+            ->set('arah', 'keluar')
+            ->assertDontSee('Koordinasi Shift');
     }
 
     public function test_filter_chips_clear_only_their_own_filter(): void
