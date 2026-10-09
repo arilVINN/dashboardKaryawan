@@ -18,6 +18,7 @@ class PesanTableTest extends TestCase
     use RefreshDatabase;
 
     private User2 $hrd;
+    private User2 $hrdDua;
     private User2 $staffUser;
 
     protected function setUp(): void
@@ -31,6 +32,7 @@ class PesanTableTest extends TestCase
         Divisi::create(['id_divisi' => 'DIV-IT', 'kode_divisi' => 'IT', 'nama_divisi' => 'Teknologi Informasi', 'status_aktif' => 'Aktif']);
 
         $this->hrd = $this->account('KRY-HRD', 'HRD User', 'ROLE-HRD', 'hrduser');
+        $this->hrdDua = $this->account('KRY-H2', 'HRD Dua', 'ROLE-HRD', 'hrddua');
         $this->staffUser = $this->account('KRY-S', 'Budi Santoso', 'ROLE-STAFF', 'budisatu');
 
         // Incoming (staff → HRD), unread.
@@ -47,6 +49,8 @@ class PesanTableTest extends TestCase
             'karyawan_id_karyawan' => 'KRY-S2',
         ]);
         $this->pesan('P-3RD', 'Koordinasi Shift', $this->staffUser->id_user, $sari->id_user, '2026-10-03', 'pesan', 'belum_dibaca');
+        // Another HRD's thread (invisible to hrduser).
+        $this->pesan('P-X', 'Jadwal Briefing', $this->hrdDua->id_user, $this->staffUser->id_user, '2026-10-04', 'pesan', 'belum_dibaca');
     }
 
     private function account(string $id, string $nama, string $role, string $username): User2
@@ -77,11 +81,13 @@ class PesanTableTest extends TestCase
         $pesan->forceFill(['status' => $status])->save();
     }
 
-    public function test_renders_incoming_and_outgoing_messages(): void
+    public function test_renders_only_participant_messages(): void
     {
         Livewire::actingAs($this->hrd)->test(PesanTable::class)
             ->assertSee('Butuh Revisi')
-            ->assertSee('Surat Tugas');
+            ->assertSee('Surat Tugas')
+            ->assertDontSee('Koordinasi Shift')
+            ->assertDontSee('Jadwal Briefing');
     }
 
     public function test_filters_by_arah(): void
@@ -140,15 +146,27 @@ class PesanTableTest extends TestCase
             ->assertDontSee('>Jenis</th>', false);
     }
 
-    public function test_third_party_messages_get_a_neutral_pill_and_no_direction_filter_matches_them(): void
+    public function test_detail_page_404s_for_non_participants(): void
     {
-        Livewire::actingAs($this->hrd)->test(PesanTable::class)
-            ->assertSee('Koordinasi Shift')
-            ->assertSee('data-arah="lainnya"', false)
-            ->set('arah', 'masuk')
-            ->assertDontSee('Koordinasi Shift')
-            ->set('arah', 'keluar')
-            ->assertDontSee('Koordinasi Shift');
+        $this->actingAs($this->hrd)->get('/hrd/detailPesan/P-X')->assertNotFound();
+
+        $this->actingAs($this->hrd)->get('/hrd/detailPesan/P-IN')->assertOk();
+    }
+
+    public function test_api_show_404s_for_non_participants(): void
+    {
+        $this->actingAs($this->hrd)->getJson('/api/hrd/pesan/P-X')
+            ->assertNotFound()
+            ->assertJsonPath('message', 'Pesan tidak ditemukan.');
+
+        $this->actingAs($this->hrd)->getJson('/api/hrd/pesan/P-IN')->assertOk();
+    }
+
+    public function test_metrics_count_only_participant_messages(): void
+    {
+        $response = $this->actingAs($this->hrd)->get('/hrd/pesan')->assertOk();
+
+        $this->assertSame(2, $response->viewData('totalPesan'));
     }
 
     public function test_filter_chips_clear_only_their_own_filter(): void

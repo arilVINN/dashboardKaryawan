@@ -393,7 +393,7 @@ class HrdManagementApiTest extends TestCase
         $this->assertDatabaseMissing('users2', ['id_user' => $staff->id_user]);
     }
 
-    public function test_hrd_can_monitor_all_messages_and_reply_to_participating_threads(): void
+    public function test_hrd_sees_only_participating_messages_and_reply_to_their_threads(): void
     {
         $sender = $this->createAccount('EMP-KADIV', 'Ketua Divisi', 'DIV-IT', 'ROLE-KADIV', 'kadiv');
         $otherUser = $this->createAccount('EMP-OTHER', 'Staff Lain', 'DIV-IT', 'ROLE-STAFF', 'other');
@@ -411,7 +411,7 @@ class HrdManagementApiTest extends TestCase
         Pesan::create([
             'id_pesan' => 'PSN-PRIVATE',
             'judul_pesan' => 'Pesan pribadi',
-            'deskripsi' => 'Pesan antar pengguna untuk dipantau HRD.',
+            'deskripsi' => 'Pesan antar pengguna lain.',
             'tipe' => 'pesan',
             'tanggal_pesan' => '2026-10-06',
             'pengirim_id_user' => $sender->id_user,
@@ -422,8 +422,7 @@ class HrdManagementApiTest extends TestCase
             ->get('/hrd/pesan')
             ->assertOk()
             ->assertSee('Permintaan data karyawan')
-            ->assertSee('Pesan pribadi')
-            ->assertSee('Ketua Divisi');
+            ->assertDontSee('Pesan pribadi');
 
         $this->actingAs($this->hrd)
             ->get('/hrd/daftarPesan')
@@ -431,13 +430,13 @@ class HrdManagementApiTest extends TestCase
             ->assertViewIs('hrd.daftarPesan')
             ->assertSee('Daftar Pesan')
             ->assertDontSee('Pusat Pesan &amp; Komunikasi')
-            ->assertSee('PSN-PRIVATE');
+            ->assertDontSee('PSN-PRIVATE');
 
         $this->actingAs($this->hrd)
             ->getJson('/api/hrd/pesan')
             ->assertOk()
-            ->assertJsonPath('data.metrics.total', 2)
-            ->assertJsonCount(2, 'data.list_pesan');
+            ->assertJsonPath('data.metrics.total', 1)
+            ->assertJsonCount(1, 'data.list_pesan');
 
         $this->actingAs($this->hrd)
             ->get('/hrd/detailPesan/PSN-HRD-001')
@@ -447,10 +446,7 @@ class HrdManagementApiTest extends TestCase
 
         $this->actingAs($this->hrd)
             ->get('/hrd/detailPesan/PSN-PRIVATE')
-            ->assertOk()
-            ->assertSee('Pesan antar pengguna untuk dipantau HRD.')
-            ->assertDontSee('Balas Pesan')
-            ->assertSee('tidak dapat dibalas');
+            ->assertNotFound();
 
         $this->actingAs($otherUser)
             ->get('/hrd/detailPesan/PSN-HRD-001')
