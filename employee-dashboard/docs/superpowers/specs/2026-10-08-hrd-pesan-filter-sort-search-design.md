@@ -63,3 +63,17 @@ changing the JSON APIs or the Kirim Pesan send flow.
   deep-link hydration on both pages.
 - Existing `HrdMessageWebLoginTest` + HRD Pesan API tests pass unchanged;
   full suite green; `view:cache` + compiled-view lint clean before commit.
+
+## Amendment 2026-10-09 — participant-only visibility (all roles)
+- Lists: every role sees only messages where they are penerima OR pengirim.
+  HRD loses its global scope (`HrdPesanQuery` base gains the participant
+  constraint; `arah` subdivides as before). Staff/Kadiv lists already comply.
+- Gates: HRD `detailPage` (web) and API `show()` return 404 for
+  non-participants (same message as unknown ID — no existence leak),
+  mirroring Staff's `show`. `balas` already requires participation.
+- Metrics (`page()`, API `index()`): computed over the participant scope.
+- Explicitly kept: Kadiv's same-division-task visibility exception in
+  `KadivMessageController::show`/`balas`; the `Lainnya` pill stays as
+  defensive rendering for legacy rows with a null sender.
+- Tests: third-party fixtures must be excluded from all HRD list/filter
+  assertions; new 404 tests for cross-user detail/API access.
