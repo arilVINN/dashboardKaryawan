@@ -17,7 +17,11 @@ class HrdPesanQuery
 
     public function apply(array $filters): Builder
     {
-        $query = Pesan::with(['pengirim.karyawan', 'penerima.karyawan']);
+        $query = Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
+            ->where(function (Builder $query): void {
+                $query->where('pengirim_id_user', $this->hrd->id_user)
+                    ->orWhere('penerima_id_user', $this->hrd->id_user);
+            });
 
         $q = $filters['q'] ?? null;
         if ($this->hasFilter($q)) {
