@@ -265,7 +265,7 @@
                 document.getElementById(id).textContent = value || '-';
             };
             const formatDate = (value) => value
-                ? new Date(value).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+                ? new Date(String(value).replace(' ', 'T')).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
                 : '-';
             function appendAttachmentCard(container, filePath, label, href = null) {
                 if (typeof filePath !== 'string' || !filePath.trim() || filePath.trim() === '-') return false;

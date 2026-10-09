@@ -100,7 +100,7 @@ class TugasTable extends Component
         $this->validate([
             'judul' => 'required|string|max:100',
             'deskripsi' => 'required|string',
-            'tenggat' => 'required|date',
+            'tenggat' => ['required', 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s,Y-m-d H:i:s'],
             'recipient' => 'required|string',
             'attachment' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
         ]);
@@ -137,7 +137,7 @@ class TugasTable extends Component
                 'judul_tugas' => $this->judul,
                 'deskripsi' => $this->deskripsi,
                 'file_pendukung' => $filePath,
-                'deadline' => $this->tenggat,
+                'deadline' => \Illuminate\Support\Carbon::parse($this->tenggat)->format('Y-m-d H:i:s'),
                 'progress' => '0',
                 'status' => Tugas::STATUS_BARU,
                 'tanggal_dibuat' => now(),

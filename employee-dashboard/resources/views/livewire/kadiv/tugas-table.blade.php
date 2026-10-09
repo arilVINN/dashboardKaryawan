@@ -86,7 +86,7 @@
                                     {{ $status }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-slate-500 text-center whitespace-nowrap">{{ $task->deadline ?? '-' }}</td>
+                            <td class="px-6 py-4 text-slate-500 text-center whitespace-nowrap">{{ $task->deadline ? \Illuminate\Support\Carbon::parse($task->deadline)->format('d/m/Y H:i') : '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-xs">
                                 <a href="{{ url('/kadiv/detailTugas/' . $task->id_tugas) }}"
                                     class="text-[#0c88a9] hover:text-[#104958] transition font-medium">Detail</a>
