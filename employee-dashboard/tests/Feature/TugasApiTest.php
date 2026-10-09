@@ -121,6 +121,7 @@ class TugasApiTest extends TestCase
         $staff = User2::where('username', 'budist')->first();
         $kadiv = User2::where('username', 'tonokd')->first();
         $tugas = Tugas::where('karyawan_id_karyawan', $staff->karyawan_id_karyawan)->first();
+        $deadline = now()->addDays(7)->setTime(16, 0)->format('Y-m-d\TH:i');
 
         $this->actingAs($staff, 'sanctum')
              ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
@@ -134,14 +135,32 @@ class TugasApiTest extends TestCase
              ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", [
                  'status_review' => 'revisi',
                  'catatan_revisi' => 'Perbaiki bagian ini',
-                 'deadline' => now()->addDays(7)->toDateTimeString(),
+                 'deadline' => $deadline,
              ])
              ->assertStatus(200);
 
         $this->assertDatabaseHas('tugas', [
             'id_tugas' => $tugas->id_tugas,
             'status' => Tugas::STATUS_BERJALAN,
+            'deadline' => \Illuminate\Support\Carbon::parse($deadline)->format('Y-m-d H:i:s'),
         ]);
+    }
+
+    #[Test]
+    public function kadiv_bisa_membuat_tugas_dengan_deadline_tanggal_dan_jam()
+    {
+        $staff = User2::where('username', 'budist')->firstOrFail();
+        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
+
+        $this->actingAs($kadiv, 'sanctum')
+            ->postJson('/api/kadiv/tugas', [
+                'karyawan_id_karyawan' => $staff->karyawan_id_karyawan,
+                'judul_tugas' => 'Tugas dengan deadline jam',
+                'deskripsi' => 'Uji penyimpanan tanggal dan jam deadline.',
+                'deadline' => '2026-10-09T16:00',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.deadline', '2026-10-09 16:00:00');
     }
 
     #[Test]

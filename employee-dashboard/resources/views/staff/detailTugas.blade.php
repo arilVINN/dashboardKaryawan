@@ -135,8 +135,10 @@
                 // Format tanggal
                 function fmtDate(raw) {
                     if (!raw) return '-';
-                    const d = new Date(raw);
-                    return d.getDate() + ' ' + ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][d.getMonth()] + ' ' + d.getFullYear() + ', ' + String(d.getHours()).padStart(2,'0') + '.00';
+                    return new Date(String(raw).replace(' ', 'T')).toLocaleString('id-ID', {
+                        dateStyle: 'medium',
+                        timeStyle: 'short'
+                    });
                 }
 
                 // === SECTION 1: TUGAS ===
@@ -312,4 +314,3 @@
 
 </body>
 </html>
-

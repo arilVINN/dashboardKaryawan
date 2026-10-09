@@ -73,7 +73,7 @@ class Tugas extends Model
     }
 
     /**
-     * Tugas dianggap telat bila deadline sudah lewat dan belum di-ACC.
+     * Tugas dianggap telat bila tanggal dan waktu deadline sudah lewat dan belum di-ACC.
      * Status turunan — tidak pernah ditulis ke database.
      */
     public function isTelat(): bool
@@ -82,8 +82,7 @@ class Tugas extends Model
             return false;
         }
 
-        // Deadline hari ini belum telat (batas akhir = akhir hari).
-        return \Illuminate\Support\Carbon::parse($this->deadline)->lt(today());
+        return \Illuminate\Support\Carbon::parse($this->deadline)->lt(now());
     }
 
     /**
@@ -102,7 +101,7 @@ class Tugas extends Model
     {
         if ($status === self::STATUS_TELAT) {
             return $query->whereNotNull('deadline')
-                ->where('deadline', '<', today())
+                ->where('deadline', '<', now())
                 ->where('status', '!=', self::STATUS_SUDAH_ACC);
         }
 
@@ -114,7 +113,7 @@ class Tugas extends Model
         // Bucket non-telat lainnya: status tersimpan + tidak sedang telat.
         return $query->where('status', $status)
             ->where(function ($q): void {
-                $q->whereNull('deadline')->orWhere('deadline', '>=', today());
+                $q->whereNull('deadline')->orWhere('deadline', '>=', now());
             });
     }
 
