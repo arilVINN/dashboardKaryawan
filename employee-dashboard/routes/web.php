@@ -17,12 +17,12 @@ use App\Models\Divisi;
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
-    ->middleware('gateway.throttle:5,1')
+    ->middleware('gateway.throttle:5,1') // sudah ada, tidak diubah
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // staff route (session auth + staff role)
-Route::middleware(['auth', 'role:staff'])->group(function () {
+Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/', function () {
         return view('staff.dashboard');
     })->name('dashboard');
@@ -48,17 +48,15 @@ Route::middleware(['auth', 'role:staff'])->group(function () {
     })->name('profile');
 });
 
-Route::prefix('staff')->middleware(EnsureStaffRole::class)->group(function () {
+Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     Route::get('/notifikasi', [NotifikasiController::class, 'index']);
 });
 
 
-
-
 // ================= KADIV (auth + role) ================= //
-Route::middleware(['auth', 'role:kadiv'])->prefix('kadiv')->group(function () {
+Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->group(function () {
     // Dashboard
     Route::get('/dashboard', function () {
         return view('kadiv.dashboard');
@@ -91,7 +89,9 @@ Route::middleware(['auth', 'role:kadiv'])->prefix('kadiv')->group(function () {
         return view('kadiv.detailTugas', compact('id'));
     });
 
-    Route::post('/tugas', [KadivController::class, 'store'])->name('kadiv.tugas.store');
+    Route::post('/tugas', [KadivController::class, 'store'])
+        ->middleware('throttle:submit-form') // + throttle
+        ->name('kadiv.tugas.store');
 
     Route::post('/tugas/{id}/revisi', function (Request $request, $id) {
         $request->validate([
@@ -111,7 +111,7 @@ Route::middleware(['auth', 'role:kadiv'])->prefix('kadiv')->group(function () {
         return redirect()
             ->route('kadiv.detailTugas.show', $id)
             ->with('success', 'Revisi berhasil dikirim.');
-    })->name('kadiv.revisiTugas');
+    })->middleware('throttle:submit-form')->name('kadiv.revisiTugas'); // + throttle
 
     // Pesan
     Route::get('/pesan', function () {
@@ -124,10 +124,8 @@ Route::middleware(['auth', 'role:kadiv'])->prefix('kadiv')->group(function () {
 });
 
 
-
 // 1. Route untuk proses form login
 Route::post('/login-proses', function (Request $request) {
-    // Data dummy
     $userDummy = [
         'nama' => 'Samuel Sigalingging',
         'inisial' => 'S',
@@ -143,8 +141,7 @@ Route::post('/login-proses', function (Request $request) {
     session(['user_session' => $userDummy]);
 
     return redirect('/');
-    return redirect('/');
-})->name('login.proses');
+})->middleware('throttle:submit-form')->name('login.proses'); // + throttle
 
 
 // 2. Route untuk menyimpan profil
@@ -160,12 +157,11 @@ Route::post('/profile', function (Request $request) {
     session(['user_session' => array_merge($pegawai, $validated)]);
 
     return redirect()->route('profile')->with('success', 'Profil berhasil diperbarui.');
-})->name('profile.update');
-
+})->middleware('throttle:submit-form')->name('profile.update'); // + throttle
 
 
 //route hrd
-Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
+Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
 
     Route::get('/profile', function () {
@@ -177,16 +173,25 @@ Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
     Route::get('/pesan', [HrdPesanController::class, 'page'])->name('hrd.pesan');
 
     Route::get('/detailPesan/{id_pesan}', [HrdPesanController::class, 'detailPage'])->name('hrd.detailPesan');
-    Route::post('/detailPesan/{id_pesan}/balas', [HrdPesanController::class, 'balas'])->name('hrd.detailPesan.balas');
+    Route::post('/detailPesan/{id_pesan}/balas', [HrdPesanController::class, 'balas'])
+        ->middleware('throttle:submit-form') // + throttle
+        ->name('hrd.detailPesan.balas');
 
     Route::get('/detailDivisi/{id}', [HrdDivisiController::class, 'detailPage'])->name('hrd.detailDivisi');
 
     Route::get('/detailKaryawan/{id}', [HrdKaryawanController::class, 'detailPage'])->name('hrd.detailKaryawan');
 
-    Route::get('/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage'])->name('hrd.daftarKaryawan');
-    Route::get('/daftarDivisi', [HrdDivisiController::class, 'listPage'])->name('hrd.daftarDivisi');
+    Route::get('/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage'])
+        ->middleware('throttle:pencarian') // + throttle (ada filter: nama, divisi, jabatan, status)
+        ->name('hrd.daftarKaryawan');
 
-    Route::get('/daftarPesan', [HrdPesanController::class, 'daftarPage'])->name('hrd.daftarPesan');
+    Route::get('/daftarDivisi', [HrdDivisiController::class, 'listPage'])
+        ->middleware('throttle:pencarian') // + throttle
+        ->name('hrd.daftarDivisi');
+
+    Route::get('/daftarPesan', [HrdPesanController::class, 'daftarPage'])
+        ->middleware('throttle:pencarian') // + throttle
+        ->name('hrd.daftarPesan');
 
     Route::get('/divisi-page', function () {
         return view('hrd.divisi', [
@@ -197,13 +202,12 @@ Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
 
     // 2. Route Action/API Divisi (Dipanggil via Fetch JavaScript)
     Route::get('/divisi', [HrdDivisiController::class, 'index']);
-    Route::post('/divisi', [HrdDivisiController::class, 'store']);
+    Route::post('/divisi', [HrdDivisiController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
     Route::get('/divisi/{id}', [HrdDivisiController::class, 'show']);
-    Route::put('/divisi/{id}', [HrdDivisiController::class, 'update']);
-    Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy']);
+    Route::put('/divisi/{id}', [HrdDivisiController::class, 'update'])->middleware('throttle:submit-form'); // + throttle
+    Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
 
-    Route::post('/staff', [HrdStaffController::class, 'store']);
-    Route::put('/staff/{id}', [HrdStaffController::class, 'update']);
-    Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
+    Route::post('/staff', [HrdStaffController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
+    Route::put('/staff/{id}', [HrdStaffController::class, 'update'])->middleware('throttle:submit-form'); // + throttle
+    Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
 });
-

@@ -39,15 +39,21 @@ class KadivTopbarTest extends TestCase
     {
         $this->actingAs($this->kadiv)->get('/kadiv/dashboard')
             ->assertOk()
-            ->assertSee('id="kadiv-topbar-name"', false)
+            ->assertSee('id="topbar-nama"', false)
+            ->assertSee('id="profile-dropdown-btn"', false)
+            ->assertSee('id="profile-dropdown-menu"', false)
             ->assertSee('Pak Tono')
-            ->assertSee('tono@silindo.test');
+            ->assertSee('Teknologi Informasi')
+            ->assertSee('Profil Saya')
+            ->assertSee(route('kadiv.profile'));
     }
 
     public function test_kadiv_topbar_logout_posts_to_the_logout_route(): void
     {
         $this->actingAs($this->kadiv)->get('/kadiv/dashboard')
             ->assertSee('action="' . route('logout') . '"', false)
+            ->assertSee('id="topbar-logout-form"', false)
+            ->assertSee('id="btn-logout-topbar"', false)
             ->assertSee('name="_token"', false);
     }
 
