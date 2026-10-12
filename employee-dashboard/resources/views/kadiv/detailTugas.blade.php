@@ -395,11 +395,14 @@
                         editPenerima.add(new Option(task.karyawan?.nama || 'Staff saat ini', recipientId));
                     }
                     editPenerima.value = recipientId;
-                    editTaskButton.disabled = false;
+                    editTaskButton.disabled = task.status === 'sudah di-acc';
                     setText('detail-task-id', 'Tugas ' + task.id_tugas);
                     setText('detail-task-title', task.judul_tugas);
                     setText('detail-task-deadline', 'tenggat : ' + formatDate(task.deadline));
-                    setText('detail-task-status', 'status : ' + (task.status_efektif || task.status));
+                    const taskStatus = task.is_terlambat && ['menunggu di-acc', 'sudah di-acc'].includes(task.status)
+                        ? task.status + ' · Terlambat'
+                        : (task.status_efektif || task.status);
+                    setText('detail-task-status', 'status : ' + taskStatus);
                     setText('detail-task-description', task.deskripsi);
                     setText('detail-submission-title', submission ? 'Pengumpulan Tugas' : 'Belum ada pengumpulan');
                     setText('detail-submission-deadline', 'tenggat : ' + formatDate(task.deadline));

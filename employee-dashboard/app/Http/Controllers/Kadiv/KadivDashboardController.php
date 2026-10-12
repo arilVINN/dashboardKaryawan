@@ -45,6 +45,9 @@ class KadivDashboardController extends Controller
         $sudahAcc = (clone $divisionTasks)
             ->statusEfektif(Tugas::STATUS_SUDAH_ACC)
             ->count();
+        $selesaiTerlambat = (clone $divisionTasks)
+            ->selesaiTerlambat()
+            ->count();
         $telat = (clone $divisionTasks)
             ->statusEfektif(Tugas::STATUS_TELAT)
             ->count();
@@ -70,6 +73,7 @@ class KadivDashboardController extends Controller
                     'tugas_berjalan' => $berjalan,
                     'tugas_menunggu_di_acc' => $menungguAcc,
                     'tugas_sudah_di_acc' => $sudahAcc,
+                    'tugas_selesai_terlambat' => $selesaiTerlambat,
                     'tugas_telat' => $telat,
                     'persentase_penyelesaian' => $totalTasks > 0
                         ? round(($sudahAcc / $totalTasks) * 100, 2)

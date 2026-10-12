@@ -21,7 +21,7 @@ class KadivTugasQuery
     {
         $karyawanIds = Karyawan::where('divisi_id_divisi', $this->divisiId)->pluck('id_karyawan');
 
-        $query = Tugas::with(['karyawan', 'submitTugas'])
+        $query = Tugas::with(['karyawan', 'submitTugas', 'latestSubmitTugas'])
             ->whereIn('karyawan_id_karyawan', $karyawanIds);
 
         $staff = $filters['staff'] ?? null;

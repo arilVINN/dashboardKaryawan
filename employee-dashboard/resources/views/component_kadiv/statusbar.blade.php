@@ -94,7 +94,8 @@
             const metrics = json.data.metrics;
             const belum = (Number(metrics.tugas_baru) || 0)
                 + (Number(metrics.tugas_berjalan) || 0)
-                + (Number(metrics.tugas_telat) || 0);
+                + (Number(metrics.tugas_telat) || 0)
+                - (Number(metrics.tugas_selesai_terlambat) || 0);
             const pending = Number(metrics.tugas_menunggu_di_acc) || 0;
             const selesai = Number(metrics.tugas_sudah_di_acc) || 0;
             const total = belum + pending + selesai;
@@ -133,4 +134,3 @@
         loadKadivStatusbar();
     }
 </script>
-

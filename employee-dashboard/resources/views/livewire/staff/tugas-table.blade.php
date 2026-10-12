@@ -65,9 +65,16 @@
                             <td class="px-6 py-4 font-semibold text-slate-800 whitespace-nowrap">{{ $row->judul_tugas }}</td>
                             <td class="px-6 py-4 text-slate-500 whitespace-nowrap">{{ $row->deadline ? \Illuminate\Support\Carbon::parse($row->deadline)->format('d/m/Y H:i') : '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $statusClass[$st] ?? 'bg-slate-100 text-slate-700' }}">
-                                    {{ $st }}
-                                </span>
+                                <div class="inline-flex gap-1">
+                                    @if ($row->is_terlambat && in_array($row->status, [\App\Models\Tugas::STATUS_MENUNGGU_ACC, \App\Models\Tugas::STATUS_SUDAH_ACC], true))
+                                        <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $row->status === \App\Models\Tugas::STATUS_SUDAH_ACC ? 'bg-green-100 text-green-700' : 'bg-[#FFF7ED] text-[#C2410C]' }}">{{ $row->status }}</span>
+                                        <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Terlambat</span>
+                                    @else
+                                        <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $statusClass[$st] ?? 'bg-slate-100 text-slate-700' }}">
+                                            {{ $st }}
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <a href="{{ url('/tugas/detail/' . $row->id_tugas) }}"

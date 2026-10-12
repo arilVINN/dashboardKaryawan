@@ -81,10 +81,17 @@
                         <tr wire:key="tugas-{{ $task->id_tugas }}" class="hover:bg-slate-50 transition">
                             <td class="px-6 py-4 font-semibold text-slate-800 whitespace-nowrap">{{ $task->judul_tugas }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-bold
-                                    {{ $status === 'sudah di-acc' ? 'bg-green-100 text-green-700' : ($status === 'menunggu di-acc' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700') }}">
-                                    {{ $status }}
-                                </span>
+                                <div class="inline-flex gap-1">
+                                    @if ($task->is_terlambat && in_array($task->status, [\App\Models\Tugas::STATUS_MENUNGGU_ACC, \App\Models\Tugas::STATUS_SUDAH_ACC], true))
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold {{ $task->status === \App\Models\Tugas::STATUS_SUDAH_ACC ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700' }}">{{ $task->status }}</span>
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Terlambat</span>
+                                    @else
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold
+                                            {{ $status === 'sudah di-acc' ? 'bg-green-100 text-green-700' : ($status === 'menunggu di-acc' ? 'bg-amber-100 text-amber-700' : ($status === 'telat' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700')) }}">
+                                            {{ $status }}
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-slate-500 text-center whitespace-nowrap">{{ $task->deadline ? \Illuminate\Support\Carbon::parse($task->deadline)->format('d/m/Y H:i') : '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-xs">

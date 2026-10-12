@@ -47,6 +47,10 @@ class DashboardController extends Controller
             ->statusEfektif(Tugas::STATUS_SUDAH_ACC)
             ->count();
 
+        $tugasSelesaiTerlambat = (clone $tugasQuery)
+            ->selesaiTerlambat()
+            ->count();
+
         $tugasTelat = (clone $tugasQuery)
             ->statusEfektif(Tugas::STATUS_TELAT)
             ->count();
@@ -77,6 +81,7 @@ class DashboardController extends Controller
                     'tugas_berjalan' => $tugasBerjalan,
                     'tugas_menunggu_acc' => $tugasMenungguAcc,
                     'tugas_sudah_acc' => $tugasSudahAcc,
+                    'tugas_selesai_terlambat' => $tugasSelesaiTerlambat,
                     'tugas_telat' => $tugasTelat,
                     'total_tugas' => $totalTugas,
                     'completion_percentage' => $completionPercentage,
