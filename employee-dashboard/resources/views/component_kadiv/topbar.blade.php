@@ -39,16 +39,16 @@
                     <p id="topbar-nama" class="text-sm font-semibold text-slate-800">{{ $topbarNama }}</p>
                     <p id="topbar-divisi" class="text-xs text-slate-500">{{ $topbarDivisi }}</p>
                 </div>
-                <div class="py-1">
-                    <a href="{{ $topbarProfileUrl }}"
-                        class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition">
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                        Profil Saya
-                    </a>
-                </div>
+
+                <a href="{{ $topbarProfileUrl }}"
+                    class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    Profil Saya
+                </a>
+
                 <form id="topbar-logout-form" method="POST" action="{{ route('logout') }}"
                     class="border-t border-slate-100 pt-1">
                     @csrf
@@ -112,15 +112,18 @@
 
     document.getElementById('btn-logout-topbar')?.addEventListener('click', async function () {
         const form = document.getElementById('topbar-logout-form');
+        if (!form || !window.confirm('Apakah Anda yakin ingin keluar?')) return;
+
         const token = sessionStorage.getItem('staff_token');
+        const localToken = localStorage.getItem('staff_token');
         this.disabled = true;
 
-        if (token) {
+        if (token || localToken) {
             try {
                 const response = await fetch('/api/logout', {
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Bearer ' + token,
+                        'Authorization': 'Bearer ' + (token || localToken),
                         'Accept': 'application/json',
                     },
                 });
@@ -133,6 +136,7 @@
         }
 
         sessionStorage.removeItem('staff_token');
+        localStorage.removeItem('staff_token');
         HTMLFormElement.prototype.submit.call(form);
     });
 </script>

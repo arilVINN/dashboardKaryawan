@@ -91,6 +91,7 @@ document.getElementById('form-login').addEventListener('submit', async function(
         const formData = new FormData(this);
         const response = await fetch('/login', {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
@@ -113,7 +114,7 @@ document.getElementById('form-login').addEventListener('submit', async function(
         const data = await response.json();
 
         if (response.ok && data.access_token) {
-            sessionStorage.removeItem('staff_token');
+            localStorage.setItem('staff_token', data.access_token);
             sessionStorage.setItem('staff_token', data.access_token);
             
             // Arahkan berdasarkan role
