@@ -54,10 +54,8 @@ class AuthController extends Controller
             report($exception);
         }
 
-        $isApiRequest = $request->is('api/*');
-
-        if (! $isApiRequest) {
-            Auth::login($user);
+        Auth::login($user);
+        if ($request->hasSession()) {
             $request->session()->regenerate();
         }
 

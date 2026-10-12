@@ -39,18 +39,15 @@
                     <p id="topbar-nama" class="text-sm font-semibold text-slate-800">{{ $topbarNama }}</p>
                     <p id="topbar-divisi" class="text-xs text-slate-500">{{ $topbarDivisi }}</p>
                 </div>
-                <div class="py-1">
-                    <a href="{{ $topbarProfileUrl }}"
-                        class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition">
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                        Profil Saya
-                    </a>
-                </div>
-                <form id="topbar-logout-form" method="POST" action="{{ route('logout') }}"
-                    class="border-t border-slate-100 pt-1">
+
+                <a href="{{ url('/kadiv/profile') }}"
+                   class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition">
+                    Profil
+                </a>
+
+                <form method="POST" action="{{ route('logout') }}"
+                      onsubmit="if (!confirm('Apakah Anda yakin ingin keluar?')) return false; sessionStorage.removeItem('staff_token'); localStorage.removeItem('staff_token'); return true;"
+                      class="border-t border-slate-100">
                     @csrf
                     <button type="button" id="btn-logout-topbar"
                         class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left">
