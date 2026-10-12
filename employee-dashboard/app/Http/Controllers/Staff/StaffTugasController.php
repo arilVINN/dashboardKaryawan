@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Models\Tugas;
 use App\Models\SubmitTugas;
 use App\Queries\StaffTugasQuery;
-use Illuminate\Support\Str;
 
 class StaffTugasController extends Controller
 {
@@ -60,9 +59,9 @@ class StaffTugasController extends Controller
             return response()->json(['message' => 'Tugas ini sudah di-ACC dan tidak bisa dikirim ulang'], 403);
         }
         $validated = $request->validate([
-            'file_hasil' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip', // max 200 MB (dalam kilobyte)
+            'file_hasil' => 'required_without:catatan_karyawan|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip', // max 200 MB (dalam kilobyte)
             'link_submit' => 'nullable|url|max:2048',
-            'catatan_karyawan' => 'nullable|string',
+            'catatan_karyawan' => 'required_without:file_hasil|string',
             'progress' => 'sometimes|integer|min:0|max:100'
         ]);
         $progress = $validated['progress'] ?? $tugas->progress;

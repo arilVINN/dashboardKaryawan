@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Tugas;
 use App\Models\Karyawan;
+use App\Models\Notifikasi;
 use App\Queries\KadivTugasQuery;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -126,6 +127,10 @@ class KadivTaskController extends Controller
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar wewenang'], 404);
         }
 
+        if ($tugas->status === Tugas::STATUS_SUDAH_ACC) {
+            return response()->json(['message' => 'Tugas ini sudah di-ACC dan tidak bisa diubah'], 403);
+        }
+
         $request->validate([
             'judul_tugas' => 'sometimes|required|string|max:100',
             'deskripsi' => 'sometimes|required|string',
@@ -203,7 +208,7 @@ class KadivTaskController extends Controller
         $divisiId = $userKadiv->karyawan->divisi_id_divisi;
 
         $tugas = Tugas::with([
-            'karyawan',
+            'karyawan.user',
             'submitTugas' => fn ($query) => $query->orderBy('created_at', 'desc'),
         ])->where('id_tugas', $id)->first();
 
@@ -256,6 +261,17 @@ class KadivTaskController extends Controller
                         ? \Illuminate\Support\Carbon::parse($validated['deadline'])->format('Y-m-d H:i:s')
                         : $tugas->deadline,
                 ]);
+
+                if ($validated['status_review'] === 'revisi' && $tugas->karyawan->user) {
+                    Notifikasi::create([
+                        'id_notifikasi' => $this->generateNotifikasiId(),
+                        'judul_notifikasi' => 'Revisi Tugas',
+                        'isi_notif' => 'Tugas "'.$tugas->judul_tugas.'" mendapat revisi baru: '
+                            .trim($validated['catatan_revisi']),
+                        'tanggal_notifikasi' => now()->toDateString(),
+                        'user_id_user' => $tugas->karyawan->user->id_user,
+                    ]);
+                }
             });
         } catch (\Throwable $exception) {
             if ($filePath) {
@@ -272,5 +288,14 @@ class KadivTaskController extends Controller
                 'submit' => $latestSubmit
             ]
         ]);
+    }
+
+    private function generateNotifikasiId(): string
+    {
+        do {
+            $id = 'NTF'.strtoupper(substr(uniqid(), -8));
+        } while (Notifikasi::where('id_notifikasi', $id)->exists());
+
+        return $id;
     }
 }

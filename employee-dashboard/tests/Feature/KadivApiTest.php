@@ -224,6 +224,26 @@ class KadivApiTest extends TestCase
         $this->assertSame(['T-1', 'T-3', 'T-2'], collect($desc->json('data'))->pluck('id_tugas')->all());
     }
 
+    public function test_kadiv_cannot_edit_task_after_it_is_approved(): void
+    {
+        $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
+        $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
+        $task = $this->createTask('T-1', 'ST-1', Tugas::STATUS_SUDAH_ACC);
+
+        $this->actingAs($kadiv)
+            ->postJson('/api/kadiv/tugas/'.$task->id_tugas, [
+                'judul_tugas' => 'Judul diubah',
+            ])
+            ->assertForbidden()
+            ->assertJsonPath('message', 'Tugas ini sudah di-ACC dan tidak bisa diubah');
+
+        $this->assertDatabaseHas('tugas', [
+            'id_tugas' => $task->id_tugas,
+            'judul_tugas' => $task->judul_tugas,
+            'status' => Tugas::STATUS_SUDAH_ACC,
+        ]);
+    }
+
     public function test_tugas_list_sorts_by_tanggal(): void
     {
         $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
@@ -392,6 +412,9 @@ class KadivApiTest extends TestCase
 
         $this->actingAs($kadiv)->get('/kadiv/manajemenStaff')
             ->assertOk()
+            ->assertSee('id="topbar-inisial"', false)
+            ->assertSee('id="btn-logout-topbar"', false)
+            ->assertSee(route('kadiv.profile'))
             ->assertSee('Nama Staff')
             ->assertSee('id="kadiv-staff-rows"', false);
     }

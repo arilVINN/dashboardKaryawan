@@ -19,7 +19,8 @@ class StaffTugasQuery
 
     public function apply(array $filters): Builder
     {
-        $query = Tugas::where('karyawan_id_karyawan', $this->karyawanId);
+        $query = Tugas::with('latestSubmitTugas')
+            ->where('karyawan_id_karyawan', $this->karyawanId);
 
         $q = $filters['q'] ?? null;
         if ($q !== null && trim((string) $q) !== '') {

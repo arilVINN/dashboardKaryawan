@@ -86,20 +86,20 @@
             const json = await response.json();
             const s = json.data.statistik;
 
-            // 1. Tampilkan Angka Statistik Asli (Tanpa Tugas yang Selesai)
-            const tugasBerjalan = (s.tugas_baru || 0) + (s.tugas_berjalan || 0);
-            const tugasPending = (s.tugas_menunggu_acc || 0);
-            const tugasTelat = (s.tugas_telat || 0);
-            const totalAktif = tugasBerjalan + tugasPending + tugasTelat;
+            // Total tugas tetap mencakup tugas yang sudah di-ACC.
+            const totalTugas = Number(s.total_tugas) || 0;
+            const tugasBerjalan = (Number(s.tugas_baru) || 0) + (Number(s.tugas_berjalan) || 0);
+            const tugasPending = Number(s.tugas_menunggu_acc) || 0;
+            const tugasTelat = Number(s.tugas_telat) || 0;
             
-            document.getElementById('stat-berjalan').textContent = tugasBerjalan + '/' + totalAktif + ' Tugas';
-            document.getElementById('stat-pending').textContent = tugasPending + '/' + totalAktif + ' Tugas';
-            document.getElementById('stat-telat').textContent = tugasTelat + '/' + totalAktif + ' Tugas';
+            document.getElementById('stat-berjalan').textContent = tugasBerjalan + '/' + totalTugas + ' Tugas';
+            document.getElementById('stat-pending').textContent = tugasPending + '/' + totalTugas + ' Tugas';
+            document.getElementById('stat-telat').textContent = tugasTelat + '/' + totalTugas + ' Tugas';
 
-            // 2. Hitung Persentase (Tanpa yang Selesai)
-            const pctBerjalan = totalAktif > 0 ? Math.round((tugasBerjalan / totalAktif) * 100) : 0;
-            const pctPending = totalAktif > 0 ? Math.round((tugasPending / totalAktif) * 100) : 0;
-            const pctTelat = totalAktif > 0 ? Math.round((tugasTelat / totalAktif) * 100) : 0;
+            // Persentase tiap status dihitung dari seluruh tugas, termasuk yang sudah di-ACC.
+            const pctBerjalan = totalTugas > 0 ? Math.round((tugasBerjalan / totalTugas) * 100) : 0;
+            const pctPending = totalTugas > 0 ? Math.round((tugasPending / totalTugas) * 100) : 0;
+            const pctTelat = totalTugas > 0 ? Math.round((tugasTelat / totalTugas) * 100) : 0;
 
             document.getElementById('pct-berjalan').textContent = pctBerjalan + '%';
             document.getElementById('pct-pending').textContent = pctPending + '%';

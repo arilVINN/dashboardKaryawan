@@ -9,9 +9,9 @@ class Tugas extends Model
 {
     /**
      * Status tugas sesuai hasil revisi UI/UX (5 status).
-     * Empat status pertama disimpan di kolom `status`;
+     * Status yang dapat disimpan berada di kolom `status`;
      * `telat` tidak pernah disimpan — dihitung dari deadline
-     * (deadline lewat dan status belum "sudah di-acc").
+     * untuk tugas yang belum selesai.
      */
     public const STATUS_BARU = 'baru';
 
@@ -43,7 +43,7 @@ class Tugas extends Model
     protected $table = 'tugas';
 
     /** Selalu sertakan status efektif (termasuk turunan "telat") di tiap respons. */
-    protected $appends = ['status_efektif'];
+    protected $appends = ['status_efektif', 'is_terlambat'];
 
     protected $primaryKey = 'id_tugas';
 
@@ -73,13 +73,23 @@ class Tugas extends Model
     }
 
     /**
-     * Tugas dianggap telat bila tanggal dan waktu deadline sudah lewat dan belum di-ACC.
-     * Status turunan — tidak pernah ditulis ke database.
+     * For completed work, lateness is based on when it was submitted, even after approval.
+     * For unfinished work, lateness is based on the current time and deadline.
      */
     public function isTelat(): bool
     {
-        if ($this->status === self::STATUS_SUDAH_ACC || empty($this->deadline)) {
+        if (empty($this->deadline)) {
             return false;
+        }
+
+        if (in_array($this->status, [self::STATUS_MENUNGGU_ACC, self::STATUS_SUDAH_ACC], true)) {
+            $submission = $this->relationLoaded('latestSubmitTugas')
+                ? $this->latestSubmitTugas
+                : $this->latestSubmitTugas()->first();
+
+            return $submission !== null
+                && \Illuminate\Support\Carbon::parse($submission->created_at)
+                    ->gt(\Illuminate\Support\Carbon::parse($this->deadline));
         }
 
         return \Illuminate\Support\Carbon::parse($this->deadline)->lt(now());
@@ -90,7 +100,17 @@ class Tugas extends Model
      */
     public function getStatusEfektifAttribute(): string
     {
-        return $this->isTelat() ? self::STATUS_TELAT : $this->status;
+        return $this->isTelat() && ! in_array($this->status, [
+            self::STATUS_MENUNGGU_ACC,
+            self::STATUS_SUDAH_ACC,
+        ], true)
+            ? self::STATUS_TELAT
+            : $this->status;
+    }
+
+    public function getIsTerlambatAttribute(): bool
+    {
+        return $this->isTelat();
     }
 
     /**
@@ -100,13 +120,30 @@ class Tugas extends Model
     public function scopeStatusEfektif($query, string $status)
     {
         if ($status === self::STATUS_TELAT) {
-            return $query->whereNotNull('deadline')
-                ->where('deadline', '<', now())
-                ->where('status', '!=', self::STATUS_SUDAH_ACC);
+            return $query->where(function ($lateTasks): void {
+                $lateTasks->where(function ($unfinished): void {
+                    $unfinished->whereNotNull('deadline')
+                        ->where('deadline', '<', now())
+                        ->whereNotIn('status', [self::STATUS_SUDAH_ACC, self::STATUS_MENUNGGU_ACC]);
+                })->orWhere(function ($lateSubmissions): void {
+                    $lateSubmissions->whereIn('status', [
+                        self::STATUS_MENUNGGU_ACC,
+                        self::STATUS_SUDAH_ACC,
+                    ])
+                        ->whereHas('latestSubmitTugas', function ($submission): void {
+                            $submission->whereColumn('submit_tugas.created_at', '>', 'tugas.deadline');
+                        });
+                });
+            });
         }
 
         // "sudah di-acc" tidak pernah telat, jadi tanpa syarat deadline.
         if ($status === self::STATUS_SUDAH_ACC) {
+            return $query->where('status', $status);
+        }
+
+        //kalo status nungggu acc, lewat dl tidak dianggap telat
+        if ($status === self::STATUS_MENUNGGU_ACC) {
             return $query->where('status', $status);
         }
 
@@ -145,5 +182,22 @@ class Tugas extends Model
             SubmitTugas::class,
             'tugas_id_tugas'
         );
+    }
+
+    public function latestSubmitTugas()
+    {
+        return $this->hasOne(
+            SubmitTugas::class,
+            'tugas_id_tugas',
+            'id_tugas'
+        )->latestOfMany('created_at');
+    }
+
+    public function scopeSelesaiTerlambat($query)
+    {
+        return $query->whereIn('status', [self::STATUS_MENUNGGU_ACC, self::STATUS_SUDAH_ACC])
+            ->whereHas('latestSubmitTugas', function ($submission): void {
+                $submission->whereColumn('submit_tugas.created_at', '>', 'tugas.deadline');
+            });
     }
 }

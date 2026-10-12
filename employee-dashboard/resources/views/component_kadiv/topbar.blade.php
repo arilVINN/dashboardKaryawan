@@ -1,73 +1,43 @@
 @php
-    // Sumber kebenaran: user yang login via session (semua role).
-    $authUser = auth()->user();
-    $kadivNama = $authUser?->karyawan?->nama
-        ?? $authUser?->username
-        ?? session('user_session.nama')
-        ?? 'User';
-    $kadivEmail = $authUser?->karyawan?->email
-        ?? session('user_session.email')
-        ?? '';
-    $kadivInitial = mb_strtoupper(mb_substr($kadivNama, 0, 1));
+    $topbarUser = auth()->user();
+    $topbarEmployee = $topbarUser?->karyawan;
+    $pageRole = 'kadiv';
+    $topbarNama = $topbarEmployee?->nama ?? $topbarUser?->username ?? 'Guest';
+    $topbarDivisi = $topbarEmployee?->divisi?->nama_divisi ?? $topbarUser?->role?->nama_role ?? ucfirst($pageRole);
+    $topbarInitial = $topbarUser ? mb_strtoupper(mb_substr($topbarNama, 0, 1)) : 'U';
+    $topbarProfileUrl = route('kadiv.profile');
+    $topbarProfileEndpoint = '/api/kadiv/profile';
 @endphp
 
-<header class="h-16 flex items-center justify-between px-6 bg-white border-b border-slate-200 shrink-0">
+<header
+    class="h-16 w-full bg-white border-b border-slate-200 px-8 flex items-center justify-end shrink-0 relative box-border">
+    <div class="flex items-center gap-5">
 
-    {{-- KIRI: Judul halaman (opsional) --}}
-    <div class="flex items-center gap-3">
-        {{-- Kalau kamu mau tampilkan judul halaman di sini, aktifkan bagian ini --}}
-        {{-- <h2 class="text-lg font-bold text-[#2A4B6A]">@yield('page-title', 'Dashboard')</h2> --}}
-    </div>
-
-    {{-- KANAN: Notifikasi + Avatar --}}
-    <div class="flex items-center gap-4">
-
-        {{-- Lonceng notifikasi --}}
-        <button type="button"
-                id="btn-notif"
-                class="relative p-2 text-[#2A4B6A] hover:bg-slate-100 rounded-lg transition cursor-pointer">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+        <button class="text-slate-400 hover:text-slate-600 transition p-1.5 rounded-full hover:bg-slate-100">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                    d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
             </svg>
-            {{-- Badge notifikasi (kalau ada notif baru) --}}
-            {{-- <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span> --}}
         </button>
 
-        {{-- Avatar + dropdown --}}
         <div class="relative">
-            <button type="button"
-                    id="profile-dropdown-btn"
-                    class="flex items-center gap-2 cursor-pointer">
-                <div id="kadiv-topbar-initial" class="w-9 h-9 rounded-full bg-[#19A7CE] flex items-center justify-center text-white font-bold text-sm">
-                    {{ $kadivInitial }}
+            <button id="profile-dropdown-btn" type="button"
+                class="flex items-center gap-2 cursor-pointer p-1 rounded-lg hover:bg-slate-100 transition focus:outline-none">
+                <div id="topbar-inisial"
+                    class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                    {{ $topbarInitial }}
                 </div>
-
-                <svg id="dropdown-arrow"
-                     class="w-4 h-4 text-[#2A4B6A] transition-transform duration-200"
-                     fill="none"
-                     stroke="currentColor"
-                     viewBox="0 0 24 24">
-                    <path stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M19 9l-7 7-7-7"></path>
+                <svg class="w-4 h-4 text-slate-500 transition-transform duration-200" id="dropdown-arrow" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
             </button>
 
-            {{-- Dropdown menu --}}
             <div id="profile-dropdown-menu"
-                 class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 overflow-hidden z-50">
-
-                <div class="px-4 py-3 border-b border-slate-100">
-                    <p id="kadiv-topbar-name" class="text-sm font-bold text-[#2A4B6A] truncate">
-                        {{ $kadivNama }}
-                    </p>
-                    <p id="kadiv-topbar-email" class="text-xs text-slate-500 truncate">
-                        {{ $kadivEmail }}
-                    </p>
+                class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50 transition-all">
+                <div class="px-4 py-2 border-b border-slate-100">
+                    <p id="topbar-nama" class="text-sm font-semibold text-slate-800">{{ $topbarNama }}</p>
+                    <p id="topbar-divisi" class="text-xs text-slate-500">{{ $topbarDivisi }}</p>
                 </div>
 
                 <a href="{{ url('/kadiv/profile') }}"
@@ -79,62 +49,87 @@
                       onsubmit="if (!confirm('Apakah Anda yakin ingin keluar?')) return false; sessionStorage.removeItem('staff_token'); localStorage.removeItem('staff_token'); return true;"
                       class="border-t border-slate-100">
                     @csrf
-                    <button type="submit" id="kadiv-logout"
-                            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition">
-                        Logout
+                    <button type="button" id="btn-logout-topbar"
+                        class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left">
+                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                            </path>
+                        </svg>
+                        Keluar
                     </button>
                 </form>
             </div>
         </div>
+
     </div>
 </header>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    const profileBtn = document.getElementById('profile-dropdown-btn');
+    const profileMenu = document.getElementById('profile-dropdown-menu');
+    const dropdownArrow = document.getElementById('dropdown-arrow');
 
-        const profileBtn = document.getElementById('profile-dropdown-btn');
-        const profileMenu = document.getElementById('profile-dropdown-menu');
-        const dropdownArrow = document.getElementById('dropdown-arrow');
+    if (profileBtn && profileMenu) {
+        profileBtn.addEventListener('click', function (event) {
+            event.stopPropagation();
+            profileMenu.classList.toggle('hidden');
+            dropdownArrow?.classList.toggle('rotate-180');
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!profileBtn.contains(event.target) && !profileMenu.contains(event.target)) {
+                profileMenu.classList.add('hidden');
+                dropdownArrow?.classList.remove('rotate-180');
+            }
+        });
+    }
+
+    (async function loadTopbar() {
+        if ({{ $topbarUser ? 'true' : 'false' }}) return;
+
         const token = sessionStorage.getItem('staff_token');
-        const serverUser = {{ $authUser ? 'true' : 'false' }};
+        if (!token) return;
 
-        // Fallback token hanya bila halaman tidak dirender dari session.
-        if (token && !serverUser) {
-            fetch('/api/kadiv/profile', {
-                headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-            })
-                .then(async response => {
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.message || 'Gagal memuat identitas Kadiv.');
-                    return result.data;
-                })
-                .then(profile => {
-                    document.getElementById('kadiv-topbar-initial').textContent =
-                        (profile.nama || 'U').charAt(0).toUpperCase();
-                    document.getElementById('kadiv-topbar-name').textContent = profile.nama || 'User';
-                    document.getElementById('kadiv-topbar-email').textContent = profile.email || '';
-                })
-                .catch(error => console.error('Gagal memuat identitas Kadiv:', error));
+        const response = await fetch(@json($topbarProfileEndpoint), {
+            headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+        });
+        const result = await response.json();
+        if (!response.ok || !result.data) {
+            throw new Error(result.message || 'Gagal memuat identitas pengguna.');
         }
 
-        if (profileBtn && profileMenu) {
+        const profile = result.data;
+        document.getElementById('topbar-nama').textContent = profile.nama || 'Pengguna';
+        document.getElementById('topbar-divisi').textContent = @json(ucfirst($pageRole));
+        document.getElementById('topbar-inisial').textContent = profile.nama
+            ? profile.nama.charAt(0).toUpperCase()
+            : 'U';
+    })().catch(error => console.error('Gagal memuat identitas pengguna:', error));
 
-            profileBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                profileMenu.classList.toggle('hidden');
-                if (dropdownArrow) {
-                    dropdownArrow.classList.toggle('rotate-180');
-                }
-            });
+    document.getElementById('btn-logout-topbar')?.addEventListener('click', async function () {
+        const form = document.getElementById('topbar-logout-form');
+        const token = sessionStorage.getItem('staff_token');
+        this.disabled = true;
 
-            document.addEventListener('click', function (e) {
-                if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
-                    profileMenu.classList.add('hidden');
-                    if (dropdownArrow) {
-                        dropdownArrow.classList.remove('rotate-180');
-                    }
+        if (token) {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Accept': 'application/json',
+                    },
+                });
+                if (!response.ok) {
+                    throw new Error('Gagal mengakhiri token login.');
                 }
-            });
+            } catch (error) {
+                console.error('Gagal mencabut token login:', error);
+            }
         }
+
+        sessionStorage.removeItem('staff_token');
+        HTMLFormElement.prototype.submit.call(form);
     });
 </script>

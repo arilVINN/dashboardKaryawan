@@ -302,6 +302,8 @@ class StaffApiTest extends TestCase
                 'isi_notif' => 'Notifikasi milik staff.',
                 'tanggal_notifikasi' => '2026-09-29',
                 'user_id_user' => $this->staff->id_user,
+                'created_at' => '2026-09-29 14:35:00',
+                'updated_at' => '2026-09-29 14:35:00',
             ],
             [
                 'id_notifikasi' => 'NTF-OTHER',
@@ -309,14 +311,18 @@ class StaffApiTest extends TestCase
                 'isi_notif' => 'Tidak boleh terlihat oleh staff.',
                 'tanggal_notifikasi' => '2026-09-29',
                 'user_id_user' => $this->kadiv->id_user,
+                'created_at' => '2026-09-29 14:35:00',
+                'updated_at' => '2026-09-29 14:35:00',
             ],
         ]);
 
-        $this->actingAs($this->staff)
+        $response = $this->actingAs($this->staff)
             ->getJson('/staff/notifikasi')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id_notifikasi', 'NTF-OWN');
+
+        $this->assertNotNull($response->json('data.0.created_at'));
     }
 
     public function test_staff_cannot_open_another_staff_task_thread(): void

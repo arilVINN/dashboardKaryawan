@@ -71,7 +71,10 @@
 
                     const status = document.createElement('span');
                     status.className = 'capitalize';
-                    status.textContent = (task.status_efektif || task.status || '-').replaceAll('-', ' ');
+                    status.textContent = task.is_terlambat
+                        && ['menunggu di-acc', 'sudah di-acc'].includes(task.status)
+                        ? task.status + ' · Terlambat'
+                        : (task.status_efektif || task.status || '-').replaceAll('-', ' ');
                     row.appendChild(status);
 
                     const deadline = document.createElement('span');
