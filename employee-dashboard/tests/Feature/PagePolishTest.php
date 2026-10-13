@@ -119,6 +119,16 @@ class PagePolishTest extends TestCase
         $this->assertStringContainsString('<h2 class="text-xl font-bold text-slate-800">'.$rowHeading.'</h2>', $html);
     }
 
+    private function assertIconRowHeading(string $html, string $parent, string $current, string $title, string $rowHeading): void
+    {
+        $this->assertStringContainsString('data-breadcrumb-parent="'.$parent.'"', $html);
+        $this->assertStringContainsString('data-breadcrumb-current="'.$current.'"', $html);
+        $this->assertStringContainsString('<title>'.$title.'</title>', $html);
+        $this->assertStringNotContainsString('<h1 class="text-2xl', $html);
+        $this->assertStringContainsString('<svg class="w-5 h-5 text-green-600"', $html);
+        $this->assertStringContainsString('<span>'.$rowHeading.'</span></h2>', $html);
+    }
+
     private function assertTwoLevelHeading(string $html, string $parent, string $current, string $title, string $pageHeading, string $rowHeading): void
     {
         $this->assertStringContainsString('data-breadcrumb-parent="'.$parent.'"', $html);
@@ -185,7 +195,7 @@ class PagePolishTest extends TestCase
 
     public function test_kadiv_pesan_page_polish(): void
     {
-        $this->assertRowHeading(
+        $this->assertIconRowHeading(
             $this->getPage($this->kadiv, '/kadiv/pesan'),
             'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
         );
@@ -209,7 +219,7 @@ class PagePolishTest extends TestCase
 
     public function test_hrd_pesan_page_polish(): void
     {
-        $this->assertRowHeading(
+        $this->assertIconRowHeading(
             $this->getPage($this->hrd, '/hrd/pesan'),
             'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
         );
@@ -233,7 +243,7 @@ class PagePolishTest extends TestCase
 
     public function test_hrd_daftar_pesan_page_polish(): void
     {
-        $this->assertRowHeading(
+        $this->assertIconRowHeading(
             $this->getPage($this->hrd, '/hrd/daftarPesan'),
             'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
         );
