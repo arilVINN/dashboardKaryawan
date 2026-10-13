@@ -4,7 +4,9 @@
 @endphp
 
 <div class="flex flex-col gap-3">
-    <h2 class="text-xl font-bold text-slate-800">Tabel Tugas</h2>
+    @if ($isCompact)
+        <h2 class="text-xl font-bold text-slate-800">Tabel Tugas</h2>
+    @endif
 
     @unless ($isCompact)
         <form id="staffTugasFilter" onsubmit="return false;"

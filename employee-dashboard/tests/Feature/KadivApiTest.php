@@ -301,7 +301,7 @@ class KadivApiTest extends TestCase
             ->assertSee('id="kadivTaskSearch"', false)
             ->assertSee('id="kadivTaskStatus"', false)
             ->assertSee('id="kadivTaskStaff"', false)
-            ->assertSee('Tugas Divisi')
+            ->assertSee('Daftar Tugas')
             ->assertSee('Tambah Tugas');
     }
 

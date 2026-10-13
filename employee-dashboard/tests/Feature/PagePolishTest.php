@@ -193,6 +193,44 @@ class PagePolishTest extends TestCase
         );
     }
 
+    public function test_full_list_pages_have_no_inner_h2(): void
+    {
+        $pages = [
+            [$this->staff, '/tugas'],
+            [$this->staff, '/pesan'],
+            [$this->kadiv, '/kadiv/tugas'],
+            [$this->kadiv, '/kadiv/pesan'],
+            [$this->kadiv, '/kadiv/manajemenStaff'],
+            [$this->hrd, '/hrd/daftarKaryawan'],
+            [$this->hrd, '/hrd/daftarDivisi'],
+            [$this->hrd, '/hrd/daftarPesan'],
+            [$this->hrd, '/hrd/manajemenDivisi'],
+        ];
+
+        foreach ($pages as [$user, $url]) {
+            $this->assertStringNotContainsString(
+                '<h2',
+                $this->getPage($user, $url),
+                "Duplicate inner heading on {$url}"
+            );
+        }
+    }
+
+    public function test_hrd_pesan_keeps_stats_section_label(): void
+    {
+        $html = $this->getPage($this->hrd, '/hrd/pesan');
+
+        $this->assertSame(1, substr_count($html, 'Pusat Pesan & Komunikasi'));
+    }
+
+    public function test_dashboard_compact_tables_keep_labels(): void
+    {
+        $html = $this->getPage($this->staff, '/');
+
+        $this->assertStringContainsString('Tabel Tugas', $html);
+        $this->assertStringContainsString('Tabel Pesan', $html);
+    }
+
     public function test_custom_pagination_view_renders_branded_nav(): void
     {
         $paginator = new LengthAwarePaginator(
