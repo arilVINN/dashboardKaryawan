@@ -26,9 +26,18 @@
                 {{-- Header Profil --}}
                 <div class="flex items-center gap-6">
 
-                    <div
-                        class="w-28 h-28 rounded-full bg-slate-300 shrink-0 flex items-center justify-center text-4xl font-bold text-slate-500 uppercase">
-                        <span id="profile-initial">-</span>
+                    <div class="relative w-28 h-28 shrink-0">
+                        <div
+                            class="w-28 h-28 rounded-full bg-slate-300 flex items-center justify-center text-4xl font-bold text-slate-500 uppercase">
+                            <span id="profile-initial">-</span>
+                        </div>
+                        <img id="profile-photo" alt="Foto profil kadiv"
+                            class="hidden absolute inset-0 w-28 h-28 rounded-full object-cover">
+                        <label for="input-foto-kadiv" title="Ubah foto profil"
+                            class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#044564] text-white flex items-center justify-center cursor-pointer shadow hover:bg-[#03344b]">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </label>
+                        <input type="file" id="input-foto-kadiv" accept="image/jpeg,image/png,image/webp" class="hidden">
                     </div>
 
                     <div>
@@ -283,11 +292,40 @@
             Object.entries(values).forEach(([id, value]) => {
                 document.getElementById(id).textContent = value || '-';
             });
+            const kadivPhoto = document.getElementById('profile-photo');
+            if (profile.foto_url) {
+                kadivPhoto.src = profile.foto_url;
+                kadivPhoto.classList.remove('hidden');
+            }
         } catch (error) {
             console.error('Gagal memuat profil Kadiv:', error);
             alert(error.message);
         }
     }
+
+    document.getElementById('input-foto-kadiv').addEventListener('change', async function () {
+        if (this.files.length === 0) return;
+        const token = sessionStorage.getItem('staff_token');
+        const fotoData = new FormData();
+        fotoData.append('foto', this.files[0]);
+        try {
+            const fotoRes = await fetch('/api/kadiv/profile/foto', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+                body: fotoData
+            });
+            const fotoResult = await fotoRes.json();
+            if (!fotoRes.ok) throw new Error((fotoResult.data && fotoResult.data.foto ? fotoResult.data.foto.join('\n') : fotoResult.message) || 'Gagal mengunggah foto.');
+            const kadivPhoto = document.getElementById('profile-photo');
+            kadivPhoto.src = fotoResult.foto_url;
+            kadivPhoto.classList.remove('hidden');
+            alert('Foto profil berhasil diperbarui!');
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            this.value = '';
+        }
+    });
 
     document.getElementById('kadiv-password-form').addEventListener('submit', async function (event) {
         event.preventDefault();
