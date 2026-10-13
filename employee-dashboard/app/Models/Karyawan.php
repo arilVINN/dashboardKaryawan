@@ -27,6 +27,7 @@ class Karyawan extends Model
         'email',
         'alamat',
         'jabatan',
+        'foto',
         'divisi_id_divisi',
     ];
 
