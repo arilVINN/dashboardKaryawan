@@ -27,6 +27,7 @@ class Karyawan extends Model
         'email',
         'alamat',
         'jabatan',
+        'status_aktif',
         'foto',
         'divisi_id_divisi',
     ];
@@ -43,6 +44,11 @@ class Karyawan extends Model
         'Manager',
         'Content Writer',
         'Frontend',
+    ];
+
+    public const STATUS_OPTIONS = [
+        'Aktif',
+        'Tidak Aktif',
     ];
 
     public function divisi(): BelongsTo

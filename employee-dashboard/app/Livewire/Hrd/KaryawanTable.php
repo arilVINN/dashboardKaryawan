@@ -155,7 +155,7 @@ class KaryawanTable extends Component
         if ($this->status !== '') {
             $chips[] = [
                 'name' => 'status',
-                'label' => 'Status Akun: '.($this->status === 'aktif' ? 'Aktif' : 'Belum ada akun'),
+                'label' => 'Status: '.$this->status,
             ];
         }
 

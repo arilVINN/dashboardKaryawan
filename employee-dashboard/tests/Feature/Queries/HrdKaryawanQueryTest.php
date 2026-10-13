@@ -27,7 +27,7 @@ class HrdKaryawanQueryTest extends TestCase
 
         $this->staff('KRY-A', 'Andi Wijaya', 'DIV-IT', 'Software Engineer', true);
         $this->staff('KRY-B', 'Budi Santoso', 'DIV-HR', 'HR Specialist', true);
-        $this->staff('KRY-C', 'Citra Lestari', 'DIV-IT', 'Analyst', false);
+        $this->staff('KRY-C', 'Citra Lestari', 'DIV-IT', 'Analyst', false, 'Tidak Aktif');
         $this->staff('KRY-D', 'Dedi Kurniawan', 'DIV-HR', 'Operator', false);
 
         $this->task('T-1', 'KRY-A');
@@ -35,7 +35,7 @@ class HrdKaryawanQueryTest extends TestCase
         $this->task('T-3', 'KRY-C');
     }
 
-    private function staff(string $id, string $nama, string $divisiId, string $jabatan, bool $hasUser): void
+    private function staff(string $id, string $nama, string $divisiId, string $jabatan, bool $hasUser, string $statusAktif = 'Aktif'): void
     {
         Karyawan::create([
             'id_karyawan' => $id,
@@ -45,6 +45,7 @@ class HrdKaryawanQueryTest extends TestCase
             'tanggal_rekrut' => '2026-01-01',
             'no_telepon' => '081234567890',
             'jabatan' => $jabatan,
+            'status_aktif' => $statusAktif,
             'divisi_id_divisi' => $divisiId,
         ]);
 
@@ -84,8 +85,8 @@ class HrdKaryawanQueryTest extends TestCase
     {
         $this->assertSame(['KRY-A', 'KRY-C'], $this->ids(['divisi' => 'DIV-IT']));
         $this->assertSame(['KRY-C'], $this->ids(['jabatan' => 'Analyst']));
-        $this->assertSame(['KRY-A', 'KRY-B'], $this->ids(['status' => 'aktif']));
-        $this->assertSame(['KRY-C', 'KRY-D'], $this->ids(['status' => 'belum']));
+        $this->assertSame(['KRY-A', 'KRY-B', 'KRY-D'], $this->ids(['status' => 'Aktif']));
+        $this->assertSame(['KRY-C'], $this->ids(['status' => 'Tidak Aktif']));
     }
 
     public function test_sorts_by_id_nama_divisi_and_jabatan(): void

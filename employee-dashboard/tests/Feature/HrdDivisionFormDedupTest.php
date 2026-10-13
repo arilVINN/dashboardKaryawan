@@ -281,4 +281,83 @@ class HrdDivisionFormDedupTest extends TestCase
             $this->assertStringContainsString('type="date" name="tanggal_rekrut"', $kepegawaianChunk);
         }
     }
+
+    public function test_create_defaults_status_to_aktif(): void
+    {
+        $this->actingAs($this->hrd)
+            ->postJson('/hrd/staff', [
+                'nama' => 'Calon Karyawan',
+                'jenis_kelamin' => 'Laki-laki',
+                'jabatan' => 'Staff',
+                'divisi_id_divisi' => 'DIV-EMPTY',
+                'username' => 'calonstatus',
+                'password' => 'password',
+            ])
+            ->assertCreated();
+
+        $karyawan = Karyawan::whereHas('user', fn ($q) => $q->where('username', 'calonstatus'))->first();
+        $this->assertSame('Aktif', $karyawan->status_aktif);
+    }
+
+    public function test_create_accepts_tidak_aktif(): void
+    {
+        $this->actingAs($this->hrd)
+            ->postJson('/hrd/staff', [
+                'nama' => 'Calon Karyawan',
+                'jenis_kelamin' => 'Laki-laki',
+                'jabatan' => 'Staff',
+                'status_aktif' => 'Tidak Aktif',
+                'divisi_id_divisi' => 'DIV-EMPTY',
+                'username' => 'calonnonaktif',
+                'password' => 'password',
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('karyawans', ['status_aktif' => 'Tidak Aktif']);
+    }
+
+    public function test_update_status_roundtrip(): void
+    {
+        $id = $this->actingAs($this->hrd)
+            ->postJson('/hrd/staff', [
+                'nama' => 'Calon Karyawan',
+                'jenis_kelamin' => 'Laki-laki',
+                'jabatan' => 'Staff',
+                'divisi_id_divisi' => 'DIV-EMPTY',
+                'username' => 'calonstatusdua',
+                'password' => 'password',
+            ])
+            ->assertCreated()
+            ->json('data.karyawan.id_karyawan');
+
+        $this->actingAs($this->hrd)
+            ->putJson('/hrd/staff/'.$id, ['status_aktif' => 'Tidak Aktif'])
+            ->assertOk();
+
+        $this->assertSame('Tidak Aktif', Karyawan::find($id)->status_aktif);
+
+        $this->actingAs($this->hrd)
+            ->putJson('/hrd/staff/'.$id, ['status_aktif' => 'Rusak'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('status_aktif');
+    }
+
+    public function test_modals_offer_status_select_in_kepegawaian(): void
+    {
+        $html = $this->actingAs($this->hrd)
+            ->get('/hrd/detailDivisi/DIV-EMPTY')
+            ->assertOk()
+            ->getContent();
+
+        $this->assertSame(2, substr_count($html, '<select name="status_aktif"'));
+
+        foreach (['formTambahKaryawan', 'formEditKaryawan'] as $formId) {
+            $chunk = substr($html, strpos($html, $formId));
+            $kepegawaianChunk = substr($chunk, strpos($chunk, 'Kepegawaian'));
+            $kepegawaianChunk = substr($kepegawaianChunk, 0, strpos($kepegawaianChunk, 'Akun Login'));
+            $this->assertStringContainsString('<select name="status_aktif"', $kepegawaianChunk);
+            $this->assertStringContainsString('<option value="Aktif">Aktif</option>', $kepegawaianChunk);
+            $this->assertStringContainsString('<option value="Tidak Aktif">Tidak Aktif</option>', $kepegawaianChunk);
+        }
+    }
 }

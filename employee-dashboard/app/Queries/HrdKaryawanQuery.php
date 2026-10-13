@@ -39,10 +39,8 @@ class HrdKaryawanQuery
         }
 
         $status = $filters['status'] ?? null;
-        if ($status === 'aktif') {
-            $query->whereHas('user');
-        } elseif ($status === 'belum') {
-            $query->whereDoesntHave('user');
+        if ($status === 'Aktif' || $status === 'Tidak Aktif') {
+            $query->where('status_aktif', $status);
         }
 
         if (($filters['sort'] ?? null) === 'divisi') {

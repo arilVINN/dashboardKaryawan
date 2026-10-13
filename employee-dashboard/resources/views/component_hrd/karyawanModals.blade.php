@@ -97,6 +97,14 @@
                             <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
                             <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
                         </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">STATUS</label>
+                            <select name="status_aktif" required class="{{ $formControl }}">
+                                @foreach (\App\Models\Karyawan::STATUS_OPTIONS as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 </section>
 
@@ -209,6 +217,14 @@
                             <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
                             <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
                         </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">STATUS</label>
+                            <select name="status_aktif" required class="{{ $formControl }}">
+                                @foreach (\App\Models\Karyawan::STATUS_OPTIONS as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 </section>
 
@@ -277,6 +293,7 @@
         form.elements['alamat'].value = button.dataset.alamat || '';
         form.elements['no_telepon'].value = button.dataset.telepon || '';
         form.elements['jabatan'].value = button.dataset.jabatan || '';
+        form.elements['status_aktif'].value = button.dataset.status || 'Aktif';
         form.elements['divisi_id_divisi'].value = button.dataset.divisi || '';
         form.elements['username'].value = button.dataset.username || '';
         form.elements['password'].value = '';
