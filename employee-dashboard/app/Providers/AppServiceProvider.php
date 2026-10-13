@@ -7,6 +7,8 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 
+use Illuminate\Support\Facades\URL;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -22,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (str_starts_with(config('app.url', ''), 'https://')) {
+            URL::forceScheme('https');
+        }
         // Submit form: tambah/revisi tugas, balas pesan, update profil, CRUD divisi/staff HRD
         RateLimiter::for('submit-form', function (Request $request) {
             return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());

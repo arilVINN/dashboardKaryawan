@@ -131,8 +131,22 @@
                 class="px-5 py-1.5 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Batal</button>
             <button type="submit"
                 class="px-4 py-1.5 bg-[#004A65] text-white text-sm font-medium rounded-md hover:bg-[#003347] transition"
-                wire:loading.attr="disabled">Kirim</button>
+                wire:loading.attr="disabled">
+                <span wire:loading.remove>Kirim</span>
+                <span wire:loading>Mengirim...</span>
+            </button>
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.on('tutup-modal-pesan', () => {
+            if (window.setModal) {
+                window.setModal('modalKirimPesan', false);
+            }
+        });
+    });
+</script>
 </div>
+

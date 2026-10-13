@@ -109,21 +109,27 @@ class PesanTable extends Component
             return;
         }
 
-        $message = Pesan::create([
-            'id_pesan' => $this->generateMessageId(),
-            'judul_pesan' => Str::limit($this->isi, 200, '') ?: 'Pesan baru',
-            'deskripsi' => $this->isi,
-            'tipe' => 'pesan',
-            'tanggal_pesan' => now()->toDateString(),
-            'pengirim_id_user' => $kadiv->id_user,
-            'penerima_id_user' => $recipient->id_user,
-        ]);
+        try {
+            $message = Pesan::create([
+                'id_pesan' => $this->generateMessageId(),
+                'judul_pesan' => Str::limit($this->isi, 200, '') ?: 'Pesan baru',
+                'deskripsi' => $this->isi,
+                'tipe' => 'pesan',
+                'tanggal_pesan' => now()->toDateString(),
+                'pengirim_id_user' => $kadiv->id_user,
+                'penerima_id_user' => $recipient->id_user,
+            ]);
 
-        PesanDikirim::dispatch($message);
+            PesanDikirim::dispatch($message);
 
-        $this->reset(['recipientUserId', 'isi']);
-        session()->flash('pesan_success', 'Pesan berhasil dikirim.');
-        $this->resetPage();
+            $this->reset(['recipientUserId', 'isi']);
+            session()->flash('pesan_success', 'Pesan berhasil dikirim.');
+            $this->dispatch('tutup-modal-pesan');
+            $this->resetPage();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('sendMessage error: ' . $e->getMessage());
+            $this->addError('isi', 'Gagal mengirim pesan: ' . $e->getMessage());
+        }
     }
 
     private function generateMessageId(): string

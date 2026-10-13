@@ -172,8 +172,22 @@
                 class="h-9 px-4 bg-[#E8E7E9] rounded-lg text-sm text-[#333335] hover:bg-[#D9D9D9] transition">Batal</button>
             <button type="submit"
                 class="h-9 px-4 bg-[#146C94] rounded-lg text-sm text-white font-bold hover:bg-[#0f5878] transition"
-                wire:loading.attr="disabled">Kirim Tugas</button>
+                wire:loading.attr="disabled">
+                <span wire:loading.remove>Kirim Tugas</span>
+                <span wire:loading>Mengirim...</span>
+            </button>
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.on('tutup-modal-tugas', () => {
+            if (window.setModal) {
+                window.setModal('modalTugasBaru', false);
+            }
+        });
+    });
+</script>
 </div>
+
