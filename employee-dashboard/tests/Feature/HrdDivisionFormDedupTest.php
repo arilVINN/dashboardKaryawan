@@ -223,4 +223,37 @@ class HrdDivisionFormDedupTest extends TestCase
         $this->assertStringContainsString('name="alamat"', $editChunk);
         $this->assertStringContainsString('input-foto-edit-karyawan', $editChunk);
     }
+
+    public function test_create_accepts_tanggal_rekrut(): void
+    {
+        $this->actingAs($this->hrd)
+            ->postJson('/hrd/staff', [
+                'nama' => 'Calon Karyawan',
+                'jenis_kelamin' => 'Laki-laki',
+                'jabatan' => 'Staff',
+                'tanggal_rekrut' => '2026-02-01',
+                'divisi_id_divisi' => 'DIV-EMPTY',
+                'username' => 'calonrekrut',
+                'password' => 'password',
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('karyawans', [
+            'tanggal_rekrut' => '2026-02-01',
+        ]);
+    }
+
+    public function test_modals_offer_tanggal_rekrut_date_input(): void
+    {
+        $html = $this->actingAs($this->hrd)
+            ->get('/hrd/detailDivisi/DIV-EMPTY')
+            ->assertOk()
+            ->getContent();
+
+        $this->assertSame(2, substr_count($html, 'name="tanggal_rekrut"'));
+
+        $createChunk = substr($html, strpos($html, 'formTambahKaryawan'));
+        $createChunk = substr($createChunk, 0, strpos($createChunk, 'Kepegawaian'));
+        $this->assertStringContainsString('type="date" name="tanggal_rekrut"', $createChunk);
+    }
 }

@@ -42,6 +42,10 @@
                             <input type="date" name="tanggal_lahir" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
+                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">NO. TELEPON</label>
                             <input type="tel" name="no_telepon" maxlength="20" class="{{ $formControl }}">
                         </div>
@@ -160,6 +164,10 @@
                             <input type="date" name="tanggal_lahir" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
+                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">NO. TELEPON</label>
                             <input type="tel" name="no_telepon" maxlength="20" class="{{ $formControl }}">
                         </div>
@@ -264,6 +272,7 @@
         form.elements['nama'].value = button.dataset.nama || '';
         form.elements['jenis_kelamin'].value = button.dataset.gender || 'Laki-laki';
         form.elements['tanggal_lahir'].value = button.dataset.lahir || '';
+        form.elements['tanggal_rekrut'].value = button.dataset.rekrut || '';
         form.elements['email'].value = button.dataset.email || '';
         form.elements['alamat'].value = button.dataset.alamat || '';
         form.elements['no_telepon'].value = button.dataset.telepon || '';
