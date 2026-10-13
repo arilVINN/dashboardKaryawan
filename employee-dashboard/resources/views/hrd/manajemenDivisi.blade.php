@@ -16,7 +16,7 @@
         @include('component.topbar')
         @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Manajemen Divisi'])
         <main class="flex-1 overflow-y-auto p-8 pt-6">
-            <h1 class="text-2xl font-bold text-slate-800 mb-6">Manajemen Divisi</h1>
+            <h1 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2.5"><svg class="w-6 h-6 text-[#0097B2]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M4 18h16M6 18v-7m4 7v-7m4 7v-7m4 7v-7M2 10l10-6 10 6"></path></svg><span>Manajemen Divisi</span></h1>
             <livewire:hrd.divisi-table manage />
             @include('component_hrd.divisiModal')
 

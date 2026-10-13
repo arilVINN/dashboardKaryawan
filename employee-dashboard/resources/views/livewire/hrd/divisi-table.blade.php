@@ -44,7 +44,8 @@
         <h2 class="text-xl font-bold text-slate-800">Daftar Divisi</h2>
         @if ($manage)
             <button type="button" onclick="bukaModalDivisi()"
-                class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition">
+                class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
                 Tambah
             </button>
         @endif

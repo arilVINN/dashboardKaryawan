@@ -65,7 +65,22 @@ class PagePolishTest extends TestCase
             $this->assertSame($current, $heading);
             $this->assertStringContainsString('<h1', $html);
             $this->assertStringContainsString($heading, $html);
+            $this->assertH1HasIcon($html, $heading);
         }
+    }
+
+    private function assertH1HasIcon(string $html, string $heading): void
+    {
+        preg_match_all('/<h1[^>]*>(.*?)<\/h1>/s', $html, $matches);
+        $found = false;
+        foreach ($matches[1] as $inner) {
+            if (! str_contains($inner, $heading)) {
+                continue;
+            }
+            $found = true;
+            $this->assertStringContainsString('<svg', $inner, "No icon in h1 '{$heading}'");
+        }
+        $this->assertTrue($found, "Page h1 for '{$heading}' not found");
     }
 
     private function getPage(User2 $user, string $url): string
@@ -89,8 +104,31 @@ class PagePolishTest extends TestCase
         $this->assertStringContainsString('data-breadcrumb-parent="'.$parent.'"', $html);
         $this->assertStringContainsString('data-breadcrumb-current="'.$current.'"', $html);
         $this->assertStringContainsString('<title>'.$title.'</title>', $html);
-        $this->assertStringContainsString('<h1 class="text-2xl font-bold text-slate-800 mb-6">'.$pageHeading.'</h1>', $html);
+        $this->assertStringContainsString($pageHeading, $html);
+        $this->assertH1HasIcon($html, $pageHeading);
         $this->assertStringContainsString('<h2 class="text-xl font-bold text-slate-800">'.$rowHeading.'</h2>', $html);
+    }
+
+    public function test_table_action_buttons_carry_icons(): void
+    {
+        $buttons = [
+            [$this->hrd, '/hrd/daftarKaryawan', 'data-staff-create'],
+            [$this->hrd, '/hrd/manajemenDivisi', 'bukaModalDivisi()'],
+            [$this->hrd, '/hrd/daftarPesan', 'bukaModalPesanHrd()'],
+            [$this->kadiv, '/kadiv/tugas', 'modalTugasBaru'],
+            [$this->kadiv, '/kadiv/pesan', 'modalKirimPesan'],
+        ];
+
+        foreach ($buttons as [$user, $url, $marker]) {
+            $html = $this->getPage($user, $url);
+            $found = preg_match(
+                '/<button[^>]*'.preg_quote($marker, '/').'[^>]*>(.*?)<\/button>/s',
+                $html,
+                $matches
+            );
+            $this->assertSame(1, $found, "Button marker missing: {$marker} on {$url}");
+            $this->assertStringContainsString('<svg', $matches[1], "No icon in button {$marker} on {$url}");
+        }
     }
 
     public function test_staff_tugas_page_polish(): void
