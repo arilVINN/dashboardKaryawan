@@ -4,26 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Karyawan - PT Silindo</title>
+    <title>Manajemen Karyawan - PT Silindo</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body class="bg-gray-100 flex h-screen overflow-hidden">
     @include('component_hrd.sidebar')
-    
+
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Daftar Karyawan'])
+        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Manajemen Karyawan'])
         <main class="flex-1 overflow-y-auto p-8 pt-6">
-            <h1 class="text-2xl font-bold text-slate-800 mb-6">Daftar Karyawan</h1>
             <livewire:hrd.karyawan-table />
             @include('component_hrd.karyawanModals', ['daftarDivisi' => $daftarDivisi])
 
         </main>
-        
 
-            
+
+
     </div>
 </body>
 

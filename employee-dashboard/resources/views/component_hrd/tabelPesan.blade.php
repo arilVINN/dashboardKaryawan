@@ -4,7 +4,8 @@
 @endphp
 
 <div class="flex flex-col gap-3 w-full mt-2">
-    <div class="flex justify-end items-center mb-2">
+    <div class="flex justify-between items-center mb-2">
+        <h2 class="text-xl font-bold text-slate-800">Daftar Pesan</h2>
         <button type="button" onclick="bukaModalPesanHrd()"
                 class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

@@ -73,6 +73,17 @@ class PagePolishTest extends TestCase
         return $this->actingAs($user)->get($url)->assertOk()->getContent();
     }
 
+    private function assertRowHeading(string $html, string $parent, string $current, string $title, string $rowHeading): void
+    {
+        $this->assertStringContainsString('data-breadcrumb-parent="'.$parent.'"', $html);
+        $this->assertStringContainsString('data-breadcrumb-current="'.$current.'"', $html);
+        $this->assertStringContainsString('<title>'.$title.'</title>', $html);
+        // No page-level h1: the button-row h2 below owns the visible heading.
+        // (The sidebar brand mark is an h1 too, so pin the heading scale.)
+        $this->assertStringNotContainsString('<h1 class="text-2xl', $html);
+        $this->assertStringContainsString('<h2 class="text-xl font-bold text-slate-800">'.$rowHeading.'</h2>', $html);
+    }
+
     public function test_staff_tugas_page_polish(): void
     {
         $this->assertPagePolish(
@@ -99,7 +110,7 @@ class PagePolishTest extends TestCase
 
     public function test_kadiv_tugas_page_polish(): void
     {
-        $this->assertPagePolish(
+        $this->assertRowHeading(
             $this->getPage($this->kadiv, '/kadiv/tugas'),
             'Dashboard', 'Daftar Tugas', 'Daftar Tugas - PT Silindo', 'Daftar Tugas'
         );
@@ -107,7 +118,7 @@ class PagePolishTest extends TestCase
 
     public function test_kadiv_pesan_page_polish(): void
     {
-        $this->assertPagePolish(
+        $this->assertRowHeading(
             $this->getPage($this->kadiv, '/kadiv/pesan'),
             'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
         );
@@ -131,7 +142,7 @@ class PagePolishTest extends TestCase
 
     public function test_hrd_pesan_page_polish(): void
     {
-        $this->assertPagePolish(
+        $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/pesan'),
             'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
         );
@@ -139,15 +150,15 @@ class PagePolishTest extends TestCase
 
     public function test_hrd_daftar_karyawan_page_polish(): void
     {
-        $this->assertPagePolish(
+        $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/daftarKaryawan'),
-            'Dashboard', 'Daftar Karyawan', 'Daftar Karyawan - PT Silindo', 'Daftar Karyawan'
+            'Dashboard', 'Manajemen Karyawan', 'Manajemen Karyawan - PT Silindo', 'Manajemen Karyawan'
         );
     }
 
     public function test_hrd_daftar_divisi_page_polish(): void
     {
-        $this->assertPagePolish(
+        $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/daftarDivisi'),
             'Dashboard', 'Daftar Divisi', 'Daftar Divisi - PT Silindo', 'Daftar Divisi'
         );
@@ -155,7 +166,7 @@ class PagePolishTest extends TestCase
 
     public function test_hrd_daftar_pesan_page_polish(): void
     {
-        $this->assertPagePolish(
+        $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/daftarPesan'),
             'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
         );
@@ -163,7 +174,7 @@ class PagePolishTest extends TestCase
 
     public function test_hrd_manajemen_divisi_page_polish(): void
     {
-        $this->assertPagePolish(
+        $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/manajemenDivisi'),
             'Dashboard', 'Manajemen Divisi', 'Manajemen Divisi - PT Silindo', 'Manajemen Divisi'
         );
@@ -191,29 +202,6 @@ class PagePolishTest extends TestCase
             '<title>Dashboard - PT Silindo</title>',
             $this->getPage($this->hrd, '/hrd/dashboard')
         );
-    }
-
-    public function test_full_list_pages_have_no_inner_h2(): void
-    {
-        $pages = [
-            [$this->staff, '/tugas'],
-            [$this->staff, '/pesan'],
-            [$this->kadiv, '/kadiv/tugas'],
-            [$this->kadiv, '/kadiv/pesan'],
-            [$this->kadiv, '/kadiv/manajemenStaff'],
-            [$this->hrd, '/hrd/daftarKaryawan'],
-            [$this->hrd, '/hrd/daftarDivisi'],
-            [$this->hrd, '/hrd/daftarPesan'],
-            [$this->hrd, '/hrd/manajemenDivisi'],
-        ];
-
-        foreach ($pages as [$user, $url]) {
-            $this->assertStringNotContainsString(
-                '<h2',
-                $this->getPage($user, $url),
-                "Duplicate inner heading on {$url}"
-            );
-        }
     }
 
     public function test_hrd_pesan_keeps_stats_section_label(): void
