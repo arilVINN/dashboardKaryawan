@@ -13,6 +13,7 @@
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
+        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Profil Saya'])
 
         <main class="flex-1 overflow-y-auto p-6 md:p-10">
             <div class="max-w-5xl space-y-8">

@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Tugas</title>
+    <title>Daftar Tugas - PT Silindo</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -16,9 +16,10 @@
     
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component_kadiv.topbar')
+        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/kadiv/dashboard'), 'currentPage' => 'Daftar Tugas'])
 
-        <main class="flex-1 overflow-y-auto p-6 lg:p-8 pb-16">
-
+        <main class="flex-1 overflow-y-auto p-8 pt-6 pb-16">
+            <h1 class="text-2xl font-bold text-slate-800 mb-6">Daftar Tugas</h1>
 
             <livewire:kadiv.tugas-table />
 

@@ -109,7 +109,7 @@
         </div>
     </div>
 
-    <div>{{ $rows->links() }}</div>
+    <div>{{ $rows->links('vendor.pagination.custom') }}</div>
 </div>
 
 {{-- MODAL BUAT TUGAS BARU --}}

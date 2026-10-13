@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Dashboard - PT Silindo</title>
     
     @vite('resources/css/app.css')
 </head>
@@ -17,10 +17,10 @@
         @include('component.topbar')
 
         <main class="flex-1 overflow-y-auto p-8">
-            <h1 class="text-2xl font-bold text-gray-800">Status Tugas Staff</h1>
+            <h1 class="text-2xl font-bold text-slate-800">Status Tugas Staff</h1>
             @include('component.statusbar')
 
-            <h1 class="text-2xl font-bold text-gray-800 pt-5">Notifikasi</h1>
+            <h1 class="text-2xl font-bold text-slate-800 pt-5">Notifikasi</h1>
             @include('component.notifikasi')
 
             <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 items-start mt-6">

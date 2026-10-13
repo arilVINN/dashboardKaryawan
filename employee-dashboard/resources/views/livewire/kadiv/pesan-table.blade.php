@@ -92,7 +92,7 @@
         </div>
     </div>
 
-    <div>{{ $messages->links() }}</div>
+    <div>{{ $messages->links('vendor.pagination.custom') }}</div>
 </div>
 
 {{-- MODAL KIRIM PESAN --}}

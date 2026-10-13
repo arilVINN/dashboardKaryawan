@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Staff</title>
+    <title>Manajemen Staff - PT Silindo</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -18,10 +18,11 @@
 
         {{-- TOPBAR --}}
         @include('component_kadiv.topbar')
+        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/kadiv/dashboard'), 'currentPage' => 'Manajemen Staff'])
 
         {{-- MAIN CONTENT --}}
-        <main class="flex-1 overflow-y-auto p-6 lg:p-8 pb-16">
-            <h1 class="text-2xl font-bold text-gray-800">
+        <main class="flex-1 overflow-y-auto p-8 pt-6 pb-16">
+            <h1 class="text-2xl font-bold text-slate-800">
                 Manajemen Staff
             </h1>
 
