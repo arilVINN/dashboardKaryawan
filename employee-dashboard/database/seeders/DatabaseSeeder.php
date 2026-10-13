@@ -16,17 +16,15 @@ class DatabaseSeeder extends Seeder
     {
         // ID maksimal 5 karakter!
         
-        $roleStaff = Role::create([
-            'id_role' => 'RL001',
-            'nama_role' => 'staff'
-        ]);
+        $roleStaff = Role::firstOrCreate(
+            ['id_role' => 'RL001'],
+            ['nama_role' => 'staff']
+        );
 
-        $divisiIT = Divisi::create([
-            'id_divisi' => 'DV001',
-            'kode_divisi' => 'IT01',
-            'nama_divisi' => 'Information Technology',
-            'status_aktif' => 'Aktif',
-        ]);
+        $divisiIT = Divisi::firstOrCreate(
+            ['id_divisi' => 'DV001'],
+            ['kode_divisi' => 'IT01', 'nama_divisi' => 'Information Technology', 'status_aktif' => 'Aktif']
+        );
 
         $karyawan = Karyawan::create([
             'id_karyawan' => 'KR001',
@@ -94,10 +92,10 @@ class DatabaseSeeder extends Seeder
         ]);
         // -----------------
         // --- ADD KADIV (PAK TONO) ---
-        $roleKadiv = Role::create([
-            'id_role' => 'RL002',
-            'nama_role' => 'kadiv'
-        ]);
+        $roleKadiv = Role::firstOrCreate(
+            ['id_role' => 'RL002'],
+            ['nama_role' => 'kadiv']
+        );
 
         $karyawanKadiv = Karyawan::create([
             'id_karyawan' => 'KR003',
@@ -207,10 +205,10 @@ class DatabaseSeeder extends Seeder
             'tanggal_update' => now(),
         ]);
         // --- ADD HRD ---
-        $roleHrd = Role::create([
-            'id_role' => 'RL003',
-            'nama_role' => 'hrd'
-        ]);
+        $roleHrd = Role::firstOrCreate(
+            ['id_role' => 'RL003'],
+            ['nama_role' => 'hrd']
+        );
 
         $karyawanHrd = Karyawan::create([
             'id_karyawan' => 'KR007',

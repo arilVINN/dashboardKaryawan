@@ -255,10 +255,6 @@ class HrdStaffController extends Controller
         ]);
     }
 
-    /**
-     * DELETE /api/hrd/staff/{id_karyawan}
-     * Menghapus profil staff beserta akun login jika tidak ada data terkait.
-     */
     public function destroy($id)
     {
         $karyawan = Karyawan::with('user')->where('id_karyawan', $id)->first();
@@ -267,15 +263,41 @@ class HrdStaffController extends Controller
             return response()->json(['message' => 'Staff tidak ditemukan'], 404);
         }
 
+        // Cek apakah ada tugas yang BELUM selesai (bukan sudah di-acc)
+        $hasUnfinishedTask = \App\Models\Tugas::where('karyawan_id_karyawan', $karyawan->id_karyawan)
+            ->whereNotIn('status', [\App\Models\Tugas::STATUS_SUDAH_ACC])
+            ->exists();
+
+        if ($hasUnfinishedTask) {
+            return response()->json([
+                'message' => 'Karyawan tidak dapat dihapus karena masih memiliki tugas yang belum selesai (belum di-acc).',
+            ], 409);
+        }
+
         try {
             DB::transaction(function () use ($karyawan): void {
-                $karyawan->user?->delete();
+                // Hapus semua submit_tugas terkait
+                \App\Models\Tugas::where('karyawan_id_karyawan', $karyawan->id_karyawan)
+                    ->each(function ($tugas): void {
+                        $tugas->submitTugas()->delete();
+                        $tugas->pesans()->delete();
+                        $tugas->delete();
+                    });
+
+                // Hapus pesan yang dikirim/diterima user
+                if ($karyawan->user) {
+                    $karyawan->user->pesanDikirim()->delete();
+                    $karyawan->user->pesanDiterima()->delete();
+                    $karyawan->user->notifikasis()->delete();
+                    $karyawan->user->delete();
+                }
+
                 $karyawan->delete();
             });
         } catch (QueryException $e) {
             report($e);
             return response()->json([
-                'message' => 'Staff tidak dapat dihapus karena masih memiliki tugas atau pesan terkait',
+                'message' => 'Staff tidak dapat dihapus karena masih memiliki data terkait yang tidak dapat dihapus otomatis.',
             ], 409);
         }
 
