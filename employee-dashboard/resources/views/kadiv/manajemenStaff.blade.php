@@ -22,9 +22,7 @@
 
         {{-- MAIN CONTENT --}}
         <main class="flex-1 overflow-y-auto p-8 pt-6 pb-16">
-            <h1 class="text-2xl font-bold text-slate-800">
-                Manajemen Staff
-            </h1>
+            <h1 class="text-2xl font-bold text-slate-800 mb-6">Manajemen Staff</h1>
 
             <livewire:kadiv.staff-table />
 

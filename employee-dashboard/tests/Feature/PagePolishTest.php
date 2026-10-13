@@ -62,6 +62,7 @@ class PagePolishTest extends TestCase
         $this->assertStringContainsString('data-breadcrumb-current="'.$current.'"', $html);
         $this->assertStringContainsString('<title>'.$title.'</title>', $html);
         if ($heading !== null) {
+            $this->assertSame($current, $heading);
             $this->assertStringContainsString('<h1', $html);
             $this->assertStringContainsString($heading, $html);
         }
@@ -132,7 +133,7 @@ class PagePolishTest extends TestCase
     {
         $this->assertPagePolish(
             $this->getPage($this->hrd, '/hrd/pesan'),
-            'Dashboard', 'Daftar Pesan', 'Pesan - PT Silindo', 'Daftar Pesan'
+            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
         );
     }
 
