@@ -211,4 +211,47 @@ class ProfilePhotoUploadTest extends TestCase
             ->assertSee('id="hrd-profile-photo"', false)
             ->assertSee('/api/hrd/profile/foto', false);
     }
+
+    public function test_topbar_shows_profile_photo_when_set(): void
+    {
+        Karyawan::where('id_karyawan', 'KRY-STAFF')->update(['foto' => 'foto-profil/test.jpg']);
+
+        $this->actingAs($this->staff)
+            ->get('/profile')
+            ->assertOk()
+            ->assertSee('id="topbar-foto"', false)
+            ->assertSee('src="/storage/foto-profil/test.jpg"', false)
+            ->assertSee('profile.foto_url', false);
+    }
+
+    public function test_topbar_falls_back_to_initial_without_photo(): void
+    {
+        $this->actingAs($this->staff)
+            ->get('/profile')
+            ->assertOk()
+            ->assertSee('id="topbar-inisial"', false)
+            ->assertSee('id="topbar-foto"', false)
+            ->assertDontSee('src="/storage/', false);
+    }
+
+    public function test_kadiv_topbar_shows_profile_photo_when_set(): void
+    {
+        Karyawan::where('id_karyawan', 'KRY-KADIV')->update(['foto' => 'foto-profil/kadiv.jpg']);
+
+        $this->actingAs($this->kadiv)
+            ->get('/kadiv/dashboard')
+            ->assertOk()
+            ->assertSee('id="topbar-foto"', false)
+            ->assertSee('src="/storage/foto-profil/kadiv.jpg"', false)
+            ->assertSee('profile.foto_url', false);
+    }
+
+    public function test_kadiv_topbar_falls_back_to_initial_without_photo(): void
+    {
+        $this->actingAs($this->kadiv)
+            ->get('/kadiv/dashboard')
+            ->assertOk()
+            ->assertSee('id="topbar-inisial"', false)
+            ->assertDontSee('src="/storage/', false);
+    }
 }
