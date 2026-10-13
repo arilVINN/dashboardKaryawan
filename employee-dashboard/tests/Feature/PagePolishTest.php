@@ -79,8 +79,28 @@ class PagePolishTest extends TestCase
             }
             $found = true;
             $this->assertStringContainsString('<svg', $inner, "No icon in h1 '{$heading}'");
+            $this->assertStringContainsString('rounded-lg', $inner, "No badge box in h1 '{$heading}'");
         }
         $this->assertTrue($found, "Page h1 for '{$heading}' not found");
+    }
+
+    public function test_h1_icon_badges_use_section_colors(): void
+    {
+        $badges = [
+            [$this->staff, '/tugas', 'bg-blue-100'],
+            [$this->staff, '/pesan', 'bg-green-100'],
+            [$this->hrd, '/hrd/daftarKaryawan', 'bg-cyan-100'],
+            [$this->hrd, '/hrd/manajemenDivisi', 'bg-violet-100'],
+            [$this->kadiv, '/kadiv/manajemenStaff', 'bg-teal-100'],
+        ];
+
+        foreach ($badges as [$user, $url, $badge]) {
+            $this->assertStringContainsString(
+                $badge,
+                $this->getPage($user, $url),
+                "Badge {$badge} missing on {$url}"
+            );
+        }
     }
 
     private function getPage(User2 $user, string $url): string
