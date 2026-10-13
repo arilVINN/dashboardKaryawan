@@ -6,6 +6,7 @@
     $topbarDivisi = $topbarEmployee?->divisi?->nama_divisi ?? $topbarUser?->role?->nama_role ?? ucfirst($pageRole);
     $topbarRole = $topbarUser?->role?->nama_role ?? $pageRole;
     $topbarInitial = $topbarUser ? mb_strtoupper(mb_substr($topbarNama, 0, 1)) : 'U';
+    $topbarFotoUrl = $topbarEmployee?->foto ? '/storage/'.$topbarEmployee->foto : null;
     $topbarProfileUrl = match ($pageRole) {
         'hrd' => route('hrd.profile'),
         'kadiv' => route('kadiv.profile'),
@@ -33,9 +34,12 @@
             <button id="profile-dropdown-btn" type="button"
                 class="flex items-center gap-2 cursor-pointer p-1 rounded-lg hover:bg-slate-100 transition focus:outline-none">
                 <div id="topbar-inisial"
-                    class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                    class="{{ $topbarFotoUrl ? 'hidden ' : '' }}w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
                     {{ $topbarInitial }}
                 </div>
+                <img id="topbar-foto" alt="Foto profil"
+                    @if ($topbarFotoUrl) src="{{ $topbarFotoUrl }}" @endif
+                    class="{{ $topbarFotoUrl ? '' : 'hidden ' }}w-8 h-8 rounded-full object-cover shrink-0">
                 <svg class="w-4 h-4 text-slate-500 transition-transform duration-200" id="dropdown-arrow" fill="none"
                     stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -99,6 +103,12 @@
         document.getElementById('topbar-inisial').textContent = profile.nama
             ? profile.nama.charAt(0).toUpperCase()
             : 'U';
+        if (profile.foto_url) {
+            const topbarFoto = document.getElementById('topbar-foto');
+            topbarFoto.setAttribute('src', profile.foto_url);
+            topbarFoto.classList.remove('hidden');
+            document.getElementById('topbar-inisial').classList.add('hidden');
+        }
     })().catch(error => console.error('Gagal memuat identitas pengguna:', error));
 
     document.getElementById('btn-logout-topbar')?.addEventListener('click', async function () {
