@@ -49,6 +49,14 @@
                             <label class="text-xs font-bold text-slate-500">EMAIL</label>
                             <input type="email" name="email" maxlength="100" class="{{ $formControl }}">
                         </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">ALAMAT</label>
+                            <textarea name="alamat" rows="2" class="{{ $formControl }}" placeholder="Jalan, nomor, kota"></textarea>
+                        </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">FOTO PROFIL (JPG/PNG/WEBP, MAKS. 2 MB, OPSIONAL)</label>
+                            <input type="file" id="input-foto-karyawan" accept="image/jpeg,image/png,image/webp" class="{{ $formControl }}">
+                        </div>
                     </div>
                 </section>
 
@@ -61,11 +69,11 @@
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">JABATAN</label>
                             <select name="jabatan" required class="{{ $formControl }}">
-                                    <option value="">Pilih jabatan</option>
-                                    @foreach (\App\Models\Karyawan::JABATAN_OPTIONS as $option)
-                                        <option value="{{ $option }}">{{ $option }}</option>
-                                    @endforeach
-                                </select>
+                                <option value="">Pilih jabatan</option>
+                                @foreach (\App\Models\Karyawan::JABATAN_OPTIONS as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">DIVISI</label>
@@ -101,10 +109,6 @@
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">PASSWORD (MIN. 6)</label>
                             <input type="password" name="password" minlength="6" required class="{{ $formControl }}">
-                        </div>
-                        <div class="flex flex-col gap-1.5 sm:col-span-2">
-                            <label class="text-xs font-bold text-slate-500">FOTO PROFIL (JPG/PNG/WEBP, MAKS. 2 MB, OPSIONAL)</label>
-                            <input type="file" id="input-foto-karyawan" accept="image/jpeg,image/png,image/webp" class="{{ $formControl }}">
                         </div>
                     </div>
                 </section>
@@ -163,6 +167,14 @@
                             <label class="text-xs font-bold text-slate-500">EMAIL</label>
                             <input type="email" name="email" maxlength="100" class="{{ $formControl }}">
                         </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">ALAMAT</label>
+                            <textarea name="alamat" rows="2" class="{{ $formControl }}" placeholder="Jalan, nomor, kota"></textarea>
+                        </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">FOTO PROFIL BARU (JPG/PNG/WEBP, MAKS. 2 MB, OPSIONAL)</label>
+                            <input type="file" id="input-foto-edit-karyawan" accept="image/jpeg,image/png,image/webp" class="{{ $formControl }}">
+                        </div>
                     </div>
                 </section>
 
@@ -175,11 +187,11 @@
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">JABATAN</label>
                             <select name="jabatan" required class="{{ $formControl }}">
-                                    <option value="">Pilih jabatan</option>
-                                    @foreach (\App\Models\Karyawan::JABATAN_OPTIONS as $option)
-                                        <option value="{{ $option }}">{{ $option }}</option>
-                                    @endforeach
-                                </select>
+                                <option value="">Pilih jabatan</option>
+                                @foreach (\App\Models\Karyawan::JABATAN_OPTIONS as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">DIVISI</label>
@@ -205,10 +217,6 @@
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">PASSWORD BARU (OPSIONAL)</label>
                             <input type="password" name="password" minlength="6" class="{{ $formControl }}">
-                        </div>
-                        <div class="flex flex-col gap-1.5 sm:col-span-2">
-                            <label class="text-xs font-bold text-slate-500">FOTO PROFIL BARU (JPG/PNG/WEBP, MAKS. 2 MB, OPSIONAL)</label>
-                            <input type="file" id="input-foto-edit-karyawan" accept="image/jpeg,image/png,image/webp" class="{{ $formControl }}">
                         </div>
                     </div>
                 </section>
@@ -257,6 +265,7 @@
         form.elements['jenis_kelamin'].value = button.dataset.gender || 'Laki-laki';
         form.elements['tanggal_lahir'].value = button.dataset.lahir || '';
         form.elements['email'].value = button.dataset.email || '';
+        form.elements['alamat'].value = button.dataset.alamat || '';
         form.elements['no_telepon'].value = button.dataset.telepon || '';
         form.elements['jabatan'].value = button.dataset.jabatan || '';
         form.elements['divisi_id_divisi'].value = button.dataset.divisi || '';

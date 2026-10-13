@@ -157,4 +157,70 @@ class HrdDivisionFormDedupTest extends TestCase
             $this->assertStringContainsString('<option value="'.$option.'">'.$option.'</option>', $html);
         }
     }
+
+    public function test_create_persists_alamat(): void
+    {
+        $this->actingAs($this->hrd)
+            ->postJson('/hrd/staff', [
+                'nama' => 'Calon Karyawan',
+                'jenis_kelamin' => 'Laki-laki',
+                'jabatan' => 'Staff',
+                'alamat' => 'Jl. Merpati No. 10',
+                'divisi_id_divisi' => 'DIV-EMPTY',
+                'username' => 'calonalamat',
+                'password' => 'password',
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('karyawans', [
+            'alamat' => 'Jl. Merpati No. 10',
+        ]);
+    }
+
+    public function test_update_persists_alamat(): void
+    {
+        $id = $this->actingAs($this->hrd)
+            ->postJson('/hrd/staff', [
+                'nama' => 'Calon Karyawan',
+                'jenis_kelamin' => 'Laki-laki',
+                'jabatan' => 'Staff',
+                'divisi_id_divisi' => 'DIV-EMPTY',
+                'username' => 'calonalamatdua',
+                'password' => 'password',
+            ])
+            ->assertCreated()
+            ->json('data.karyawan.id_karyawan');
+
+        $this->actingAs($this->hrd)
+            ->putJson('/hrd/staff/'.$id, ['alamat' => 'Jl. Kenari No. 5'])
+            ->assertOk();
+
+        $this->assertDatabaseHas('karyawans', [
+            'id_karyawan' => $id,
+            'alamat' => 'Jl. Kenari No. 5',
+        ]);
+    }
+
+    public function test_modals_have_alamat_and_photo_in_first_section(): void
+    {
+        $html = $this->actingAs($this->hrd)
+            ->get('/hrd/detailDivisi/DIV-EMPTY')
+            ->assertOk()
+            ->getContent();
+
+        // Alamat textarea in both create and edit forms.
+        $this->assertSame(2, substr_count($html, 'name="alamat"'));
+
+        // Within the create form, alamat + foto come before the Kepegawaian section.
+        $createChunk = substr($html, strpos($html, 'formTambahKaryawan'));
+        $createChunk = substr($createChunk, 0, strpos($createChunk, 'Kepegawaian'));
+        $this->assertStringContainsString('name="alamat"', $createChunk);
+        $this->assertStringContainsString('input-foto-karyawan', $createChunk);
+
+        // Same for the edit form.
+        $editChunk = substr($html, strpos($html, 'formEditKaryawan'));
+        $editChunk = substr($editChunk, 0, strpos($editChunk, 'Kepegawaian'));
+        $this->assertStringContainsString('name="alamat"', $editChunk);
+        $this->assertStringContainsString('input-foto-edit-karyawan', $editChunk);
+    }
 }

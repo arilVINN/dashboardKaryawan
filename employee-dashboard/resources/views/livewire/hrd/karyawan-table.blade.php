@@ -139,6 +139,7 @@
                                         data-gender="{{ $k->jenis_kelamin }}"
                                         data-lahir="{{ $k->tanggal_lahir }}"
                                         data-email="{{ $k->email }}"
+                                        data-alamat="{{ $k->alamat }}"
                                         data-telepon="{{ $k->no_telepon }}"
                                         data-jabatan="{{ $k->jabatan }}"
                                         data-divisi="{{ $k->divisi_id_divisi }}"

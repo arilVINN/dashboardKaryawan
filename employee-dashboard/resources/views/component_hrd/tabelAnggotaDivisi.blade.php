@@ -52,6 +52,7 @@
                                     data-gender="{{ $anggota->jenis_kelamin }}"
                                     data-lahir="{{ $anggota->tanggal_lahir }}"
                                     data-email="{{ $anggota->email }}"
+                                    data-alamat="{{ $anggota->alamat }}"
                                     data-telepon="{{ $anggota->no_telepon }}"
                                     data-jabatan="{{ $anggota->jabatan }}"
                                     data-divisi="{{ $divisi->id_divisi }}"

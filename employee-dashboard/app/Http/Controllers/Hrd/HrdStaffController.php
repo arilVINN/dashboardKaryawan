@@ -46,6 +46,7 @@ class HrdStaffController extends Controller
             'tanggal_rekrut' => 'nullable|date',
             'no_telepon' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:100|unique:karyawans,email',
+            'alamat' => 'nullable|string',
             'jabatan' => ['required', 'string', 'max:100', Rule::in(Karyawan::JABATAN_OPTIONS)],
             'divisi_id_divisi' => 'required|string|max:20',
             // Data akun login
@@ -96,6 +97,7 @@ class HrdStaffController extends Controller
                 'tanggal_rekrut' => $request->tanggal_rekrut ?? now()->toDateString(),
                 'no_telepon' => $request->no_telepon,
                 'email' => $request->email,
+                'alamat' => $request->alamat,
                 'jabatan' => $request->jabatan,
                 'divisi_id_divisi' => $request->divisi_id_divisi,
             ]);
@@ -193,6 +195,7 @@ class HrdStaffController extends Controller
                 'sometimes', 'nullable', 'email', 'max:100',
                 Rule::unique('karyawans', 'email')->ignore($karyawan->id_karyawan, 'id_karyawan'),
             ],
+            'alamat' => 'sometimes|nullable|string',
             'jabatan' => ['sometimes', 'required', 'string', 'max:100', Rule::in(Karyawan::JABATAN_OPTIONS)],
             'divisi_id_divisi' => 'sometimes|required|string|max:20|exists:divisis,id_divisi',
             'username' => [
@@ -240,7 +243,7 @@ class HrdStaffController extends Controller
         DB::transaction(function () use ($karyawan, $validated): void {
             $karyawan->update(array_intersect_key($validated, array_flip([
                 'nama', 'jenis_kelamin', 'tanggal_lahir', 'tanggal_rekrut',
-                'no_telepon', 'email', 'jabatan', 'divisi_id_divisi',
+                'no_telepon', 'email', 'alamat', 'jabatan', 'divisi_id_divisi',
             ])));
 
             if ($karyawan->user) {
