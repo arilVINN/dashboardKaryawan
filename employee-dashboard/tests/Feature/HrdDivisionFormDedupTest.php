@@ -255,5 +255,15 @@ class HrdDivisionFormDedupTest extends TestCase
         $createChunk = substr($html, strpos($html, 'formTambahKaryawan'));
         $createChunk = substr($createChunk, 0, strpos($createChunk, 'Kepegawaian'));
         $this->assertStringContainsString('type="date" name="tanggal_rekrut"', $createChunk);
+
+        // Email and phone share a row: telepon, then email, then rekrut —
+        // no other field sits between telepon and email.
+        $posTelepon = strpos($createChunk, 'name="no_telepon"');
+        $posEmail = strpos($createChunk, 'name="email"');
+        $posRekrut = strpos($createChunk, 'name="tanggal_rekrut"');
+        $this->assertLessThan($posEmail, $posTelepon);
+        $this->assertLessThan($posRekrut, $posEmail);
+        $between = substr($createChunk, $posTelepon, $posEmail - $posTelepon);
+        $this->assertSame(1, substr_count($between, 'name="'));
     }
 }

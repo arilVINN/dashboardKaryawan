@@ -42,16 +42,16 @@
                             <input type="date" name="tanggal_lahir" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
-                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
-                        </div>
-                        <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">NO. TELEPON</label>
                             <input type="tel" name="no_telepon" maxlength="20" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">EMAIL</label>
                             <input type="email" name="email" maxlength="100" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
+                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5 sm:col-span-2">
                             <label class="text-xs font-bold text-slate-500">ALAMAT</label>
@@ -164,16 +164,16 @@
                             <input type="date" name="tanggal_lahir" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
-                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
-                        </div>
-                        <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">NO. TELEPON</label>
                             <input type="tel" name="no_telepon" maxlength="20" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">EMAIL</label>
                             <input type="email" name="email" maxlength="100" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
+                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5 sm:col-span-2">
                             <label class="text-xs font-bold text-slate-500">ALAMAT</label>
