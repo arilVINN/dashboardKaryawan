@@ -39,6 +39,12 @@
 
         @include('component_hrd.tabelAnggotaDivisi')
 
+        @include('component_hrd.karyawanModals', [
+            'daftarDivisi' => $daftarDivisi,
+            'divisiTerkunci' => $divisi->id_divisi,
+            'judulTambah' => 'Tambah Karyawan ke '.$divisi->nama_divisi,
+        ])
+
 
     </div>
 

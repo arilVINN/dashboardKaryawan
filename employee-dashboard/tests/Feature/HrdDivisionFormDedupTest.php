@@ -1,0 +1,98 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Divisi;
+use App\Models\Role;
+use App\Models\User2;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
+
+class HrdDivisionFormDedupTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User2 $hrd;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Role::insert([
+            ['id_role' => 'ROLE-HRD', 'nama_role' => 'HRD'],
+            ['id_role' => 'ROLE-KADIV', 'nama_role' => 'Kadiv'],
+            ['id_role' => 'ROLE-STAFF', 'nama_role' => 'Staff'],
+        ]);
+        Divisi::insert([
+            ['id_divisi' => 'DIV-IT', 'kode_divisi' => 'IT', 'nama_divisi' => 'Teknologi', 'status_aktif' => 'aktif'],
+            ['id_divisi' => 'DIV-EMPTY', 'kode_divisi' => 'EMP', 'nama_divisi' => 'Kosong', 'status_aktif' => 'aktif'],
+        ]);
+
+        $this->hrd = $this->createAccount('EMP-HRD', 'HRD', 'DIV-IT', 'ROLE-HRD', 'hrd');
+    }
+
+    private function createAccount(
+        string $employeeId,
+        string $name,
+        string $divisionId,
+        string $roleId,
+        string $username,
+    ): User2 {
+        DB::table('karyawans')->insert([
+            'id_karyawan' => $employeeId,
+            'nama' => $name,
+            'jenis_kelamin' => 'Laki-laki',
+            'email' => $username.'@example.test',
+            'jabatan' => $name,
+            'divisi_id_divisi' => $divisionId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return User2::create([
+            'id_user' => 'USR-'.$employeeId,
+            'username' => $username,
+            'password' => 'password',
+            'role_id_role' => $roleId,
+            'karyawan_id_karyawan' => $employeeId,
+        ]);
+    }
+
+    public function test_division_detail_uses_shared_karyawan_modal_with_locked_division(): void
+    {
+        $this->actingAs($this->hrd)
+            ->get('/hrd/detailDivisi/DIV-EMPTY')
+            ->assertOk()
+            ->assertSee('modalTambahKaryawan', false)
+            ->assertSee('Tambah Karyawan ke Kosong', false)
+            ->assertSee('type="hidden" name="divisi_id_divisi" value="DIV-EMPTY"', false)
+            ->assertDontSee('modalTambahAnggota', false)
+            ->assertDontSee('bukaModalAnggota', false);
+    }
+
+    public function test_division_detail_row_buttons_target_shared_modal(): void
+    {
+        $this->createAccount('EMP-STAFF', 'Staff', 'DIV-EMPTY', 'ROLE-STAFF', 'staff');
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/detailDivisi/DIV-EMPTY')
+            ->assertOk()
+            ->assertSee('bukaEditKaryawan(this)', false)
+            ->assertSee('hapusKaryawan(this)', false)
+            ->assertSee('data-divisi="DIV-EMPTY"', false)
+            ->assertDontSee('bukaEditAnggota', false)
+            ->assertDontSee('hapusAnggota', false)
+            ->assertDontSee('modalEditAnggota', false);
+    }
+
+    public function test_general_karyawan_page_keeps_unlocked_division_select(): void
+    {
+        $this->actingAs($this->hrd)
+            ->get('/hrd/daftarKaryawan')
+            ->assertOk()
+            ->assertSee('modalTambahKaryawan', false)
+            ->assertSee('<select name="divisi_id_divisi" required', false)
+            ->assertDontSee('type="hidden" name="divisi_id_divisi"', false);
+    }
+}

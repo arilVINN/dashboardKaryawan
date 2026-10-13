@@ -1,5 +1,8 @@
 @php
     $daftarDivisi = $daftarDivisi ?? collect();
+    // Optional: preset + lock the division (used by the division detail page).
+    $divisiTerkunci = $divisiTerkunci ?? null;
+    $judulTambah = $judulTambah ?? 'Tambah Karyawan';
     $formControl = 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]';
 @endphp
 
@@ -10,7 +13,7 @@
     <div id="modalBoxTambahKaryawan"
         class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300">
         <div class="flex items-center justify-between p-4 border-b border-dashed border-gray-300">
-            <h3 class="text-base font-bold text-slate-900">Tambah Karyawan</h3>
+            <h3 class="text-base font-bold text-slate-900">{{ $judulTambah }}</h3>
             <button type="button" onclick="tutupModalKaryawan()" class="text-slate-400 hover:text-red-500"
                 aria-label="Tutup">&times;</button>
         </div>
@@ -61,12 +64,21 @@
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">DIVISI</label>
-                            <select name="divisi_id_divisi" required class="{{ $formControl }}">
-                                <option value="">Pilih divisi</option>
-                                @foreach ($daftarDivisi as $d)
-                                    <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
-                                @endforeach
-                            </select>
+                            @if ($divisiTerkunci)
+                                <select class="{{ $formControl }}" disabled>
+                                    @foreach ($daftarDivisi as $d)
+                                        <option value="{{ $d->id_divisi }}" @selected($d->id_divisi === $divisiTerkunci)>{{ $d->nama_divisi }}</option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" name="divisi_id_divisi" value="{{ $divisiTerkunci }}">
+                            @else
+                                <select name="divisi_id_divisi" required class="{{ $formControl }}">
+                                    <option value="">Pilih divisi</option>
+                                    @foreach ($daftarDivisi as $d)
+                                        <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
                         </div>
                     </div>
                 </section>

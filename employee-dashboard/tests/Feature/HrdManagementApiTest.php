@@ -66,9 +66,8 @@ class HrdManagementApiTest extends TestCase
         $this->actingAs($this->hrd)
             ->get('/hrd/detailDivisi/DIV-EMPTY')
             ->assertOk()
-            ->assertSee('value="Kepala Divisi"', false)
-            ->assertSee('value="Wakil Kepala Divisi"', false)
-            ->assertSee('value="Staff"', false);
+            ->assertSee('modalTambahKaryawan', false)
+            ->assertSee('name="jabatan"', false);
 
         $response = $this->actingAs($this->hrd)
             ->postJson('/hrd/staff', [
