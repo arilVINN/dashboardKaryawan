@@ -97,6 +97,10 @@
                             <label class="text-xs font-bold text-slate-500">PASSWORD (MIN. 6)</label>
                             <input type="password" name="password" minlength="6" required class="{{ $formControl }}">
                         </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">FOTO PROFIL (JPG/PNG/WEBP, MAKS. 2 MB, OPSIONAL)</label>
+                            <input type="file" id="input-foto-karyawan" accept="image/jpeg,image/png,image/webp" class="{{ $formControl }}">
+                        </div>
                     </div>
                 </section>
             </div>
@@ -192,6 +196,10 @@
                             <label class="text-xs font-bold text-slate-500">PASSWORD BARU (OPSIONAL)</label>
                             <input type="password" name="password" minlength="6" class="{{ $formControl }}">
                         </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">FOTO PROFIL BARU (JPG/PNG/WEBP, MAKS. 2 MB, OPSIONAL)</label>
+                            <input type="file" id="input-foto-edit-karyawan" accept="image/jpeg,image/png,image/webp" class="{{ $formControl }}">
+                        </div>
                     </div>
                 </section>
             </div>
@@ -273,6 +281,27 @@
         return result;
     }
 
+    async function unggahFotoKaryawan(url, inputId, form) {
+        const input = document.getElementById(inputId);
+        if (!input || input.files.length === 0) return;
+        const body = new FormData();
+        body.append('foto', input.files[0]);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': karyawanCsrf(form),
+            },
+            body,
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            const errors = result.errors ? Object.values(result.errors).flat().join('\n') : result.message;
+            throw new Error(errors || 'Gagal mengunggah foto.');
+        }
+        input.value = '';
+    }
+
     async function submitFormKaryawan(event) {
         event.preventDefault();
         const form = event.currentTarget;
@@ -282,6 +311,10 @@
         button.disabled = true;
         try {
             const result = await kirimStaff('{{ url('/hrd/staff') }}', 'POST', data, form);
+            const createdId = result.data && result.data.karyawan ? result.data.karyawan.id_karyawan : null;
+            if (createdId) {
+                await unggahFotoKaryawan('{{ url('/hrd/staff') }}/' + encodeURIComponent(createdId) + '/foto', 'input-foto-karyawan', form);
+            }
             alert(result.message || 'Karyawan berhasil ditambahkan.');
             window.location.reload();
         } catch (error) {
@@ -303,6 +336,7 @@
         button.disabled = true;
         try {
             const result = await kirimStaff('{{ url('/hrd/staff') }}/' + encodeURIComponent(id), 'PUT', data, form);
+            await unggahFotoKaryawan('{{ url('/hrd/staff') }}/' + encodeURIComponent(id) + '/foto', 'input-foto-edit-karyawan', form);
             alert(result.message || 'Data karyawan berhasil diperbarui.');
             window.location.reload();
         } catch (error) {

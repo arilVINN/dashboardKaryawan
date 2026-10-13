@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Hrd;
 
+use App\Actions\StoreKaryawanFoto;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Karyawan;
@@ -252,6 +253,26 @@ class HrdStaffController extends Controller
         return response()->json([
             'message' => 'Staff berhasil diubah',
             'data' => $karyawan->fresh(['user.role', 'divisi']),
+        ]);
+    }
+
+    public function updateFoto(Request $request, $id)
+    {
+        $request->validate([
+            'foto' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $karyawan = Karyawan::where('id_karyawan', $id)->first();
+
+        if (! $karyawan) {
+            return response()->json(['message' => 'Staff tidak ditemukan'], 404);
+        }
+
+        $path = StoreKaryawanFoto::handle($karyawan, $request->file('foto'));
+
+        return response()->json([
+            'message' => 'Foto karyawan berhasil diperbarui.',
+            'foto_url' => '/storage/'.$path,
         ]);
     }
 

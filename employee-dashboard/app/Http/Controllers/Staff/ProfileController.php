@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Staff;
 
+use App\Actions\StoreKaryawanFoto;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -64,12 +64,7 @@ class ProfileController extends Controller
 
         $karyawan = $user->karyawan;
 
-        if ($karyawan->foto) {
-            Storage::disk('public')->delete($karyawan->foto);
-        }
-
-        $path = $request->file('foto')->store('foto-profil', 'public');
-        $karyawan->update(['foto' => $path]);
+        $path = StoreKaryawanFoto::handle($karyawan, $request->file('foto'));
 
         return response()->json([
             'message' => 'Foto profil berhasil diperbarui.',
