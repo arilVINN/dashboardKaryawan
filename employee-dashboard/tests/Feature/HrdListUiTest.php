@@ -171,7 +171,7 @@ class HrdListUiTest extends TestCase
     {
         $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan')
             ->assertSee('data-breadcrumb-parent="Dashboard"', false)
-            ->assertSee('data-breadcrumb-current="Daftar Karyawan"', false);
+            ->assertSee('data-breadcrumb-current="Manajemen Karyawan"', false);
 
         $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi')
             ->assertSee('data-breadcrumb-parent="Dashboard"', false)
