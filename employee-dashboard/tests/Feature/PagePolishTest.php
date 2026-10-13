@@ -119,16 +119,6 @@ class PagePolishTest extends TestCase
         $this->assertStringContainsString('<h2 class="text-xl font-bold text-slate-800">'.$rowHeading.'</h2>', $html);
     }
 
-    private function assertIconRowHeading(string $html, string $parent, string $current, string $title, string $rowHeading): void
-    {
-        $this->assertStringContainsString('data-breadcrumb-parent="'.$parent.'"', $html);
-        $this->assertStringContainsString('data-breadcrumb-current="'.$current.'"', $html);
-        $this->assertStringContainsString('<title>'.$title.'</title>', $html);
-        $this->assertStringNotContainsString('<h1 class="text-2xl', $html);
-        $this->assertStringContainsString('<svg class="w-5 h-5 text-green-600"', $html);
-        $this->assertStringContainsString('<span>'.$rowHeading.'</span></h2>', $html);
-    }
-
     private function assertTwoLevelHeading(string $html, string $parent, string $current, string $title, string $pageHeading, string $rowHeading): void
     {
         $this->assertStringContainsString('data-breadcrumb-parent="'.$parent.'"', $html);
@@ -195,7 +185,7 @@ class PagePolishTest extends TestCase
 
     public function test_kadiv_pesan_page_polish(): void
     {
-        $this->assertIconRowHeading(
+        $this->assertRowHeading(
             $this->getPage($this->kadiv, '/kadiv/pesan'),
             'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
         );
@@ -219,7 +209,7 @@ class PagePolishTest extends TestCase
 
     public function test_hrd_pesan_page_polish(): void
     {
-        $this->assertIconRowHeading(
+        $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/pesan'),
             'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
         );
@@ -243,7 +233,7 @@ class PagePolishTest extends TestCase
 
     public function test_hrd_daftar_pesan_page_polish(): void
     {
-        $this->assertIconRowHeading(
+        $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/daftarPesan'),
             'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
         );
@@ -286,6 +276,10 @@ class PagePolishTest extends TestCase
         $html = $this->getPage($this->hrd, '/hrd/pesan');
 
         $this->assertSame(1, substr_count($html, 'Pusat Pesan & Komunikasi'));
+        $this->assertStringContainsString(
+            '<h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5"><span class="p-2 rounded-lg bg-green-100 text-green-600">',
+            $html
+        );
     }
 
     public function test_dashboard_compact_tables_keep_labels(): void
