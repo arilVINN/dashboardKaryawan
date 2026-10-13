@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Divisi;
+use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -94,5 +95,66 @@ class HrdDivisionFormDedupTest extends TestCase
             ->assertSee('modalTambahKaryawan', false)
             ->assertSee('<select name="divisi_id_divisi" required', false)
             ->assertDontSee('type="hidden" name="divisi_id_divisi"', false);
+    }
+
+    public function test_api_rejects_unlisted_jabatan(): void
+    {
+        $this->actingAs($this->hrd)
+            ->postJson('/hrd/staff', [
+                'nama' => 'Calon Karyawan',
+                'jenis_kelamin' => 'Laki-laki',
+                'jabatan' => 'Kepala Divisi HR',
+                'divisi_id_divisi' => 'DIV-EMPTY',
+                'username' => 'calonsatu',
+                'password' => 'password',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('jabatan');
+    }
+
+    public function test_api_accepts_listed_jabatan(): void
+    {
+        $this->actingAs($this->hrd)
+            ->postJson('/hrd/staff', [
+                'nama' => 'Calon Karyawan',
+                'jenis_kelamin' => 'Laki-laki',
+                'jabatan' => 'Staff',
+                'divisi_id_divisi' => 'DIV-EMPTY',
+                'username' => 'calondua',
+                'password' => 'password',
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('karyawans', ['jabatan' => 'Staff']);
+    }
+
+    public function test_api_rejects_lowercase_variant(): void
+    {
+        // The `in:` rule is exact-case; the UI select always sends exact values.
+        $this->actingAs($this->hrd)
+            ->postJson('/hrd/staff', [
+                'nama' => 'Calon Karyawan',
+                'jenis_kelamin' => 'Laki-laki',
+                'jabatan' => 'staff',
+                'divisi_id_divisi' => 'DIV-EMPTY',
+                'username' => 'calontiga',
+                'password' => 'password',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('jabatan');
+    }
+
+    public function test_modals_render_jabatan_select_from_fixed_list(): void
+    {
+        $html = $this->actingAs($this->hrd)
+            ->get('/hrd/detailDivisi/DIV-EMPTY')
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('<select name="jabatan"', $html);
+        $this->assertStringNotContainsString('type="text" name="jabatan"', $html);
+        foreach (Karyawan::JABATAN_OPTIONS as $option) {
+            $this->assertStringContainsString('<option value="'.$option.'">'.$option.'</option>', $html);
+        }
     }
 }

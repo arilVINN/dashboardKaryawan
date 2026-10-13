@@ -46,12 +46,14 @@ class HrdStaffController extends Controller
             'tanggal_rekrut' => 'nullable|date',
             'no_telepon' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:100|unique:karyawans,email',
-            'jabatan' => 'required|string|max:100',
+            'jabatan' => ['required', 'string', 'max:100', Rule::in(Karyawan::JABATAN_OPTIONS)],
             'divisi_id_divisi' => 'required|string|max:20',
             // Data akun login
             'username' => 'required|string|max:50|unique:users2,username',
             'password' => 'required|string|min:6',
             'role_id_role' => 'nullable|string|exists:roles,id_role', // Opsional, default staff
+        ], [
+            'jabatan.in' => 'Jabatan harus salah satu dari: '.implode(', ', Karyawan::JABATAN_OPTIONS).'.',
         ]);
 
         // Try-catch: pastikan divisi ada
@@ -191,7 +193,7 @@ class HrdStaffController extends Controller
                 'sometimes', 'nullable', 'email', 'max:100',
                 Rule::unique('karyawans', 'email')->ignore($karyawan->id_karyawan, 'id_karyawan'),
             ],
-            'jabatan' => 'sometimes|required|string|max:100',
+            'jabatan' => ['sometimes', 'required', 'string', 'max:100', Rule::in(Karyawan::JABATAN_OPTIONS)],
             'divisi_id_divisi' => 'sometimes|required|string|max:20|exists:divisis,id_divisi',
             'username' => [
                 'sometimes', 'required', 'string', 'max:50',
@@ -199,6 +201,8 @@ class HrdStaffController extends Controller
             ],
             'password' => 'sometimes|required|string|min:6',
             'role_id_role' => 'sometimes|required|string|exists:roles,id_role',
+        ], [
+            'jabatan.in' => 'Jabatan harus salah satu dari: '.implode(', ', Karyawan::JABATAN_OPTIONS).'.',
         ]);
 
         if (isset($validated['role_id_role'])) {

@@ -60,7 +60,12 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">JABATAN</label>
-                            <input type="text" name="jabatan" maxlength="100" required class="{{ $formControl }}">
+                            <select name="jabatan" required class="{{ $formControl }}">
+                                    <option value="">Pilih jabatan</option>
+                                    @foreach (\App\Models\Karyawan::JABATAN_OPTIONS as $option)
+                                        <option value="{{ $option }}">{{ $option }}</option>
+                                    @endforeach
+                                </select>
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">DIVISI</label>
@@ -169,7 +174,12 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">JABATAN</label>
-                            <input type="text" name="jabatan" maxlength="100" required class="{{ $formControl }}">
+                            <select name="jabatan" required class="{{ $formControl }}">
+                                    <option value="">Pilih jabatan</option>
+                                    @foreach (\App\Models\Karyawan::JABATAN_OPTIONS as $option)
+                                        <option value="{{ $option }}">{{ $option }}</option>
+                                    @endforeach
+                                </select>
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">DIVISI</label>
