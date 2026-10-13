@@ -250,20 +250,35 @@ class HrdDivisionFormDedupTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertSame(2, substr_count($html, 'name="tanggal_rekrut"'));
+        $this->assertSame(2, substr_count($html, 'type="date" name="tanggal_rekrut"'));
 
         $createChunk = substr($html, strpos($html, 'formTambahKaryawan'));
         $createChunk = substr($createChunk, 0, strpos($createChunk, 'Kepegawaian'));
-        $this->assertStringContainsString('type="date" name="tanggal_rekrut"', $createChunk);
 
-        // Email and phone share a row: telepon, then email, then rekrut —
-        // no other field sits between telepon and email.
+        // Email and phone share a row: telepon, then email, with
+        // no other field between them.
         $posTelepon = strpos($createChunk, 'name="no_telepon"');
         $posEmail = strpos($createChunk, 'name="email"');
-        $posRekrut = strpos($createChunk, 'name="tanggal_rekrut"');
         $this->assertLessThan($posEmail, $posTelepon);
-        $this->assertLessThan($posRekrut, $posEmail);
         $between = substr($createChunk, $posTelepon, $posEmail - $posTelepon);
         $this->assertSame(1, substr_count($between, 'name="'));
+    }
+
+    public function test_tanggal_rekrut_lives_in_kepegawaian_section(): void
+    {
+        $html = $this->actingAs($this->hrd)
+            ->get('/hrd/detailDivisi/DIV-EMPTY')
+            ->assertOk()
+            ->getContent();
+
+        foreach (['formTambahKaryawan', 'formEditKaryawan'] as $formId) {
+            $chunk = substr($html, strpos($html, $formId));
+            $pegawaiChunk = substr($chunk, 0, strpos($chunk, 'Kepegawaian'));
+            $this->assertStringNotContainsString('name="tanggal_rekrut"', $pegawaiChunk);
+
+            $kepegawaianChunk = substr($chunk, strpos($chunk, 'Kepegawaian'));
+            $kepegawaianChunk = substr($kepegawaianChunk, 0, strpos($kepegawaianChunk, 'Akun Login'));
+            $this->assertStringContainsString('type="date" name="tanggal_rekrut"', $kepegawaianChunk);
+        }
     }
 }

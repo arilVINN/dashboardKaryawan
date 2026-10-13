@@ -49,10 +49,6 @@
                             <label class="text-xs font-bold text-slate-500">EMAIL</label>
                             <input type="email" name="email" maxlength="100" class="{{ $formControl }}">
                         </div>
-                        <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
-                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
-                        </div>
                         <div class="flex flex-col gap-1.5 sm:col-span-2">
                             <label class="text-xs font-bold text-slate-500">ALAMAT</label>
                             <textarea name="alamat" rows="2" class="{{ $formControl }}" placeholder="Jalan, nomor, kota"></textarea>
@@ -96,6 +92,10 @@
                                     @endforeach
                                 </select>
                             @endif
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
+                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
                         </div>
                     </div>
                 </section>
@@ -171,10 +171,6 @@
                             <label class="text-xs font-bold text-slate-500">EMAIL</label>
                             <input type="email" name="email" maxlength="100" class="{{ $formControl }}">
                         </div>
-                        <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
-                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
-                        </div>
                         <div class="flex flex-col gap-1.5 sm:col-span-2">
                             <label class="text-xs font-bold text-slate-500">ALAMAT</label>
                             <textarea name="alamat" rows="2" class="{{ $formControl }}" placeholder="Jalan, nomor, kota"></textarea>
@@ -208,6 +204,10 @@
                                     <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
+                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
                         </div>
                     </div>
                 </section>
