@@ -15,7 +15,7 @@
     @include('component_kadiv.sidebar')
     
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
-        @include('component_kadiv.topbar')
+        @include('component.topbar')
 
         <main class="flex-1 overflow-y-auto p-6 lg:p-8 pb-16">
 

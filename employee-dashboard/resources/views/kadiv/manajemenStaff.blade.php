@@ -17,7 +17,7 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         {{-- TOPBAR --}}
-        @include('component_kadiv.topbar')
+        @include('component.topbar')
 
         {{-- MAIN CONTENT --}}
         <main class="flex-1 overflow-y-auto p-6 lg:p-8 pb-16">
