@@ -61,7 +61,7 @@
     @endif
 
     <div class="flex justify-between items-center mb-2">
-        <h2 class="text-xl font-bold text-slate-800">Manajemen Karyawan</h2>
+        <h2 class="text-xl font-bold text-slate-800">Daftar Karyawan</h2>
         <button type="button" data-staff-create onclick="bukaModalKaryawan()"
             class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition">
             Tambah

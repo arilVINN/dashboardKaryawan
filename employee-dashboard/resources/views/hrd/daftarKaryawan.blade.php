@@ -16,6 +16,7 @@
         @include('component.topbar')
         @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Manajemen Karyawan'])
         <main class="flex-1 overflow-y-auto p-8 pt-6">
+            <h1 class="text-2xl font-bold text-slate-800 mb-6">Manajemen Karyawan</h1>
             <livewire:hrd.karyawan-table />
             @include('component_hrd.karyawanModals', ['daftarDivisi' => $daftarDivisi])
 

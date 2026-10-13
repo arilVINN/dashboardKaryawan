@@ -84,6 +84,15 @@ class PagePolishTest extends TestCase
         $this->assertStringContainsString('<h2 class="text-xl font-bold text-slate-800">'.$rowHeading.'</h2>', $html);
     }
 
+    private function assertTwoLevelHeading(string $html, string $parent, string $current, string $title, string $pageHeading, string $rowHeading): void
+    {
+        $this->assertStringContainsString('data-breadcrumb-parent="'.$parent.'"', $html);
+        $this->assertStringContainsString('data-breadcrumb-current="'.$current.'"', $html);
+        $this->assertStringContainsString('<title>'.$title.'</title>', $html);
+        $this->assertStringContainsString('<h1 class="text-2xl font-bold text-slate-800 mb-6">'.$pageHeading.'</h1>', $html);
+        $this->assertStringContainsString('<h2 class="text-xl font-bold text-slate-800">'.$rowHeading.'</h2>', $html);
+    }
+
     public function test_staff_tugas_page_polish(): void
     {
         $this->assertPagePolish(
@@ -126,9 +135,9 @@ class PagePolishTest extends TestCase
 
     public function test_kadiv_manajemen_staff_page_polish(): void
     {
-        $this->assertPagePolish(
+        $this->assertTwoLevelHeading(
             $this->getPage($this->kadiv, '/kadiv/manajemenStaff'),
-            'Dashboard', 'Manajemen Staff', 'Manajemen Staff - PT Silindo', 'Manajemen Staff'
+            'Dashboard', 'Manajemen Staff', 'Manajemen Staff - PT Silindo', 'Manajemen Staff', 'Daftar Staff'
         );
     }
 
@@ -150,9 +159,9 @@ class PagePolishTest extends TestCase
 
     public function test_hrd_daftar_karyawan_page_polish(): void
     {
-        $this->assertRowHeading(
+        $this->assertTwoLevelHeading(
             $this->getPage($this->hrd, '/hrd/daftarKaryawan'),
-            'Dashboard', 'Manajemen Karyawan', 'Manajemen Karyawan - PT Silindo', 'Manajemen Karyawan'
+            'Dashboard', 'Manajemen Karyawan', 'Manajemen Karyawan - PT Silindo', 'Manajemen Karyawan', 'Daftar Karyawan'
         );
     }
 
@@ -174,9 +183,9 @@ class PagePolishTest extends TestCase
 
     public function test_hrd_manajemen_divisi_page_polish(): void
     {
-        $this->assertRowHeading(
+        $this->assertTwoLevelHeading(
             $this->getPage($this->hrd, '/hrd/manajemenDivisi'),
-            'Dashboard', 'Manajemen Divisi', 'Manajemen Divisi - PT Silindo', 'Manajemen Divisi'
+            'Dashboard', 'Manajemen Divisi', 'Manajemen Divisi - PT Silindo', 'Manajemen Divisi', 'Daftar Divisi'
         );
     }
 
