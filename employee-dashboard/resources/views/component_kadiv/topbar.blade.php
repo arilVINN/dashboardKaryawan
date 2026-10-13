@@ -50,6 +50,7 @@
                 </a>
 
                 <form method="POST" action="{{ route('logout') }}"
+                      id="topbar-logout-form"
                       onsubmit="if (!confirm('Apakah Anda yakin ingin keluar?')) return false; sessionStorage.removeItem('staff_token'); localStorage.removeItem('staff_token'); return true;"
                       class="border-t border-slate-100">
                     @csrf
