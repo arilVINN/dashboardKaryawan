@@ -141,4 +141,118 @@ class PesanTableTest extends TestCase
 
         Livewire::actingAs($hrd)->test(PesanTable::class)->assertForbidden();
     }
+
+    public function test_shows_unread_badge_and_marks_message_read(): void
+    {
+        Livewire::actingAs($this->staff)->test(PesanTable::class)
+            ->assertSee('belum dibaca');
+
+        Livewire::actingAs($this->staff)->test(PesanTable::class)
+            ->call('baca', 'langsung', 'P-D1')
+            ->assertRedirect(url('/pesan/detail/P-D1'));
+
+        $this->assertNotNull(Pesan::whereKey('P-D1')->first()->dibaca_at);
+    }
+
+    public function test_can_send_message_to_kadiv(): void
+    {
+        $kadiv = User2::where('username', 'abby')->first();
+
+        Livewire::actingAs($this->staff)->test(PesanTable::class)
+            ->set('recipientUserId', $kadiv->id_user)
+            ->set('isi', 'Halo Kadiv')
+            ->call('sendMessage')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('pesans', [
+            'pengirim_id_user' => $this->staff->id_user,
+            'penerima_id_user' => $kadiv->id_user,
+            'deskripsi' => 'Halo Kadiv',
+        ]);
+    }
+
+    public function test_rejects_recipient_outside_division(): void
+    {
+        Livewire::actingAs($this->staff)->test(PesanTable::class)
+            ->set('recipientUserId', $this->staff->id_user)
+            ->set('isi', 'Halo saya sendiri')
+            ->call('sendMessage')
+            ->assertHasErrors('recipientUserId');
+
+        $this->assertDatabaseMissing('pesans', ['deskripsi' => 'Halo saya sendiri']);
+    }
+
+    public function test_can_read_outgoing_thread_without_marking_read(): void
+    {
+        // T-3's latest message was sent by the staff (keluar): opening it
+        // must redirect to its detail instead of silently doing nothing,
+        // and must not stamp dibaca_at on someone else's inbox copy.
+        Livewire::actingAs($this->staff)->test(PesanTable::class)
+            ->call('baca', 'tugas', 'T-3')
+            ->assertRedirect(url('/pesan/detail/P-T3'));
+
+        $this->assertNull(Pesan::whereKey('P-T3')->first()->dibaca_at);
+    }
+
+    public function test_can_read_thread_with_legacy_null_task_owner_column(): void
+    {
+        // Legacy/demo rows may link a task without filling the denormalized
+        // tugas_karyawan_id_karyawan column; ownership via the task itself
+        // must still let the staff open the thread.
+        Tugas::create([
+            'id_tugas' => 'T-9',
+            'karyawan_id_karyawan' => 'KRY-S',
+            'judul_tugas' => 'Tugas Lama',
+            'deskripsi' => 'Tugas Lama desc',
+            'deadline' => now()->addDays(10)->toDateString(),
+            'progress' => '0',
+            'status' => Tugas::STATUS_BARU,
+            'tanggal_dibuat' => now(),
+            'tanggal_update' => now(),
+        ]);
+        Pesan::create([
+            'id_pesan' => 'P-LEGACY',
+            'judul_pesan' => 'Balasan Lama',
+            'deskripsi' => 'Balasan Lama body',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-09-01',
+            'tugas_id_tugas' => 'T-9',
+            'tugas_karyawan_id_karyawan' => null,
+            'pengirim_id_user' => $this->staff->id_user,
+            'penerima_id_user' => User2::where('username', 'abby')->first()->id_user,
+        ]);
+
+        Livewire::actingAs($this->staff)->test(PesanTable::class)
+            ->call('baca', 'tugas', 'T-9')
+            ->assertRedirect(url('/pesan/detail/P-LEGACY'));
+    }
+
+    public function test_sent_direct_message_is_listed_and_readable(): void
+    {        $kadiv = User2::where('username', 'abby')->first();
+
+        Pesan::create([
+            'id_pesan' => 'P-SENT',
+            'judul_pesan' => 'Laporan Selesai',
+            'deskripsi' => 'Sudah saya kirim.',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-10-03',
+            'pengirim_id_user' => $this->staff->id_user,
+            'penerima_id_user' => $kadiv->id_user,
+        ]);
+
+        Livewire::actingAs($this->staff)->test(PesanTable::class)
+            ->assertSee('Laporan Selesai')
+            ->call('baca', 'langsung', 'P-SENT')
+            ->assertRedirect(url('/pesan/detail/P-SENT'));
+
+        $this->assertNull(Pesan::whereKey('P-SENT')->first()->dibaca_at);
+    }
+
+    public function test_per_page_defaults_to_ten(): void
+    {
+        Livewire::actingAs($this->staff)->test(PesanTable::class)
+            ->assertSet('perPage', 10)
+            ->set('perPage', 25)
+            ->assertSet('perPage', 25);
+    }
 }

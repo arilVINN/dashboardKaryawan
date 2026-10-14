@@ -103,15 +103,61 @@ class PesanTableConsistencyTest extends TestCase
         $this->assertStringNotContainsString('bg-cyan-50', $html);
     }
 
-    public function test_hrd_table_shows_direction_pills_and_datetime(): void
+    public function test_hrd_table_shows_direction_labels_and_datetime(): void
     {
         $html = $this->actingAs($this->hrd)->get('/hrd/daftarPesan')->assertOk()->getContent();
 
-        $this->assertStringContainsString('>Arah<', $html);
+        $this->assertStringContainsString('Dari / Kepada', $html);
         $this->assertStringContainsString('>Masuk</span>', $html);
         $this->assertStringContainsString('>Keluar</span>', $html);
         $this->assertStringContainsString('8 Okt 2026 12:56', $html);
         $this->assertStringNotContainsString('2026-10-08', $html);
+    }
+
+    public function test_hrd_table_shows_unread_badge_and_pagination(): void
+    {
+        // Eleven messages force a second page (default 10 per page).
+        for ($i = 3; $i <= 11; $i++) {
+            $this->makePesan('PSN-P'.$i, 'Pesan '.$i, 'USR-KRY-STAFF', 'USR-KRY-HRD', '2026-10-09', '2026-10-09 10:00:00');
+        }
+
+        $html = $this->actingAs($this->hrd)->get('/hrd/daftarPesan')->assertOk()->getContent();
+
+        $this->assertStringContainsString('belum dibaca', $html);
+        $this->assertStringContainsString('Menampilkan', $html);
+        $this->assertStringContainsString('Berikutnya', $html);
+    }
+
+    public function test_hrd_arah_tabs_highlight_exactly_one_active_filter(): void
+    {
+        // Default (no arah): "Semua" is active and its URL carries no arah param.
+        $plain = $this->actingAs($this->hrd)->get('/hrd/daftarPesan')->assertOk()->getContent();
+        $this->assertSame(1, substr_count($plain, 'aria-selected="true"'));
+        $this->assertStringContainsString('href="http://localhost/hrd/daftarPesan"', $plain);
+
+        // Masuk tab: active state plus filtered rows.
+        $masuk = $this->actingAs($this->hrd)->get('/hrd/daftarPesan?arah=masuk')->assertOk()->getContent();
+        $this->assertSame(1, substr_count($masuk, 'aria-selected="true"'));
+        $active = substr($masuk, strpos($masuk, 'aria-selected="true"'), 400);
+        $this->assertStringContainsString('Masuk', $active);
+        $this->assertStringContainsString('Laporan Masuk', $this->tableBody($masuk));
+        $this->assertStringNotContainsString('Balasan Keluar', $this->tableBody($masuk));
+    }
+
+    public function test_hrd_table_date_range_filter(): void
+    {
+        $dari = $this->tableBody($this->actingAs($this->hrd)->get('/hrd/daftarPesan?dari=2026-10-08')->assertOk()->getContent());
+        $this->assertStringContainsString('Balasan Keluar', $dari);
+        $this->assertStringNotContainsString('Laporan Masuk', $dari);
+    }
+
+    public function test_hrd_detail_marks_message_read_for_recipient(): void
+    {
+        $this->makePesan('PSN-HRD', 'Untuk HRD', 'USR-KRY-STAFF', 'USR-KRY-HRD', '2026-10-09', '2026-10-09 10:00:00');
+
+        $this->actingAs($this->hrd)->get('/hrd/detailPesan/PSN-HRD')->assertOk();
+
+        $this->assertNotNull(Pesan::whereKey('PSN-HRD')->first()->dibaca_at);
     }
 
     public function test_hrd_table_search_filters_rows(): void

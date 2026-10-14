@@ -8,59 +8,132 @@ use App\Models\Pesan;
 use App\Models\User2;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class HrdPesanController extends Controller
 {
     public function page(Request $request)
     {
         $user = $request->user();
-        $semua = $this->allMessages();
+        $rows = $this->messageRows($this->allMessages(), $user);
 
         return view('hrd.pesan', [
-            'pesans' => $this->applyListFilters($semua, $request, $user),
-            'totalPesan' => $semua->count(),
-            'pesanMasuk' => $semua->where('pengirim_id_user', '!=', $user->id_user)->count(),
-            'pesanKeluar' => $semua->where('pengirim_id_user', $user->id_user)->count(),
+            'pesans' => $this->paginateRows($this->applyListFilters($rows, $request), $request),
+            'perPage' => $this->perPage($request),
+            'belumDibaca' => $rows->where('unread', true)->count(),
+            'totalPesan' => $rows->count(),
+            'pesanMasuk' => $rows->where('arah', 'masuk')->count(),
+            'pesanKeluar' => $rows->where('arah', 'keluar')->count(),
         ]);
     }
 
     public function daftarPage(Request $request)
     {
-        $pesans = $this->applyListFilters($this->allMessages(), $request, $request->user());
+        $user = $request->user();
+        $rows = $this->messageRows($this->allMessages(), $user);
 
-        return view('hrd.daftarPesan', compact('pesans'));
+        return view('hrd.daftarPesan', [
+            'pesans' => $this->paginateRows($this->applyListFilters($rows, $request), $request),
+            'perPage' => $this->perPage($request),
+            'belumDibaca' => $rows->where('unread', true)->count(),
+        ]);
     }
 
-    private function applyListFilters($pesans, Request $request, $user)
+    /**
+     * Viewer-relative rows for the Daftar Pesan list: counterparty display
+     * name, subject preview, relative date and read state.
+     */
+    private function messageRows($pesans, $user)
+    {
+        return $pesans->map(fn ($pesan) => [
+            'id_pesan' => $pesan->id_pesan,
+            'judul' => $pesan->judul_pesan,
+            'deskripsi' => $pesan->deskripsi,
+            'preview' => Str::limit((string) ($pesan->deskripsi ?? ''), 90),
+            'arah' => $pesan->pengirim_id_user !== $user->id_user ? 'masuk' : 'keluar',
+            'kontak_nama' => $this->contactName($pesan, $user),
+            'unread' => $pesan->pengirim_id_user !== $user->id_user && empty($pesan->dibaca_at),
+            'tanggal_raw' => $pesan->tanggal_pesan,
+            'tanggal_relatif' => Pesan::formatTanggalRelatif($pesan->tanggal_pesan, $pesan->created_at),
+            'tanggal_lengkap' => Pesan::formatTanggalJam($pesan->tanggal_pesan, $pesan->created_at),
+        ])->values();
+    }
+
+    private function contactName($pesan, $user): string
+    {
+        $contact = $pesan->pengirim_id_user !== $user->id_user ? $pesan->pengirim : $pesan->penerima;
+
+        return $contact?->karyawan?->nama ?? $contact?->username ?? 'Pengguna tidak tersedia';
+    }
+
+    private function perPage(Request $request): int
+    {
+        $perPage = (int) $request->query('per_page', 10);
+
+        return in_array($perPage, [10, 25, 50], true) ? $perPage : 10;
+    }
+
+    private function paginateRows($rows, Request $request)
+    {
+        $perPage = $this->perPage($request);
+        $page = max(1, (int) $request->query('page', 1));
+
+        return new LengthAwarePaginator(
+            $rows->forPage($page, $perPage)->values(),
+            $rows->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+    }
+
+    private function applyListFilters($rows, Request $request)
     {
         $q = trim((string) $request->query('q', ''));
         if ($q !== '') {
-            $pesans = $pesans->filter(fn ($pesan) => stripos($pesan->judul_pesan ?? '', $q) !== false
-                || stripos($pesan->deskripsi ?? '', $q) !== false);
+            $needle = mb_strtolower($q);
+            $rows = $rows->filter(fn ($row) => str_contains(mb_strtolower((string) ($row['judul'] ?? '')), $needle)
+                || str_contains(mb_strtolower((string) ($row['deskripsi'] ?? '')), $needle)
+                || str_contains(mb_strtolower((string) ($row['kontak_nama'] ?? '')), $needle));
         }
 
         // Inbox model: everything not sent by the viewer counts as masuk,
         // so masuk + keluar always equals the total.
         $arah = $request->query('arah');
         if ($arah === 'masuk') {
-            $pesans = $pesans->filter(fn ($pesan) => $pesan->pengirim_id_user !== $user->id_user);
+            $rows = $rows->where('arah', 'masuk');
         } elseif ($arah === 'keluar') {
-            $pesans = $pesans->filter(fn ($pesan) => $pesan->pengirim_id_user === $user->id_user);
+            $rows = $rows->where('arah', 'keluar');
+        }
+
+        $dari = $request->query('dari');
+        if (is_string($dari) && $dari !== '') {
+            $rows = $rows->filter(fn ($row) => ($row['tanggal_raw'] ?? '') >= $dari);
+        }
+
+        $sampai = $request->query('sampai');
+        if (is_string($sampai) && $sampai !== '') {
+            $rows = $rows->filter(fn ($row) => ($row['tanggal_raw'] ?? '') <= $sampai);
         }
 
         $dir = $request->query('dir') === 'asc' ? 'asc' : 'desc';
         if ($request->query('sort') === 'judul') {
-            $pesans = $dir === 'asc'
-                ? $pesans->sortBy(fn ($pesan) => mb_strtolower($pesan->judul_pesan ?? ''))
-                : $pesans->sortByDesc(fn ($pesan) => mb_strtolower($pesan->judul_pesan ?? ''));
+            $rows = $dir === 'asc'
+                ? $rows->sortBy(fn ($row) => mb_strtolower($row['judul'] ?? ''))
+                : $rows->sortByDesc(fn ($row) => mb_strtolower($row['judul'] ?? ''));
+        } elseif ($request->query('sort') === 'pengirim') {
+            $rows = $dir === 'asc'
+                ? $rows->sortBy(fn ($row) => mb_strtolower($row['kontak_nama'] ?? ''))
+                : $rows->sortByDesc(fn ($row) => mb_strtolower($row['kontak_nama'] ?? ''));
         } elseif ($request->query('sort') === 'tanggal') {
-            $pesans = $dir === 'asc'
-                ? $pesans->sortBy(fn ($pesan) => [$pesan->tanggal_pesan, $pesan->created_at])
-                : $pesans->sortByDesc(fn ($pesan) => [$pesan->tanggal_pesan, $pesan->created_at]);
+            $rows = $dir === 'asc'
+                ? $rows->sortBy(fn ($row) => [$row['tanggal_raw'], $row['tanggal_lengkap']])
+                : $rows->sortByDesc(fn ($row) => [$row['tanggal_raw'], $row['tanggal_lengkap']]);
         }
 
-        return $pesans->values();
+        return $rows->values();
     }
 
     private function allMessages()
@@ -88,6 +161,11 @@ class HrdPesanController extends Controller
         $thread = $root->balasan->prepend($root)->sortBy('created_at');
         $isParticipant = $pesan->pengirim_id_user === $user->id_user
             || $pesan->penerima_id_user === $user->id_user;
+
+        // Opening a message marks it read for the recipient (first time only).
+        if ($pesan->penerima_id_user === $user->id_user && $pesan->dibaca_at === null) {
+            $pesan->update(['dibaca_at' => now()]);
+        }
 
         return view('hrd.detailPesan', [
             'pesan' => $pesan,

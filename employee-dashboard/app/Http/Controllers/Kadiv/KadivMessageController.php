@@ -73,6 +73,11 @@ class KadivMessageController extends Controller
             return response()->json(['message' => 'Pesan tidak ditemukan.'], 404);
         }
 
+        // Opening a message marks it read for the recipient (first time only).
+        if ($message->penerima_id_user === $user->id_user && $message->dibaca_at === null) {
+            $message->update(['dibaca_at' => now()]);
+        }
+
         $root = $message->balasanDari ?? $message;
         $data = MessagePresenter::for($message, $user);
         $data['can_reply'] = ($root->tipe ?? 'pesan') === 'pesan';

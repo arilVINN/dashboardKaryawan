@@ -8,7 +8,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-white flex h-screen overflow-hidden">
+<body class="bg-gray-100 flex h-screen overflow-hidden">
 
     {{-- SIDEBAR --}}
     @include('component_kadiv.sidebar')

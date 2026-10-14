@@ -20,16 +20,25 @@ class PesanTable extends Component
     public string $search = '';
 
     #[Url]
+    public string $tipe = '';
+
+    #[Url]
+    public string $arah = '';
+
+    #[Url]
+    public string $dari = '';
+
+    #[Url]
+    public string $sampai = '';
+
+    #[Url]
     public string $sort = '';
 
     #[Url]
     public string $dir = 'desc';
 
     #[Url]
-    public string $tipe = '';
-
-    #[Url]
-    public string $arah = '';
+    public int $perPage = 10;
 
     public string $recipientUserId = '';
     public string $isi = '';
@@ -67,6 +76,21 @@ class PesanTable extends Component
         $this->resetPage();
     }
 
+    public function updatedDari(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSampai(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage(): void
+    {
+        $this->resetPage();
+    }
+
     public function sortBy(string $column): void
     {
         if ($this->sort === $column) {
@@ -84,6 +108,8 @@ class PesanTable extends Component
         $this->search = '';
         $this->tipe = '';
         $this->arah = '';
+        $this->dari = '';
+        $this->sampai = '';
         $this->sort = 'tanggal';
         $this->dir = 'desc';
         $this->resetPage();
@@ -142,10 +168,37 @@ class PesanTable extends Component
         return $id;
     }
 
+    /**
+     * Mark the message as read (incoming only, first time only) and open
+     * its detail view. Outgoing messages are viewable but never marked.
+     */
+    public function baca(string $id): void
+    {
+        $kadiv = $this->kadiv();
+
+        $pesan = Pesan::query()
+            ->whereKey($id)
+            ->where(function ($query) use ($kadiv): void {
+                $query->where('pengirim_id_user', $kadiv->id_user)
+                    ->orWhere('penerima_id_user', $kadiv->id_user);
+            })
+            ->first();
+
+        if ($pesan && $pesan->penerima_id_user === $kadiv->id_user && $pesan->dibaca_at === null) {
+            $pesan->update(['dibaca_at' => now()]);
+        }
+
+        if ($pesan) {
+            $this->redirect(url('/kadiv/detailPesan/'.$pesan->id_pesan));
+        }
+    }
+
     public function render()
     {
         $kadiv = $this->kadiv();
         $divisionId = $kadiv->karyawan->divisi_id_divisi;
+
+        $perPage = in_array($this->perPage, [10, 25, 50], true) ? $this->perPage : 10;
 
         $messages = KadivMessageQuery::forUser($kadiv)
             ->apply([
@@ -154,9 +207,26 @@ class PesanTable extends Component
                 'tipe' => $this->tipe,
                 'arah' => $this->arah,
                 'q' => $this->search,
+                'dari' => $this->dari,
+                'sampai' => $this->sampai,
             ])
-            ->paginate(10)
+            ->paginate($perPage)
             ->through(fn (Pesan $message) => MessagePresenter::for($message, $kadiv));
+
+        // Read states live outside the presenter (shared with the API);
+        // merge them here so rows and the badge know what is unread.
+        $ids = collect($messages->items())->pluck('id_pesan')->all();
+        $read = Pesan::whereIn('id_pesan', $ids)->whereNotNull('dibaca_at')->pluck('id_pesan')->all();
+        $messages->getCollection()->transform(function (array $row) use ($read): array {
+            $row['unread'] = ($row['arah'] ?? 'masuk') === 'masuk' && ! in_array($row['id_pesan'], $read, true);
+
+            return $row;
+        });
+
+        $belumDibaca = KadivMessageQuery::forUser($kadiv)
+            ->apply(['arah' => 'masuk'])
+            ->whereNull('dibaca_at')
+            ->count();
 
         $recipients = User2::with(['karyawan', 'role'])
             ->where(function ($q) use ($divisionId): void {
@@ -168,6 +238,10 @@ class PesanTable extends Component
             })
             ->get();
 
-        return view('livewire.kadiv.pesan-table', ['messages' => $messages, 'recipients' => $recipients]);
+        return view('livewire.kadiv.pesan-table', [
+            'messages' => $messages,
+            'belumDibaca' => $belumDibaca,
+            'recipients' => $recipients,
+        ]);
     }
 }

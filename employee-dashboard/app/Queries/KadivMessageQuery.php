@@ -38,6 +38,16 @@ class KadivMessageQuery
             $query->where('pengirim_id_user', $this->kadiv->id_user);
         }
 
+        $dari = $filters['dari'] ?? null;
+        if (is_string($dari) && $dari !== '') {
+            $query->where('tanggal_pesan', '>=', $dari);
+        }
+
+        $sampai = $filters['sampai'] ?? null;
+        if (is_string($sampai) && $sampai !== '') {
+            $query->where('tanggal_pesan', '<=', $sampai);
+        }
+
         $q = $filters['q'] ?? null;
         if ($q !== null && $q !== '') {
             $kata = mb_strtolower($q);

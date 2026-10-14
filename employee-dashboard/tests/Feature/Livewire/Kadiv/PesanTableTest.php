@@ -118,11 +118,44 @@ class PesanTableTest extends TestCase
         ]);
 
         Livewire::actingAs($this->kadiv)->test(PesanTable::class)
-            ->assertSee('<th class="px-6 py-4 font-medium whitespace-nowrap text-center">Arah</th>', false)
-            ->assertSee('<th class="px-6 py-4 font-medium whitespace-nowrap text-center">Penerima</th>', false)
-            ->assertSee('<span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Masuk</span>', false)
-            ->assertSee('<span class="px-2.5 py-1 bg-sky-100 text-sky-700 rounded-full text-xs font-bold">Keluar</span>', false)
-            ->assertSee('<td class="px-6 py-4 text-slate-700 text-center whitespace-nowrap">Abby</td>', false);
+            ->assertSee('Dari / Kepada', false)
+            ->assertSee('>Masuk</span>', false)
+            ->assertSee('>Keluar</span>', false)
+            ->assertSee('Abby', false)
+            ->assertSee('wire:click="sortBy(\'tanggal\')"', false)
+            ->assertDontSee('id="kadivPesanArah"', false);
+    }
+
+    public function test_shows_unread_badge_and_marks_message_read(): void
+    {
+        Livewire::actingAs($this->kadiv)->test(PesanTable::class)
+            ->assertSee('belum dibaca');
+
+        Livewire::actingAs($this->kadiv)->test(PesanTable::class)
+            ->call('baca', 'P-1')
+            ->assertRedirect(url('/kadiv/detailPesan/P-1'));
+
+        $this->assertNotNull(Pesan::whereKey('P-1')->first()->dibaca_at);
+    }
+
+    public function test_can_read_outgoing_message_without_marking_read(): void
+    {
+        Pesan::create([
+            'id_pesan' => 'P-OUT',
+            'judul_pesan' => 'Balasan Kadiv',
+            'deskripsi' => 'siap',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-10-02',
+            'pengirim_id_user' => $this->kadiv->id_user,
+            'penerima_id_user' => $this->abby->id_user,
+        ]);
+
+        Livewire::actingAs($this->kadiv)->test(PesanTable::class)
+            ->assertSee('Balasan Kadiv')
+            ->call('baca', 'P-OUT')
+            ->assertRedirect(url('/kadiv/detailPesan/P-OUT'));
+
+        $this->assertNull(Pesan::whereKey('P-OUT')->first()->dibaca_at);
     }
 
     public function test_non_kadiv_is_forbidden(): void

@@ -141,6 +141,11 @@ class PesanController extends Controller
             return response()->json(['message' => 'Pesan tidak ditemukan.'], 404);
         }
 
+        // Opening a message marks it read for the recipient (first time only).
+        if ($pesan->penerima_id_user === $user->id_user && $pesan->dibaca_at === null) {
+            $pesan->update(['dibaca_at' => now()]);
+        }
+
         $person = fn (?User2 $account) => $account ? [
             'id_user' => $account->id_user,
             'username' => $account->username,

@@ -101,7 +101,9 @@ class StaffTugasFilterTest extends TestCase
             ->get('/pesan')
             ->assertOk()
             ->assertSee('id="staffPesanSearch"', false)
-            ->assertSee('id="staffPesanArah"', false)
+            ->assertSee('aria-label="Arah pesan"', false)
+            ->assertSee('wire:click="$set(\'arah\', \'masuk\')"', false)
+            ->assertSee('wire:click="$set(\'arah\', \'keluar\')"', false)
             ->assertSee('wire:click="sortBy(\'tanggal\')"', false)
             ->assertDontSee('setStaffPesanSort', false)
             ->assertDontSee('data-sort-indicator', false);

@@ -30,6 +30,17 @@ class Pesan extends Model
         'pengirim_id_user',
         'penerima_id_user',
         'balasan_dari_id_pesan',
+        'dibaca_at',
+    ];
+
+    protected $casts = [
+        'dibaca_at' => 'datetime',
+    ];
+
+    /** Indonesian short month names used by the date formatters below. */
+    private const BULAN_SINGKAT = [
+        1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
     ];
 
     public function tugas()
@@ -75,34 +86,76 @@ class Pesan extends Model
      */
     public static function formatTanggalJam($tanggal, $waktu = null): string
     {
-        if (empty($tanggal)) {
+        $d = self::parseTanggal($tanggal);
+
+        if ($d === null) {
             return '-';
         }
 
-        try {
-            $d = $tanggal instanceof \DateTimeInterface
-                ? Carbon::parse($tanggal->format('Y-m-d'))
-                : Carbon::parse($tanggal);
-        } catch (\Throwable) {
-            return '-';
-        }
+        $out = self::formatTanggal($d);
 
-        static $bulan = [
-            1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-            'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
-        ];
-
-        $out = $d->day.' '.$bulan[$d->month].' '.$d->year;
-
-        if (! empty($waktu)) {
-            try {
-                // Instants (e.g. ISO "Z" strings) convert to the app timezone;
-                // naive strings are already in it, so this is a no-op for them.
-                $out .= ' '.Carbon::parse($waktu)->setTimezone(config('app.timezone', 'UTC'))->format('H:i');
-            } catch (\Throwable) {
-            }
+        $jam = self::formatJam($waktu);
+        if ($jam !== null) {
+            $out .= ' '.$jam;
         }
 
         return $out;
+    }
+
+    /**
+     * Compact list format: "Hari ini, 12:56" for messages from today, otherwise
+     * the bare date "8 Okt 2026". Falls back to '-' when there is no date.
+     */
+    public static function formatTanggalRelatif($tanggal, $waktu = null): string
+    {
+        $d = self::parseTanggal($tanggal);
+
+        if ($d === null) {
+            return '-';
+        }
+
+        if ($d->isToday()) {
+            $jam = self::formatJam($waktu);
+
+            return $jam !== null ? 'Hari ini, '.$jam : 'Hari ini';
+        }
+
+        return self::formatTanggal($d);
+    }
+
+    private static function parseTanggal($tanggal): ?Carbon
+    {
+        if (empty($tanggal)) {
+            return null;
+        }
+
+        try {
+            return $tanggal instanceof \DateTimeInterface
+                ? Carbon::parse($tanggal->format('Y-m-d'))
+                : Carbon::parse($tanggal);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private static function formatTanggal(Carbon $d): string
+    {
+        return $d->day.' '.self::BULAN_SINGKAT[$d->month].' '.$d->year;
+    }
+
+    /** "12:56" in the app timezone, or null when the time is missing/invalid. */
+    private static function formatJam($waktu): ?string
+    {
+        if (empty($waktu)) {
+            return null;
+        }
+
+        try {
+            // Instants (e.g. ISO "Z" strings) convert to the app timezone;
+            // naive strings are already in it, so this is a no-op for them.
+            return Carbon::parse($waktu)->setTimezone(config('app.timezone', 'UTC'))->format('H:i');
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

@@ -10,6 +10,7 @@ use App\Models\Tugas;
 use App\Models\User2;
 use App\Queries\StaffPesanQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -100,41 +101,149 @@ class StaffPesanQueryTest extends TestCase
 
     public function test_unified_merges_threads_and_direct_messages_with_expected_shape(): void
     {
+        Carbon::setTestNow('2026-10-14 09:00:00');
+
+        try {
+            $items = StaffPesanQuery::forStaff($this->staff)->unified([]);
+
+            // Default sort: tanggal desc → direct (10-02) before thread latest (10-01).
+            // T-2 has no pesan and must be excluded.
+            $this->assertSame(['langsung', 'tugas', 'tugas'], $items->pluck('jenis')->all());
+
+            $tugas = $items->firstWhere('jenis', 'tugas');
+            $this->assertSame(
+                [
+                    'jenis' => 'tugas',
+                    'link_id' => 'T-1',
+                    'pesan_id' => 'P-T1',
+                    'judul' => 'Tugas: Desain Logo',
+                    'preview' => 'Versi Revisi body',
+                    'arah' => 'masuk',
+                    'pengirim' => 'abby',
+                    'penerima' => 'budist',
+                    'kontak_peran' => 'Dari',
+                    'kontak_nama' => 'abby',
+                    'kontak_username' => 'abby',
+                    'unread' => true,
+                    'tanggal_raw' => '2026-10-01',
+                    'tanggal' => '1 Okt 2026 14:30',
+                    'tanggal_relatif' => '1 Okt 2026',
+                    'tanggal_lengkap' => '1 Okt 2026 14:30',
+                ],
+                $tugas
+            );
+
+            $langsung = $items->firstWhere('jenis', 'langsung');
+            $this->assertSame(
+                [
+                    'jenis' => 'langsung',
+                    'link_id' => 'P-D1',
+                    'pesan_id' => 'P-D1',
+                    'judul' => 'Rapat Mingguan',
+                    'preview' => 'Rapat Mingguan body',
+                    'arah' => 'masuk',
+                    'pengirim' => 'zed',
+                    'penerima' => 'budist',
+                    'kontak_peran' => 'Dari',
+                    'kontak_nama' => 'zed',
+                    'kontak_username' => 'zed',
+                    'unread' => true,
+                    'tanggal_raw' => '2026-10-02',
+                    'tanggal' => '2 Okt 2026 09:15',
+                    'tanggal_relatif' => '2 Okt 2026',
+                    'tanggal_lengkap' => '2 Okt 2026 09:15',
+                ],
+                $langsung
+            );
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_ringkasan_counts_unread_incoming_messages(): void
+    {
+        $ringkasan = StaffPesanQuery::forStaff($this->staff)->ringkasan();
+
+        // T-1 (incoming thread) and P-D1 (incoming direct); T-3 is outgoing.
+        $this->assertSame(3, $ringkasan['total']);
+        $this->assertSame(2, $ringkasan['belum_dibaca']);
+    }
+
+    public function test_read_messages_are_not_counted_as_unread(): void
+    {
+        Pesan::whereKey('P-D1')->first()->update(['dibaca_at' => now()]);
+
         $items = StaffPesanQuery::forStaff($this->staff)->unified([]);
 
-        // Default sort: tanggal desc → direct (10-02) before thread latest (10-01).
-        // T-2 has no pesan and must be excluded.
-        $this->assertSame(['langsung', 'tugas', 'tugas'], $items->pluck('jenis')->all());
+        $this->assertFalse($items->firstWhere('link_id', 'P-D1')['unread']);
+        $this->assertSame(1, StaffPesanQuery::forStaff($this->staff)->ringkasan()['belum_dibaca']);
+    }
 
-        $tugas = $items->firstWhere('jenis', 'tugas');
+    public function test_relative_date_shows_today_with_time(): void
+    {
+        Carbon::setTestNow('2026-10-14 09:00:00');
+
+        try {
+            $pesan = Pesan::create([
+                'id_pesan' => 'P-TODAY',
+                'judul_pesan' => 'Hari Ini',
+                'deskripsi' => 'body',
+                'tipe' => 'pesan',
+                'tanggal_pesan' => '2026-10-14',
+                'pengirim_id_user' => 'USR-A',
+                'penerima_id_user' => 'USR-S',
+            ]);
+            $pesan->created_at = '2026-10-14 12:56:00';
+            $pesan->save();
+
+            $row = StaffPesanQuery::forStaff($this->staff)
+                ->unified([])
+                ->firstWhere('link_id', 'P-TODAY');
+
+            $this->assertSame('Hari ini, 12:56', $row['tanggal_relatif']);
+            $this->assertSame('14 Okt 2026 12:56', $row['tanggal_lengkap']);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_filters_by_date_range(): void
+    {
+        // Sorted by tanggal desc: P-D1 (10-02) then T-1 (10-01).
         $this->assertSame(
-            [
-                'jenis' => 'tugas',
-                'link_id' => 'T-1',
-                'judul' => 'Tugas: Desain Logo',
-                'arah' => 'masuk',
-                'pengirim' => 'abby',
-                'penerima' => 'budist',
-                'tanggal_raw' => '2026-10-01',
-                'tanggal' => '1 Okt 2026 14:30',
-            ],
-            $tugas
+            ['P-D1', 'T-1'],
+            StaffPesanQuery::forStaff($this->staff)->unified(['dari' => '2026-10-01'])->pluck('link_id')->all()
         );
 
-        $langsung = $items->firstWhere('jenis', 'langsung');
         $this->assertSame(
-            [
-                'jenis' => 'langsung',
-                'link_id' => 'P-D1',
-                'judul' => 'Rapat Mingguan',
-                'arah' => 'masuk',
-                'pengirim' => 'zed',
-                'penerima' => 'budist',
-                'tanggal_raw' => '2026-10-02',
-                'tanggal' => '2 Okt 2026 09:15',
-            ],
-            $langsung
+            ['T-1', 'T-3'],
+            StaffPesanQuery::forStaff($this->staff)->unified(['sampai' => '2026-10-01'])->pluck('link_id')->all()
         );
+    }
+
+    public function test_includes_sent_direct_messages_as_keluar(): void
+    {
+        Pesan::create([
+            'id_pesan' => 'P-SENT',
+            'judul_pesan' => 'Laporan Selesai',
+            'deskripsi' => 'Laporan Selesai body',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-10-03',
+            'pengirim_id_user' => $this->staff->id_user,
+            'penerima_id_user' => 'USR-A',
+        ]);
+
+        $items = StaffPesanQuery::forStaff($this->staff)->unified([]);
+
+        $sent = $items->firstWhere('link_id', 'P-SENT');
+        $this->assertSame('langsung', $sent['jenis']);
+        $this->assertSame('keluar', $sent['arah']);
+        $this->assertSame('abby', $sent['kontak_nama']);
+        $this->assertFalse($sent['unread']);
+
+        // Sent mail is listed under Keluar but never counts as unread.
+        $this->assertSame(['P-SENT', 'T-3'], StaffPesanQuery::forStaff($this->staff)->unified(['arah' => 'keluar'])->pluck('link_id')->all());
+        $this->assertSame(2, StaffPesanQuery::forStaff($this->staff)->ringkasan()['belum_dibaca']);
     }
 
     public function test_filters_by_arah(): void
