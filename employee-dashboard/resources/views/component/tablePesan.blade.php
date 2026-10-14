@@ -47,6 +47,7 @@
                                     Pengirim <span data-sort-indicator="pengirim" class="text-slate-300">&#8597;</span>
                                 </button>
                             </th>
+                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Jenis</th>
                             <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
                                 <button type="button" onclick="setStaffPesanSort('judul')"
                                     class="inline-flex items-center gap-1 hover:text-[#004A65]">
@@ -61,6 +62,7 @@
                             </th>
                         @else
                             <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Pengirim</th>
+                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Jenis</th>
                             <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Topik / Judul</th>
                             <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Tanggal</th>
                         @endif
@@ -69,7 +71,7 @@
                 </thead>
                 <tbody id="tbody-pesan" class="divide-y divide-slate-200">
                     <tr id="pesan-loading">
-                        <td colspan="4" class="text-center py-6 text-slate-400">Memuat data pesan...</td>
+                        <td colspan="5" class="text-center py-6 text-slate-400">Memuat data pesan...</td>
                     </tr>
                 </tbody>
             </table>
@@ -84,11 +86,12 @@
     let staffPesanDir = 'desc';
     let allStaffPesan = [];
 
-    function staffPesanFormatDate(dateStr) {
+    function staffPesanFormatDate(dateStr, timeStr) {
         if (!dateStr) return '-';
-        const d = new Date(dateStr);
+        const d = new Date(timeStr || dateStr);
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-        return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
     function staffPesanRows() {
@@ -131,7 +134,7 @@
 
         tbody.innerHTML = '';
         if (semuaPesan.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Belum ada pesan masuk.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada pesan masuk.</td></tr>';
             return;
         }
 
@@ -140,6 +143,9 @@
                 <tr class="hover:bg-slate-50 transition">
                     <td class="{{ $cellPadding }} font-semibold text-slate-800 whitespace-nowrap">
                         ${p.pengirim}
+                    </td>
+                    <td class="{{ $cellPadding }} whitespace-nowrap">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold ${p.jenis === 'tugas' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'}">${p.jenisLabel}</span>
                     </td>
                     <td class="{{ $cellPadding }} max-w-[160px] truncate text-slate-500">
                         ${p.judul}
@@ -175,27 +181,29 @@
                 .filter(t => t.pesan_terakhir != null)
                 .map(t => ({
                     jenis: 'tugas',
+                    jenisLabel: 'Tugas',
                     link_id: t.id_tugas,
                     judul: 'Tugas: ' + t.judul_tugas,
                     pengirim: t.pesan_terakhir.pengirim ? t.pesan_terakhir.pengirim.username : '-',
                     tanggal_raw: t.pesan_terakhir.tanggal_pesan,
-                    tanggal: staffPesanFormatDate(t.pesan_terakhir.tanggal_pesan),
+                    tanggal: staffPesanFormatDate(t.pesan_terakhir.tanggal_pesan, t.pesan_terakhir.created_at),
                 }));
 
             const langsung = (json.pesan_langsung || []).map(p => ({
                 jenis: 'langsung',
+                jenisLabel: 'Langsung',
                 link_id: p.id_pesan,
                 judul: p.judul_pesan || 'Pesan Langsung',
                 pengirim: p.pengirim ? p.pengirim.username : '-',
                 tanggal_raw: p.tanggal_pesan,
-                tanggal: staffPesanFormatDate(p.tanggal_pesan),
+                tanggal: staffPesanFormatDate(p.tanggal_pesan, p.created_at),
             }));
 
             allStaffPesan = [...threads, ...langsung];
             renderStaffPesan();
         } catch (error) {
             console.error('Gagal meload pesan', error);
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-red-500">Gagal mengambil data pesan</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-red-500">Gagal mengambil data pesan</td></tr>';
         }
     }
 

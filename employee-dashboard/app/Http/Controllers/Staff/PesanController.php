@@ -85,6 +85,7 @@ class PesanController extends Controller
                         'id_pesan' => $item->latestPesan->id_pesan,
                         'deskripsi' => $item->latestPesan->deskripsi,
                         'tanggal_pesan' => $item->latestPesan->tanggal_pesan,
+                        'created_at' => $item->latestPesan->created_at?->toISOString(),
 
                         'pengirim' => $item->latestPesan->pengirim ? [
                             'id_user' => $item->latestPesan->pengirim->id_user,

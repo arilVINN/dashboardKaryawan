@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -66,5 +67,42 @@ class Pesan extends Model
     public function balasan(): HasMany
     {
         return $this->hasMany(self::class, 'balasan_dari_id_pesan', 'id_pesan');
+    }
+
+    /**
+     * "8 Okt 2026" plus " 12:56" when a time is given. Indonesian month
+     * abbreviations; "-" when the date is missing or unparseable.
+     */
+    public static function formatTanggalJam($tanggal, $waktu = null): string
+    {
+        if (empty($tanggal)) {
+            return '-';
+        }
+
+        try {
+            $d = $tanggal instanceof \DateTimeInterface
+                ? Carbon::parse($tanggal->format('Y-m-d'))
+                : Carbon::parse($tanggal);
+        } catch (\Throwable) {
+            return '-';
+        }
+
+        static $bulan = [
+            1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+            'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+        ];
+
+        $out = $d->day.' '.$bulan[$d->month].' '.$d->year;
+
+        if (! empty($waktu)) {
+            try {
+                // Instants (e.g. ISO "Z" strings) convert to the app timezone;
+                // naive strings are already in it, so this is a no-op for them.
+                $out .= ' '.Carbon::parse($waktu)->setTimezone(config('app.timezone', 'UTC'))->format('H:i');
+            } catch (\Throwable) {
+            }
+        }
+
+        return $out;
     }
 }

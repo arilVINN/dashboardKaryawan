@@ -87,7 +87,7 @@
                             </td>
                             <td class="px-6 py-4 text-slate-700 text-center whitespace-nowrap">{{ $message['pengirim']['nama'] ?? $message['pengirim']['username'] ?? '-' }}</td>
                             <td class="px-6 py-4 text-slate-700 text-center whitespace-nowrap">{{ $message['penerima']['nama'] ?? $message['penerima']['username'] ?? '-' }}</td>
-                            <td class="px-6 py-4 text-slate-500 text-center whitespace-nowrap">{{ $message['tanggal_pesan'] ?? '-' }}</td>
+                            <td class="px-6 py-4 text-slate-500 text-center whitespace-nowrap">{{ \App\Models\Pesan::formatTanggalJam($message['tanggal_pesan'], $message['created_at'] ?? null) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-xs">
                                 <a href="{{ url('/kadiv/detailPesan/' . $message['id_pesan']) }}"
                                     class="text-[#0e9dc3] hover:text-[#06627b] font-medium">Lihat</a>

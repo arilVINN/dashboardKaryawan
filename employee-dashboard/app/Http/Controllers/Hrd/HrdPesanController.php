@@ -15,21 +15,50 @@ class HrdPesanController extends Controller
     public function page(Request $request)
     {
         $user = $request->user();
-        $pesans = $this->allMessages();
+        $semua = $this->allMessages();
 
         return view('hrd.pesan', [
-            'pesans' => $pesans,
-            'totalPesan' => $pesans->count(),
-            'pesanMasuk' => $pesans->where('penerima_id_user', $user->id_user)->count(),
-            'pesanKeluar' => $pesans->where('pengirim_id_user', $user->id_user)->count(),
+            'pesans' => $this->applyListFilters($semua, $request, $user),
+            'totalPesan' => $semua->count(),
+            'pesanMasuk' => $semua->where('penerima_id_user', $user->id_user)->count(),
+            'pesanKeluar' => $semua->where('pengirim_id_user', $user->id_user)->count(),
         ]);
     }
 
     public function daftarPage(Request $request)
     {
-        $pesans = $this->allMessages();
+        $pesans = $this->applyListFilters($this->allMessages(), $request, $request->user());
 
         return view('hrd.daftarPesan', compact('pesans'));
+    }
+
+    private function applyListFilters($pesans, Request $request, $user)
+    {
+        $q = trim((string) $request->query('q', ''));
+        if ($q !== '') {
+            $pesans = $pesans->filter(fn ($pesan) => stripos($pesan->judul_pesan ?? '', $q) !== false
+                || stripos($pesan->deskripsi ?? '', $q) !== false);
+        }
+
+        $arah = $request->query('arah');
+        if ($arah === 'masuk') {
+            $pesans = $pesans->filter(fn ($pesan) => $pesan->penerima_id_user === $user->id_user);
+        } elseif ($arah === 'keluar') {
+            $pesans = $pesans->filter(fn ($pesan) => $pesan->pengirim_id_user === $user->id_user);
+        }
+
+        $dir = $request->query('dir') === 'asc' ? 'asc' : 'desc';
+        if ($request->query('sort') === 'judul') {
+            $pesans = $dir === 'asc'
+                ? $pesans->sortBy(fn ($pesan) => mb_strtolower($pesan->judul_pesan ?? ''))
+                : $pesans->sortByDesc(fn ($pesan) => mb_strtolower($pesan->judul_pesan ?? ''));
+        } elseif ($request->query('sort') === 'tanggal') {
+            $pesans = $dir === 'asc'
+                ? $pesans->sortBy(fn ($pesan) => [$pesan->tanggal_pesan, $pesan->created_at])
+                : $pesans->sortByDesc(fn ($pesan) => [$pesan->tanggal_pesan, $pesan->created_at]);
+        }
+
+        return $pesans->values();
     }
 
     private function allMessages()

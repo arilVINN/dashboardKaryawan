@@ -3,6 +3,10 @@
     $cellPadding = $isCompact ? 'px-4 py-3' : 'px-6 py-4';
     $pesanFrom = $from ?? null;
     $pesanFrom = is_string($pesanFrom) && $pesanFrom !== '' ? '?from=' . $pesanFrom : '';
+    $pesanSort = request('sort');
+    $pesanDir = request('dir') === 'asc' ? 'asc' : 'desc';
+    $pesanIndicator = fn ($col) => $pesanSort === $col ? ($pesanDir === 'asc' ? '▲' : '▼') : '↕';
+    $pesanToggle = fn ($col) => ($pesanSort === $col && $pesanDir === 'desc') ? 'asc' : 'desc';
 @endphp
 
 <div class="flex flex-col gap-3 w-full mt-2">
@@ -17,16 +21,47 @@
         </button>
     </div>
 
+    <form method="GET" class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
+            <label for="hrdPesanSearch" class="text-xs font-bold text-slate-500">Cari</label>
+            <input id="hrdPesanSearch" type="text" name="q" value="{{ request('q') }}" placeholder="Judul / isi pesan..."
+                class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+        </div>
+        <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
+            <label for="hrdPesanArah" class="text-xs font-bold text-slate-500">Arah</label>
+            <select id="hrdPesanArah" name="arah" onchange="this.form.submit()"
+                class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                <option value="">Semua</option>
+                <option value="masuk" @selected(request('arah') === 'masuk')>Masuk</option>
+                <option value="keluar" @selected(request('arah') === 'keluar')>Keluar</option>
+            </select>
+        </div>
+        <div class="flex shrink-0 gap-2 sm:ml-auto">
+            <button type="submit"
+                class="h-10 inline-flex items-center px-4 bg-[#004A65] text-white text-sm font-medium rounded-md hover:bg-[#003347] transition">Terapkan</button>
+            <a href="{{ url()->current() }}"
+                class="h-10 inline-flex items-center px-4 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Reset</a>
+        </div>
+    </form>
+
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="{{ $isCompact ? 'overflow-hidden' : 'overflow-x-auto' }}">
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
                     <tr>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">ID Pesan</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Judul Pesan</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
+                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'judul', 'dir' => $pesanToggle('judul')]) }}" class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                Judul Pesan <span class="{{ $pesanSort === 'judul' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $pesanIndicator('judul') }}</span>
+                            </a>
+                        </th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Arah</th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Pengirim / Penerima</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Jenis</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Tanggal</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
+                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'tanggal', 'dir' => $pesanToggle('tanggal')]) }}" class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                Tanggal <span class="{{ $pesanSort === 'tanggal' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $pesanIndicator('tanggal') }}</span>
+                            </a>
+                        </th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -43,17 +78,18 @@
                             <td class="{{ $cellPadding }} text-slate-900 font-medium">
                                 {{ $pesan->judul_pesan }}
                             </td>
+                            <td class="{{ $cellPadding }} whitespace-nowrap text-center">
+                                @if ($isIncoming)
+                                    <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Masuk</span>
+                                @else
+                                    <span class="px-2.5 py-1 bg-sky-100 text-sky-700 rounded-full text-xs font-bold">Keluar</span>
+                                @endif
+                            </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap">
-                                <span class="text-slate-500">{{ $isIncoming ? 'Dari' : 'Kepada' }}:</span>
                                 {{ $contact?->karyawan?->nama ?? $contact?->username ?? 'Pengguna tidak tersedia' }}
                             </td>
-                            <td class="{{ $cellPadding }} whitespace-nowrap">
-                                <span class="px-2.5 py-1 bg-cyan-50 text-cyan-700 rounded-full text-xs font-bold">
-                                    {{ ucfirst($pesan->tipe ?? 'pesan') }}
-                                </span>
-                            </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap text-slate-600">
-                                {{ $pesan->tanggal_pesan }}
+                                {{ \App\Models\Pesan::formatTanggalJam($pesan->tanggal_pesan, $pesan->created_at) }}
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap text-center text-xs">
                                 <a href="{{ route('hrd.detailPesan', $pesan->id_pesan) . $pesanFrom }}"
@@ -64,7 +100,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="p-6 text-center text-slate-500">
+                            <td colspan="5" class="p-6 text-center text-slate-500">
                                 Belum ada pesan masuk atau keluar.
                             </td>
                         </tr>
