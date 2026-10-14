@@ -278,6 +278,14 @@ class PagePolishTest extends TestCase
         $this->assertStringContainsString('bg-teal-100', $html);
     }
 
+    public function test_staff_sidebar_matches_shared_nav_style(): void
+    {
+        $html = $this->getPage($this->staff, '/tugas');
+
+        $this->assertStringContainsString('bg-white/40', $html);
+        $this->assertStringNotContainsString('ring-white/30', $html);
+    }
+
     public function test_dashboard_titles(): void
     {
         $this->assertStringContainsString(
