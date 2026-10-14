@@ -89,7 +89,7 @@
                     const actionCell = document.createElement('span');
                     actionCell.className = 'text-center';
                     const action = document.createElement('a');
-                    action.href = '/kadiv/detailTugas/' + encodeURIComponent(task.id_tugas);
+                    action.href = '/kadiv/detailTugas/' + encodeURIComponent(task.id_tugas) + '?from=dashboard';
                     action.className = 'font-semibold text-cyan-700 hover:underline';
                     action.textContent = 'Lihat';
                     actionCell.appendChild(action);
@@ -139,7 +139,7 @@
                     const actionCell = document.createElement('span');
                     actionCell.className = 'text-center';
                     const action = document.createElement('a');
-                    action.href = '/kadiv/detailPesan/' + encodeURIComponent(message.id_pesan);
+                    action.href = '/kadiv/detailPesan/' + encodeURIComponent(message.id_pesan) + '?from=dashboard';
                     action.className = 'font-semibold text-cyan-700 hover:underline';
                     action.textContent = 'Lihat';
                     actionCell.appendChild(action);

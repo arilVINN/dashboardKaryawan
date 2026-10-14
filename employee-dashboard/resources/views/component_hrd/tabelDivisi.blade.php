@@ -62,7 +62,7 @@
                             </td>
                             <td
                                 class="{{ $cellPadding }} whitespace-nowrap text-center text-xs gap-2 flex justify-center items-center">
-                                <a href="{{ url('/hrd/detailDivisi/' . $divisi->id_divisi) }}"
+                                <a href="{{ url('/hrd/detailDivisi/' . $divisi->id_divisi . '?from=dashboard') }}"
                                     class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
                                     Detail
                                 </a>

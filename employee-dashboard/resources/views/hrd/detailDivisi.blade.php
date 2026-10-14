@@ -15,7 +15,15 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         @include('component.topbar')
-        @include('component.breadcrumbs', ['parentText' => 'Manajemen Divisi', 'parentUrl' => url('/hrd/manajemenDivisi'), 'currentPage' => 'Detail Divisi'])
+        @php
+            $divisiFrom = request('from');
+            $divisiFrom = is_string($divisiFrom) ? $divisiFrom : null;
+            [$divisiParentText, $divisiParentUrl] = [
+                'daftarDivisi' => ['Daftar Divisi', url('/hrd/daftarDivisi')],
+                'dashboard' => ['Dashboard', url('/hrd/dashboard')],
+            ][$divisiFrom] ?? ['Manajemen Divisi', url('/hrd/manajemenDivisi')];
+        @endphp
+        @include('component.breadcrumbs', ['parentText' => $divisiParentText, 'parentUrl' => $divisiParentUrl, 'currentPage' => 'Detail Divisi'])
 
         <div class="flex flex-col gap-3 w-full pt-9 ml-8">
             <div class="flex justify-between items-center">

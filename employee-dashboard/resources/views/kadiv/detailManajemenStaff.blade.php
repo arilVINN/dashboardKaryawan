@@ -113,7 +113,7 @@
                 const actionCell = document.createElement('td');
                 actionCell.className = 'px-6 py-4 text-center';
                 const action = document.createElement('a');
-                action.href = '/kadiv/detailTugas/' + encodeURIComponent(task.id_tugas);
+                action.href = '/kadiv/detailTugas/' + encodeURIComponent(task.id_tugas) + '?from=staffDetail&staff={{ $id }}';
                 action.className = 'text-[#0e9dc3] hover:text-[#0c88a9] hover:underline transition font-medium';
                 action.textContent = 'Lihat';
                 actionCell.appendChild(action);
