@@ -4,7 +4,9 @@
 @endphp
 
 <div class="flex flex-col gap-3 w-full">
-    <h2 class="text-lg font-semibold tracking-tight text-slate-800">Tabel Pesan</h2>
+    @if ($isCompact)
+        <h2 class="text-lg font-semibold tracking-tight text-slate-800">Tabel Pesan</h2>
+    @endif
 
     @unless ($isCompact)
         <form id="staffPesanFilter" onsubmit="return false;"

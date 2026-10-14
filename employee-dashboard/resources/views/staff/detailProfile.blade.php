@@ -11,6 +11,7 @@
     
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
+        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/'), 'currentPage' => 'Profil Saya'])
         
         <main class="flex-1 overflow-y-auto p-8 lg:p-12">
             <!-- Header Profil (Mirip Screenshot) -->
@@ -18,6 +19,7 @@
                 <div id="prof-inisial" class="w-24 h-24 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-4xl font-bold shrink-0">
 U
                 </div>
+                <img id="prof-foto" alt="Foto profil" class="hidden w-24 h-24 rounded-full object-cover shrink-0">
                 <div>
                     <h1 id="hdr-nama" class="text-2xl font-bold text-slate-900 leading-tight">Memuat...</h1>
                     <p id="hdr-email" class="text-sm text-slate-500 mt-1">-</p>
@@ -111,6 +113,10 @@ U
                                 <label class="block text-xs text-slate-500 mb-1">Alamat</label>
                                 <textarea id="input-alamat" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none"></textarea>
                             </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Foto Profil (JPG/PNG/WebP, maks. 2 MB)</label>
+                                <input type="file" id="input-foto" accept="image/jpeg,image/png,image/webp" class="w-full text-sm text-slate-600 file:mr-3 file:px-3 file:py-2 file:border file:border-slate-300 file:rounded-lg file:text-sm file:bg-slate-50 hover:file:bg-slate-100">
+                            </div>
                             <div class="flex justify-end gap-2 pt-2">
                                 <button type="button" id="btn-cancel-edit" class="px-4 py-2 border border-slate-300 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Batal</button>
                                 <button type="submit" class="px-4 py-2 bg-[#044564] text-white text-sm font-semibold rounded-lg hover:bg-[#03344b]">Simpan</button>
@@ -171,6 +177,17 @@ U
                         document.getElementById('hdr-email').textContent = p.email;
                         document.getElementById('hdr-telp').textContent = p.no_telepon;
                         document.getElementById('prof-inisial').textContent = p.nama && p.nama !== '-' ? p.nama.charAt(0).toUpperCase() : 'U';
+
+                        const fotoImg = document.getElementById('prof-foto');
+                        const inisial = document.getElementById('prof-inisial');
+                        if (p.foto_url) {
+                            fotoImg.src = p.foto_url;
+                            fotoImg.classList.remove('hidden');
+                            inisial.classList.add('hidden');
+                        } else {
+                            fotoImg.classList.add('hidden');
+                            inisial.classList.remove('hidden');
+                        }
 
                         // Kiri
                         document.getElementById('prof-divisi').textContent = p.divisi;
@@ -235,6 +252,24 @@ U
                     });
                     const data = await res.json();
                     if (res.ok) {
+                        const fotoInput = document.getElementById('input-foto');
+                        if (fotoInput.files.length > 0) {
+                            const fotoData = new FormData();
+                            fotoData.append('foto', fotoInput.files[0]);
+                            const fotoRes = await fetch('/api/staff/profile/foto', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': 'Bearer ' + token,
+                                    'Accept': 'application/json'
+                                },
+                                body: fotoData
+                            });
+                            if (!fotoRes.ok) {
+                                const fotoErr = await fotoRes.json();
+                                alert((fotoErr.data && fotoErr.data.foto ? fotoErr.data.foto.join('\n') : fotoErr.message) || 'Gagal mengunggah foto.');
+                            }
+                            fotoInput.value = '';
+                        }
                         alert('Profil berhasil diperbarui!');
                         editInfo.classList.add('hidden');
                         viewInfo.classList.remove('hidden');

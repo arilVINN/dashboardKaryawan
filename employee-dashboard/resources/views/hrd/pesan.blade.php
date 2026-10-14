@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Manajemen Pesan</title>
+    <title>Daftar Pesan - PT Silindo</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -14,7 +14,8 @@
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        <main class="flex-1 overflow-auto p-8 pt6 items-center">
+        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Daftar Pesan'])
+        <main class="flex-1 overflow-auto p-8 pt-6 items-center">
             @include('component_hrd.pesanbar')
             @include('component_hrd.tabelPesan')
 

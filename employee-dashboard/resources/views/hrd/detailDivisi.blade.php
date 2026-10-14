@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Divisi</title>
+    <title>Detail Divisi - PT Silindo</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -38,6 +38,12 @@
         </main>
 
         @include('component_hrd.tabelAnggotaDivisi')
+
+        @include('component_hrd.karyawanModals', [
+            'daftarDivisi' => $daftarDivisi,
+            'divisiTerkunci' => $divisi->id_divisi,
+            'judulTambah' => 'Tambah Karyawan ke '.$divisi->nama_divisi,
+        ])
 
 
     </div>

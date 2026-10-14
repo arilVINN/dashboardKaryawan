@@ -5,9 +5,10 @@
 <div>
 <div class="flex flex-col gap-3 w-full mt-2">
     <div class="flex justify-between items-center">
-        <h2 class="text-xl font-bold text-slate-800">Pesan</h2>
+        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2"><span class="p-2 rounded-lg bg-green-100 text-green-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"></path></svg></span><span>Daftar Pesan</span></h2>
         <button type="button" data-modal-open="modalKirimPesan"
-            class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition">
+            class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.27 3.13a59.77 59.77 0 0118.45 8.87 59.77 59.77 0 01-18.45 8.87L6 12zm0 0h7.5"></path></svg>
             Kirim Pesan
         </button>
     </div>
@@ -58,11 +59,13 @@
                                 Isi Pesan <span class="{{ $sort === 'judul' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('judul') }}</span>
                             </button>
                         </th>
+                        <th class="px-6 py-4 font-medium whitespace-nowrap text-center">Arah</th>
                         <th class="px-6 py-4 font-medium whitespace-nowrap text-center">
                             <button type="button" wire:click="sortBy('pengirim')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Pengirim <span class="{{ $sort === 'pengirim' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('pengirim') }}</span>
                             </button>
                         </th>
+                        <th class="px-6 py-4 font-medium whitespace-nowrap text-center">Penerima</th>
                         <th class="px-6 py-4 font-medium whitespace-nowrap text-center">
                             <button type="button" wire:click="sortBy('tanggal')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Tanggal <span class="{{ $sort === 'tanggal' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('tanggal') }}</span>
@@ -75,7 +78,15 @@
                     @forelse ($messages as $message)
                         <tr wire:key="pesan-{{ $message['id_pesan'] }}" class="hover:bg-slate-50 transition">
                             <td class="px-6 py-4 font-semibold text-slate-800 truncate max-w-[200px]">{{ $message['judul_pesan'] }}</td>
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                                @if (($message['arah'] ?? 'masuk') === 'keluar')
+                                    <span class="px-2.5 py-1 bg-sky-100 text-sky-700 rounded-full text-xs font-bold">Keluar</span>
+                                @else
+                                    <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Masuk</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 text-slate-700 text-center whitespace-nowrap">{{ $message['pengirim']['nama'] ?? $message['pengirim']['username'] ?? '-' }}</td>
+                            <td class="px-6 py-4 text-slate-700 text-center whitespace-nowrap">{{ $message['penerima']['nama'] ?? $message['penerima']['username'] ?? '-' }}</td>
                             <td class="px-6 py-4 text-slate-500 text-center whitespace-nowrap">{{ $message['tanggal_pesan'] ?? '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-xs">
                                 <a href="{{ url('/kadiv/detailPesan/' . $message['id_pesan']) }}"
@@ -84,7 +95,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-10 text-center text-slate-400">Belum ada pesan.</td>
+                            <td colspan="6" class="px-6 py-10 text-center text-slate-400">Belum ada pesan.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -92,7 +103,7 @@
         </div>
     </div>
 
-    <div>{{ $messages->links() }}</div>
+    <div>{{ $messages->links('vendor.pagination.custom') }}</div>
 </div>
 
 {{-- MODAL KIRIM PESAN --}}

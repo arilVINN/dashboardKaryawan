@@ -5,9 +5,10 @@
 <div>
 <div class="flex flex-col gap-3 w-full mt-2">
     <div class="flex justify-between items-center">
-        <h2 class="text-xl font-bold text-slate-800">Tugas Divisi</h2>
+        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2"><span class="p-2 rounded-lg bg-blue-100 text-blue-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9 2 2 4-4"></path></svg></span><span>Daftar Tugas</span></h2>
         <button type="button" data-modal-open="modalTugasBaru"
             class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
             Tambah Tugas
         </button>
     </div>
@@ -109,7 +110,7 @@
         </div>
     </div>
 
-    <div>{{ $rows->links() }}</div>
+    <div>{{ $rows->links('vendor.pagination.custom') }}</div>
 </div>
 
 {{-- MODAL BUAT TUGAS BARU --}}

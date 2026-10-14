@@ -29,6 +29,7 @@ Route::middleware([
         Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
         Route::put('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update']);
         Route::put('/profile/password', [\App\Http\Controllers\Staff\ProfileController::class, 'updatePassword']);
+        Route::post('/profile/foto', [\App\Http\Controllers\Staff\ProfileController::class, 'updateFoto']);
         Route::get('/pesan', [KadivMessageController::class, 'index']);
         Route::get('/pesan/{id_pesan}', [KadivMessageController::class, 'show']);
         Route::post('/pesan/{id_pesan}/balas', [KadivMessageController::class, 'balas']);
@@ -48,6 +49,7 @@ Route::middleware([
         Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
         Route::put('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update']);
         Route::put('/profile/password', [\App\Http\Controllers\Staff\ProfileController::class, 'updatePassword']);
+        Route::post('/profile/foto', [\App\Http\Controllers\Staff\ProfileController::class, 'updateFoto']);
     });
 
     // Kadiv‑only routes
@@ -70,6 +72,7 @@ Route::middleware([
     Route::middleware('role:hrd')->prefix('hrd')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Hrd\HrdDashboardController::class, 'index']);
         Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
+        Route::post('/profile/foto', [\App\Http\Controllers\Staff\ProfileController::class, 'updateFoto']);
         
         Route::get('/pesan', [HrdPesanController::class, 'index']);
         Route::post('/pesan', [HrdPesanController::class, 'store']);

@@ -27,7 +27,28 @@ class Karyawan extends Model
         'email',
         'alamat',
         'jabatan',
+        'status_aktif',
+        'foto',
         'divisi_id_divisi',
+    ];
+
+    /**
+     * Jabatan titles without division qualifiers. The division is stored
+     * separately in divisi_id_divisi; the forms offer these as a select and
+     * the staff API validates against this list.
+     */
+    public const JABATAN_OPTIONS = [
+        'Kepala Divisi',
+        'Wakil Kepala Divisi',
+        'Staff',
+        'Manager',
+        'Content Writer',
+        'Frontend',
+    ];
+
+    public const STATUS_OPTIONS = [
+        'Aktif',
+        'Tidak Aktif',
     ];
 
     public function divisi(): BelongsTo

@@ -23,8 +23,9 @@ class HrdDivisiController extends Controller
         $ketuaDivisi = $anggotaDivisi->first(function ($karyawan) {
             return $karyawan->isKadiv();
         });
+        $daftarDivisi = Divisi::orderBy('nama_divisi')->get();
 
-        return view('hrd.detailDivisi', compact('divisi', 'anggotaDivisi', 'ketuaDivisi'));
+        return view('hrd.detailDivisi', compact('divisi', 'anggotaDivisi', 'ketuaDivisi', 'daftarDivisi'));
     }
 
     /**

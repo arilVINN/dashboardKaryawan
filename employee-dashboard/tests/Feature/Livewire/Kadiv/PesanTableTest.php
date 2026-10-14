@@ -105,6 +105,26 @@ class PesanTableTest extends TestCase
         Event::assertDispatched(PesanDikirim::class);
     }
 
+    public function test_rows_show_direction_and_counterparty(): void
+    {
+        Pesan::create([
+            'id_pesan' => 'P-2',
+            'judul_pesan' => 'Tugas Baru',
+            'deskripsi' => 'kerjakan',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-10-01',
+            'pengirim_id_user' => $this->kadiv->id_user,
+            'penerima_id_user' => $this->abby->id_user,
+        ]);
+
+        Livewire::actingAs($this->kadiv)->test(PesanTable::class)
+            ->assertSee('<th class="px-6 py-4 font-medium whitespace-nowrap text-center">Arah</th>', false)
+            ->assertSee('<th class="px-6 py-4 font-medium whitespace-nowrap text-center">Penerima</th>', false)
+            ->assertSee('<span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Masuk</span>', false)
+            ->assertSee('<span class="px-2.5 py-1 bg-sky-100 text-sky-700 rounded-full text-xs font-bold">Keluar</span>', false)
+            ->assertSee('<td class="px-6 py-4 text-slate-700 text-center whitespace-nowrap">Abby</td>', false);
+    }
+
     public function test_non_kadiv_is_forbidden(): void
     {
         Livewire::actingAs($this->abby)->test(PesanTable::class)->assertForbidden();
