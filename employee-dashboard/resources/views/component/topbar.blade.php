@@ -82,6 +82,27 @@
 </header>
 
 <script>
+    if (@json($pageRole === 'kadiv')) {
+        const profileBtn = document.getElementById('profile-dropdown-btn');
+        const profileMenu = document.getElementById('profile-dropdown-menu');
+        const dropdownArrow = document.getElementById('dropdown-arrow');
+
+        if (profileBtn && profileMenu) {
+            profileBtn.addEventListener('click', function (event) {
+                event.stopPropagation();
+                profileMenu.classList.toggle('hidden');
+                dropdownArrow?.classList.toggle('rotate-180');
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!profileBtn.contains(event.target) && !profileMenu.contains(event.target)) {
+                    profileMenu.classList.add('hidden');
+                    dropdownArrow?.classList.remove('rotate-180');
+                }
+            });
+        }
+    }
+
     // Fallback token hanya bila halaman tidak dirender dari session (mis. alur token).
     (async function loadTopbar() {
         if ({{ $topbarUser ? 'true' : 'false' }}) return;

@@ -17,7 +17,7 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         {{-- TOPBAR --}}
-        @include('component_kadiv.topbar')
+        @include('component.topbar')
         @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/kadiv/dashboard'), 'currentPage' => 'Manajemen Staff'])
 
         {{-- MAIN CONTENT --}}

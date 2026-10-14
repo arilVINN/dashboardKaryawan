@@ -132,17 +132,18 @@
 
     <script>
         (function () {
-            const token = sessionStorage.getItem('staff_token');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
             const modal = document.getElementById('modalKirimPesanHrd');
             const modalBox = document.getElementById('modalBoxPesanHrd');
             const form = document.getElementById('formKirimPesanHrd');
             const recipientSelect = document.getElementById('penerimaPesanHrd');
 
             async function loadRecipients() {
-                const response = await fetch('/api/hrd/staff', {
+                // HRD login via web session — gunakan web route /hrd/staff bukan API token
+                const response = await fetch('/hrd/staff', {
                     headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
                     }
                 });
                 const result = await response.json();
@@ -162,11 +163,6 @@
                 });
             }
 
-            if (!token) {
-                window.location.href = '/login';
-                return;
-            }
-
             loadRecipients().catch((error) => {
                 console.error('Gagal memuat penerima pesan HRD:', error);
                 recipientSelect.replaceChildren(new Option('Penerima gagal dimuat', ''));
@@ -180,6 +176,10 @@
                     alert('Isi pesan wajib diisi.');
                     return;
                 }
+                if (!recipientSelect.value) {
+                    alert('Pilih penerima terlebih dahulu.');
+                    return;
+                }
 
                 const payload = {
                     penerima_id_user: recipientSelect.value,
@@ -189,12 +189,13 @@
                 };
 
                 try {
-                    const response = await fetch('/api/hrd/pesan', {
+                    // Gunakan web route /hrd/pesan (POST) via CSRF session auth
+                    const response = await fetch('/hrd/pesan', {
                         method: 'POST',
                         headers: {
-                            'Authorization': 'Bearer ' + token,
                             'Accept': 'application/json',
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
                         },
                         body: JSON.stringify(payload)
                     });

@@ -12,11 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-$middleware->validateCsrfTokens(except: [
-    'login',
-    'api/login',
-    'staff/pesan/send',
-]);
+        $middleware->trustProxies(at: '*');
+
+        $middleware->validateCsrfTokens(except: [
+            'login',
+            'api/login',
+            'staff/pesan/send',
+        ]);
 
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,

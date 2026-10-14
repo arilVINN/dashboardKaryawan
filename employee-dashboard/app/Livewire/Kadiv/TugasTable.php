@@ -98,10 +98,10 @@ class TugasTable extends Component
         $divisionId = $this->divisionId();
 
         $this->validate([
-            'judul' => 'required|string|max:100',
-            'deskripsi' => 'required|string',
-            'tenggat' => ['required', 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s,Y-m-d H:i:s'],
-            'recipient' => 'required|string',
+            'judul'      => 'required|string|max:100',
+            'deskripsi'  => 'required|string',
+            'tenggat'    => 'required|date',
+            'recipient'  => 'required|string',
             'attachment' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
         ]);
 
@@ -123,31 +123,43 @@ class TugasTable extends Component
             $recipients = [$this->recipient];
         }
 
-        $filePath = $this->attachment ? $this->attachment->store('tugas_pendukung', 'public') : null;
+        try {
+            $filePath = $this->attachment ? $this->attachment->store('tugas_pendukung', 'public') : null;
+            $deadline = \Illuminate\Support\Carbon::parse($this->tenggat)->format('Y-m-d H:i:s');
 
-        foreach ($recipients as $karyawanId) {
-            $last = Tugas::orderBy('id_tugas', 'desc')->first();
-            $newId = $last
-                ? 'TG' . str_pad(intval(substr($last->id_tugas, 2)) + 1, 3, '0', STR_PAD_LEFT)
-                : 'TG001';
+            foreach ($recipients as $karyawanId) {
+                // Generate ID aman dari race condition
+                $newId = \Illuminate\Support\Facades\DB::transaction(function () {
+                    $last = Tugas::lockForUpdate()->orderByRaw("CAST(SUBSTRING(id_tugas, 3) AS INTEGER) DESC NULLS LAST")->first();
+                    if ($last && preg_match('/^TG(\d+)$/', $last->id_tugas, $m)) {
+                        return 'TG' . str_pad((int)$m[1] + 1, 3, '0', STR_PAD_LEFT);
+                    }
+                    return 'TG' . str_pad((Tugas::count() + 1), 3, '0', STR_PAD_LEFT);
+                });
 
-            Tugas::create([
-                'id_tugas' => $newId,
-                'karyawan_id_karyawan' => $karyawanId,
-                'judul_tugas' => $this->judul,
-                'deskripsi' => $this->deskripsi,
-                'file_pendukung' => $filePath,
-                'deadline' => \Illuminate\Support\Carbon::parse($this->tenggat)->format('Y-m-d H:i:s'),
-                'progress' => '0',
-                'status' => Tugas::STATUS_BARU,
-                'tanggal_dibuat' => now(),
-                'tanggal_update' => now(),
-            ]);
+                Tugas::create([
+                    'id_tugas'            => $newId,
+                    'karyawan_id_karyawan' => $karyawanId,
+                    'judul_tugas'         => $this->judul,
+                    'deskripsi'           => $this->deskripsi,
+                    'file_pendukung'      => $filePath,
+                    'deadline'            => $deadline,
+                    'progress'            => '0',
+                    'status'              => Tugas::STATUS_BARU,
+                    'tanggal_dibuat'      => now(),
+                    'tanggal_update'      => now(),
+                ]);
+            }
+
+            $this->reset(['judul', 'deskripsi', 'tenggat', 'recipient', 'attachment']);
+            session()->flash('tugas_success', 'Tugas berhasil dibuat.');
+            $this->dispatch('tutup-modal-tugas');
+            $this->resetPage();
+
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('createTask error: ' . $e->getMessage());
+            $this->addError('judul', 'Gagal membuat tugas: ' . $e->getMessage());
         }
-
-        $this->reset(['judul', 'deskripsi', 'tenggat', 'recipient', 'attachment']);
-        session()->flash('tugas_success', 'Tugas berhasil dibuat.');
-        $this->resetPage();
     }
 
     public function render()
