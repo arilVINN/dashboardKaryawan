@@ -33,6 +33,7 @@ class PesanController extends Controller
         $query = Tugas::query()
             ->with([
                 'latestPesan.pengirim',
+                'latestPesan.penerima.karyawan',
             ])
             ->withCount('pesans')
             ->where('karyawan_id_karyawan', $user->karyawan_id_karyawan);
@@ -60,6 +61,11 @@ class PesanController extends Controller
                     'username' => $pesan->pengirim->username,
                     'nama' => $pesan->pengirim->karyawan?->nama,
                 ] : null,
+                'penerima' => [
+                    'id_user' => $user->id_user,
+                    'username' => $user->username,
+                    'nama' => $user->karyawan?->nama,
+                ],
                 'lampiran' => [
                     'link' => $pesan->link_lampiran,
                     'file' => $pesan->file_lampiran
@@ -71,7 +77,7 @@ class PesanController extends Controller
             ]);
 
         return response()->json([
-            'data' => $tugas->map(function ($item) {
+            'data' => $tugas->map(function ($item) use ($user) {
                 return [
                     'id_tugas' => $item->id_tugas,
                     'judul_tugas' => $item->judul_tugas,
@@ -86,10 +92,16 @@ class PesanController extends Controller
                         'deskripsi' => $item->latestPesan->deskripsi,
                         'tanggal_pesan' => $item->latestPesan->tanggal_pesan,
                         'created_at' => $item->latestPesan->created_at?->toISOString(),
+                        'arah' => $item->latestPesan->pengirim_id_user === $user->id_user ? 'keluar' : 'masuk',
 
                         'pengirim' => $item->latestPesan->pengirim ? [
                             'id_user' => $item->latestPesan->pengirim->id_user,
                             'username' => $item->latestPesan->pengirim->username,
+                        ] : null,
+                        'penerima' => $item->latestPesan->penerima ? [
+                            'id_user' => $item->latestPesan->penerima->id_user,
+                            'username' => $item->latestPesan->penerima->username,
+                            'nama' => $item->latestPesan->penerima->karyawan?->nama,
                         ] : null,
                     ] : null,
                 ];

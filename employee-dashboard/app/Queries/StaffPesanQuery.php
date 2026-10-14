@@ -19,8 +19,8 @@ class StaffPesanQuery
     /**
      * Unified staff message list: task threads merged with direct messages.
      *
-     * @param  array{jenis?: string, q?: string, sort?: string, dir?: string}  $filters
-     * @return Collection<int, array{jenis: string, link_id: string, judul: string, pengirim: string, tanggal_raw: ?string, tanggal: string}>
+     * @param  array{arah?: string, q?: string, sort?: string, dir?: string}  $filters
+     * @return Collection<int, array{jenis: string, link_id: string, judul: string, arah: string, pengirim: string, penerima: string, tanggal_raw: ?string, tanggal: string}>
      */
     public function unified(array $filters): Collection
     {
@@ -34,7 +34,7 @@ class StaffPesanQuery
      */
     private function threads(): Collection
     {
-        return Tugas::with('latestPesan.pengirim')
+        return Tugas::with(['latestPesan.pengirim', 'latestPesan.penerima.karyawan'])
             ->withCount('pesans')
             ->where('karyawan_id_karyawan', $this->staff->karyawan_id_karyawan)
             ->get()
@@ -43,7 +43,10 @@ class StaffPesanQuery
                 'jenis' => 'tugas',
                 'link_id' => $tugas->id_tugas,
                 'judul' => 'Tugas: '.$tugas->judul_tugas,
+                'arah' => $tugas->latestPesan->pengirim_id_user === $this->staff->id_user ? 'keluar' : 'masuk',
                 'pengirim' => $tugas->latestPesan->pengirim?->username ?? '-',
+                'penerima' => $tugas->latestPesan->penerima?->karyawan?->nama
+                    ?? $tugas->latestPesan->penerima?->username ?? '-',
                 'tanggal_raw' => $tugas->latestPesan->tanggal_pesan,
                 'tanggal' => Pesan::formatTanggalJam($tugas->latestPesan->tanggal_pesan, $tugas->latestPesan->created_at),
             ])
@@ -63,7 +66,9 @@ class StaffPesanQuery
                 'jenis' => 'langsung',
                 'link_id' => $pesan->id_pesan,
                 'judul' => $pesan->judul_pesan ?: 'Pesan Langsung',
+                'arah' => $pesan->pengirim_id_user === $this->staff->id_user ? 'keluar' : 'masuk',
                 'pengirim' => $pesan->pengirim?->username ?? '-',
+                'penerima' => $this->staff->karyawan?->nama ?? $this->staff->username,
                 'tanggal_raw' => $pesan->tanggal_pesan,
                 'tanggal' => Pesan::formatTanggalJam($pesan->tanggal_pesan, $pesan->created_at),
             ])
@@ -72,9 +77,9 @@ class StaffPesanQuery
 
     private function filter(Collection $items, array $filters): Collection
     {
-        $jenis = $filters['jenis'] ?? null;
-        if (in_array($jenis, ['tugas', 'langsung'], true)) {
-            $items = $items->where('jenis', $jenis)->values();
+        $arah = $filters['arah'] ?? null;
+        if (in_array($arah, ['masuk', 'keluar'], true)) {
+            $items = $items->where('arah', $arah)->values();
         }
 
         $q = $filters['q'] ?? null;

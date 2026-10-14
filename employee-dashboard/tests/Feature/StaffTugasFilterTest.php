@@ -101,10 +101,42 @@ class StaffTugasFilterTest extends TestCase
             ->get('/pesan')
             ->assertOk()
             ->assertSee('id="staffPesanSearch"', false)
-            ->assertSee('id="staffPesanJenis"', false)
+            ->assertSee('id="staffPesanArah"', false)
             ->assertSee('wire:click="sortBy(\'tanggal\')"', false)
             ->assertDontSee('setStaffPesanSort', false)
             ->assertDontSee('data-sort-indicator', false);
+    }
+
+    public function test_staff_pesan_rows_show_arah_and_penerima(): void
+    {
+        Role::insert([['id_role' => 'ROLE-KADIV', 'nama_role' => 'Kadiv']]);
+        Karyawan::create([
+            'id_karyawan' => 'KRY-K', 'nama' => 'Kadiv Kawan', 'jenis_kelamin' => 'Laki-laki',
+            'jabatan' => 'Kepala Divisi', 'divisi_id_divisi' => 'DIV-IT',
+        ]);
+        $kadiv = User2::create([
+            'id_user' => 'USR-K', 'username' => 'kadivkawan', 'password' => Hash::make('pass123'),
+            'role_id_role' => 'ROLE-KADIV', 'karyawan_id_karyawan' => 'KRY-K',
+        ]);
+
+        $this->makeTaskWithDeadline('T-10', 'Laporan Harian', Tugas::STATUS_BARU, '2026-10-21 10:00:00');
+        Pesan::create([
+            'id_pesan' => 'PSN-OUT', 'judul_pesan' => 'Siap Dilaksanakan', 'deskripsi' => 'Baik.',
+            'tipe' => 'pesan', 'tanggal_pesan' => '2026-10-09',
+            'tugas_id_tugas' => 'T-10', 'tugas_karyawan_id_karyawan' => 'KRY-S',
+            'pengirim_id_user' => 'USR-S', 'penerima_id_user' => $kadiv->id_user,
+        ]);
+        Pesan::create([
+            'id_pesan' => 'PSN-IN', 'judul_pesan' => 'Mohon Laporan', 'deskripsi' => 'Tolong.',
+            'tipe' => 'pesan', 'tanggal_pesan' => '2026-10-09',
+            'pengirim_id_user' => $kadiv->id_user, 'penerima_id_user' => 'USR-S',
+        ]);
+
+        $html = $this->actingAs($this->staff)->get('/pesan')->assertOk()->getContent();
+
+        $this->assertStringContainsString('>Masuk</span>', $html);
+        $this->assertStringContainsString('>Keluar</span>', $html);
+        $this->assertStringContainsString('Kadiv Kawan', $html);
     }
 
     public function test_staff_pesan_rows_show_datetime_with_jam(): void

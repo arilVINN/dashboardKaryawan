@@ -10,12 +10,12 @@
                 class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
         </div>
         <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-            <label for="staffPesanJenis" class="text-xs font-bold text-slate-500">Jenis</label>
-            <select id="staffPesanJenis" wire:model.live="jenis"
+            <label for="staffPesanArah" class="text-xs font-bold text-slate-500">Arah</label>
+            <select id="staffPesanArah" wire:model.live="arah"
                 class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
                 <option value="">Semua</option>
-                <option value="tugas">Pesan Tugas</option>
-                <option value="langsung">Pesan Langsung</option>
+                <option value="masuk">Masuk</option>
+                <option value="keluar">Keluar</option>
             </select>
         </div>
         <div class="flex shrink-0 gap-2 sm:ml-auto">
@@ -30,15 +30,17 @@
                 <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
                     <tr>
                         <th class="px-6 py-4 font-medium whitespace-nowrap">
-                            <button type="button" wire:click="sortBy('pengirim')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                Pengirim <span class="{{ $sort === 'pengirim' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('pengirim') }}</span>
-                            </button>
-                        </th>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap">
                             <button type="button" wire:click="sortBy('judul')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Topik / Judul <span class="{{ $sort === 'judul' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('judul') }}</span>
                             </button>
                         </th>
+                        <th class="px-6 py-4 font-medium whitespace-nowrap text-center">Arah</th>
+                        <th class="px-6 py-4 font-medium whitespace-nowrap">
+                            <button type="button" wire:click="sortBy('pengirim')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                Pengirim <span class="{{ $sort === 'pengirim' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('pengirim') }}</span>
+                            </button>
+                        </th>
+                        <th class="px-6 py-4 font-medium whitespace-nowrap text-center">Penerima</th>
                         <th class="px-6 py-4 font-medium whitespace-nowrap">
                             <button type="button" wire:click="sortBy('tanggal')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Tanggal <span class="{{ $sort === 'tanggal' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('tanggal') }}</span>
@@ -50,8 +52,16 @@
                 <tbody class="divide-y divide-slate-200">
                     @forelse ($rows as $row)
                         <tr wire:key="pesan-{{ $row['jenis'] }}-{{ $row['link_id'] }}" class="hover:bg-slate-50 transition">
-                            <td class="px-6 py-4 font-semibold text-slate-800 whitespace-nowrap">{{ $row['pengirim'] }}</td>
                             <td class="px-6 py-4 max-w-[160px] truncate text-slate-500">{{ $row['judul'] }}</td>
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                                @if (($row['arah'] ?? 'masuk') === 'keluar')
+                                    <span class="px-2.5 py-1 bg-sky-100 text-sky-700 rounded-full text-xs font-bold">Keluar</span>
+                                @else
+                                    <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Masuk</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 font-semibold text-slate-800 whitespace-nowrap">{{ $row['pengirim'] }}</td>
+                            <td class="px-6 py-4 text-slate-700 text-center whitespace-nowrap">{{ $row['penerima'] }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-slate-500">{{ $row['tanggal'] }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <a href="{{ url('/pesan/detail/' . $row['link_id']) }}"
@@ -60,7 +70,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-10 text-center text-slate-400">Belum ada pesan masuk.</td>
+                            <td colspan="6" class="px-6 py-10 text-center text-slate-400">Belum ada pesan masuk.</td>
                         </tr>
                     @endforelse
                 </tbody>

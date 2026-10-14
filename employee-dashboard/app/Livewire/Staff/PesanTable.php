@@ -17,7 +17,7 @@ class PesanTable extends Component
     public string $search = '';
 
     #[Url]
-    public string $jenis = '';
+    public string $arah = '';
 
     #[Url]
     public string $sort = '';
@@ -48,7 +48,7 @@ class PesanTable extends Component
         $this->resetPage();
     }
 
-    public function updatedJenis(): void
+    public function updatedArah(): void
     {
         $this->resetPage();
     }
@@ -68,7 +68,7 @@ class PesanTable extends Component
     public function resetFilters(): void
     {
         $this->search = '';
-        $this->jenis = '';
+        $this->arah = '';
         $this->sort = '';
         $this->dir = 'desc';
         $this->resetPage();
@@ -79,7 +79,7 @@ class PesanTable extends Component
         $items = StaffPesanQuery::forStaff($this->staff())->unified([
             'sort' => $this->sort,
             'dir' => $this->dir,
-            'jenis' => $this->jenis,
+            'arah' => $this->arah,
             'q' => $this->search,
         ]);
 

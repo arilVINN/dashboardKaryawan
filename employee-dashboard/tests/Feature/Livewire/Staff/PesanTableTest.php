@@ -68,6 +68,28 @@ class PesanTableTest extends TestCase
             'pengirim_id_user' => $sender->id_user,
             'penerima_id_user' => $this->staff->id_user,
         ]);
+        Tugas::create([
+            'id_tugas' => 'T-3',
+            'karyawan_id_karyawan' => 'KRY-S',
+            'judul_tugas' => 'Arsip Lama',
+            'deskripsi' => 'Arsip Lama desc',
+            'deadline' => now()->addDays(10)->toDateString(),
+            'progress' => '0',
+            'status' => Tugas::STATUS_BARU,
+            'tanggal_dibuat' => now(),
+            'tanggal_update' => now(),
+        ]);
+        Pesan::create([
+            'id_pesan' => 'P-T3',
+            'judul_pesan' => 'Balasan Staff',
+            'deskripsi' => 'Balasan Staff body',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-09-15',
+            'tugas_id_tugas' => 'T-3',
+            'tugas_karyawan_id_karyawan' => 'KRY-S',
+            'pengirim_id_user' => $this->staff->id_user,
+            'penerima_id_user' => $sender->id_user,
+        ]);
     }
 
     private function account(string $id, string $nama, string $role, string $username): User2
@@ -90,12 +112,19 @@ class PesanTableTest extends TestCase
             ->assertSee('Rapat Mingguan');
     }
 
-    public function test_filters_by_jenis(): void
+    public function test_filters_by_arah(): void
     {
         Livewire::actingAs($this->staff)->test(PesanTable::class)
-            ->set('jenis', 'langsung')
+            ->set('arah', 'keluar')
+            ->assertSee('Arsip Lama')
+            ->assertDontSee('Desain Logo')
+            ->assertDontSee('Rapat Mingguan');
+
+        Livewire::actingAs($this->staff)->test(PesanTable::class)
+            ->set('arah', 'masuk')
+            ->assertSee('Desain Logo')
             ->assertSee('Rapat Mingguan')
-            ->assertDontSee('Desain Logo');
+            ->assertDontSee('Arsip Lama');
     }
 
     public function test_searches_by_judul_or_pengirim(): void

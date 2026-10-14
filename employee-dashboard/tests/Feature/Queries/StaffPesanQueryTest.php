@@ -36,6 +36,8 @@ class StaffPesanQueryTest extends TestCase
         // Tugas thread: two pesans, so latestPesan must resolve to the newer one.
         $this->task('T-1', 'Desain Logo');
         $this->task('T-2', 'Tugas Tanpa Pesan');
+        $this->task('T-3', 'Arsip Lama');
+        $this->pesan('P-T3', 'Balasan Staff', $this->staff->id_user, $abby->id_user, '2026-09-15', 'T-3', '2026-09-15 10:00:00');
         $this->pesan('P-T0', 'Versi Awal', $abby->id_user, $this->staff->id_user, '2026-09-20', 'T-1', '2026-09-20 08:00:00');
         $this->pesan('P-T1', 'Versi Revisi', $abby->id_user, $this->staff->id_user, '2026-10-01', 'T-1', '2026-10-01 14:30:00');
 
@@ -102,7 +104,7 @@ class StaffPesanQueryTest extends TestCase
 
         // Default sort: tanggal desc → direct (10-02) before thread latest (10-01).
         // T-2 has no pesan and must be excluded.
-        $this->assertSame(['langsung', 'tugas'], $items->pluck('jenis')->all());
+        $this->assertSame(['langsung', 'tugas', 'tugas'], $items->pluck('jenis')->all());
 
         $tugas = $items->firstWhere('jenis', 'tugas');
         $this->assertSame(
@@ -110,7 +112,9 @@ class StaffPesanQueryTest extends TestCase
                 'jenis' => 'tugas',
                 'link_id' => 'T-1',
                 'judul' => 'Tugas: Desain Logo',
+                'arah' => 'masuk',
                 'pengirim' => 'abby',
+                'penerima' => 'budist',
                 'tanggal_raw' => '2026-10-01',
                 'tanggal' => '1 Okt 2026 14:30',
             ],
@@ -123,7 +127,9 @@ class StaffPesanQueryTest extends TestCase
                 'jenis' => 'langsung',
                 'link_id' => 'P-D1',
                 'judul' => 'Rapat Mingguan',
+                'arah' => 'masuk',
                 'pengirim' => 'zed',
+                'penerima' => 'budist',
                 'tanggal_raw' => '2026-10-02',
                 'tanggal' => '2 Okt 2026 09:15',
             ],
@@ -131,12 +137,15 @@ class StaffPesanQueryTest extends TestCase
         );
     }
 
-    public function test_filters_by_jenis(): void
+    public function test_filters_by_arah(): void
     {
-        $items = StaffPesanQuery::forStaff($this->staff)->unified(['jenis' => 'langsung']);
+        $keluar = StaffPesanQuery::forStaff($this->staff)->unified(['arah' => 'keluar']);
 
-        $this->assertSame(['langsung'], $items->pluck('jenis')->all());
-        $this->assertSame(['P-D1'], $items->pluck('link_id')->all());
+        $this->assertSame(['T-3'], $keluar->pluck('link_id')->all());
+
+        $masuk = StaffPesanQuery::forStaff($this->staff)->unified(['arah' => 'masuk']);
+
+        $this->assertSame(['P-D1', 'T-1'], $masuk->pluck('link_id')->all());
     }
 
     public function test_filters_by_q_over_judul_and_pengirim(): void
@@ -147,8 +156,8 @@ class StaffPesanQueryTest extends TestCase
         );
 
         $this->assertSame(
-            ['T-1'],
-            StaffPesanQuery::forStaff($this->staff)->unified(['q' => 'abby'])->pluck('link_id')->all()
+            ['T-3'],
+            StaffPesanQuery::forStaff($this->staff)->unified(['q' => 'budist'])->pluck('link_id')->all()
         );
     }
 
@@ -156,16 +165,16 @@ class StaffPesanQueryTest extends TestCase
     {
         $items = StaffPesanQuery::forStaff($this->staff)->unified(['sort' => 'pengirim', 'dir' => 'asc']);
 
-        // abby (thread) before zed (direct).
-        $this->assertSame(['tugas', 'langsung'], $items->pluck('jenis')->all());
+        // abby (T-1 thread) before budist (T-3, own reply) before zed (direct).
+        $this->assertSame(['tugas', 'tugas', 'langsung'], $items->pluck('jenis')->all());
     }
 
     public function test_whitespace_only_q_still_filters(): void
     {
         // The old client-side search filtered on the raw (untrimmed) value,
         // so only an empty string skips the filter; whitespace-only filters to nothing.
-        $this->assertCount(2, StaffPesanQuery::forStaff($this->staff)->unified([]));
-        $this->assertCount(2, StaffPesanQuery::forStaff($this->staff)->unified(['q' => '']));
+        $this->assertCount(3, StaffPesanQuery::forStaff($this->staff)->unified([]));
+        $this->assertCount(3, StaffPesanQuery::forStaff($this->staff)->unified(['q' => '']));
         $this->assertCount(0, StaffPesanQuery::forStaff($this->staff)->unified(['q' => '   ']));
     }
 }

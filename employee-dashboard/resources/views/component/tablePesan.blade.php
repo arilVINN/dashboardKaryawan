@@ -18,12 +18,12 @@
                     class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
             </div>
             <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-                <label for="staffPesanJenis" class="text-xs font-bold text-slate-500">Jenis</label>
-                <select id="staffPesanJenis"
+                <label for="staffPesanArah" class="text-xs font-bold text-slate-500">Arah</label>
+                <select id="staffPesanArah"
                     class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
                     <option value="">Semua</option>
-                    <option value="tugas">Pesan Tugas</option>
-                    <option value="langsung">Pesan Langsung</option>
+                    <option value="masuk">Masuk</option>
+                    <option value="keluar">Keluar</option>
                 </select>
             </div>
             <div class="flex shrink-0 gap-2 sm:ml-auto">
@@ -42,18 +42,19 @@
                     <tr>
                         @if (!$isCompact)
                             <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
-                                <button type="button" onclick="setStaffPesanSort('pengirim')"
-                                    class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                    Pengirim <span data-sort-indicator="pengirim" class="text-slate-300">&#8597;</span>
-                                </button>
-                            </th>
-                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Jenis</th>
-                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
                                 <button type="button" onclick="setStaffPesanSort('judul')"
                                     class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                     Topik / Judul <span data-sort-indicator="judul" class="text-slate-300">&#8597;</span>
                                 </button>
                             </th>
+                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Arah</th>
+                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
+                                <button type="button" onclick="setStaffPesanSort('pengirim')"
+                                    class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                    Pengirim <span data-sort-indicator="pengirim" class="text-slate-300">&#8597;</span>
+                                </button>
+                            </th>
+                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Penerima</th>
                             <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
                                 <button type="button" onclick="setStaffPesanSort('tanggal')"
                                     class="inline-flex items-center gap-1 hover:text-[#004A65]">
@@ -61,9 +62,10 @@
                                 </button>
                             </th>
                         @else
-                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Pengirim</th>
-                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Jenis</th>
                             <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Topik / Judul</th>
+                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Arah</th>
+                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Pengirim</th>
+                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Penerima</th>
                             <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Tanggal</th>
                         @endif
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Aksi</th>
@@ -71,7 +73,7 @@
                 </thead>
                 <tbody id="tbody-pesan" class="divide-y divide-slate-200">
                     <tr id="pesan-loading">
-                        <td colspan="5" class="text-center py-6 text-slate-400">Memuat data pesan...</td>
+                        <td colspan="6" class="text-center py-6 text-slate-400">Memuat data pesan...</td>
                     </tr>
                 </tbody>
             </table>
@@ -81,7 +83,7 @@
 
 <script>
     const staffPesanSearch = document.getElementById('staffPesanSearch');
-    const staffPesanJenis = document.getElementById('staffPesanJenis');
+    const staffPesanArah = document.getElementById('staffPesanArah');
     let staffPesanSort = null;
     let staffPesanDir = 'desc';
     let allStaffPesan = [];
@@ -96,10 +98,10 @@
 
     function staffPesanRows() {
         const q = (staffPesanSearch?.value || '').toLowerCase();
-        const jenis = staffPesanJenis?.value || '';
+        const arah = staffPesanArah?.value || '';
 
         let list = allStaffPesan.slice();
-        if (jenis) list = list.filter((p) => p.jenis === jenis);
+        if (arah) list = list.filter((p) => p.arah === arah);
         if (q) {
             list = list.filter((p) =>
                 (p.judul || '').toLowerCase().includes(q) ||
@@ -134,21 +136,24 @@
 
         tbody.innerHTML = '';
         if (semuaPesan.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada pesan masuk.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-400">Belum ada pesan masuk.</td></tr>';
             return;
         }
 
         semuaPesan.forEach(p => {
             const rowHtml = `
                 <tr class="hover:bg-slate-50 transition">
+                    <td class="{{ $cellPadding }} max-w-[160px] truncate text-slate-500">
+                        ${p.judul}
+                    </td>
+                    <td class="{{ $cellPadding }} whitespace-nowrap">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold ${p.arah === 'keluar' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'}">${p.arah === 'keluar' ? 'Keluar' : 'Masuk'}</span>
+                    </td>
                     <td class="{{ $cellPadding }} font-semibold text-slate-800 whitespace-nowrap">
                         ${p.pengirim}
                     </td>
-                    <td class="{{ $cellPadding }} whitespace-nowrap">
-                        <span class="px-2.5 py-1 rounded-full text-xs font-bold ${p.jenis === 'tugas' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'}">${p.jenisLabel}</span>
-                    </td>
-                    <td class="{{ $cellPadding }} max-w-[160px] truncate text-slate-500">
-                        ${p.judul}
+                    <td class="{{ $cellPadding }} whitespace-nowrap text-slate-700">
+                        ${p.penerima}
                     </td>
                     <td class="{{ $cellPadding }} whitespace-nowrap text-slate-500">
                         ${p.tanggal}
@@ -181,20 +186,22 @@
                 .filter(t => t.pesan_terakhir != null)
                 .map(t => ({
                     jenis: 'tugas',
-                    jenisLabel: 'Tugas',
                     link_id: t.id_tugas,
                     judul: 'Tugas: ' + t.judul_tugas,
                     pengirim: t.pesan_terakhir.pengirim ? t.pesan_terakhir.pengirim.username : '-',
+                    arah: t.pesan_terakhir.arah || 'masuk',
+                    penerima: t.pesan_terakhir.penerima ? (t.pesan_terakhir.penerima.nama || t.pesan_terakhir.penerima.username) : '-',
                     tanggal_raw: t.pesan_terakhir.tanggal_pesan,
                     tanggal: staffPesanFormatDate(t.pesan_terakhir.tanggal_pesan, t.pesan_terakhir.created_at),
                 }));
 
             const langsung = (json.pesan_langsung || []).map(p => ({
                 jenis: 'langsung',
-                jenisLabel: 'Langsung',
                 link_id: p.id_pesan,
                 judul: p.judul_pesan || 'Pesan Langsung',
                 pengirim: p.pengirim ? p.pengirim.username : '-',
+                arah: p.arah || 'masuk',
+                penerima: p.penerima ? (p.penerima.nama || p.penerima.username) : '-',
                 tanggal_raw: p.tanggal_pesan,
                 tanggal: staffPesanFormatDate(p.tanggal_pesan, p.created_at),
             }));
@@ -203,7 +210,7 @@
             renderStaffPesan();
         } catch (error) {
             console.error('Gagal meload pesan', error);
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-red-500">Gagal mengambil data pesan</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-red-500">Gagal mengambil data pesan</td></tr>';
         }
     }
 
@@ -236,7 +243,7 @@
         document.getElementById('staffPesanApply')?.addEventListener('click', renderStaffPesan);
         document.getElementById('staffPesanReset')?.addEventListener('click', () => {
             if (staffPesanSearch) staffPesanSearch.value = '';
-            if (staffPesanJenis) staffPesanJenis.value = '';
+            if (staffPesanArah) staffPesanArah.value = '';
             staffPesanSort = null;
             staffPesanDir = 'desc';
             renderStaffPesan();

@@ -206,11 +206,14 @@ class PesanTableConsistencyTest extends TestCase
             ->assertJsonPath('data.0.pesan_terakhir.created_at', fn ($v) => $v !== null);
     }
 
-    public function test_staff_table_template_renders_jenis_pill_and_jam(): void
+    public function test_staff_table_template_renders_arah_pill_and_jam(): void
     {
         $source = file_get_contents(base_path('resources/views/component/tablePesan.blade.php'));
 
-        $this->assertStringContainsString('${p.jenisLabel}', $source);
+        $this->assertStringContainsString('${p.arah === \'keluar\' ? \'Keluar\' : \'Masuk\'}', $source);
+        $this->assertStringContainsString('${p.penerima}', $source);
+        $this->assertStringContainsString('id="staffPesanArah"', $source);
+        $this->assertStringNotContainsString('staffPesanJenis', $source);
         $this->assertStringContainsString('bg-sky-100', $source);
         $this->assertStringContainsString('bg-emerald-100', $source);
         $this->assertStringContainsString('getHours', $source);
