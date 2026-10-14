@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\Pesan;
 use App\Models\Role;
+use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -361,6 +363,65 @@ class PagePolishTest extends TestCase
                 "links('vendor.pagination.custom')",
                 file_get_contents(base_path($table)),
                 "Custom pagination view missing in {$table}"
+            );
+        }
+    }
+
+    public function test_main_containers_share_standard_spacing(): void
+    {
+        Tugas::create([
+            'id_tugas' => 'TGS-1',
+            'karyawan_id_karyawan' => 'KRY-STAFF',
+            'judul_tugas' => 'Tugas Contoh',
+            'status' => Tugas::STATUS_BARU,
+            'tanggal_dibuat' => '2026-10-01',
+        ]);
+        Pesan::create([
+            'id_pesan' => 'PSN-1',
+            'judul_pesan' => 'Pesan Contoh',
+            'deskripsi' => 'Isi pesan.',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-10-01',
+            'pengirim_id_user' => 'USR-KRY-STAFF',
+            'penerima_id_user' => 'USR-KRY-KADIV',
+        ]);
+
+        $standard = '<main class="flex-1 overflow-y-auto p-8 pt-6">';
+        $pages = [
+            // staff
+            [$this->staff, '/', '<main class="flex-1 overflow-y-auto p-8">'],
+            [$this->staff, '/tugas', $standard],
+            [$this->staff, '/pesan', $standard],
+            [$this->staff, '/profile', $standard],
+            [$this->staff, '/tugas/detail/TGS-1', $standard],
+            [$this->staff, '/pesan/detail/PSN-1', $standard],
+            // kadiv
+            [$this->kadiv, '/kadiv/dashboard', '<main class="flex-1 overflow-y-auto p-8">'],
+            [$this->kadiv, '/kadiv/tugas', $standard],
+            [$this->kadiv, '/kadiv/pesan', $standard],
+            [$this->kadiv, '/kadiv/manajemenStaff', $standard],
+            [$this->kadiv, '/kadiv/profile', $standard],
+            [$this->kadiv, '/kadiv/detailTugas/TGS-1', $standard],
+            [$this->kadiv, '/kadiv/detailPesan/PSN-1', $standard],
+            [$this->kadiv, '/kadiv/manajemenStaff/KRY-STAFF', $standard],
+            // hrd
+            [$this->hrd, '/hrd/dashboard', '<main class="flex-1 overflow-y-auto p-8">'],
+            [$this->hrd, '/hrd/pesan', $standard],
+            [$this->hrd, '/hrd/daftarKaryawan', $standard],
+            [$this->hrd, '/hrd/daftarDivisi', $standard],
+            [$this->hrd, '/hrd/daftarPesan', $standard],
+            [$this->hrd, '/hrd/manajemenDivisi', $standard],
+            [$this->hrd, '/hrd/profile', $standard],
+            [$this->hrd, '/hrd/detailKaryawan/KRY-STAFF', '<main class="flex-1 overflow-y-auto p-8 pt-6 bg-slate-50 space-y-6">'],
+            [$this->hrd, '/hrd/detailPesan/PSN-1', $standard],
+            [$this->hrd, '/hrd/detailDivisi/DIV-IT', '<main class="flex overflow-y-auto p-8 pt-6 items-center gap-5">'],
+        ];
+
+        foreach ($pages as [$user, $url, $expected]) {
+            $this->assertStringContainsString(
+                $expected,
+                $this->getPage($user, $url),
+                "Non-standard main container on {$url}"
             );
         }
     }

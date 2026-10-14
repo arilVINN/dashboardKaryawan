@@ -22,8 +22,8 @@
         @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/kadiv/tugas'), 'currentPage' => 'Detail Tugas'])
 
         {{-- CONTENT --}}
-        <main class="flex-1 overflow-y-auto">
-            <div class="px-9 pt-7 pb-16 max-w-[1134px]">
+        <main class="flex-1 overflow-y-auto p-8 pt-6">
+            <div class="max-w-[1134px]">
 
                 {{-- TUGAS 1 --}}
                 <section>

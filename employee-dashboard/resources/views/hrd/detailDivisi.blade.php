@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <main class="flex overflow-y-auto p-8 pt-2 items-center gap-5 drop-shadow-2sm">
+        <main class="flex overflow-y-auto p-8 pt-6 items-center gap-5">
             <div class="w-20 h-20 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold text-2xl shrink-0">
                 {{ $ketuaDivisi ? strtoupper(substr($ketuaDivisi->nama, 0, 1)) : '?' }}
             </div>

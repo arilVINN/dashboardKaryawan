@@ -15,7 +15,7 @@
         @include('component.topbar')
         @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Profil Saya'])
 
-        <main class="flex-1 overflow-y-auto p-6 md:p-10">
+        <main class="flex-1 overflow-y-auto p-8 pt-6">
             <div class="max-w-5xl space-y-8">
                 <div class="flex items-center gap-5">
                     <div class="relative w-20 h-20 shrink-0">

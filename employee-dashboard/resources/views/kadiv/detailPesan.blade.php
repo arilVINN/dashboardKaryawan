@@ -18,7 +18,7 @@
         @include('component.topbar')
         @include('component.breadcrumbs', ['parentText' => 'Pesan', 'parentUrl' => url('/kadiv/pesan'), 'currentPage' => 'Detail Pesan'])
 
-        <main class="flex-1 overflow-y-auto px-10 py-8">
+        <main class="flex-1 overflow-y-auto p-8 pt-6">
             <h1 class="text-2xl font-bold text-slate-900 mb-6">Pesan</h1>
 
             @if (session('success'))

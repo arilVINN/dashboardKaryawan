@@ -16,9 +16,9 @@
 
         @include('component.topbar')
 
-        <main class="flex-1 overflow-y-auto">
+        <main class="flex-1 overflow-y-auto p-8 pt-6">
             
-            <div class="px-9 pt-7 pb-16">
+            <div>
 
                 @include('component.breadcrumbs', ['parentText' => 'Manajemen Staff', 'parentUrl' => url('/kadiv/manajemenStaff'), 'currentPage' => 'Detail Staff'])
                 <div class="mt-4 flex items-center justify-between">

@@ -17,7 +17,7 @@
         @include('component.topbar')
         @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/tugas'), 'currentPage' => 'Detail Tugas'])
 
-        <main class="flex-1 overflow-y-auto px-10 py-8">
+        <main class="flex-1 overflow-y-auto p-8 pt-6">
             <h1 class="text-xl font-bold text-slate-900 mb-8">Tugas</h1>
 
             <div class="max-w-3xl space-y-0">
