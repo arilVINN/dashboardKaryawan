@@ -68,7 +68,7 @@
                 <tbody class="divide-y divide-slate-200">
                     @forelse ($pesans as $pesan)
                         @php
-                            $isIncoming = $pesan->penerima_id_user === auth()->user()->id_user;
+                            $isIncoming = $pesan->pengirim_id_user !== auth()->user()->id_user;
                             $contact = $isIncoming ? $pesan->pengirim : $pesan->penerima;
                         @endphp
                         <tr class="hover:bg-slate-50 transition">

@@ -20,7 +20,7 @@ class HrdPesanController extends Controller
         return view('hrd.pesan', [
             'pesans' => $this->applyListFilters($semua, $request, $user),
             'totalPesan' => $semua->count(),
-            'pesanMasuk' => $semua->where('penerima_id_user', $user->id_user)->count(),
+            'pesanMasuk' => $semua->where('pengirim_id_user', '!=', $user->id_user)->count(),
             'pesanKeluar' => $semua->where('pengirim_id_user', $user->id_user)->count(),
         ]);
     }
@@ -40,9 +40,11 @@ class HrdPesanController extends Controller
                 || stripos($pesan->deskripsi ?? '', $q) !== false);
         }
 
+        // Inbox model: everything not sent by the viewer counts as masuk,
+        // so masuk + keluar always equals the total.
         $arah = $request->query('arah');
         if ($arah === 'masuk') {
-            $pesans = $pesans->filter(fn ($pesan) => $pesan->penerima_id_user === $user->id_user);
+            $pesans = $pesans->filter(fn ($pesan) => $pesan->pengirim_id_user !== $user->id_user);
         } elseif ($arah === 'keluar') {
             $pesans = $pesans->filter(fn ($pesan) => $pesan->pengirim_id_user === $user->id_user);
         }

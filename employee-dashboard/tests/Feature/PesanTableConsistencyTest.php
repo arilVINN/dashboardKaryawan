@@ -133,6 +133,34 @@ class PesanTableConsistencyTest extends TestCase
         $this->assertStringNotContainsString('Laporan Masuk', $keluar);
     }
 
+    public function test_third_party_messages_count_as_masuk(): void
+    {
+        $this->makePesan('PSN-3RD', 'Pihak Ketiga', 'USR-KRY-STAFF', 'USR-KRY-KADIV', '2026-10-03', '2026-10-03 10:00:00');
+
+        $masuk = $this->tableBody($this->actingAs($this->hrd)->get('/hrd/daftarPesan?arah=masuk')->assertOk()->getContent());
+        $this->assertStringContainsString('Laporan Masuk', $masuk);
+        $this->assertStringContainsString('Pihak Ketiga', $masuk);
+        $this->assertStringNotContainsString('Balasan Keluar', $masuk);
+
+        $keluar = $this->tableBody($this->actingAs($this->hrd)->get('/hrd/daftarPesan?arah=keluar')->assertOk()->getContent());
+        $this->assertStringContainsString('Balasan Keluar', $keluar);
+        $this->assertStringNotContainsString('Pihak Ketiga', $keluar);
+
+        $stats = $this->actingAs($this->hrd)->get('/hrd/pesan')->assertOk()->getContent();
+        $this->assertSame('3', $this->statCard($stats, 'Total Pesan'));
+        $this->assertSame('2', $this->statCard($stats, 'Pesan Masuk'));
+        $this->assertSame('1', $this->statCard($stats, 'Pesan Keluar'));
+    }
+
+    private function statCard(string $html, string $label): ?string
+    {
+        if (preg_match('/'.preg_quote($label, '/').'<\/span>\s*<span[^>]*>(\d+)<\/span>/', $html, $m)) {
+            return $m[1];
+        }
+
+        return null;
+    }
+
     public function test_hrd_table_sorts(): void
     {
         $byJudul = $this->tableBody($this->actingAs($this->hrd)->get('/hrd/daftarPesan?sort=judul&dir=asc')->assertOk()->getContent());
