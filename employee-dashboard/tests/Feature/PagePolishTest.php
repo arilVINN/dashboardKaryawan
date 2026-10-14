@@ -119,6 +119,17 @@ class PagePolishTest extends TestCase
         $this->assertStringContainsString('<h2 class="text-xl font-bold text-slate-800">'.$rowHeading.'</h2>', $html);
     }
 
+    private function assertBadgeRowHeading(string $html, string $parent, string $current, string $title, string $rowHeading, string $badge): void
+    {
+        $this->assertStringContainsString('data-breadcrumb-parent="'.$parent.'"', $html);
+        $this->assertStringContainsString('data-breadcrumb-current="'.$current.'"', $html);
+        $this->assertStringContainsString('<title>'.$title.'</title>', $html);
+        $this->assertStringNotContainsString('<h1 class="text-2xl', $html);
+        $this->assertStringContainsString('<h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">', $html);
+        $this->assertStringContainsString('<span class="p-2 rounded-lg '.$badge, $html);
+        $this->assertStringContainsString('<span>'.$rowHeading.'</span></h2>', $html);
+    }
+
     private function assertTwoLevelHeading(string $html, string $parent, string $current, string $title, string $pageHeading, string $rowHeading): void
     {
         $this->assertStringContainsString('data-breadcrumb-parent="'.$parent.'"', $html);
@@ -177,17 +188,17 @@ class PagePolishTest extends TestCase
 
     public function test_kadiv_tugas_page_polish(): void
     {
-        $this->assertRowHeading(
+        $this->assertBadgeRowHeading(
             $this->getPage($this->kadiv, '/kadiv/tugas'),
-            'Dashboard', 'Daftar Tugas', 'Daftar Tugas - PT Silindo', 'Daftar Tugas'
+            'Dashboard', 'Daftar Tugas', 'Daftar Tugas - PT Silindo', 'Daftar Tugas', 'bg-blue-100'
         );
     }
 
     public function test_kadiv_pesan_page_polish(): void
     {
-        $this->assertRowHeading(
+        $this->assertBadgeRowHeading(
             $this->getPage($this->kadiv, '/kadiv/pesan'),
-            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
+            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan', 'bg-green-100'
         );
     }
 
@@ -253,6 +264,16 @@ class PagePolishTest extends TestCase
             $this->getPage($this->hrd, '/hrd/profile'),
             'Dashboard', 'Profil Saya', 'Profil HRD - PT Silindo'
         );
+    }
+
+    public function test_kadiv_dashboard_headings_carry_badges(): void
+    {
+        $html = $this->getPage($this->kadiv, '/kadiv/dashboard');
+
+        $this->assertH1HasIcon($html, 'Status Tugas Divisi');
+        $this->assertH1HasIcon($html, 'Manajemen Staff');
+        $this->assertStringContainsString('bg-blue-100', $html);
+        $this->assertStringContainsString('bg-teal-100', $html);
     }
 
     public function test_dashboard_titles(): void
