@@ -1,5 +1,8 @@
 @php
     $daftarDivisi = $daftarDivisi ?? collect();
+    // Optional: preset + lock the division (used by the division detail page).
+    $divisiTerkunci = $divisiTerkunci ?? null;
+    $judulTambah = $judulTambah ?? 'Tambah Karyawan';
     $formControl = 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]';
 @endphp
 
@@ -10,7 +13,7 @@
     <div id="modalBoxTambahKaryawan"
         class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300">
         <div class="flex items-center justify-between p-4 border-b border-dashed border-gray-300">
-            <h3 class="text-base font-bold text-slate-900">Tambah Karyawan</h3>
+            <h3 class="text-base font-bold text-slate-900">{{ $judulTambah }}</h3>
             <button type="button" onclick="tutupModalKaryawan()" class="text-slate-400 hover:text-red-500"
                 aria-label="Tutup">&times;</button>
         </div>
@@ -46,6 +49,14 @@
                             <label class="text-xs font-bold text-slate-500">EMAIL</label>
                             <input type="email" name="email" maxlength="100" class="{{ $formControl }}">
                         </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">ALAMAT</label>
+                            <textarea name="alamat" rows="2" class="{{ $formControl }}" placeholder="Jalan, nomor, kota"></textarea>
+                        </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">FOTO PROFIL (JPG/PNG/WEBP, MAKS. 2 MB, OPSIONAL)</label>
+                            <input type="file" id="input-foto-karyawan" accept="image/jpeg,image/png,image/webp" class="{{ $formControl }}">
+                        </div>
                     </div>
                 </section>
 
@@ -57,14 +68,40 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">JABATAN</label>
-                            <input type="text" name="jabatan" maxlength="100" required class="{{ $formControl }}">
+                            <select name="jabatan" required class="{{ $formControl }}">
+                                <option value="">Pilih jabatan</option>
+                                @foreach (\App\Models\Karyawan::JABATAN_OPTIONS as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">DIVISI</label>
-                            <select name="divisi_id_divisi" required class="{{ $formControl }}">
-                                <option value="">Pilih divisi</option>
-                                @foreach ($daftarDivisi as $d)
-                                    <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
+                            @if ($divisiTerkunci)
+                                <select class="{{ $formControl }}" disabled>
+                                    @foreach ($daftarDivisi as $d)
+                                        <option value="{{ $d->id_divisi }}" @selected($d->id_divisi === $divisiTerkunci)>{{ $d->nama_divisi }}</option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" name="divisi_id_divisi" value="{{ $divisiTerkunci }}">
+                            @else
+                                <select name="divisi_id_divisi" required class="{{ $formControl }}">
+                                    <option value="">Pilih divisi</option>
+                                    @foreach ($daftarDivisi as $d)
+                                        <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
+                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">STATUS</label>
+                            <select name="status_aktif" required class="{{ $formControl }}">
+                                @foreach (\App\Models\Karyawan::STATUS_OPTIONS as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -142,6 +179,14 @@
                             <label class="text-xs font-bold text-slate-500">EMAIL</label>
                             <input type="email" name="email" maxlength="100" class="{{ $formControl }}">
                         </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">ALAMAT</label>
+                            <textarea name="alamat" rows="2" class="{{ $formControl }}" placeholder="Jalan, nomor, kota"></textarea>
+                        </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">FOTO PROFIL BARU (JPG/PNG/WEBP, MAKS. 2 MB, OPSIONAL)</label>
+                            <input type="file" id="input-foto-edit-karyawan" accept="image/jpeg,image/png,image/webp" class="{{ $formControl }}">
+                        </div>
                     </div>
                 </section>
 
@@ -153,13 +198,30 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">JABATAN</label>
-                            <input type="text" name="jabatan" maxlength="100" required class="{{ $formControl }}">
+                            <select name="jabatan" required class="{{ $formControl }}">
+                                <option value="">Pilih jabatan</option>
+                                @foreach (\App\Models\Karyawan::JABATAN_OPTIONS as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">DIVISI</label>
                             <select name="divisi_id_divisi" required class="{{ $formControl }}">
                                 @foreach ($daftarDivisi as $d)
                                     <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
+                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">STATUS</label>
+                            <select name="status_aktif" required class="{{ $formControl }}">
+                                @foreach (\App\Models\Karyawan::STATUS_OPTIONS as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -226,9 +288,12 @@
         form.elements['nama'].value = button.dataset.nama || '';
         form.elements['jenis_kelamin'].value = button.dataset.gender || 'Laki-laki';
         form.elements['tanggal_lahir'].value = button.dataset.lahir || '';
+        form.elements['tanggal_rekrut'].value = button.dataset.rekrut || '';
         form.elements['email'].value = button.dataset.email || '';
+        form.elements['alamat'].value = button.dataset.alamat || '';
         form.elements['no_telepon'].value = button.dataset.telepon || '';
         form.elements['jabatan'].value = button.dataset.jabatan || '';
+        form.elements['status_aktif'].value = button.dataset.status || 'Aktif';
         form.elements['divisi_id_divisi'].value = button.dataset.divisi || '';
         form.elements['username'].value = button.dataset.username || '';
         form.elements['password'].value = '';
@@ -261,6 +326,27 @@
         return result;
     }
 
+    async function unggahFotoKaryawan(url, inputId, form) {
+        const input = document.getElementById(inputId);
+        if (!input || input.files.length === 0) return;
+        const body = new FormData();
+        body.append('foto', input.files[0]);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': karyawanCsrf(form),
+            },
+            body,
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            const errors = result.errors ? Object.values(result.errors).flat().join('\n') : result.message;
+            throw new Error(errors || 'Gagal mengunggah foto.');
+        }
+        input.value = '';
+    }
+
     async function submitFormKaryawan(event) {
         event.preventDefault();
         const form = event.currentTarget;
@@ -270,6 +356,10 @@
         button.disabled = true;
         try {
             const result = await kirimStaff('{{ url('/hrd/staff') }}', 'POST', data, form);
+            const createdId = result.data && result.data.karyawan ? result.data.karyawan.id_karyawan : null;
+            if (createdId) {
+                await unggahFotoKaryawan('{{ url('/hrd/staff') }}/' + encodeURIComponent(createdId) + '/foto', 'input-foto-karyawan', form);
+            }
             alert(result.message || 'Karyawan berhasil ditambahkan.');
             window.location.reload();
         } catch (error) {
@@ -291,6 +381,7 @@
         button.disabled = true;
         try {
             const result = await kirimStaff('{{ url('/hrd/staff') }}/' + encodeURIComponent(id), 'PUT', data, form);
+            await unggahFotoKaryawan('{{ url('/hrd/staff') }}/' + encodeURIComponent(id) + '/foto', 'input-foto-edit-karyawan', form);
             alert(result.message || 'Data karyawan berhasil diperbarui.');
             window.location.reload();
         } catch (error) {

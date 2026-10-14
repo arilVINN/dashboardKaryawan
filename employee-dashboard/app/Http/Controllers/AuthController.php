@@ -22,6 +22,8 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
+        $isApiRequest = $request->is('api/*');
+
         $user = User2::with('role')->where('username', $credentials['username'])->first();
 
         $passwordMatches = false;
@@ -46,6 +48,17 @@ class AuthController extends Controller
                 return response()->json(['message' => 'Username atau password salah'], 401);
             }
             return back()->withErrors(['username' => 'Username atau password salah']);
+        }
+
+        // Checked after the password so a wrong password on an inactive
+        // account still reads as bad credentials; a correct one is told
+        // plainly the account is deactivated (admin-created accounts only).
+        if (($user->karyawan?->status_aktif ?? 'Aktif') === 'Tidak Aktif') {
+            $message = 'Akun Anda dinonaktifkan. Hubungi HRD untuk informasi lebih lanjut.';
+            if ($request->expectsJson() || $isApiRequest) {
+                return response()->json(['message' => $message], 403);
+            }
+            return back()->withErrors(['username' => $message]);
         }
 
         try {

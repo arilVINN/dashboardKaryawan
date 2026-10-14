@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Pesan</title>
+    <title>Daftar Pesan - PT Silindo</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -18,10 +18,10 @@
 
         {{-- TOPBAR --}}
         @include('component.topbar')
+        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/kadiv/dashboard'), 'currentPage' => 'Daftar Pesan'])
 
         {{-- MAIN CONTENT --}}
-        <main class="flex-1 overflow-y-auto p-6 lg:p-8 pb-16">
-
+        <main class="flex-1 overflow-y-auto p-8 pt-6 pb-16">
             <livewire:kadiv.pesan-table />
 
         </main>

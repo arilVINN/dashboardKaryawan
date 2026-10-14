@@ -66,9 +66,8 @@ class HrdManagementApiTest extends TestCase
         $this->actingAs($this->hrd)
             ->get('/hrd/detailDivisi/DIV-EMPTY')
             ->assertOk()
-            ->assertSee('value="Kepala Divisi"', false)
-            ->assertSee('value="Wakil Kepala Divisi"', false)
-            ->assertSee('value="Staff"', false);
+            ->assertSee('modalTambahKaryawan', false)
+            ->assertSee('name="jabatan"', false);
 
         $response = $this->actingAs($this->hrd)
             ->postJson('/hrd/staff', [
@@ -306,7 +305,7 @@ class HrdManagementApiTest extends TestCase
                 'tanggal_lahir' => '2000-01-02',
                 'email' => 'staff.baru@example.test',
                 'no_telepon' => '081234567890',
-                'jabatan' => 'Analis',
+                'jabatan' => 'Staff',
                 'username' => 'staffbaru',
                 'password' => 'password',
                 'divisi_id_divisi' => 'DIV-EMPTY',
@@ -335,7 +334,7 @@ class HrdManagementApiTest extends TestCase
             ->postJson('/hrd/staff', [
                 'nama' => 'Staff HR Baru',
                 'jenis_kelamin' => 'Perempuan',
-                'jabatan' => 'Staff HR',
+                'jabatan' => 'Staff',
                 'username' => 'staffhrbaru',
                 'password' => 'password',
                 'divisi_id_divisi' => 'DIV-HR',
@@ -372,7 +371,7 @@ class HrdManagementApiTest extends TestCase
                 'tanggal_lahir' => null,
                 'email' => 'staff.updated@example.test',
                 'no_telepon' => null,
-                'jabatan' => 'Analis',
+                'jabatan' => 'Staff',
                 'username' => 'staffbaru',
             ])
             ->assertOk()

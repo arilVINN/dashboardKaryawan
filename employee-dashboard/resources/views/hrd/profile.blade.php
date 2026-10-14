@@ -13,14 +13,24 @@
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
+        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Profil Saya'])
 
         <main class="flex-1 overflow-y-auto p-6 md:p-10">
             <div class="max-w-5xl space-y-8">
                 <div class="flex items-center gap-5">
+                    <div class="relative w-20 h-20 shrink-0">
                     <div id="hrd-profile-initial"
-                        class="w-20 h-20 rounded-full bg-[#044564] text-white flex items-center justify-center text-3xl font-bold shrink-0">
+                        class="w-20 h-20 rounded-full bg-[#044564] text-white flex items-center justify-center text-3xl font-bold">
                         H
                     </div>
+                    <img id="hrd-profile-photo" alt="Foto profil HRD"
+                        class="hidden absolute inset-0 w-20 h-20 rounded-full object-cover">
+                    <label for="input-foto-hrd" title="Ubah foto profil"
+                        class="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#044564] text-white flex items-center justify-center cursor-pointer shadow border-2 border-slate-50">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </label>
+                    <input type="file" id="input-foto-hrd" accept="image/jpeg,image/png,image/webp" class="hidden">
+                </div>
                     <div>
                         <h1 id="hrd-profile-name" class="text-2xl font-bold text-slate-900">Profil HRD</h1>
                         <p id="hrd-profile-email" class="mt-1 text-sm text-slate-600">-</p>
@@ -132,6 +142,35 @@
 
             Object.entries(values).forEach(([id, value]) => {
                 document.getElementById(id).textContent = value || '-';
+            });
+
+            const hrdPhoto = document.getElementById('hrd-profile-photo');
+            if (profile.foto_url) {
+                hrdPhoto.src = profile.foto_url;
+                hrdPhoto.classList.remove('hidden');
+            }
+
+            document.getElementById('input-foto-hrd').addEventListener('change', async function () {
+                if (this.files.length === 0) return;
+                const fotoData = new FormData();
+                fotoData.append('foto', this.files[0]);
+                try {
+                    const fotoRes = await fetch('/api/hrd/profile/foto', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+                        body: fotoData
+                    });
+                    const fotoResult = await fotoRes.json();
+                    if (!fotoRes.ok) throw new Error((fotoResult.data && fotoResult.data.foto ? fotoResult.data.foto.join('\n') : fotoResult.message) || 'Gagal mengunggah foto.');
+                    hrdPhoto.src = fotoResult.foto_url;
+                    hrdPhoto.classList.remove('hidden');
+                    alert('Foto profil berhasil diperbarui!');
+                } catch (error) {
+                    errorElement.textContent = error.message || 'Gagal mengunggah foto.';
+                    errorElement.classList.remove('hidden');
+                } finally {
+                    this.value = '';
+                }
             });
         })().catch(error => {
             const errorElement = document.getElementById('hrd-profile-error');

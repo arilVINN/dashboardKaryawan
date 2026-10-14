@@ -113,7 +113,7 @@ class KaryawanTable extends Component
             'q' => $this->search,
             'sort' => $this->sort,
             'dir' => $this->dir,
-        ])->paginate(6);
+        ])->paginate(10);
 
         $daftarDivisi = Divisi::orderBy('nama_divisi')->get();
         $daftarJabatan = Karyawan::query()
@@ -155,7 +155,7 @@ class KaryawanTable extends Component
         if ($this->status !== '') {
             $chips[] = [
                 'name' => 'status',
-                'label' => 'Status Akun: '.($this->status === 'aktif' ? 'Aktif' : 'Belum ada akun'),
+                'label' => 'Status: '.$this->status,
             ];
         }
 

@@ -36,7 +36,7 @@ class KaryawanTableTest extends TestCase
 
         $this->staffUser = $this->makeKaryawan('KRY-A', 'Andi Wijaya', 'DIV-IT', 'Software Engineer', 'andi');
         $this->makeKaryawan('KRY-B', 'Budi Santoso', 'DIV-HR', 'HR Specialist', 'budi');
-        $this->makeKaryawan('KRY-C', 'Citra Lestari', 'DIV-IT', 'Analyst');
+        $this->makeKaryawan('KRY-C', 'Citra Lestari', 'DIV-IT', 'Analyst', null, 'ROLE-STAFF', 'Tidak Aktif');
         $this->makeKaryawan('KRY-D', 'Dedi Kurniawan', 'DIV-OPS', 'Operator');
 
         $this->makeKaryawan('KRY-HRD', 'HRD User', 'DIV-HR', 'HRD', 'hrduser', 'ROLE-HRD');
@@ -49,7 +49,8 @@ class KaryawanTableTest extends TestCase
         string $divisiId,
         string $jabatan,
         ?string $username = null,
-        string $roleId = 'ROLE-STAFF'
+        string $roleId = 'ROLE-STAFF',
+        string $statusAktif = 'Aktif'
     ): ?User2 {
         Karyawan::create([
             'id_karyawan' => $id,
@@ -59,6 +60,7 @@ class KaryawanTableTest extends TestCase
             'tanggal_rekrut' => '2026-01-01',
             'no_telepon' => '081234567890',
             'jabatan' => $jabatan,
+            'status_aktif' => $statusAktif,
             'divisi_id_divisi' => $divisiId,
         ]);
 
@@ -113,7 +115,7 @@ class KaryawanTableTest extends TestCase
             ->assertSet('dir', 'desc');
     }
 
-    public function test_filters_by_divisi_jabatan_and_account_status(): void
+    public function test_filters_by_divisi_jabatan_and_employment_status(): void
     {
         $byDivisi = Livewire::actingAs($this->hrd)->test(KaryawanTable::class)->set('divisi', 'DIV-IT');
         $this->assertSame(['KRY-A', 'KRY-C'], $this->rowIds($byDivisi));
@@ -121,11 +123,11 @@ class KaryawanTableTest extends TestCase
         $byJabatan = Livewire::actingAs($this->hrd)->test(KaryawanTable::class)->set('jabatan', 'Analyst');
         $this->assertSame(['KRY-C'], $this->rowIds($byJabatan));
 
-        $aktif = Livewire::actingAs($this->hrd)->test(KaryawanTable::class)->set('status', 'aktif');
-        $this->assertSame(['KRY-A', 'KRY-B', 'KRY-HRD'], $this->rowIds($aktif));
+        $aktif = Livewire::actingAs($this->hrd)->test(KaryawanTable::class)->set('status', 'Aktif');
+        $this->assertSame(['KRY-A', 'KRY-B', 'KRY-D', 'KRY-HRD'], $this->rowIds($aktif));
 
-        $belum = Livewire::actingAs($this->hrd)->test(KaryawanTable::class)->set('status', 'belum');
-        $this->assertSame(['KRY-C', 'KRY-D'], $this->rowIds($belum));
+        $nonaktif = Livewire::actingAs($this->hrd)->test(KaryawanTable::class)->set('status', 'Tidak Aktif');
+        $this->assertSame(['KRY-C'], $this->rowIds($nonaktif));
     }
 
     public function test_searches_by_name_case_insensitively(): void
@@ -139,16 +141,21 @@ class KaryawanTableTest extends TestCase
         $this->assertSame(['KRY-B'], $this->rowIds($component));
     }
 
-    public function test_paginates_six_per_page(): void
+    public function test_paginates_ten_per_page(): void
     {
         $this->makeKaryawan('KRY-E', 'Eko Saputra', 'DIV-IT', 'Engineer');
         $this->makeKaryawan('KRY-F', 'Fajar Nugroho', 'DIV-IT', 'Engineer');
+        $this->makeKaryawan('KRY-G', 'Gita Puspita', 'DIV-IT', 'Engineer');
+        $this->makeKaryawan('KRY-H', 'Hadi Gunawan', 'DIV-IT', 'Engineer');
+        $this->makeKaryawan('KRY-I', 'Indra Lesmana', 'DIV-IT', 'Engineer');
+        $this->makeKaryawan('KRY-J', 'Joko Susilo', 'DIV-IT', 'Engineer');
+        $this->makeKaryawan('KRY-K', 'Kartika Sari', 'DIV-IT', 'Engineer');
 
         $pageOne = Livewire::actingAs($this->hrd)->test(KaryawanTable::class);
-        $this->assertSame(['KRY-A', 'KRY-B', 'KRY-C', 'KRY-D', 'KRY-E', 'KRY-F'], $this->rowIds($pageOne));
+        $this->assertSame(['KRY-A', 'KRY-B', 'KRY-C', 'KRY-D', 'KRY-E', 'KRY-F', 'KRY-G', 'KRY-HRD', 'KRY-H', 'KRY-I'], $this->rowIds($pageOne));
 
         $pageTwo = Livewire::actingAs($this->hrd)->test(KaryawanTable::class)->call('gotoPage', 2);
-        $this->assertSame(['KRY-HRD'], $this->rowIds($pageTwo));
+        $this->assertSame(['KRY-J', 'KRY-K'], $this->rowIds($pageTwo));
     }
 
     public function test_rows_keep_crud_hooks_for_the_existing_js(): void
@@ -164,12 +171,12 @@ class KaryawanTableTest extends TestCase
     {
         Livewire::actingAs($this->hrd)->test(KaryawanTable::class)
             ->set('divisi', 'DIV-IT')
-            ->set('status', 'aktif')
+            ->set('status', 'Tidak Aktif')
             ->assertSee('data-filter-chip="divisi"', false)
             ->assertSee('data-filter-chip="status"', false)
             ->call('clearFilter', 'divisi')
             ->assertSet('divisi', '')
-            ->assertSet('status', 'aktif')
+            ->assertSet('status', 'Tidak Aktif')
             ->assertDontSee('data-filter-chip="divisi"', false)
             ->assertSee('data-filter-chip="status"', false);
     }
@@ -183,10 +190,10 @@ class KaryawanTableTest extends TestCase
 
     public function test_page_deep_link_hydrates_filters(): void
     {
-        $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?divisi=DIV-IT&status=aktif')
+        $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?divisi=DIV-IT&status=Tidak%20Aktif')
             ->assertOk()
-            ->assertSee('Andi Wijaya')
-            ->assertDontSee('Budi Santoso')
+            ->assertSee('Citra Lestari')
+            ->assertDontSee('Andi Wijaya')
             ->assertSee('data-filter-chip="divisi"', false);
     }
 

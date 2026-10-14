@@ -5,9 +5,10 @@
 <div>
 <div class="flex flex-col gap-3 w-full mt-2">
     <div class="flex justify-between items-center">
-        <h2 class="text-xl font-bold text-slate-800">Pesan</h2>
+        <h2 class="text-xl font-bold text-slate-800">Daftar Pesan</h2>
         <button type="button" data-modal-open="modalKirimPesan"
-            class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition">
+            class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.27 3.13a59.77 59.77 0 0118.45 8.87 59.77 59.77 0 01-18.45 8.87L6 12zm0 0h7.5"></path></svg>
             Kirim Pesan
         </button>
     </div>
@@ -92,7 +93,7 @@
         </div>
     </div>
 
-    <div>{{ $messages->links() }}</div>
+    <div>{{ $messages->links('vendor.pagination.custom') }}</div>
 </div>
 
 {{-- MODAL KIRIM PESAN --}}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Hrd;
 
+use App\Actions\StoreKaryawanFoto;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Karyawan;
@@ -45,12 +46,16 @@ class HrdStaffController extends Controller
             'tanggal_rekrut' => 'nullable|date',
             'no_telepon' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:100|unique:karyawans,email',
-            'jabatan' => 'required|string|max:100',
+            'alamat' => 'nullable|string',
+            'jabatan' => ['required', 'string', 'max:100', Rule::in(Karyawan::JABATAN_OPTIONS)],
+            'status_aktif' => ['nullable', 'string', Rule::in(Karyawan::STATUS_OPTIONS)],
             'divisi_id_divisi' => 'required|string|max:20',
             // Data akun login
             'username' => 'required|string|max:50|unique:users2,username',
             'password' => 'required|string|min:6',
             'role_id_role' => 'nullable|string|exists:roles,id_role', // Opsional, default staff
+        ], [
+            'jabatan.in' => 'Jabatan harus salah satu dari: '.implode(', ', Karyawan::JABATAN_OPTIONS).'.',
         ]);
 
         // Try-catch: pastikan divisi ada
@@ -93,7 +98,9 @@ class HrdStaffController extends Controller
                 'tanggal_rekrut' => $request->tanggal_rekrut ?? now()->toDateString(),
                 'no_telepon' => $request->no_telepon,
                 'email' => $request->email,
+                'alamat' => $request->alamat,
                 'jabatan' => $request->jabatan,
+                'status_aktif' => $request->status_aktif ?? 'Aktif',
                 'divisi_id_divisi' => $request->divisi_id_divisi,
             ]);
 
@@ -190,7 +197,9 @@ class HrdStaffController extends Controller
                 'sometimes', 'nullable', 'email', 'max:100',
                 Rule::unique('karyawans', 'email')->ignore($karyawan->id_karyawan, 'id_karyawan'),
             ],
-            'jabatan' => 'sometimes|required|string|max:100',
+            'alamat' => 'sometimes|nullable|string',
+            'jabatan' => ['sometimes', 'required', 'string', 'max:100', Rule::in(Karyawan::JABATAN_OPTIONS)],
+            'status_aktif' => ['sometimes', 'required', 'string', Rule::in(Karyawan::STATUS_OPTIONS)],
             'divisi_id_divisi' => 'sometimes|required|string|max:20|exists:divisis,id_divisi',
             'username' => [
                 'sometimes', 'required', 'string', 'max:50',
@@ -198,6 +207,8 @@ class HrdStaffController extends Controller
             ],
             'password' => 'sometimes|required|string|min:6',
             'role_id_role' => 'sometimes|required|string|exists:roles,id_role',
+        ], [
+            'jabatan.in' => 'Jabatan harus salah satu dari: '.implode(', ', Karyawan::JABATAN_OPTIONS).'.',
         ]);
 
         if (isset($validated['role_id_role'])) {
@@ -235,7 +246,7 @@ class HrdStaffController extends Controller
         DB::transaction(function () use ($karyawan, $validated): void {
             $karyawan->update(array_intersect_key($validated, array_flip([
                 'nama', 'jenis_kelamin', 'tanggal_lahir', 'tanggal_rekrut',
-                'no_telepon', 'email', 'jabatan', 'divisi_id_divisi',
+                'no_telepon', 'email', 'alamat', 'jabatan', 'status_aktif', 'divisi_id_divisi',
             ])));
 
             if ($karyawan->user) {
@@ -252,6 +263,26 @@ class HrdStaffController extends Controller
         return response()->json([
             'message' => 'Staff berhasil diubah',
             'data' => $karyawan->fresh(['user.role', 'divisi']),
+        ]);
+    }
+
+    public function updateFoto(Request $request, $id)
+    {
+        $request->validate([
+            'foto' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $karyawan = Karyawan::where('id_karyawan', $id)->first();
+
+        if (! $karyawan) {
+            return response()->json(['message' => 'Staff tidak ditemukan'], 404);
+        }
+
+        $path = StoreKaryawanFoto::handle($karyawan, $request->file('foto'));
+
+        return response()->json([
+            'message' => 'Foto karyawan berhasil diperbarui.',
+            'foto_url' => '/storage/'.$path,
         ]);
     }
 

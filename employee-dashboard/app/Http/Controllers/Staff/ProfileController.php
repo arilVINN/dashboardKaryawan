@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Staff;
 
+use App\Actions\StoreKaryawanFoto;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -10,6 +11,7 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         $user = $request->user()->load('karyawan.divisi');
+        $foto = $user->karyawan->foto ?? null;
 
         return response()->json([
             'message' => 'Data profil',
@@ -22,7 +24,8 @@ class ProfileController extends Controller
                 'no_telepon' => $user->karyawan->no_telepon ?? '-',
                 'tanggal_rekrut' => $user->karyawan->tanggal_rekrut ?? '-',
                 'jenis_kelamin' => $user->karyawan->jenis_kelamin ?? '-',
-                'tanggal_dibuat' => $user->created_at ? $user->created_at->format('d F Y') : '-'
+                'tanggal_dibuat' => $user->created_at ? $user->created_at->format('d F Y') : '-',
+                'foto_url' => $foto ? '/storage/'.$foto : null,
             ]
         ]);
     }
@@ -44,6 +47,28 @@ class ProfileController extends Controller
 
         return response()->json([
             'message' => 'Profil berhasil diperbarui.',
+        ]);
+    }
+
+    public function updateFoto(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'foto' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        if (! $user->karyawan) {
+            return response()->json(['message' => 'Data karyawan tidak ditemukan.'], 404);
+        }
+
+        $karyawan = $user->karyawan;
+
+        $path = StoreKaryawanFoto::handle($karyawan, $request->file('foto'));
+
+        return response()->json([
+            'message' => 'Foto profil berhasil diperbarui.',
+            'foto_url' => '/storage/'.$path,
         ]);
     }
 

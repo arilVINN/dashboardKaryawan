@@ -31,12 +31,12 @@
             </select>
         </div>
         <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-            <label for="karyawanStatus" class="text-xs font-bold text-slate-500">Status Akun</label>
+            <label for="karyawanStatus" class="text-xs font-bold text-slate-500">Status</label>
             <select id="karyawanStatus" wire:model.live="status"
                 class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
                 <option value="">Semua</option>
-                <option value="aktif">Aktif</option>
-                <option value="belum">Belum ada akun</option>
+                <option value="Aktif">Aktif</option>
+                <option value="Tidak Aktif">Tidak Aktif</option>
             </select>
         </div>
         <div class="flex shrink-0 gap-2 sm:ml-auto">
@@ -63,7 +63,8 @@
     <div class="flex justify-between items-center mb-2">
         <h2 class="text-xl font-bold text-slate-800">Daftar Karyawan</h2>
         <button type="button" data-staff-create onclick="bukaModalKaryawan()"
-            class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition">
+            class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
             Tambah
         </button>
     </div>
@@ -117,13 +118,12 @@
                             </td>
 
                             <td class="{{ $cellPadding }} whitespace-nowrap">
-                                @if ($k->user)
+                                @if ($k->status_aktif === 'Tidak Aktif')
                                     <span
-                                        class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Aktif</span>
+                                        class="px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">Tidak Aktif</span>
                                 @else
                                     <span
-                                        class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">Belum
-                                        ada akun</span>
+                                        class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Aktif</span>
                                 @endif
                             </td>
 
@@ -138,9 +138,12 @@
                                         data-nama="{{ $k->nama }}"
                                         data-gender="{{ $k->jenis_kelamin }}"
                                         data-lahir="{{ $k->tanggal_lahir }}"
+                                        data-rekrut="{{ $k->tanggal_rekrut }}"
                                         data-email="{{ $k->email }}"
+                                        data-alamat="{{ $k->alamat }}"
                                         data-telepon="{{ $k->no_telepon }}"
                                         data-jabatan="{{ $k->jabatan }}"
+                                        data-status="{{ $k->status_aktif }}"
                                         data-divisi="{{ $k->divisi_id_divisi }}"
                                         data-username="{{ $k->user->username ?? '' }}"
                                         onclick="bukaEditKaryawan(this)"
@@ -175,5 +178,5 @@
         </div>
     </div>
 
-    <div>{{ $rows->links() }}</div>
+    <div>{{ $rows->links('vendor.pagination.custom') }}</div>
 </div>

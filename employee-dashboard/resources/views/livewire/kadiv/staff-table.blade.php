@@ -15,6 +15,10 @@
         </div>
     </div>
 
+    <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold text-slate-800">Daftar Staff</h2>
+    </div>
+
     <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table class="w-full min-w-[650px] text-left text-sm text-slate-600">
             <thead class="bg-slate-100 text-xs uppercase text-slate-500">
@@ -59,5 +63,5 @@
         </table>
     </div>
 
-    <div>{{ $rows->links() }}</div>
+    <div>{{ $rows->links('vendor.pagination.custom') }}</div>
 </div>
