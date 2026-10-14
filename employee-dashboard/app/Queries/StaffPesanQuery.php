@@ -5,13 +5,10 @@ namespace App\Queries;
 use App\Models\Pesan;
 use App\Models\Tugas;
 use App\Models\User2;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class StaffPesanQuery
 {
-    private const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-
     private function __construct(private User2 $staff) {}
 
     public static function forStaff(User2 $staff): self
@@ -48,7 +45,7 @@ class StaffPesanQuery
                 'judul' => 'Tugas: '.$tugas->judul_tugas,
                 'pengirim' => $tugas->latestPesan->pengirim?->username ?? '-',
                 'tanggal_raw' => $tugas->latestPesan->tanggal_pesan,
-                'tanggal' => $this->formatDate($tugas->latestPesan->tanggal_pesan),
+                'tanggal' => Pesan::formatTanggalJam($tugas->latestPesan->tanggal_pesan, $tugas->latestPesan->created_at),
             ])
             ->values();
     }
@@ -68,7 +65,7 @@ class StaffPesanQuery
                 'judul' => $pesan->judul_pesan ?: 'Pesan Langsung',
                 'pengirim' => $pesan->pengirim?->username ?? '-',
                 'tanggal_raw' => $pesan->tanggal_pesan,
-                'tanggal' => $this->formatDate($pesan->tanggal_pesan),
+                'tanggal' => Pesan::formatTanggalJam($pesan->tanggal_pesan, $pesan->created_at),
             ])
             ->values();
     }
@@ -117,16 +114,5 @@ class StaffPesanQuery
                 return $dir === 'asc' ? $result : -$result;
             })
             ->values();
-    }
-
-    private function formatDate(?string $date): string
-    {
-        if ($date === null || $date === '') {
-            return '-';
-        }
-
-        $parsed = Carbon::parse($date);
-
-        return $parsed->day.' '.self::MONTHS[$parsed->month - 1].' '.$parsed->year;
     }
 }

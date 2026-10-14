@@ -36,11 +36,11 @@ class StaffPesanQueryTest extends TestCase
         // Tugas thread: two pesans, so latestPesan must resolve to the newer one.
         $this->task('T-1', 'Desain Logo');
         $this->task('T-2', 'Tugas Tanpa Pesan');
-        $this->pesan('P-T0', 'Versi Awal', $abby->id_user, $this->staff->id_user, '2026-09-20', 'T-1');
-        $this->pesan('P-T1', 'Versi Revisi', $abby->id_user, $this->staff->id_user, '2026-10-01', 'T-1');
+        $this->pesan('P-T0', 'Versi Awal', $abby->id_user, $this->staff->id_user, '2026-09-20', 'T-1', '2026-09-20 08:00:00');
+        $this->pesan('P-T1', 'Versi Revisi', $abby->id_user, $this->staff->id_user, '2026-10-01', 'T-1', '2026-10-01 14:30:00');
 
         // Direct message to the staff (no tugas) — newer than the thread latest.
-        $this->pesan('P-D1', 'Rapat Mingguan', $zed->id_user, $this->staff->id_user, '2026-10-02', null);
+        $this->pesan('P-D1', 'Rapat Mingguan', $zed->id_user, $this->staff->id_user, '2026-10-02', null, '2026-10-02 09:15:00');
     }
 
     private function account(string $karyawan, string $user, string $username, string $role): User2
@@ -77,9 +77,9 @@ class StaffPesanQueryTest extends TestCase
         ]);
     }
 
-    private function pesan(string $id, string $judul, string $pengirim, string $penerima, string $tanggal, ?string $tugasId): void
+    private function pesan(string $id, string $judul, string $pengirim, string $penerima, string $tanggal, ?string $tugasId, ?string $dibuat = null): void
     {
-        Pesan::create([
+        $pesan = Pesan::create([
             'id_pesan' => $id,
             'judul_pesan' => $judul,
             'deskripsi' => $judul.' body',
@@ -90,6 +90,10 @@ class StaffPesanQueryTest extends TestCase
             'pengirim_id_user' => $pengirim,
             'penerima_id_user' => $penerima,
         ]);
+        if ($dibuat !== null) {
+            $pesan->created_at = $dibuat;
+            $pesan->save();
+        }
     }
 
     public function test_unified_merges_threads_and_direct_messages_with_expected_shape(): void
@@ -108,7 +112,7 @@ class StaffPesanQueryTest extends TestCase
                 'judul' => 'Tugas: Desain Logo',
                 'pengirim' => 'abby',
                 'tanggal_raw' => '2026-10-01',
-                'tanggal' => '1 Okt 2026',
+                'tanggal' => '1 Okt 2026 14:30',
             ],
             $tugas
         );
@@ -121,7 +125,7 @@ class StaffPesanQueryTest extends TestCase
                 'judul' => 'Rapat Mingguan',
                 'pengirim' => 'zed',
                 'tanggal_raw' => '2026-10-02',
-                'tanggal' => '2 Okt 2026',
+                'tanggal' => '2 Okt 2026 09:15',
             ],
             $langsung
         );

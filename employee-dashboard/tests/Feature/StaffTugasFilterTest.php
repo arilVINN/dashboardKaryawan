@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\Pesan;
 use App\Models\Role;
 use App\Models\Tugas;
 use App\Models\User2;
@@ -104,6 +105,51 @@ class StaffTugasFilterTest extends TestCase
             ->assertSee('wire:click="sortBy(\'tanggal\')"', false)
             ->assertDontSee('setStaffPesanSort', false)
             ->assertDontSee('data-sort-indicator', false);
+    }
+
+    public function test_staff_pesan_rows_show_datetime_with_jam(): void
+    {
+        $pesan = Pesan::create([
+            'id_pesan' => 'PSN-DT',
+            'judul_pesan' => 'Pengumuman',
+            'deskripsi' => 'Isi pengumuman.',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-10-07',
+            'pengirim_id_user' => 'USR-S',
+            'penerima_id_user' => 'USR-S',
+        ]);
+        $pesan->created_at = '2026-10-07 16:45:00';
+        $pesan->save();
+
+        $this->actingAs($this->staff)
+            ->get('/pesan')
+            ->assertOk()
+            ->assertSee('7 Okt 2026 16:45', false);
+    }
+
+    public function test_staff_tugas_rows_show_deadline_with_jam(): void
+    {
+        $this->makeTaskWithDeadline('T-9', 'Rapat Koordinasi', Tugas::STATUS_BARU, '2026-10-20 15:30:00');
+
+        $this->actingAs($this->staff)
+            ->get('/tugas')
+            ->assertOk()
+            ->assertSee('20 Okt 2026 15:30', false);
+    }
+
+    private function makeTaskWithDeadline(string $id, string $judul, string $status, string $deadline): void
+    {
+        Tugas::create([
+            'id_tugas' => $id,
+            'karyawan_id_karyawan' => 'KRY-S',
+            'judul_tugas' => $judul,
+            'deskripsi' => $judul.' desc',
+            'deadline' => $deadline,
+            'progress' => '0',
+            'status' => $status,
+            'tanggal_dibuat' => now(),
+            'tanggal_update' => now(),
+        ]);
     }
 
     public function test_staff_tugas_detail_has_labeled_file_field(): void

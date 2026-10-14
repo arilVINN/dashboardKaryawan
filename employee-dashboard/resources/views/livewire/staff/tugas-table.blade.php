@@ -63,7 +63,7 @@
                         @php $st = $row->status_efektif; @endphp
                         <tr wire:key="tugas-{{ $row->id_tugas }}" class="hover:bg-slate-50 transition">
                             <td class="px-6 py-4 font-semibold text-slate-800 whitespace-nowrap">{{ $row->judul_tugas }}</td>
-                            <td class="px-6 py-4 text-slate-500 whitespace-nowrap">{{ $row->deadline ? \Illuminate\Support\Carbon::parse($row->deadline)->format('d/m/Y H:i') : '-' }}</td>
+                            <td class="px-6 py-4 text-slate-500 whitespace-nowrap">{{ \App\Models\Pesan::formatTanggalJam($row->deadline, $row->deadline) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="inline-flex gap-1">
                                     @if ($row->is_terlambat && in_array($row->status, [\App\Models\Tugas::STATUS_MENUNGGU_ACC, \App\Models\Tugas::STATUS_SUDAH_ACC], true))
