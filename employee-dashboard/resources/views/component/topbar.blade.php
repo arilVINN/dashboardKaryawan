@@ -1,3 +1,23 @@
+@php
+    $topbarUser = auth()->user();
+    $topbarEmployee = $topbarUser?->karyawan;
+    $pageRole = request()->is('hrd/*') ? 'hrd' : (request()->is('kadiv/*') ? 'kadiv' : 'staff');
+    $topbarNama = $topbarEmployee?->nama ?? $topbarUser?->username ?? 'Guest';
+    $topbarDivisi = $topbarEmployee?->divisi?->nama_divisi ?? $topbarUser?->role?->nama_role ?? ucfirst($pageRole);
+    $topbarRole = $topbarUser?->role?->nama_role ?? $pageRole;
+    $topbarInitial = $topbarUser ? mb_strtoupper(mb_substr($topbarNama, 0, 1)) : 'U';
+    $topbarProfileUrl = match ($pageRole) {
+        'hrd' => route('hrd.profile'),
+        'kadiv' => route('kadiv.profile'),
+        default => url('/profile'),
+    };
+    $topbarProfileEndpoint = match ($pageRole) {
+        'hrd' => '/api/hrd/profile',
+        'kadiv' => '/api/kadiv/profile',
+        default => '/api/staff/profile',
+    };
+@endphp
+
 <header
     class="h-16 w-full bg-white border-b border-slate-200 px-8 flex items-center justify-end shrink-0 relative box-border">
     <div class="flex items-center gap-5">
@@ -14,7 +34,7 @@
                 class="flex items-center gap-2 cursor-pointer p-1 rounded-lg hover:bg-slate-100 transition focus:outline-none">
                 <div id="topbar-inisial"
                     class="w-8 h-8 rounded-full bg-[#0097B2] text-white flex items-center justify-center font-bold text-sm shrink-0 ring-1 ring-slate-200">
-                    U
+                    {{ $topbarInitial }}
                 </div>
                 <svg class="w-4 h-4 text-slate-500 transition-transform duration-200" id="dropdown-arrow" fill="none"
                     stroke="currentColor" viewBox="0 0 24 24">
@@ -25,11 +45,11 @@
             <div id="profile-dropdown-menu"
                 class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-md ring-1 ring-slate-200 py-2 z-50 transition-all">
                 <div class="px-4 py-2 border-b border-slate-100">
-                    <p id="topbar-nama" class="text-sm font-semibold text-slate-800">Guest</p>
-                    <p id="topbar-divisi" class="text-xs text-slate-500">Staff</p>
+                    <p id="topbar-nama" class="text-sm font-semibold text-slate-800">{{ $topbarNama }}</p>
+                    <p id="topbar-divisi" class="text-xs text-slate-500">{{ $topbarDivisi }}</p>
                 </div>
                 <div class="py-1">
-                    <a href="{{ url('/profile') }}"
+                    <a href="{{ $topbarProfileUrl }}"
                         class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition">
                         <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -38,7 +58,9 @@
                         Profil Saya
                     </a>
                 </div>
-                <div class="border-t border-slate-100 pt-1">
+                <form id="topbar-logout-form" method="POST" action="{{ route('logout') }}"
+                    class="border-t border-slate-100 pt-1">
+                    @csrf
                     <button type="button" id="btn-logout-topbar"
                         class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left">
                         <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,7 +70,7 @@
                         </svg>
                         Keluar
                     </button>
-                </div>
+                </form>
             </div>
         </div>
 
@@ -56,44 +78,74 @@
 </header>
 
 <script>
-    // Fetch nama & divisi user untuk topbar
+    if (@json($pageRole === 'kadiv')) {
+        const profileBtn = document.getElementById('profile-dropdown-btn');
+        const profileMenu = document.getElementById('profile-dropdown-menu');
+        const dropdownArrow = document.getElementById('dropdown-arrow');
+
+        if (profileBtn && profileMenu) {
+            profileBtn.addEventListener('click', function (event) {
+                event.stopPropagation();
+                profileMenu.classList.toggle('hidden');
+                dropdownArrow?.classList.toggle('rotate-180');
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!profileBtn.contains(event.target) && !profileMenu.contains(event.target)) {
+                    profileMenu.classList.add('hidden');
+                    dropdownArrow?.classList.remove('rotate-180');
+                }
+            });
+        }
+    }
+
+    // Fallback token hanya bila halaman tidak dirender dari session (mis. alur token).
     (async function loadTopbar() {
+        if ({{ $topbarUser ? 'true' : 'false' }}) return;
+
         const token = sessionStorage.getItem('staff_token');
         if (!token) return;
 
-        try {
-            const res = await fetch('/api/staff/profile', {
-                headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-            });
-            const json = await res.json();
-            if (res.ok && json.data) {
-                const p = json.data;
-                document.getElementById('topbar-nama').textContent = p.nama || 'Guest';
-                document.getElementById('topbar-divisi').textContent = p.divisi || 'Staff';
-                document.getElementById('topbar-inisial').textContent = p.nama ? p.nama.charAt(0).toUpperCase() : 'U';
-            }
-        } catch (e) {}
-    })();
-
-    // Logout
-    const btnLogoutTopbar = document.getElementById('btn-logout-topbar');
-    if (btnLogoutTopbar) {
-        btnLogoutTopbar.addEventListener('click', async function() {
-            const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
-            if (!confirmLogout) return;
-
-            const token = sessionStorage.getItem('staff_token');
-            try {
-                if (token) {
-                    await fetch('/api/logout', {
-                        method: 'POST',
-                        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-                    });
-                }
-            } catch (e) {}
-
-            sessionStorage.removeItem('staff_token');
-            window.location.href = '/login';
+        const response = await fetch(@json($topbarProfileEndpoint), {
+            headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
         });
-    }
+        const result = await response.json();
+        if (!response.ok || !result.data) {
+            throw new Error(result.message || 'Gagal memuat identitas pengguna.');
+        }
+
+        const profile = result.data;
+        document.getElementById('topbar-nama').textContent = profile.nama || 'Pengguna';
+        document.getElementById('topbar-divisi').textContent = @json(ucfirst($pageRole));
+        document.getElementById('topbar-inisial').textContent = profile.nama
+            ? profile.nama.charAt(0).toUpperCase()
+            : 'U';
+    })().catch(error => console.error('Gagal memuat identitas pengguna:', error));
+
+    document.getElementById('btn-logout-topbar')?.addEventListener('click', async function () {
+        const form = document.getElementById('topbar-logout-form');
+        const token = sessionStorage.getItem('staff_token');
+        this.disabled = true;
+
+        if (token) {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Accept': 'application/json',
+                    },
+                });
+                if (!response.ok) {
+                    throw new Error('Gagal mengakhiri token login.');
+                }
+            } catch (error) {
+                console.error('Gagal mencabut token login:', error);
+            }
+        }
+
+        sessionStorage.removeItem('staff_token');
+        localStorage.removeItem('staff_token');
+        HTMLFormElement.prototype.submit.call(form);
+    });
 </script>

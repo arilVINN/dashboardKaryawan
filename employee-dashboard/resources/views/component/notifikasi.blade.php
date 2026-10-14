@@ -9,6 +9,22 @@
         const container = document.getElementById('notifikasi-container');
         if (!token || !container) return;
 
+        const formatNotificationDate = (value) => {
+            if (!value) return '-';
+
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value;
+
+            return new Intl.DateTimeFormat('id-ID', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }).format(date);
+        };
+
         try {
             const response = await fetch('/api/staff/dashboard', {
                 headers: {
@@ -44,7 +60,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
-                            <span class="text-xs font-medium">${n.tanggal_notifikasi}</span>
+                            <span class="text-xs font-medium">${formatNotificationDate(n.created_at || n.tanggal_notifikasi)}</span>
                         </div>
                     </div>
                 </div>`;

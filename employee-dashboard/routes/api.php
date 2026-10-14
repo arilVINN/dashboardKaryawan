@@ -69,6 +69,7 @@ Route::middleware([
     // HRD‑only routes
     Route::middleware('role:hrd')->prefix('hrd')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Hrd\HrdDashboardController::class, 'index']);
+        Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
         
         Route::get('/pesan', [HrdPesanController::class, 'index']);
         Route::post('/pesan', [HrdPesanController::class, 'store']);
@@ -90,7 +91,6 @@ Route::middleware([
         Route::put('/staff/{id}', [HrdStaffController::class, 'update']);
         Route::patch('/staff/{id}', [HrdStaffController::class, 'update']);
         Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
-        
     });
     
 });

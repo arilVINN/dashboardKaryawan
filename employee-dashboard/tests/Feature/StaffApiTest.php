@@ -12,7 +12,9 @@ use App\Models\Role;
 use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class StaffApiTest extends TestCase
@@ -86,6 +88,34 @@ class StaffApiTest extends TestCase
             ->assertJsonPath('data.statistik.completion_percentage', 20)
             ->assertJsonPath('data.pesan_terbaru.0.id_pesan', 'PSN-DASH')
             ->assertJsonPath('data.notifikasi_terbaru.0.id_notifikasi', 'NTF-DASH');
+    }
+
+    public function test_deadline_includes_time_when_determining_late_status(): void
+    {
+        $task = $this->createTask(
+            'TGS-DUE',
+            $this->staff->karyawan_id_karyawan,
+            Tugas::STATUS_BERJALAN,
+            '2026-10-09 16:00:00'
+        );
+
+        try {
+            Carbon::setTestNow('2026-10-09 16:00:00');
+            $this->actingAs($this->staff)
+                ->getJson('/staff/dashboard')
+                ->assertOk()
+                ->assertJsonPath('data.statistik.tugas_telat', 0);
+
+            Carbon::setTestNow('2026-10-09 16:00:01');
+            $this->actingAs($this->staff)
+                ->getJson('/staff/dashboard')
+                ->assertOk()
+                ->assertJsonPath('data.statistik.tugas_telat', 1);
+
+            $this->assertTrue($task->fresh()->isTelat());
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
     public function test_staff_can_list_and_open_messages_for_their_tasks(): void
@@ -181,7 +211,7 @@ class StaffApiTest extends TestCase
                 ->assertJsonPath('data.id_pesan', 'PSN-DIRECT')
                 ->assertJsonPath('data.penerima.id_user', $this->staff->id_user)
                 ->assertJsonPath('data.lampiran.link', 'https://example.com/panduan')
-                ->assertJsonPath('data.lampiran.file', '/storage/pesan/kadiv-file.pdf');
+                ->assertJsonPath('data.lampiran.file', Storage::disk('public')->url('pesan/kadiv-file.pdf'));
 
             $this->withToken($token)
                 ->getJson('/api/staff/pesan/PSN-OTHER')
@@ -246,8 +276,8 @@ class StaffApiTest extends TestCase
             ->getJson('/api/staff/pesan/PSN-REPLY')
             ->assertOk()
             ->assertJsonCount(2, 'data.balasan')
-            ->assertJsonFragment(['file' => '/storage/pesan/reply.pdf'])
-            ->assertJsonPath('data.lampiran.file', '/storage/pesan/root.pdf')
+            ->assertJsonFragment(['file' => Storage::disk('public')->url('pesan/reply.pdf')])
+            ->assertJsonPath('data.lampiran.file', Storage::disk('public')->url('pesan/root.pdf'))
             ->assertJsonFragment(['deskripsi' => 'Progres sudah 80 persen.']);
 
         $this->withToken($token)
@@ -272,6 +302,8 @@ class StaffApiTest extends TestCase
                 'isi_notif' => 'Notifikasi milik staff.',
                 'tanggal_notifikasi' => '2026-09-29',
                 'user_id_user' => $this->staff->id_user,
+                'created_at' => '2026-09-29 14:35:00',
+                'updated_at' => '2026-09-29 14:35:00',
             ],
             [
                 'id_notifikasi' => 'NTF-OTHER',
@@ -279,14 +311,18 @@ class StaffApiTest extends TestCase
                 'isi_notif' => 'Tidak boleh terlihat oleh staff.',
                 'tanggal_notifikasi' => '2026-09-29',
                 'user_id_user' => $this->kadiv->id_user,
+                'created_at' => '2026-09-29 14:35:00',
+                'updated_at' => '2026-09-29 14:35:00',
             ],
         ]);
 
-        $this->actingAs($this->staff)
+        $response = $this->actingAs($this->staff)
             ->getJson('/staff/notifikasi')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id_notifikasi', 'NTF-OWN');
+
+        $this->assertNotNull($response->json('data.0.created_at'));
     }
 
     public function test_staff_cannot_open_another_staff_task_thread(): void

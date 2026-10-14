@@ -9,18 +9,18 @@
 </head>
 
 <body class="bg-[#F3F4F6] flex h-screen overflow-hidden">
-
+    
     @include('component_kadiv.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
-        @include('component_kadiv.topbar')
+        @include('component.topbar')
 
         <main class="flex-1 overflow-y-auto">
+            
             <div class="px-9 pt-7 pb-16">
 
-                @include('component.breadcrumbs')
-
+                @include('component.breadcrumbs', ['parentText' => 'Manajemen Staff', 'parentUrl' => url('/kadiv/manajemenStaff'), 'currentPage' => 'Detail Staff'])
                 <div class="mt-4 flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div class="w-14 h-14 rounded-full bg-[#19A7CE] text-white text-xl font-bold flex items-center justify-center">
@@ -97,7 +97,10 @@
                 const deadline = document.createElement('td');
                 deadline.className = 'px-6 py-4 text-center text-[#565E74]';
                 deadline.textContent = task.deadline
-                    ? new Date(task.deadline + 'T00:00:00').toLocaleDateString('id-ID')
+                    ? new Date(String(task.deadline).replace(' ', 'T')).toLocaleString('id-ID', {
+                        dateStyle: 'medium',
+                        timeStyle: 'short'
+                    })
                     : '-';
                 row.appendChild(deadline);
                 const approval = document.createElement('td');

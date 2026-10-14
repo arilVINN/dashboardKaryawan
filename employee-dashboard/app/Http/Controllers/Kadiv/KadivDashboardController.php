@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Karyawan;
 use App\Models\Tugas;
 use App\Models\User2;
+use App\Queries\KadivStaffQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -44,16 +45,15 @@ class KadivDashboardController extends Controller
         $sudahAcc = (clone $divisionTasks)
             ->statusEfektif(Tugas::STATUS_SUDAH_ACC)
             ->count();
+        $selesaiTerlambat = (clone $divisionTasks)
+            ->selesaiTerlambat()
+            ->count();
         $telat = (clone $divisionTasks)
             ->statusEfektif(Tugas::STATUS_TELAT)
             ->count();
 
-        $staff = Karyawan::query()
-            ->where('divisi_id_divisi', $divisionId)
-            ->whereHas('user.role', fn ($query) => $query->whereRaw('LOWER(nama_role) = ?', ['staff']))
-            ->with('user:id_user,karyawan_id_karyawan,last_login_at')
-            ->withCount('tugas')
-            ->orderBy('nama')
+        $staff = KadivStaffQuery::forDivision($divisionId)
+            ->apply($request->only(['sort', 'dir', 'q']))
             ->get()
             ->map(fn (Karyawan $employee) => [
                 'id_karyawan' => $employee->id_karyawan,
@@ -73,6 +73,7 @@ class KadivDashboardController extends Controller
                     'tugas_berjalan' => $berjalan,
                     'tugas_menunggu_di_acc' => $menungguAcc,
                     'tugas_sudah_di_acc' => $sudahAcc,
+                    'tugas_selesai_terlambat' => $selesaiTerlambat,
                     'tugas_telat' => $telat,
                     'persentase_penyelesaian' => $totalTasks > 0
                         ? round(($sudahAcc / $totalTasks) * 100, 2)

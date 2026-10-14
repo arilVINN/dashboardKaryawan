@@ -38,7 +38,12 @@
         <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2.5">Presentase</span>
         <div class="flex items-center gap-3">
             <div class="relative w-14 h-14 shrink-0">
-                <canvas id="miniChart"></canvas>
+                <svg class="block h-14 w-14 -rotate-90" viewBox="0 0 56 56" role="img" aria-label="Grafik persentase tugas">
+                    <circle cx="28" cy="28" r="22" fill="none" stroke="#e2e8f0" stroke-width="8"></circle>
+                    <circle id="ring-berjalan" cx="28" cy="28" r="22" fill="none" stroke="#22c55e" stroke-width="8"></circle>
+                    <circle id="ring-pending" cx="28" cy="28" r="22" fill="none" stroke="#eab308" stroke-width="8"></circle>
+                    <circle id="ring-telat" cx="28" cy="28" r="22" fill="none" stroke="#ef4444" stroke-width="8"></circle>
+                </svg>
             </div>
             <div class="flex-1 space-y-1 text-[10px] font-bold text-slate-600">
                 <div class="flex justify-between items-center">
@@ -65,7 +70,6 @@
 </div>
 
 <!-- Script grafik & Ambil Data API -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', async function() {
         const token = sessionStorage.getItem('staff_token');
@@ -86,47 +90,39 @@
             const json = await response.json();
             const s = json.data.statistik;
 
-            // 1. Tampilkan Angka Statistik Asli (Tanpa Tugas yang Selesai)
-            const tugasBerjalan = (s.tugas_baru || 0) + (s.tugas_berjalan || 0);
-            const tugasPending = (s.tugas_menunggu_acc || 0);
-            const tugasTelat = (s.tugas_telat || 0);
-            const totalAktif = tugasBerjalan + tugasPending + tugasTelat;
+            // Total tugas tetap mencakup tugas yang sudah di-ACC.
+            const totalTugas = Number(s.total_tugas) || 0;
+            const tugasBerjalan = (Number(s.tugas_baru) || 0) + (Number(s.tugas_berjalan) || 0);
+            const tugasPending = Number(s.tugas_menunggu_acc) || 0;
+            const tugasTelat = Number(s.tugas_telat) || 0;
             
-            document.getElementById('stat-berjalan').textContent = tugasBerjalan + '/' + totalAktif + ' Tugas';
-            document.getElementById('stat-pending').textContent = tugasPending + '/' + totalAktif + ' Tugas';
-            document.getElementById('stat-telat').textContent = tugasTelat + '/' + totalAktif + ' Tugas';
+            document.getElementById('stat-berjalan').textContent = tugasBerjalan + '/' + totalTugas + ' Tugas';
+            document.getElementById('stat-pending').textContent = tugasPending + '/' + totalTugas + ' Tugas';
+            document.getElementById('stat-telat').textContent = tugasTelat + '/' + totalTugas + ' Tugas';
 
-            // 2. Hitung Persentase (Tanpa yang Selesai)
-            const pctBerjalan = totalAktif > 0 ? Math.round((tugasBerjalan / totalAktif) * 100) : 0;
-            const pctPending = totalAktif > 0 ? Math.round((tugasPending / totalAktif) * 100) : 0;
-            const pctTelat = totalAktif > 0 ? Math.round((tugasTelat / totalAktif) * 100) : 0;
+            // Persentase tiap status dihitung dari seluruh tugas, termasuk yang sudah di-ACC.
+            const pctBerjalan = totalTugas > 0 ? Math.round((tugasBerjalan / totalTugas) * 100) : 0;
+            const pctPending = totalTugas > 0 ? Math.round((tugasPending / totalTugas) * 100) : 0;
+            const pctTelat = totalTugas > 0 ? Math.round((tugasTelat / totalTugas) * 100) : 0;
 
             document.getElementById('pct-berjalan').textContent = pctBerjalan + '%';
             document.getElementById('pct-pending').textContent = pctPending + '%';
             document.getElementById('pct-telat').textContent = pctTelat + '%';
 
-            // 3. Masukkan Data ke Grafik Lingkaran
-            const ctx = document.getElementById('miniChart');
-            if (ctx) {
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Ongoing', 'Pending', 'Telat'],
-                        datasets: [{
-                            data: [pctBerjalan, pctPending, pctTelat], // Data dimasukkan ke sini
-                            backgroundColor: ['#22c55e', '#eab308', '#ef4444'],
-                            borderWidth: 0,
-                            cutout: '60%'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                        layout: { padding: 0 }
-                    }
-                });
-            }
+            const circumference = 2 * Math.PI * 22;
+            const totalStatusTampil = tugasBerjalan + tugasPending + tugasTelat;
+            let offset = 0;
+            [
+                ['ring-berjalan', tugasBerjalan],
+                ['ring-pending', tugasPending],
+                ['ring-telat', tugasTelat]
+            ].forEach(([id, count]) => {
+                const ring = document.getElementById(id);
+                const length = totalStatusTampil > 0 ? (count / totalStatusTampil) * circumference : 0;
+                ring.setAttribute('stroke-dasharray', `${length} ${circumference - length}`);
+                ring.setAttribute('stroke-dashoffset', `${-offset}`);
+                offset += length;
+            });
 
         } catch (error) {
             console.error('Gagal memuat statistik:', error);

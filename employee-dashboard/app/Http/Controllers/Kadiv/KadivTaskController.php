@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Tugas;
 use App\Models\Karyawan;
+use App\Models\Notifikasi;
+use App\Queries\KadivTugasQuery;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -20,14 +22,9 @@ class KadivTaskController extends Controller
         $userKadiv = $request->user();
         $divisiId = $userKadiv->karyawan->divisi_id_divisi;
 
-        // Ambil ID semua karyawan di divisi tersebut
-        $karyawanIds = Karyawan::where('divisi_id_divisi', $divisiId)->pluck('id_karyawan');
-
-        // Ambil semua tugas milik karyawan di divisi tersebut
-        $tugas = Tugas::with(['karyawan', 'submitTugas'])
-                      ->whereIn('karyawan_id_karyawan', $karyawanIds)
-                      ->orderBy('tanggal_dibuat', 'desc')
-                      ->get();
+        $tugas = KadivTugasQuery::forDivision($divisiId)
+            ->apply($request->only(['sort', 'dir', 'status', 'staff', 'q']))
+            ->get();
 
         return response()->json([
             'message' => 'Berhasil mengambil daftar tugas divisi',
@@ -71,7 +68,7 @@ class KadivTaskController extends Controller
             'karyawan_id_karyawan' => 'required|exists:karyawans,id_karyawan',
             'judul_tugas' => 'required|string|max:100',
             'deskripsi' => 'required|string',
-            'deadline' => 'required|date',
+            'deadline' => ['required', 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s,Y-m-d H:i:s'],
             // File atau link pendukung (opsional)
             'file_pendukung' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png', // 20 MB max
             'link_pendukung' => 'nullable|url|max:2048',
@@ -102,7 +99,7 @@ class KadivTaskController extends Controller
             'deskripsi' => $request->deskripsi,
             'file_pendukung' => $filePath,
             'link_pendukung' => $request->link_pendukung,
-            'deadline' => $request->deadline,
+            'deadline' => \Illuminate\Support\Carbon::parse($request->deadline)->format('Y-m-d H:i:s'),
             'progress' => '0',
             'status' => Tugas::STATUS_BARU,
             'tanggal_dibuat' => now(),
@@ -130,10 +127,14 @@ class KadivTaskController extends Controller
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar wewenang'], 404);
         }
 
+        if ($tugas->status === Tugas::STATUS_SUDAH_ACC) {
+            return response()->json(['message' => 'Tugas ini sudah di-ACC dan tidak bisa diubah'], 403);
+        }
+
         $request->validate([
             'judul_tugas' => 'sometimes|required|string|max:100',
             'deskripsi' => 'sometimes|required|string',
-            'deadline' => 'sometimes|required|date',
+            'deadline' => ['sometimes', 'required', 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s,Y-m-d H:i:s'],
             'karyawan_id_karyawan' => 'sometimes|required|exists:karyawans,id_karyawan',
             'file_pendukung' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
             'link_pendukung' => 'nullable|url|max:2048'
@@ -160,7 +161,9 @@ class KadivTaskController extends Controller
             'deskripsi' => $request->deskripsi ?? $tugas->deskripsi,
             'file_pendukung' => $filePath,
             'link_pendukung' => $request->link_pendukung ?? $tugas->link_pendukung,
-            'deadline' => $request->deadline ?? $tugas->deadline,
+            'deadline' => $request->filled('deadline')
+                ? \Illuminate\Support\Carbon::parse($request->deadline)->format('Y-m-d H:i:s')
+                : $tugas->deadline,
             'tanggal_update' => now(),
         ]);
 
@@ -205,7 +208,7 @@ class KadivTaskController extends Controller
         $divisiId = $userKadiv->karyawan->divisi_id_divisi;
 
         $tugas = Tugas::with([
-            'karyawan',
+            'karyawan.user',
             'submitTugas' => fn ($query) => $query->orderBy('created_at', 'desc'),
         ])->where('id_tugas', $id)->first();
 
@@ -220,7 +223,7 @@ class KadivTaskController extends Controller
         $validated = $request->validate([
             'status_review' => 'required|in:acc,revisi',
             'catatan_revisi' => 'required_if:status_review,revisi|nullable|string|max:10000',
-            'deadline' => 'required_if:status_review,revisi|nullable|date',
+            'deadline' => ['required_if:status_review,revisi', 'nullable', 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s,Y-m-d H:i:s'],
             'file_revisi' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip',
         ]);
 
@@ -246,7 +249,7 @@ class KadivTaskController extends Controller
                         : $latestSubmit->catatan_revisi,
                     'file_revisi' => $filePath ?? $latestSubmit->file_revisi,
                     'deadline_revisi' => $validated['status_review'] === 'revisi'
-                        ? $validated['deadline']
+                        ? \Illuminate\Support\Carbon::parse($validated['deadline'])->format('Y-m-d H:i:s')
                         : $latestSubmit->deadline_revisi,
                 ]);
 
@@ -255,9 +258,20 @@ class KadivTaskController extends Controller
                         ? Tugas::STATUS_SUDAH_ACC
                         : Tugas::STATUS_BERJALAN,
                     'deadline' => $validated['status_review'] === 'revisi'
-                        ? \Illuminate\Support\Carbon::parse($validated['deadline'])->toDateString()
+                        ? \Illuminate\Support\Carbon::parse($validated['deadline'])->format('Y-m-d H:i:s')
                         : $tugas->deadline,
                 ]);
+
+                if ($validated['status_review'] === 'revisi' && $tugas->karyawan->user) {
+                    Notifikasi::create([
+                        'id_notifikasi' => $this->generateNotifikasiId(),
+                        'judul_notifikasi' => 'Revisi Tugas',
+                        'isi_notif' => 'Tugas "'.$tugas->judul_tugas.'" mendapat revisi baru: '
+                            .trim($validated['catatan_revisi']),
+                        'tanggal_notifikasi' => now()->toDateString(),
+                        'user_id_user' => $tugas->karyawan->user->id_user,
+                    ]);
+                }
             });
         } catch (\Throwable $exception) {
             if ($filePath) {
@@ -274,5 +288,14 @@ class KadivTaskController extends Controller
                 'submit' => $latestSubmit
             ]
         ]);
+    }
+
+    private function generateNotifikasiId(): string
+    {
+        do {
+            $id = 'NTF'.strtoupper(substr(uniqid(), -8));
+        } while (Notifikasi::where('id_notifikasi', $id)->exists());
+
+        return $id;
     }
 }

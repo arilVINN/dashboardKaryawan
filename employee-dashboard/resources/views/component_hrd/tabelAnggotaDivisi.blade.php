@@ -8,7 +8,7 @@
         <h3 class="text-lg font-semibold text-slate-800">Anggota Divisi</h3>
         <button onclick="bukaModalAnggota()" type="button"
             class="px-6 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-semibold rounded-lg shadow-sm transition">
-            Tambah Staff
+            Tambah Karyawan
         </button>
     </div>
 
@@ -86,7 +86,14 @@
     <div id="modalBoxTambah"
         class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300">
         <div class="flex items-center justify-between p-4 border-b border-dashed border-gray-300 shrink-0">
-            <h3 class="text-base font-bold text-slate-900">Tambah Staff ke {{ $divisi->nama_divisi }}</h3>
+            <div class="bg-cyan-100 p-1.5 rounded text-cyan-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z">
+                        </path>
+                    </svg>
+                </div>
+            <h3 class="text-base font-bold text-slate-900">Tambah Karyawan ke {{ $divisi->nama_divisi }}</h3>
             <button type="button" onclick="tutupModalAnggota()" class="text-slate-400 hover:text-red-500 transition"
                 aria-label="Tutup">
                 &times;
@@ -97,7 +104,7 @@
             @csrf
             <div class="p-5 overflow-y-auto space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-2">NAMA STAFF</label>
+                    <label class="block text-xs font-bold text-slate-500 mb-2">NAMA KARYAWAN</label>
                     <input type="text" name="nama" maxlength="100" required
                         class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
                         placeholder="Masukkan nama">
@@ -129,9 +136,13 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-2">JABATAN</label>
-                    <input type="text" name="jabatan" maxlength="100" required
-                        class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
-                        placeholder="Masukkan jabatan">
+                    <select name="jabatan" required
+                        class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
+                        <option value="">Pilih jabatan</option>
+                        <option value="Kepala Divisi">Kepala Divisi</option>
+                        <option value="Wakil Kepala Divisi">Wakil Kepala Divisi</option>
+                        <option value="Staff">Staff</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-2">USERNAME AKUN</label>
@@ -175,7 +186,7 @@
             <input type="hidden" name="id_karyawan">
             <div class="p-5 overflow-y-auto space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-2">NAMA STAFF</label>
+                    <label class="block text-xs font-bold text-slate-500 mb-2">NAMA KARYAWAN</label>
                     <input type="text" name="nama" maxlength="100" required
                         class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
                 </div>
@@ -203,8 +214,13 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-2">JABATAN</label>
-                    <input type="text" name="jabatan" maxlength="100" required
+                    <select name="jabatan" required
                         class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
+                        <option value="">Pilih jabatan</option>
+                        <option value="Kepala Divisi">Kepala Divisi</option>
+                        <option value="Wakil Kepala Divisi">Wakil Kepala Divisi</option>
+                        <option value="Staff">Staff</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-2">USERNAME</label>
@@ -259,7 +275,12 @@
         const fields = ['id', 'nama', 'jenisKelamin', 'tanggalLahir', 'email', 'noTelepon', 'jabatan', 'username'];
         for (const field of fields) {
             const name = field === 'id' ? 'id_karyawan' : field.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-            form.elements[name].value = button.dataset[field] || '';
+            const value = button.dataset[field] || '';
+            const input = form.elements[name];
+            if (name === 'jabatan' && value && !Array.from(input.options).some(option => option.value === value)) {
+                input.add(new Option(value, value), 1);
+            }
+            input.value = value;
         }
         showModal(modalEditAnggota, modalBoxEditAnggota);
     }

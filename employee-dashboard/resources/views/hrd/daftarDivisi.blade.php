@@ -14,10 +14,10 @@
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs')
+        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Daftar Divisi'])
         <main class="flex-1 overflow-y-auto p-8 pt-6">
-            @include('component_hrd.tabelDaftarDivisi', ['divisis' => $divisis, 'compact' => true])
-            <div class="px-1 mt-2">{{ $divisis->links() }}</div>
+            <livewire:hrd.divisi-table />
+
         </main>
 
 

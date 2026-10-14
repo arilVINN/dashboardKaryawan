@@ -14,10 +14,10 @@
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs')
+        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Karyawan'])
         <main class="flex-1 overflow-y-auto p-8 pt-6">
-            @include('component_hrd.tabelKaryawan', ['karyawan' => $karyawan])
-            <div class="px-1 mt-2">{{ $karyawan->links() }}</div>
+            <livewire:hrd.karyawan-table />
+            @include('component_hrd.karyawanModals', ['daftarDivisi' => $daftarDivisi])
 
         </main>
         

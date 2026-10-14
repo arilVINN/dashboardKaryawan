@@ -283,20 +283,22 @@ U
                 }
             });
 
+
+
             // 5. Logout
             const btnLogout = document.getElementById('btn-logout');
             if (btnLogout) {
                 btnLogout.addEventListener('click', async function() {
                     if(!confirm("Apakah Anda yakin ingin logout?")) return;
                     try {
-                        await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+                        await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
                     } catch(e) {}
                     sessionStorage.removeItem('staff_token');
                     window.location.href = '/login';
                 });
             }
-
         });
     </script>
 </body>
 </html>
+

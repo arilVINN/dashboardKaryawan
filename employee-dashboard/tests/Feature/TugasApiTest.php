@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use App\Models\User2;
 use App\Models\Tugas;
+use App\Models\Notifikasi;
 
 class TugasApiTest extends TestCase
 {
@@ -81,6 +82,69 @@ class TugasApiTest extends TestCase
     }
 
     #[Test]
+    public function submit_selesai_setelah_deadline_memiliki_status_selesai_dan_terlambat_terpisah()
+    {
+        $staff = User2::where('username', 'budist')->firstOrFail();
+        $tugas = Tugas::where('karyawan_id_karyawan', $staff->karyawan_id_karyawan)->firstOrFail();
+        $tugas->update(['deadline' => now()->subMinute()]);
+
+        $response = $this->actingAs($staff, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'catatan_karyawan' => 'Tugas selesai setelah tenggat.',
+                'progress' => 100,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.status', Tugas::STATUS_MENUNGGU_ACC)
+            ->assertJsonPath('data.status_efektif', Tugas::STATUS_MENUNGGU_ACC)
+            ->assertJsonPath('data.is_terlambat', true);
+
+        $this->assertTrue($tugas->fresh()->isTelat());
+        $this->assertDatabaseHas('tugas', [
+            'id_tugas' => $tugas->id_tugas,
+            'status' => Tugas::STATUS_MENUNGGU_ACC,
+        ]);
+
+        $this->actingAs($staff, 'sanctum')
+            ->getJson("/api/staff/tugas/{$tugas->id_tugas}")
+            ->assertOk()
+            ->assertJsonPath('data.status_efektif', Tugas::STATUS_MENUNGGU_ACC)
+            ->assertJsonPath('data.is_terlambat', true);
+
+        $this->actingAs($staff, 'sanctum')
+            ->getJson('/api/staff/tugas?status=telat')
+            ->assertOk()
+            ->assertJsonFragment(['id_tugas' => $tugas->id_tugas]);
+
+        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
+        $this->actingAs($kadiv, 'sanctum')
+            ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", ['status_review' => 'acc'])
+            ->assertOk();
+
+        $this->actingAs($staff, 'sanctum')
+            ->getJson("/api/staff/tugas/{$tugas->id_tugas}")
+            ->assertOk()
+            ->assertJsonPath('data.status', Tugas::STATUS_SUDAH_ACC)
+            ->assertJsonPath('data.status_efektif', Tugas::STATUS_SUDAH_ACC)
+            ->assertJsonPath('data.is_terlambat', true);
+    }
+
+    #[Test]
+    public function staff_tidak_bisa_submit_tugas_tanpa_file_atau_catatan()
+    {
+        $user = User2::where('username', 'budist')->first();
+        $tugas = Tugas::where('karyawan_id_karyawan', $user->karyawan_id_karyawan)->first();
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'progress' => 100,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonStructure(['data' => ['file_hasil', 'catatan_karyawan']]);
+
+        $this->assertDatabaseCount('submit_tugas', 0);
+    }
+
+    #[Test]
     public function kadiv_bisa_acc_tugas_dan_tidak_bisa_acc_dua_kali()
     {
         $staff = User2::where('username', 'budist')->first();
@@ -121,6 +185,8 @@ class TugasApiTest extends TestCase
         $staff = User2::where('username', 'budist')->first();
         $kadiv = User2::where('username', 'tonokd')->first();
         $tugas = Tugas::where('karyawan_id_karyawan', $staff->karyawan_id_karyawan)->first();
+        $deadline = now()->addDays(7)->setTime(16, 0)->format('Y-m-d\TH:i');
+        $notificationsBefore = Notifikasi::where('user_id_user', $staff->id_user)->count();
 
         $this->actingAs($staff, 'sanctum')
              ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
@@ -134,13 +200,63 @@ class TugasApiTest extends TestCase
              ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", [
                  'status_review' => 'revisi',
                  'catatan_revisi' => 'Perbaiki bagian ini',
+                 'deadline' => $deadline,
              ])
              ->assertStatus(200);
 
         $this->assertDatabaseHas('tugas', [
             'id_tugas' => $tugas->id_tugas,
             'status' => Tugas::STATUS_BERJALAN,
+            'deadline' => \Illuminate\Support\Carbon::parse($deadline)->format('Y-m-d H:i:s'),
         ]);
+        $this->assertSame(
+            $notificationsBefore + 1,
+            Notifikasi::where('user_id_user', $staff->id_user)->count()
+        );
+        $this->assertDatabaseHas('notifikasis', [
+            'judul_notifikasi' => 'Revisi Tugas',
+            'isi_notif' => 'Tugas "'.$tugas->judul_tugas.'" mendapat revisi baru: Perbaiki bagian ini',
+            'user_id_user' => $staff->id_user,
+        ]);
+
+        $this->travel(1)->seconds();
+
+        $this->actingAs($staff, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'catatan_karyawan' => 'Sudah diperbaiki',
+                'progress' => 100,
+            ])
+            ->assertOk();
+
+        $this->actingAs($kadiv, 'sanctum')
+            ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", [
+                'status_review' => 'revisi',
+                'catatan_revisi' => 'Perbaiki bagian berikutnya',
+                'deadline' => now()->addDays(10)->setTime(16, 0)->format('Y-m-d\TH:i'),
+            ])
+            ->assertOk();
+
+        $this->assertSame(
+            $notificationsBefore + 2,
+            Notifikasi::where('user_id_user', $staff->id_user)->count()
+        );
+    }
+
+    #[Test]
+    public function kadiv_bisa_membuat_tugas_dengan_deadline_tanggal_dan_jam()
+    {
+        $staff = User2::where('username', 'budist')->firstOrFail();
+        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
+
+        $this->actingAs($kadiv, 'sanctum')
+            ->postJson('/api/kadiv/tugas', [
+                'karyawan_id_karyawan' => $staff->karyawan_id_karyawan,
+                'judul_tugas' => 'Tugas dengan deadline jam',
+                'deskripsi' => 'Uji penyimpanan tanggal dan jam deadline.',
+                'deadline' => '2026-10-09T16:00',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.deadline', '2026-10-09 16:00:00');
     }
 
     #[Test]

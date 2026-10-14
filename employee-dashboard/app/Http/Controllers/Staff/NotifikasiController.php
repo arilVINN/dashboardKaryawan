@@ -32,6 +32,7 @@ class NotifikasiController extends Controller
                     'judul_notifikasi' => $item->judul_notifikasi,
                     'isi_notif' => $item->isi_notif,
                     'tanggal_notifikasi' => $item->tanggal_notifikasi,
+                    'created_at' => $item->created_at,
                 ];
             }),
         ]);

@@ -63,12 +63,15 @@ class HrdStaffController extends Controller
                 ], 404);
             }
 
-            $roleId = $request->role_id_role
-                ?? Role::whereRaw('LOWER(nama_role) = ?', ['staff'])->value('id_role');
+            $jabatanRole = $this->roleNameForJabatan($request->jabatan);
+            $roleId = $jabatanRole
+                ? Role::whereRaw('LOWER(nama_role) = ?', [$jabatanRole])->value('id_role')
+                : ($request->role_id_role
+                    ?? Role::whereRaw('LOWER(nama_role) = ?', ['staff'])->value('id_role'));
 
             if (!$roleId) {
                 return response()->json([
-                    'message' => 'Role staff belum tersedia. Tambahkan role staff terlebih dahulu.'
+                    'message' => 'Role ' . ($jabatanRole ?? 'staff') . ' belum tersedia. Tambahkan role tersebut terlebih dahulu.'
                 ], 422);
             }
 
@@ -208,6 +211,23 @@ class HrdStaffController extends Controller
             }
         }
 
+        if (isset($validated['jabatan'])) {
+            $jabatanRole = $this->roleNameForJabatan($validated['jabatan']);
+
+            if ($jabatanRole && $karyawan->user) {
+                $roleId = Role::whereRaw('LOWER(nama_role) = ?', [$jabatanRole])->value('id_role');
+
+                if (!$roleId) {
+                    return response()->json([
+                        'message' => 'Role ' . $jabatanRole . ' belum tersedia. Tambahkan role tersebut terlebih dahulu.',
+                        'errors' => ['jabatan' => ['Role ' . $jabatanRole . ' belum tersedia.']],
+                    ], 422);
+                }
+
+                $validated['role_id_role'] = $roleId;
+            }
+        }
+
         if (array_intersect(['username', 'password', 'role_id_role'], array_keys($validated)) && !$karyawan->user) {
             return response()->json(['message' => 'Akun login staff tidak ditemukan'], 409);
         }
@@ -235,10 +255,6 @@ class HrdStaffController extends Controller
         ]);
     }
 
-    /**
-     * DELETE /api/hrd/staff/{id_karyawan}
-     * Menghapus profil staff beserta akun login jika tidak ada data terkait.
-     */
     public function destroy($id)
     {
         $karyawan = Karyawan::with('user')->where('id_karyawan', $id)->first();
@@ -247,18 +263,59 @@ class HrdStaffController extends Controller
             return response()->json(['message' => 'Staff tidak ditemukan'], 404);
         }
 
+        // Cek apakah ada tugas yang BELUM selesai (bukan sudah di-acc)
+        $hasUnfinishedTask = \App\Models\Tugas::where('karyawan_id_karyawan', $karyawan->id_karyawan)
+            ->whereNotIn('status', [\App\Models\Tugas::STATUS_SUDAH_ACC])
+            ->exists();
+
+        if ($hasUnfinishedTask) {
+            return response()->json([
+                'message' => 'Karyawan tidak dapat dihapus karena masih memiliki tugas yang belum selesai (belum di-acc).',
+            ], 409);
+        }
+
         try {
             DB::transaction(function () use ($karyawan): void {
-                $karyawan->user?->delete();
+                // Hapus semua submit_tugas terkait
+                \App\Models\Tugas::where('karyawan_id_karyawan', $karyawan->id_karyawan)
+                    ->each(function ($tugas): void {
+                        $tugas->submitTugas()->delete();
+                        $tugas->pesans()->delete();
+                        $tugas->delete();
+                    });
+
+                // Hapus pesan yang dikirim/diterima user
+                if ($karyawan->user) {
+                    $karyawan->user->pesanDikirim()->delete();
+                    $karyawan->user->pesanDiterima()->delete();
+                    $karyawan->user->notifikasis()->delete();
+                    $karyawan->user->delete();
+                }
+
                 $karyawan->delete();
             });
         } catch (QueryException $e) {
             report($e);
             return response()->json([
-                'message' => 'Staff tidak dapat dihapus karena masih memiliki tugas atau pesan terkait',
+                'message' => 'Staff tidak dapat dihapus karena masih memiliki data terkait yang tidak dapat dihapus otomatis.',
             ], 409);
         }
 
         return response()->json(['message' => 'Staff dan akun login berhasil dihapus']);
+    }
+
+    private function roleNameForJabatan(string $jabatan): ?string
+    {
+        $normalized = mb_strtolower(trim($jabatan));
+
+        if (preg_match('/^kepala\s+divisi(?:\s|$)/i', $normalized) === 1) {
+            return 'kadiv';
+        }
+
+        if (in_array($normalized, ['staff', 'wakil kepala divisi'], true)) {
+            return 'staff';
+        }
+
+        return null;
     }
 }

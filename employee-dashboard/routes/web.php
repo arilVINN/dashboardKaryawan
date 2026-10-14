@@ -8,130 +8,125 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\KadivController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Hrd\HrdKaryawanController;
+use App\Http\Controllers\Hrd\HrdKaryawanDeletionController;
 use App\Http\Controllers\Hrd\HrdDivisiController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
+use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Models\Divisi;
 
 
-Route::get('/', function () {
-    return view('staff.dashboard');
-})->name('dashboard');
-
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
-    ->middleware('gateway.throttle:5,1')
+    ->middleware('gateway.throttle:5,1') // sudah ada, tidak diubah
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-//staff route
-Route::get('/tugas', function () {
-    return view('staff.tugas');
-})->name('tugas');
+// staff route (session auth + staff role)
+Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
+    Route::get('/', function () {
+        return view('staff.dashboard');
+    })->name('dashboard');
 
-Route::get('/pesan', function () {
-    return view('staff.pesan');
-})->name('pesan');
+    Route::get('/tugas', function () {
+        return view('staff.tugas');
+    })->name('tugas');
 
-Route::get('/pesan/detail/{id?}', function () {
-    return view('staff.detailPesan');
-})->name('pesan.detail');
+    Route::get('/pesan', function () {
+        return view('staff.pesan');
+    })->name('pesan');
 
-Route::get('/tugas/detail/{id?}', function () {
-    return view('staff.detailTugas');
-})->name('tugas.detail');
+    Route::get('/pesan/detail/{id?}', function () {
+        return view('staff.detailPesan');
+    })->name('pesan.detail');
 
-Route::get('/profile', function () {
-    return view('staff.detailProfile');
-})->name('profile');
+    Route::get('/tugas/detail/{id?}', function () {
+        return view('staff.detailTugas');
+    })->name('tugas.detail');
 
-Route::prefix('staff')->middleware(EnsureStaffRole::class)->group(function () {
+    Route::get('/profile', function () {
+        return view('staff.detailProfile');
+    })->name('profile');
+});
+
+Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     Route::get('/notifikasi', [NotifikasiController::class, 'index']);
 });
 
 
+// ================= KADIV (auth + role) ================= //
+Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', function () {
+        return view('kadiv.dashboard');
+    })->name('kadiv.dashboard');
 
+    // Manajemen Staff
+    Route::get('/manajemenStaff', function () {
+        return view('kadiv.manajemenStaff');
+    })->name('kadiv.manajemenStaff');
 
-// ================= KADIV ================= //
+    Route::get('/manajemenStaff/{id}', function ($id) {
+        return view('kadiv.detailManajemenStaff', ['id' => $id]);
+    })->name('kadiv.manajemenStaff.show');
 
-// Rute Dashboard
-Route::get('/kadiv/dashboard', function () {
-    return view('kadiv.dashboard');
-})->name('kadiv.dashboard');
+    // Profil
+    Route::get('/profile', function () {
+        return view('kadiv.profile');
+    })->name('kadiv.profile');
 
-// Rute Manajemen Staff
-Route::get('/kadiv/manajemenStaff', function () {
-    return view('kadiv.manajemenStaff');
-})->name('kadiv.manajemenStaff');
+    // Tugas
+    Route::get('/tugas', function () {
+        return view('kadiv.tugas');
+    })->name('kadiv.tugas');
 
-// (Tambahan) Rute Detail Manajemen Staff sesuai file baru di gambar
-Route::get('/kadiv/manajemenStaff/{id}', function ($id) {
-    return view('kadiv.detailManajemenStaff', ['id' => $id]);
-})->name('kadiv.manajemenStaff.show');
+    Route::get('/detailTugas/{id}', function ($id) {
+        return view('kadiv.detailTugas', ['id' => $id]);
+    })->name('kadiv.detailTugas.show');
 
-// Rute Profil
-Route::get('/kadiv/profile', function () {
-    return view('kadiv.profile'); // Disesuaikan ke profile.blade.php
-})->name('kadiv.profile');
+    Route::get('/tugas/{id}', function ($id) {
+        return view('kadiv.detailTugas', compact('id'));
+    });
 
+    Route::post('/tugas', [KadivController::class, 'store'])
+        ->middleware('throttle:submit-form') // + throttle
+        ->name('kadiv.tugas.store');
 
+    Route::post('/tugas/{id}/revisi', function (Request $request, $id) {
+        $request->validate([
+            'isi_revisi' => ['required', 'string', 'max:2000'],
+            'tenggat'    => ['nullable', 'string'],
+        ]);
 
-// ================= TUGAS ================= //
+        $semuaRevisi = session('revisi_tugas', []);
+        $semuaRevisi[] = [
+            'id_tugas' => $id,
+            'isi'      => $request->input('isi_revisi'),
+            'tenggat'  => $request->input('tenggat', ''),
+            'waktu'    => now()->format('d M Y, H.i'),
+        ];
+        session(['revisi_tugas' => $semuaRevisi]);
 
-// Rute Daftar Tugas
-Route::get('/kadiv/tugas', function () {
-    return view('kadiv.tugas'); // Disesuaikan ke tugas.blade.php
-})->name('kadiv.tugas');
+        return redirect()
+            ->route('kadiv.detailTugas.show', $id)
+            ->with('success', 'Revisi berhasil dikirim.');
+    })->middleware('throttle:submit-form')->name('kadiv.revisiTugas'); // + throttle
 
-// Rute Detail Tugas
-Route::get('/kadiv/detailTugas/{id}', function ($id) {
-    return view('kadiv.detailTugas', ['id' => $id]);
-})->name('kadiv.detailTugas.show');
+    // Pesan
+    Route::get('/pesan', function () {
+        return view('kadiv.pesan');
+    })->name('kadiv.pesan');
 
-Route::get('/kadiv/tugas/{id}', function ($id) {
-    return view('kadiv.detailTugas', compact('id'));
+    Route::get('/detailPesan/{id}', function ($id) {
+        return view('kadiv.detailPesan', compact('id'));
+    })->name('kadiv.detailPesan');
 });
-
-// sesuaikan dengan controller kamu
-Route::post('/kadiv/tugas', [KadivController::class, 'store'])->name('kadiv.tugas.store');
-
-// Rute Revisi Tugas
-Route::post('/kadiv/tugas/{id}/revisi', function (Request $request, $id) {
-    $request->validate([
-        'isi_revisi' => ['required', 'string', 'max:2000'],
-        'tenggat'    => ['nullable', 'string'],
-    ]);
-
-    $semuaRevisi = session('revisi_tugas', []);
-    $semuaRevisi[] = [
-        'id_tugas' => $id,
-        'isi'      => $request->input('isi_revisi'),
-        'tenggat'  => $request->input('tenggat', ''),
-        'waktu'    => now()->format('d M Y, H.i'),
-    ];
-    session(['revisi_tugas' => $semuaRevisi]);
-
-    return redirect()
-        ->route('kadiv.detailTugas.show', $id)
-        ->with('success', 'Revisi berhasil dikirim.');
-})->name('kadiv.revisiTugas');
-// ================= PESAN ================= //
-// Rute Daftar Pesan
-Route::get('/kadiv/pesan', function () { // Path diubah dari /kadiv/detailPesan menjadi /kadiv/pesan
-    return view('kadiv.pesan'); // Disesuaikan ke pesan.blade.php
-})->name('kadiv.pesan');
-
-Route::get('/kadiv/detailPesan/{id}', function ($id) {
-    return view('kadiv.detailPesan', compact('id'));
-})->name('kadiv.detailPesan');
-
 
 
 // 1. Route untuk proses form login
 Route::post('/login-proses', function (Request $request) {
-    // Data dummy
     $userDummy = [
         'nama' => 'Samuel Sigalingging',
         'inisial' => 'S',
@@ -147,15 +142,10 @@ Route::post('/login-proses', function (Request $request) {
     session(['user_session' => $userDummy]);
 
     return redirect('/');
-    return redirect('/');
-})->name('login.proses');
+})->middleware('throttle:submit-form')->name('login.proses'); // + throttle
 
 
-// 2. Route untuk halaman profil
-Route::get('/profile', function () {
-    return view('staff.detailProfile');
-});
-
+// 2. Route untuk menyimpan profil
 Route::post('/profile', function (Request $request) {
     $validated = $request->validate([
         'nama' => ['required', 'string', 'max:255'],
@@ -168,46 +158,41 @@ Route::post('/profile', function (Request $request) {
     session(['user_session' => array_merge($pegawai, $validated)]);
 
     return redirect()->route('profile')->with('success', 'Profil berhasil diperbarui.');
-})->name('profile.update');
+})->middleware('throttle:submit-form')->name('profile.update'); // + throttle
 
 
+//route hrd
+Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(function () {
+    Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
 
-//route hrd 
-Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('hrd.dashboard', [
-            'divisis' => Divisi::all(),
-        ]);
-    })->name('hrd.dashboard');
+    Route::get('/profile', function () {
+        return view('hrd.profile');
+    })->name('hrd.profile');
 
-    Route::get('/manajemenDivisi', function () {
-        return view('hrd.manajemenDivisi', [
-            'divisis' => Divisi::all(),
-        ]);
-    })->name('hrd.manajemenDivisi');
+    Route::get('/manajemenDivisi', [HrdDivisiController::class, 'manajemenPage'])->name('hrd.manajemenDivisi');
 
     Route::get('/pesan', [HrdPesanController::class, 'page'])->name('hrd.pesan');
 
     Route::get('/detailPesan/{id_pesan}', [HrdPesanController::class, 'detailPage'])->name('hrd.detailPesan');
-    Route::post('/detailPesan/{id_pesan}/balas', [HrdPesanController::class, 'balas'])->name('hrd.detailPesan.balas');
+    Route::post('/detailPesan/{id_pesan}/balas', [HrdPesanController::class, 'balas'])
+        ->middleware('throttle:submit-form') // + throttle
+        ->name('hrd.detailPesan.balas');
 
     Route::get('/detailDivisi/{id}', [HrdDivisiController::class, 'detailPage'])->name('hrd.detailDivisi');
 
-    Route::get('/detailKaryawan', function () {
-        return view('hrd.detailKaryawan');
-    })->name('hrd.detailKaryawan');
+    Route::get('/detailKaryawan/{id}', [HrdKaryawanController::class, 'detailPage'])->name('hrd.detailKaryawan');
 
-    Route::get('/daftarDivisi', function () {
-        return view('hrd.daftarDivisi');
-    })->name('hrd.daftarDivisi');
+    Route::get('/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage'])
+        ->middleware('throttle:pencarian') // + throttle (ada filter: nama, divisi, jabatan, status)
+        ->name('hrd.daftarKaryawan');
 
-    Route::get('/daftarKaryawan', function () {
-        return view('hrd.daftarKaryawan');
-    })->name('hrd.daftarKaryawan');
+    Route::get('/daftarDivisi', [HrdDivisiController::class, 'listPage'])
+        ->middleware('throttle:pencarian') // + throttle
+        ->name('hrd.daftarDivisi');
 
-    Route::get('/daftarPesan', function () {
-        return redirect()->route('hrd.pesan');
-    })->name('hrd.daftarPesan');
+    Route::get('/daftarPesan', [HrdPesanController::class, 'daftarPage'])
+        ->middleware('throttle:pencarian') // + throttle
+        ->name('hrd.daftarPesan');
 
     Route::get('/divisi-page', function () {
         return view('hrd.divisi', [
@@ -218,15 +203,17 @@ Route::middleware(['auth', 'role:hrd'])->prefix('hrd')->group(function () {
 
     // 2. Route Action/API Divisi (Dipanggil via Fetch JavaScript)
     Route::get('/divisi', [HrdDivisiController::class, 'index']);
-    Route::post('/divisi', [HrdDivisiController::class, 'store']);
+    Route::post('/divisi', [HrdDivisiController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
     Route::get('/divisi/{id}', [HrdDivisiController::class, 'show']);
-    Route::put('/divisi/{id}', [HrdDivisiController::class, 'update']);
-    Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy']);
+    Route::put('/divisi/{id}', [HrdDivisiController::class, 'update'])->middleware('throttle:submit-form'); // + throttle
+    Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
 
-    Route::post('/staff', [HrdStaffController::class, 'store']);
-    Route::put('/staff/{id}', [HrdStaffController::class, 'update']);
-    Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
+    Route::post('/staff', [HrdStaffController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
+    Route::get('/staff', [HrdStaffController::class, 'index']); // Dipakai JS modal pesan HRD (session auth)
+    Route::put('/staff/{id}', [HrdStaffController::class, 'update'])->middleware('throttle:submit-form'); // + throttle
+    Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
+    Route::delete('/karyawan/{id}', [HrdKaryawanDeletionController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
+
+    // Pesan via web session (dipakai JS modal pesan HRD)
+    Route::post('/pesan', [HrdPesanController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
 });
-
-Route::get('/hrd/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage']);
-Route::get('/hrd/daftarDivisi', [HrdDivisiController::class, 'listPage']);

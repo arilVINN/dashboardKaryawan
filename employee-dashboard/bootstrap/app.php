@@ -12,9 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-$middleware->validateCsrfTokens(except: [
-    'staff/pesan/send',
-]);
+        $middleware->trustProxies(at: '*');
+
+        $middleware->validateCsrfTokens(except: [
+            'login',
+            'api/login',
+            'staff/pesan/send',
+        ]);
 
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
@@ -56,6 +60,12 @@ $middleware->validateCsrfTokens(except: [
                     'message' => $message,
                     'data'    => $data,
                 ], $statusCode);
+            }
+            if ($e instanceof \Illuminate\Session\TokenMismatchException) {
+                if ($request->expectsJson() || $request->isXmlHttpRequest()) {
+                    return response()->json(['message' => 'CSRF token mismatch.'], 419);
+                }
+                return redirect()->route('login')->withErrors(['message' => 'Sesi telah kadaluarsa. Silakan login kembali.']);
             }
         });
     })->create();

@@ -14,8 +14,10 @@
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        <main class="flex-1 overflow-y auto p-8 pt-6">
-            @include('component_hrd.tabelDivisi')
+        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Manajemen Divisi'])
+        <main class="flex-1 overflow-y-auto p-8 pt-6">
+            <livewire:hrd.divisi-table manage />
+            @include('component_hrd.divisiModal')
 
         </main>
 

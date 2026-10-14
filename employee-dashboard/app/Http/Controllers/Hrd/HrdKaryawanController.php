@@ -3,24 +3,31 @@
 namespace App\Http\Controllers\Hrd;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Karyawan;
 use App\Models\Divisi;
+use App\Models\Karyawan;
+use App\Models\Tugas;
 
 class HrdKaryawanController extends Controller
 {
-    public function karyawanPage(Request $request)
+    public function karyawanPage()
     {
-        $karyawan = Karyawan::with(['divisi', 'user.role'])
-            ->withCount('tugas')
-            ->when($request->divisi, fn ($q, $d) => $q->where('divisi_id_divisi', $d))
-            ->when($request->q, fn ($q, $kata) => $q->where('nama', 'like', "%{$kata}%"))
-            ->orderBy('nama')
-            ->paginate(6)
-            ->withQueryString();
-
+        // Rows, filters, sorting, and pagination now live in the
+        // App\Livewire\Hrd\KaryawanTable component; the page only supplies
+        // the divisi list for the CRUD modals.
         $daftarDivisi = Divisi::orderBy('nama_divisi')->get();
 
-        return view('hrd.daftarKaryawan', compact('karyawan', 'daftarDivisi'));
+        return view('hrd.daftarKaryawan', compact('daftarDivisi'));
+    }
+
+    public function detailPage(string $id)
+    {
+        $karyawan = Karyawan::with(['divisi', 'user.role', 'tugas'])
+            ->where('id_karyawan', $id)
+            ->firstOrFail();
+
+        $totalTugas = $karyawan->tugas->count();
+        $tugasSelesai = $karyawan->tugas->where('status', Tugas::STATUS_SUDAH_ACC)->count();
+
+        return view('hrd.detailKaryawan', compact('karyawan', 'totalTugas', 'tugasSelesai'));
     }
 }

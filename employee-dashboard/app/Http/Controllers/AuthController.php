@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 use App\Models\User2;
 
 class AuthController extends Controller
@@ -27,14 +28,16 @@ class AuthController extends Controller
 
         if ($user) {
             $passwordInfo = password_get_info($user->password);
-            $passwordMatches = ! empty($user->password) && (
-                $passwordInfo['algo'] !== 0
-                    ? Hash::check($credentials['password'], $user->password)
-                    : hash_equals($user->password, $credentials['password'])
-            );
 
-            if ($passwordMatches && $passwordInfo['algo'] === 0) {
-                $user->forceFill(['password' => Hash::make($credentials['password'])])->save();
+            // Only real password hashes may authenticate. Plaintext (or any
+            // non-hashed) values are treated as invalid: never compared with
+            // hash_equals and never silently auto-upgraded, so a legacy or
+            // leaked plaintext column cannot be used to log in.
+            $storedIsHashed = ! empty($user->password)
+                && ! in_array($passwordInfo['algo'], [null, 0], true);
+
+            if ($storedIsHashed) {
+                $passwordMatches = Hash::check($credentials['password'], $user->password);
             }
         }
 
@@ -45,12 +48,14 @@ class AuthController extends Controller
             return back()->withErrors(['username' => 'Username atau password salah']);
         }
 
-        $user->update(['last_login_at' => now()]);
+        try {
+            $user->update(['last_login_at' => now()]);
+        } catch (QueryException $exception) {
+            report($exception);
+        }
 
-        $isApiRequest = $request->is('api/*');
-
-        if (! $isApiRequest) {
-            Auth::login($user);
+        Auth::login($user);
+        if ($request->hasSession()) {
             $request->session()->regenerate();
         }
 
@@ -88,6 +93,8 @@ class AuthController extends Controller
             return response()->json(['message' => 'Logout berhasil']);
         }
 
+
+        
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

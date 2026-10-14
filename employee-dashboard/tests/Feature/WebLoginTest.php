@@ -13,6 +13,35 @@ class WebLoginTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_hrd_profile_uses_the_hrd_sidebar_and_profile_api(): void
+    {
+        $this->withoutVite();
+
+        Role::create(['id_role' => 'ROLE-HRD', 'nama_role' => 'hrd']);
+        DB::table('divisis')->insert([
+            'id_divisi' => 'DIV-HR', 'kode_divisi' => 'HR', 'nama_divisi' => 'Human Resources',
+            'status_aktif' => 'aktif', 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('karyawans')->insert([
+            'id_karyawan' => 'EMP-HRD', 'nama' => 'HRD User', 'jenis_kelamin' => 'Laki-laki',
+            'email' => 'hrd@example.test', 'jabatan' => 'HRD', 'divisi_id_divisi' => 'DIV-HR',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $user = User2::create([
+            'id_user' => 'USR-HRD', 'username' => 'hrduser', 'password' => Hash::make('pass123'),
+            'role_id_role' => 'ROLE-HRD', 'karyawan_id_karyawan' => 'EMP-HRD',
+        ]);
+
+        $this->actingAs($user)->get('/hrd/profile')
+            ->assertOk()
+            ->assertViewIs('hrd.profile')
+            ->assertSee('Profil Saya')
+            ->assertSee('Manajemen Divisi')
+            ->assertSee('href="' . route('hrd.profile') . '"', false)
+            ->assertSee('/api/hrd/profile', false)
+            ->assertDontSee('Guest');
+    }
+
     public function test_hrd_can_log_in_from_the_web_form_and_open_the_hrd_dashboard(): void
     {
         $this->withoutVite();
@@ -59,6 +88,8 @@ class WebLoginTest extends TestCase
         $this->get('/hrd/dashboard')
             ->assertRedirect('/login');
 
+        config(['session.driver' => 'database']);
+
         $this->postJson('/login', [
             'username' => 'hrduser',
             'password' => 'pass123',
@@ -67,10 +98,21 @@ class WebLoginTest extends TestCase
             ->assertJsonPath('role', 'hrd')
             ->assertJsonStructure(['access_token']);
 
+        $this->assertTrue(
+            DB::table('sessions')->where('user_id', 'USR-HRD')->exists()
+        );
+
         $this->assertAuthenticatedAs($user, 'web');
 
         $this->get('/hrd/dashboard')
             ->assertOk()
-            ->assertViewIs('hrd.dashboard');
+            ->assertViewIs('hrd.dashboard')
+            ->assertSee('href="' . route('hrd.profile') . '"', false);
+
+        $this->get('/hrd/profile')
+            ->assertOk()
+            ->assertViewIs('hrd.profile')
+            ->assertSee('Manajemen Divisi')
+            ->assertSee('/api/hrd/profile', false);
     }
 }

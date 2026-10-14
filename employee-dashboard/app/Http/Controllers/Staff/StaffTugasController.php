@@ -6,16 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Tugas;
 use App\Models\SubmitTugas;
-use Illuminate\Support\Str;
+use App\Queries\StaffTugasQuery;
 
 class StaffTugasController extends Controller
 {
     // GET /staff/tugas
     public function index(Request $request)
     {
-        $karyawanId = $request->user()->karyawan_id_karyawan;
-
-        $tugas = Tugas::where('karyawan_id_karyawan', $karyawanId)->get();
+        $tugas = StaffTugasQuery::forStaff($request->user())
+            ->apply($request->only(['sort', 'dir', 'status', 'q']))
+            ->get();
 
         return response()->json([
             'message' => 'Daftar tugas Anda',
@@ -59,9 +59,9 @@ class StaffTugasController extends Controller
             return response()->json(['message' => 'Tugas ini sudah di-ACC dan tidak bisa dikirim ulang'], 403);
         }
         $validated = $request->validate([
-            'file_hasil' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip', // max 200 MB (dalam kilobyte)
+            'file_hasil' => 'required_without:catatan_karyawan|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip', // max 200 MB (dalam kilobyte)
             'link_submit' => 'nullable|url|max:2048',
-            'catatan_karyawan' => 'nullable|string',
+            'catatan_karyawan' => 'required_without:file_hasil|string',
             'progress' => 'sometimes|integer|min:0|max:100'
         ]);
         $progress = $validated['progress'] ?? $tugas->progress;
