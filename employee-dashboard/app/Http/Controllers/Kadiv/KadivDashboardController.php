@@ -49,7 +49,7 @@ class KadivDashboardController extends Controller
             ->selesaiTerlambat()
             ->count();
         $telat = (clone $divisionTasks)
-            ->statusEfektif(Tugas::STATUS_TELAT)
+            ->statusEfektif(Tugas::STATUS_TERLAMBAT)
             ->count();
 
         $staff = KadivStaffQuery::forDivision($divisionId)

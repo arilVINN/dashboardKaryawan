@@ -10,7 +10,7 @@ class Tugas extends Model
     /**
      * Status tugas sesuai hasil revisi UI/UX (5 status).
      * Status yang dapat disimpan berada di kolom `status`;
-     * `telat` tidak pernah disimpan — dihitung dari deadline
+     * `terlambat` tidak pernah disimpan — dihitung dari deadline
      * untuk tugas yang belum selesai.
      */
     public const STATUS_BARU = 'baru';
@@ -21,7 +21,7 @@ class Tugas extends Model
 
     public const STATUS_SUDAH_ACC = 'sudah di-acc';
 
-    public const STATUS_TELAT = 'telat';
+    public const STATUS_TERLAMBAT = 'terlambat';
 
     /** Status yang dapat disimpan ke database. */
     public const STATUSES = [
@@ -37,12 +37,12 @@ class Tugas extends Model
         self::STATUS_BERJALAN,
         self::STATUS_MENUNGGU_ACC,
         self::STATUS_SUDAH_ACC,
-        self::STATUS_TELAT,
+        self::STATUS_TERLAMBAT,
     ];
 
     protected $table = 'tugas';
 
-    /** Selalu sertakan status efektif (termasuk turunan "telat") di tiap respons. */
+    /** Selalu sertakan status efektif (termasuk turunan "terlambat") di tiap respons. */
     protected $appends = ['status_efektif', 'is_terlambat'];
 
     protected $primaryKey = 'id_tugas';
@@ -76,7 +76,7 @@ class Tugas extends Model
      * For completed work, lateness is based on when it was submitted, even after approval.
      * For unfinished work, lateness is based on the current time and deadline.
      */
-    public function isTelat(): bool
+    public function isTerlambat(): bool
     {
         if (empty($this->deadline)) {
             return false;
@@ -96,30 +96,30 @@ class Tugas extends Model
     }
 
     /**
-     * Status yang ditampilkan: "telat" bila deadline lewat, selain itu status tersimpan.
+     * Status yang ditampilkan: "terlambat" bila deadline lewat, selain itu status tersimpan.
      */
     public function getStatusEfektifAttribute(): string
     {
-        return $this->isTelat() && ! in_array($this->status, [
+        return $this->isTerlambat() && ! in_array($this->status, [
             self::STATUS_MENUNGGU_ACC,
             self::STATUS_SUDAH_ACC,
         ], true)
-            ? self::STATUS_TELAT
+            ? self::STATUS_TERLAMBAT
             : $this->status;
     }
 
     public function getIsTerlambatAttribute(): bool
     {
-        return $this->isTelat();
+        return $this->isTerlambat();
     }
 
     /**
-     * Scope: tugas dengan status efektif tertentu (termasuk turunan "telat").
+     * Scope: tugas dengan status efektif tertentu (termasuk turunan "terlambat").
      * Dipakai dashboard untuk menghitung per bucket status.
      */
     public function scopeStatusEfektif($query, string $status)
     {
-        if ($status === self::STATUS_TELAT) {
+        if ($status === self::STATUS_TERLAMBAT) {
             return $query->where(function ($lateTasks): void {
                 $lateTasks->where(function ($unfinished): void {
                     $unfinished->whereNotNull('deadline')
@@ -137,17 +137,17 @@ class Tugas extends Model
             });
         }
 
-        // "sudah di-acc" tidak pernah telat, jadi tanpa syarat deadline.
+        // "sudah di-acc" tidak pernah terlambat, jadi tanpa syarat deadline.
         if ($status === self::STATUS_SUDAH_ACC) {
             return $query->where('status', $status);
         }
 
-        //kalo status nungggu acc, lewat dl tidak dianggap telat
+        //kalo status nungggu acc, lewat dl tidak dianggap terlambat
         if ($status === self::STATUS_MENUNGGU_ACC) {
             return $query->where('status', $status);
         }
 
-        // Bucket non-telat lainnya: status tersimpan + tidak sedang telat.
+        // Bucket non-terlambat lainnya: status tersimpan + tidak sedang terlambat.
         return $query->where('status', $status)
             ->where(function ($q): void {
                 $q->whereNull('deadline')->orWhere('deadline', '>=', now());

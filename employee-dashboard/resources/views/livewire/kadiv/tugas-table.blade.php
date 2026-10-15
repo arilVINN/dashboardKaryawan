@@ -34,7 +34,7 @@
                 <option value="berjalan">Berjalan</option>
                 <option value="menunggu di-acc">Menunggu di-acc</option>
                 <option value="sudah di-acc">Sudah di-acc</option>
-                <option value="telat">Telat</option>
+                <option value="terlambat">Terlambat</option>
             </select>
         </div>
         <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
@@ -88,7 +88,7 @@
                                         <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Terlambat</span>
                                     @else
                                         <span class="px-2.5 py-1 rounded-full text-xs font-bold
-                                            {{ $status === 'sudah di-acc' ? 'bg-green-100 text-green-700' : ($status === 'menunggu di-acc' ? 'bg-amber-100 text-amber-700' : ($status === 'telat' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700')) }}">
+                                            {{ $status === 'sudah di-acc' ? 'bg-green-100 text-green-700' : ($status === 'menunggu di-acc' ? 'bg-amber-100 text-amber-700' : ($status === \App\Models\Tugas::STATUS_TERLAMBAT ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700')) }}">
                                             {{ $status }}
                                         </span>
                                     @endif
@@ -191,4 +191,3 @@
     });
 </script>
 </div>
-
