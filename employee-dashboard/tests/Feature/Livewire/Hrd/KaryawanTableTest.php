@@ -141,7 +141,7 @@ class KaryawanTableTest extends TestCase
         $this->assertSame(['KRY-B'], $this->rowIds($component));
     }
 
-    public function test_paginates_ten_per_page(): void
+    public function test_paginates_five_per_page(): void
     {
         $this->makeKaryawan('KRY-E', 'Eko Saputra', 'DIV-IT', 'Engineer');
         $this->makeKaryawan('KRY-F', 'Fajar Nugroho', 'DIV-IT', 'Engineer');
@@ -152,10 +152,17 @@ class KaryawanTableTest extends TestCase
         $this->makeKaryawan('KRY-K', 'Kartika Sari', 'DIV-IT', 'Engineer');
 
         $pageOne = Livewire::actingAs($this->hrd)->test(KaryawanTable::class);
-        $this->assertSame(['KRY-A', 'KRY-B', 'KRY-C', 'KRY-D', 'KRY-E', 'KRY-F', 'KRY-G', 'KRY-HRD', 'KRY-H', 'KRY-I'], $this->rowIds($pageOne));
+        $this->assertSame(['KRY-A', 'KRY-B', 'KRY-C', 'KRY-D', 'KRY-E'], $this->rowIds($pageOne));
+        $pageOne->assertSee("wire:click=\"gotoPage(2, 'page')\"", false);
+        $pageOne->assertSee("wire:click=\"nextPage('page')\"", false);
 
         $pageTwo = Livewire::actingAs($this->hrd)->test(KaryawanTable::class)->call('gotoPage', 2);
-        $this->assertSame(['KRY-J', 'KRY-K'], $this->rowIds($pageTwo));
+        $this->assertSame(['KRY-F', 'KRY-G', 'KRY-HRD', 'KRY-H', 'KRY-I'], $this->rowIds($pageTwo));
+        $pageTwo->assertSee("wire:click=\"previousPage('page')\"", false);
+        $pageTwo->assertSee("wire:click=\"gotoPage(3, 'page')\"", false);
+
+        $pageThree = Livewire::actingAs($this->hrd)->test(KaryawanTable::class)->call('gotoPage', 3);
+        $this->assertSame(['KRY-J', 'KRY-K'], $this->rowIds($pageThree));
     }
 
     public function test_rows_keep_crud_hooks_for_the_existing_js(): void

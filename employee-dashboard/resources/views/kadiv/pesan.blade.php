@@ -10,10 +10,8 @@
 
 <body class="bg-white flex h-screen overflow-hidden">
 
-    {{-- SIDEBAR --}}
     @include('component_kadiv.sidebar')
-    
-    {{-- AREA KANAN --}}
+
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         {{-- TOPBAR --}}
