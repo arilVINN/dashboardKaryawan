@@ -95,7 +95,7 @@ class KadivMessageController extends Controller
 
         $validated = $request->validate([
             'deskripsi' => ['required', 'string', 'max:10000'],
-            'file_lampiran' => ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
+            'file_lampiran' => ['nullable', 'file', 'max:204800', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
         ]);
 
         $message = Pesan::query()

@@ -72,7 +72,7 @@
                         <label class="block text-sm font-semibold text-slate-900 mb-1.5">Lampiran (opsional)</label>
                         <input type="file" name="file_lampiran" id="lampiranBalas"
                             class="block w-full text-sm text-slate-600 border border-slate-300 rounded-lg cursor-pointer file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-slate-200 file:text-slate-700 file:font-medium hover:file:bg-slate-300">
-                        <p class="mt-1 text-xs text-slate-400">Maks 20 MB</p>
+                        <p class="mt-1 text-xs text-slate-400">Maks 200 MB</p>
                     </div>
 
                     <div class="flex items-center gap-4 pt-1">
@@ -213,8 +213,8 @@
 
         document.getElementById('lampiranBalas').addEventListener('change', function() {
             const file = this.files[0];
-            if (file && file.size > 20 * 1024 * 1024) {
-                alert('Ukuran file maksimal 20 MB');
+            if (file && file.size > 200 * 1024 * 1024) {
+                alert('Ukuran file maksimal 200 MB');
                 this.value = '';
             }
         });
@@ -239,8 +239,8 @@
         formPesan.addEventListener('submit', async function(event) {
             event.preventDefault();
             const file = document.getElementById('lampiranBalas').files[0];
-            if (file && file.size > 20 * 1024 * 1024) {
-                alert('Ukuran file maksimal 20 MB');
+            if (file && file.size > 200 * 1024 * 1024) {
+                alert('Ukuran file maksimal 200 MB');
                 return;
             }
             const payload = new FormData(this);

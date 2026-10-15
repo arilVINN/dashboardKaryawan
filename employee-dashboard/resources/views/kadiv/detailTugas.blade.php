@@ -570,8 +570,8 @@
 
             document.getElementById('fileRevisi').addEventListener('change', function () {
                 const file = this.files[0];
-                if (file && file.size > 20 * 1024 * 1024) {
-                    alert('Ukuran file maksimal 20 MB.');
+                if (file && file.size > 200 * 1024 * 1024) {
+                    alert('Ukuran file maksimal 200 MB.');
                     this.value = '';
                     document.getElementById('namaFileRevisi').textContent = 'No file chosen';
                     return;

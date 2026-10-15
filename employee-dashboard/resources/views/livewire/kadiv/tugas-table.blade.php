@@ -84,11 +84,19 @@
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="inline-flex gap-1">
                                     @if ($task->is_terlambat && in_array($task->status, [\App\Models\Tugas::STATUS_MENUNGGU_ACC, \App\Models\Tugas::STATUS_SUDAH_ACC], true))
-                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold {{ $task->status === \App\Models\Tugas::STATUS_SUDAH_ACC ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700' }}">{{ $task->status }}</span>
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold {{ $task->status === \App\Models\Tugas::STATUS_SUDAH_ACC ? 'bg-[#CCF4DB] text-emerald-700' : 'bg-amber-100 text-amber-700' }}">{{ $task->status }}</span>
                                         <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Terlambat</span>
                                     @else
-                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold
-                                            {{ $status === 'sudah di-acc' ? 'bg-green-100 text-green-700' : ($status === 'menunggu di-acc' ? 'bg-amber-100 text-amber-700' : ($status === \App\Models\Tugas::STATUS_TERLAMBAT ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700')) }}">
+                                        @php
+                                            $badgeBg = match($status) {
+                                                'berjalan' => 'bg-emerald-100 text-emerald-700',
+                                                'menunggu di-acc' => 'bg-amber-100 text-amber-700',
+                                                'sudah di-acc' => 'bg-[#CCF4DB] text-emerald-700',
+                                                \App\Models\Tugas::STATUS_TERLAMBAT => 'bg-red-100 text-red-700',
+                                                default => 'bg-[#C0E7FF] text-blue-700', // baru
+                                            };
+                                        @endphp
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold {{ $badgeBg }}">
                                             {{ $status }}
                                         </span>
                                     @endif
@@ -161,7 +169,7 @@
             <div class="bg-[#F1F5F9] rounded-lg p-4">
                 <label for="fileTugas" class="flex flex-col items-center justify-center text-center gap-1 h-[110px] rounded-lg border-2 border-dashed border-[#CBD5E1] bg-white cursor-pointer hover:border-[#19A7CE] transition">
                     <span class="text-sm font-bold text-[#283044] px-3 truncate max-w-full">{{ $attachment ? $attachment->getClientOriginalName() : 'Pilih File' }}</span>
-                    <span class="text-xs text-[#94A3B8]">Maks 20 MB</span>
+                    <span class="text-xs text-[#94A3B8]">Maks 200 MB</span>
                 </label>
                 <input id="fileTugas" type="file" wire:model="attachment" class="hidden">
                 @error('attachment') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
