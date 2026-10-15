@@ -52,7 +52,7 @@ class DashboardController extends Controller
             ->count();
 
         $tugasTelat = (clone $tugasQuery)
-            ->statusEfektif(Tugas::STATUS_TELAT)
+            ->statusEfektif(Tugas::STATUS_TERLAMBAT)
             ->count();
 
         $completionPercentage = $totalTugas > 0

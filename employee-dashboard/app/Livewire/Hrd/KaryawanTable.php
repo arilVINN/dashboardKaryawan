@@ -113,7 +113,7 @@ class KaryawanTable extends Component
             'q' => $this->search,
             'sort' => $this->sort,
             'dir' => $this->dir,
-        ])->paginate(10);
+        ])->paginate(5);
 
         $daftarDivisi = Divisi::orderBy('nama_divisi')->get();
         $daftarJabatan = Karyawan::query()

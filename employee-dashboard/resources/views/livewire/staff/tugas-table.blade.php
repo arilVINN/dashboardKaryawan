@@ -6,7 +6,7 @@
         'berjalan' => 'bg-[#DFE4EA] text-slate-700',
         'menunggu di-acc' => 'bg-[#FFF7ED] text-[#C2410C]',
         'sudah di-acc' => 'bg-[#CCF4DB] text-emerald-700',
-        'telat' => 'bg-red-100 text-red-700',
+        'terlambat' => 'bg-red-100 text-red-700',
     ];
 @endphp
 
@@ -26,7 +26,7 @@
                 <option value="berjalan">Berjalan</option>
                 <option value="menunggu di-acc">Menunggu di-acc</option>
                 <option value="sudah di-acc">Sudah di-acc</option>
-                <option value="telat">Telat</option>
+                <option value="terlambat">Terlambat</option>
             </select>
         </div>
         <div class="flex shrink-0 gap-2 sm:ml-auto">

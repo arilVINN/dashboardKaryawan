@@ -41,9 +41,6 @@ class Karyawan extends Model
         'Kepala Divisi',
         'Wakil Kepala Divisi',
         'Staff',
-        'Manager',
-        'Content Writer',
-        'Frontend',
     ];
 
     public const STATUS_OPTIONS = [
