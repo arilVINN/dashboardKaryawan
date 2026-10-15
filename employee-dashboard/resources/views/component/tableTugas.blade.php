@@ -25,7 +25,7 @@
                     <option value="berjalan">Berjalan</option>
                     <option value="menunggu di-acc">Menunggu di-acc</option>
                     <option value="sudah di-acc">Sudah di-acc</option>
-                    <option value="telat">Telat</option>
+                    <option value="terlambat">Telat / Terlambat</option>
                 </select>
             </div>
             <div class="flex shrink-0 gap-2 sm:ml-auto">
@@ -86,13 +86,16 @@
     let staffTugasDir = 'asc';
 
     const STATUS_CLASS = {
-        'baru':         'bg-[#C0E7FF] text-blue-700',
-        'berjalan':     'bg-[#DFE4EA] text-black-700',
-        'menunggu acc': 'bg-[#FFF7ED] text-[#C2410C]',
-        'menunggu_acc': 'bg-[#FFF7ED] text-[#C2410C]',
-        'sudah acc':    'bg-[#CCF4DB] text-emerald-700',
-        'sudah_acc':    'bg-[#CCF4DB] text-emerald-700',
-        'telat':        'bg-red-100 text-red-700',
+        'baru':            'bg-[#C0E7FF] text-blue-700',
+        'berjalan':        'bg-emerald-100 text-emerald-700',
+        'menunggu acc':    'bg-amber-100 text-amber-700',
+        'menunggu_acc':    'bg-amber-100 text-amber-700',
+        'menunggu di-acc': 'bg-amber-100 text-amber-700',
+        'sudah acc':       'bg-[#CCF4DB] text-emerald-700',
+        'sudah_acc':       'bg-[#CCF4DB] text-emerald-700',
+        'sudah di-acc':    'bg-[#CCF4DB] text-emerald-700',
+        'telat':           'bg-red-100 text-red-700',
+        'terlambat':       'bg-red-100 text-red-700',
     };
 
     function ucwords(str) {
@@ -137,8 +140,8 @@
             }
 
             tugas.forEach(t => {
-                const statusRaw = (t.status || 'baru').toLowerCase();
-                const sc = STATUS_CLASS[statusRaw] || 'bg-slate-100 text-slate-700';
+                const effectiveStatus = (t.status_efektif || t.status || 'baru').toLowerCase();
+                const sc = STATUS_CLASS[effectiveStatus] || 'bg-slate-100 text-slate-700';
 
                 let deadline = '-';
                 if (t.deadline) {
@@ -156,7 +159,7 @@
                         </td>
                         <td class="{{ $cellPadding }} whitespace-nowrap">
                             <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${sc}">
-                                ${ucwords(t.status)}
+                                ${ucwords(effectiveStatus)}
                             </span>
                         </td>
                         <td class="{{ $cellPadding }} whitespace-nowrap text-center">
