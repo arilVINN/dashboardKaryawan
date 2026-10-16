@@ -71,25 +71,27 @@
 </aside>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const sidebar = document.getElementById('sidebar');
-        const btnToggle = document.getElementById('btn-sidebar-toggle');
-        const texts = document.querySelectorAll('.sidebar-text');
+(function () {
+    const sidebar = document.getElementById('sidebar');
+    const btnToggle = document.getElementById('btn-sidebar-toggle');
+    const texts = document.querySelectorAll('.sidebar-text');
+    const sidebarStorageKey = 'sidebar-collapsed';
 
-        if (btnToggle && sidebar) {
-            btnToggle.addEventListener('click', function() {
-                if (sidebar.classList.contains('w-64')) {
-                    sidebar.classList.remove('w-64');
-                    sidebar.classList.add('w-20');
-                    texts.forEach(el => el.classList.add('hidden'));
-                } else {
-                    sidebar.classList.remove('w-20');
-                    sidebar.classList.add('w-64');
-                    texts.forEach(el => el.classList.remove('hidden'));
-                }
-            });
-        }
+    function setSidebarCollapsed(collapsed) {
+        sidebar.classList.toggle('w-64', !collapsed);
+        sidebar.classList.toggle('w-20', collapsed);
+        texts.forEach(el => el.classList.toggle('hidden', collapsed));
+    }
 
-    });
+    if (btnToggle && sidebar) {
+        setSidebarCollapsed(localStorage.getItem(sidebarStorageKey) === 'true');
+
+        btnToggle.addEventListener('click', function() {
+            const collapsed = !sidebar.classList.contains('w-20');
+            setSidebarCollapsed(collapsed);
+            localStorage.setItem(sidebarStorageKey, String(collapsed));
+        });
+    }
+})();
 </script>
 @endif

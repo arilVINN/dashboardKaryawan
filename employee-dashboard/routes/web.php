@@ -37,8 +37,10 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
         return view('staff.pesan');
     })->name('pesan');
 
-    Route::get('/pesan/detail/{id?}', function () {
-        return view('staff.detailPesan');
+    Route::get('/pesan/detail/{id?}', function ($id = null) {
+        $user = auth()->user();
+        $token = $user ? $user->createToken('web_token')->plainTextToken : null;
+        return view('staff.detailPesan', ['id' => $id, 'token' => $token]);
     })->name('pesan.detail');
 
     Route::get('/tugas/detail/{id?}', function () {
@@ -121,7 +123,9 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     })->name('kadiv.pesan');
 
     Route::get('/detailPesan/{id}', function ($id) {
-        return view('kadiv.detailPesan', compact('id'));
+        $user = auth()->user();
+        $token = $user ? $user->createToken('web_token')->plainTextToken : null;
+        return view('kadiv.detailPesan', ['id' => $id, 'token' => $token]);
     })->name('kadiv.detailPesan');
 });
 
