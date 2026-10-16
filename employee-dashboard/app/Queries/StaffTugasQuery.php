@@ -28,6 +28,9 @@ class StaffTugasQuery
         }
 
         $status = $filters['status'] ?? null;
+        if ($status === 'telat') {
+            $status = Tugas::STATUS_TERLAMBAT;
+        }
         if (in_array($status, Tugas::ALL_STATUSES, true)) {
             $query->statusEfektif($status);
         }

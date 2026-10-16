@@ -70,7 +70,7 @@ class KadivTaskController extends Controller
             'deskripsi' => 'required|string',
             'deadline' => ['required', 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s,Y-m-d H:i:s'],
             // File atau link pendukung (opsional)
-            'file_pendukung' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png', // 20 MB max
+            'file_pendukung' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png', // 200 MB max
             'link_pendukung' => 'nullable|url|max:2048',
         ]);
 
@@ -136,7 +136,7 @@ class KadivTaskController extends Controller
             'deskripsi' => 'sometimes|required|string',
             'deadline' => ['sometimes', 'required', 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s,Y-m-d H:i:s'],
             'karyawan_id_karyawan' => 'sometimes|required|exists:karyawans,id_karyawan',
-            'file_pendukung' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
+            'file_pendukung' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
             'link_pendukung' => 'nullable|url|max:2048'
         ]);
 
@@ -224,7 +224,7 @@ class KadivTaskController extends Controller
             'status_review' => 'required|in:acc,revisi',
             'catatan_revisi' => 'required_if:status_review,revisi|nullable|string|max:10000',
             'deadline' => ['required_if:status_review,revisi', 'nullable', 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s,Y-m-d H:i:s'],
-            'file_revisi' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip',
+            'file_revisi' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip',
         ]);
 
         $latestSubmit = $tugas->submitTugas->first();

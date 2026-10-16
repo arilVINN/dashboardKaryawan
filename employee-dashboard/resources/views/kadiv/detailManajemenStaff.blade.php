@@ -106,7 +106,20 @@
                 const approval = document.createElement('td');
                 approval.className = 'px-6 py-4 text-center';
                 const badge = document.createElement('span');
-                badge.className = 'inline-block px-3 py-1 rounded-full text-xs font-semibold ' + (status === 'sudah di acc' ? 'bg-[#DCFCE7] text-[#15803D]' : (status === 'menunggu di acc' ? 'bg-[#FEF3C7] text-[#B45309]' : 'bg-slate-100 text-slate-600'));
+                const st = (task.status_efektif || task.status || '').toLowerCase().trim();
+                let badgeClass = 'bg-slate-100 text-slate-700';
+                if (st === 'baru') {
+                    badgeClass = 'bg-[#C0E7FF] text-blue-700';
+                } else if (st === 'berjalan') {
+                    badgeClass = 'bg-emerald-100 text-emerald-700';
+                } else if (st === 'menunggu di-acc' || st === 'menunggu acc' || st === 'menunggu di acc') {
+                    badgeClass = 'bg-amber-100 text-amber-700';
+                } else if (st === 'sudah di-acc' || st === 'sudah acc' || st === 'sudah di acc') {
+                    badgeClass = 'bg-[#CCF4DB] text-emerald-700';
+                } else if (st === 'terlambat' || st === 'telat') {
+                    badgeClass = 'bg-red-100 text-red-700';
+                }
+                badge.className = 'inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize ' + badgeClass;
                 badge.textContent = status;
                 approval.appendChild(badge);
                 row.appendChild(approval);

@@ -102,7 +102,7 @@ class TugasTable extends Component
             'deskripsi'  => 'required|string',
             'tenggat'    => 'required|date',
             'recipient'  => 'required|string',
-            'attachment' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
+            'attachment' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
         ]);
 
         $staffIds = Karyawan::where('divisi_id_divisi', $divisionId)

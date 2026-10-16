@@ -49,7 +49,7 @@ class KadivController extends Controller
     {
         $request->validate([
             'isi_balasan' => 'required|string',
-            'lampiran'    => 'nullable|file|max:20480',
+            'lampiran'    => 'nullable|file|max:204800',
         ]);
 
         $balasan = session('balasan_pesan', []);

@@ -97,15 +97,25 @@ class Tugas extends Model
 
     /**
      * Status yang ditampilkan: "terlambat" bila deadline lewat, selain itu status tersimpan.
+     * Jika status masih "baru" tetapi sudah lebih dari 1 hari sejak dibuat, otomatis dianggap "berjalan".
      */
     public function getStatusEfektifAttribute(): string
     {
-        return $this->isTerlambat() && ! in_array($this->status, [
+        if ($this->isTerlambat() && ! in_array($this->status, [
             self::STATUS_MENUNGGU_ACC,
             self::STATUS_SUDAH_ACC,
-        ], true)
-            ? self::STATUS_TERLAMBAT
-            : $this->status;
+        ], true)) {
+            return self::STATUS_TERLAMBAT;
+        }
+
+        if ($this->status === self::STATUS_BARU && $this->tanggal_dibuat) {
+            $created = \Illuminate\Support\Carbon::parse($this->tanggal_dibuat);
+            if ($created->diffInDays(now()) >= 1) {
+                return self::STATUS_BERJALAN;
+            }
+        }
+
+        return $this->status;
     }
 
     public function getIsTerlambatAttribute(): bool
@@ -147,7 +157,34 @@ class Tugas extends Model
             return $query->where('status', $status);
         }
 
-        // Bucket non-terlambat lainnya: status tersimpan + tidak sedang terlambat.
+        // Bucket non-terlambat:
+        if ($status === self::STATUS_BARU) {
+            return $query->where('status', self::STATUS_BARU)
+                ->where(function ($q): void {
+                    $q->whereNull('deadline')->orWhere('deadline', '>=', now());
+                })
+                ->where(function ($q): void {
+                    $q->whereNull('tanggal_dibuat')->orWhere('tanggal_dibuat', '>=', now()->subDay()->toDateString());
+                });
+        }
+
+        if ($status === self::STATUS_BERJALAN) {
+            return $query->where(function ($q): void {
+                $q->where(function ($sub): void {
+                    $sub->where('status', self::STATUS_BERJALAN)
+                        ->where(function ($dead): void {
+                            $dead->whereNull('deadline')->orWhere('deadline', '>=', now());
+                        });
+                })->orWhere(function ($sub): void {
+                    $sub->where('status', self::STATUS_BARU)
+                        ->where('tanggal_dibuat', '<', now()->subDay()->toDateString())
+                        ->where(function ($dead): void {
+                            $dead->whereNull('deadline')->orWhere('deadline', '>=', now());
+                        });
+                });
+            });
+        }
+
         return $query->where('status', $status)
             ->where(function ($q): void {
                 $q->whereNull('deadline')->orWhere('deadline', '>=', now());

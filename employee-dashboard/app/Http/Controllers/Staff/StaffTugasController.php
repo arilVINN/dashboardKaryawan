@@ -36,6 +36,14 @@ class StaffTugasController extends Controller
             return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
         }
 
+        // Jika status masih 'baru', ubah menjadi 'berjalan' ketika staff melihat tugas
+        if ($tugas->status === Tugas::STATUS_BARU) {
+            $tugas->update([
+                'status' => Tugas::STATUS_BERJALAN,
+                'tanggal_update' => now(),
+            ]);
+        }
+
         return response()->json([
             'message' => 'Detail tugas',
             'data' => $tugas

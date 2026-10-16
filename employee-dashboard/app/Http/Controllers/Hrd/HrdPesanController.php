@@ -106,7 +106,7 @@ class HrdPesanController extends Controller
             'judul_pesan' => 'required|string|max:200',
             'deskripsi' => 'required|string',
             'tipe' => 'required|in:pesan,surat',
-            'file_lampiran' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
+            'file_lampiran' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
             'link_lampiran' => 'nullable|url|max:2048'
         ]);
 
@@ -210,7 +210,7 @@ class HrdPesanController extends Controller
         $user = $request->user();
         $validated = $request->validate([
             'deskripsi' => ['required', 'string', 'max:10000'],
-            'file_lampiran' => ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
+            'file_lampiran' => ['nullable', 'file', 'max:204800', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
         ]);
 
         $message = Pesan::with(['pengirim', 'penerima', 'balasanDari', 'tugas'])
