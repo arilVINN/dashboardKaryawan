@@ -12,7 +12,7 @@
 <div>
     <div class="flex flex-col gap-3 w-full mt-2">
         <div class="flex justify-between items-center">
-            <h2 class="text-xl font-bold text-slate-800">Monitor Tugas</h2>
+            <h2 class="text-xl font-bold text-slate-800">Daftar Tugas</h2>
         </div>
 
         <div class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5">

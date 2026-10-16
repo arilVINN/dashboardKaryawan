@@ -133,10 +133,12 @@ class DireksiAccessTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        // Same list-page design as the other tables: a row-level h2 heading,
-        // with no bespoke page-level h1, read-only chrome or create button.
-        $this->assertStringContainsString('<h2 class="text-xl font-bold text-slate-800">Monitor Tugas</h2>', $html);
-        $this->assertStringNotContainsString('<h1 class="text-2xl', $html);
+        // Two-level heading like the other list pages: page-level h1 with an
+        // icon badge names the page, the row-level h2 names the table.
+        $this->assertStringContainsString('<span>Monitor Tugas</span>', $html);
+        $this->assertStringContainsString('<span class="p-2 rounded-lg bg-blue-100 text-blue-600">', $html);
+        $this->assertStringContainsString('<h2 class="text-xl font-bold text-slate-800">Daftar Tugas</h2>', $html);
+        $this->assertStringContainsString('<body class="bg-gray-100', $html);
         $this->assertStringNotContainsString('Read-only', $html);
         $this->assertStringNotContainsString('Tambah Tugas', $html);
     }
