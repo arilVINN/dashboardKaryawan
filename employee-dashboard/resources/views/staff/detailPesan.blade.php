@@ -77,7 +77,22 @@
     </div>
 
     <script>
-        const pesanId = window.location.pathname.split('/').filter(Boolean).pop();
+    (function () {
+        const pesanId = @json($id ?? null) || window.location.pathname.split('/').filter(Boolean).pop();
+        const serverToken = @json($token ?? null);
+        let token = serverToken || sessionStorage.getItem('staff_token') || localStorage.getItem('staff_token');
+
+        if (serverToken) {
+            sessionStorage.setItem('staff_token', serverToken);
+            localStorage.setItem('staff_token', serverToken);
+        }
+
+        const btnToggleBalas = document.getElementById('btn-toggle-balas');
+        const formBalasan = document.getElementById('form-balasan');
+        const btnBatal = document.getElementById('btn-batal-balas');
+        const pesanInput = document.getElementById('pesanInput');
+        const formSubmit = document.getElementById('form-submit-balasan');
+        let isFormDirty = false;
 
         function renderAttachments(container, attachment) {
             container.replaceChildren();
@@ -108,56 +123,54 @@
         }
 
         async function loadDetailPesan() {
-            const token = sessionStorage.getItem('staff_token');
-            if (!token || !pesanId) return;
+            if (!token || !pesanId) {
+                document.getElementById('pesan-judul').textContent = 'Sesi Login Tidak Ditemukan';
+                document.getElementById('pesan-isi').textContent = 'Silakan login kembali untuk melihat pesan.';
+                if (btnToggleBalas) btnToggleBalas.classList.add('hidden');
+                return;
+            }
 
             try {
-                const res = await fetch('/api/staff/pesan/' + pesanId, {
+                const res = await fetch('/api/staff/pesan/' + encodeURIComponent(pesanId), {
                     headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
                 });
                 const json = await res.json();
                 
-                // Jika API melempar error
                 if (!res.ok) {
                     document.getElementById('pesan-judul').textContent = 'Pesan Tidak Ditemukan';
                     document.getElementById('pesan-isi').textContent = json.message || 'Gagal memuat pesan.';
-                    document.getElementById('btn-toggle-balas').classList.add('hidden');
+                    if (btnToggleBalas) btnToggleBalas.classList.add('hidden');
                     return;
                 }
 
-                // API Pesan Controller bisa jadi return thread tugas atau pesan langsung
                 let p = json.data; 
                 let balasan = [];
                 let pesanUtama = p;
 
-                // Jika data berbentuk thread Tugas (ada array 'pesan' di dalamnya)
                 if (p && p.tugas && p.pesan) {
-                    // Ambil pesan paling atas (terlama) sebagai parent
                     const rootPesan = p.pesan[0];
                     pesanUtama = rootPesan;
                     balasan = p.pesan.slice(1);
                     
                     document.getElementById('pesan-judul').textContent = 'Tugas: ' + p.tugas.judul_tugas;
-                    document.getElementById('pesan-pengirim').textContent = 'Dari: ' + (rootPesan.pengirim ? rootPesan.pengirim.username : 'Sistem');
-                    document.getElementById('pesan-tanggal').textContent = 'Tanggal: ' + rootPesan.tanggal_pesan;
+                    document.getElementById('pesan-pengirim').textContent = 'Dari: ' + (rootPesan.pengirim ? (rootPesan.pengirim.nama || rootPesan.pengirim.username) : 'Sistem');
+                    document.getElementById('pesan-tanggal').textContent = 'Tanggal: ' + (rootPesan.tanggal_pesan || '-');
                     document.getElementById('pesan-isi').textContent = rootPesan.deskripsi || '-';
                     
                 } else if (p && p.id_pesan) {
-                    // Jika data berbentuk pesan langsung
                     balasan = p.balasan || [];
                     document.getElementById('pesan-judul').textContent = p.judul_pesan || '-';
                     document.getElementById('pesan-pengirim').textContent = 'Dari: ' + (p.pengirim ? (p.pengirim.nama || p.pengirim.username) : 'Sistem');
                     document.getElementById('pesan-tanggal').textContent = 'Tanggal: ' + (p.tanggal_pesan || p.created_at || '-');
                     document.getElementById('pesan-isi').textContent = p.deskripsi || '-';
 
-                    if (!p.can_reply) {
-                        document.getElementById('btn-toggle-balas').classList.add('hidden');
+                    if (!p.can_reply && btnToggleBalas) {
+                        btnToggleBalas.classList.add('hidden');
                     }
                 }
 
                 renderAttachments(document.getElementById('pesan-lampiran'), pesanUtama?.lampiran);
 
-                // Render semua balasan
                 const threadContainer = document.getElementById('thread-balasan');
                 threadContainer.replaceChildren();
 
@@ -195,35 +208,31 @@
             } catch(e) {
                 console.error('Gagal load pesan', e);
                 document.getElementById('pesan-judul').textContent = 'Terjadi Kesalahan';
+                document.getElementById('pesan-isi').textContent = 'Gagal mengambil data pesan: ' + e.message;
             }
         }
         
         loadDetailPesan();
 
-        // FORM LOGIC
-        const btnToggle = document.getElementById('btn-toggle-balas');
-        const formBalasan = document.getElementById('form-balasan');
-        const btnBatal = document.getElementById('btn-batal-balas');
-        const pesanInput = document.getElementById('pesanInput');
-        const formSubmit = document.getElementById('form-submit-balasan');
+        if (btnToggleBalas) {
+            btnToggleBalas.addEventListener('click', () => {
+                formBalasan.classList.remove('hidden');
+                btnToggleBalas.classList.add('hidden');
+            });
+        }
 
-        let isFormDirty = false;
-
-        btnToggle.addEventListener('click', () => {
-            formBalasan.classList.remove('hidden');
-            btnToggle.classList.add('hidden');
-        });
-
-        btnBatal.addEventListener('click', () => {
-            if (pesanInput && pesanInput.value.trim() !== '') {
-                const konfirmasi = confirm("Perubahan belum disimpan. Yakin ingin membatalkan?");
-                if (!konfirmasi) return;
-            }
-            formBalasan.classList.add('hidden');
-            btnToggle.classList.remove('hidden');
-            if (pesanInput) pesanInput.value = '';
-            isFormDirty = false;
-        });
+        if (btnBatal) {
+            btnBatal.addEventListener('click', () => {
+                if (pesanInput && pesanInput.value.trim() !== '') {
+                    const konfirmasi = confirm("Perubahan belum disimpan. Yakin ingin membatalkan?");
+                    if (!konfirmasi) return;
+                }
+                formBalasan.classList.add('hidden');
+                if (btnToggleBalas) btnToggleBalas.classList.remove('hidden');
+                if (pesanInput) pesanInput.value = '';
+                isFormDirty = false;
+            });
+        }
 
         if (pesanInput) {
             pesanInput.addEventListener('input', function() {
@@ -231,38 +240,40 @@
             });
         }
 
-        formSubmit.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const token = sessionStorage.getItem('staff_token');
-            if (!token) return alert('Silakan login terlebih dahulu');
-            
-            const isiBalasan = pesanInput.value.trim();
-            if (!isiBalasan) return;
+        if (formSubmit) {
+            formSubmit.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const currentToken = token || sessionStorage.getItem('staff_token') || localStorage.getItem('staff_token');
+                if (!currentToken) return alert('Silakan login terlebih dahulu');
+                
+                const isiBalasan = pesanInput.value.trim();
+                if (!isiBalasan) return;
 
-            try {
-                const response = await fetch('/api/staff/pesan/' + pesanId + '/balas', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({ deskripsi: isiBalasan })
-                });
+                try {
+                    const response = await fetch('/api/staff/pesan/' + encodeURIComponent(pesanId) + '/balas', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + currentToken,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({ deskripsi: isiBalasan })
+                    });
 
-                const data = await response.json();
+                    const data = await response.json();
 
-                if (response.ok) {
-                    isFormDirty = false;
-                    alert('Balasan berhasil dikirim!');
-                    window.location.reload();
-                } else {
-                    alert(data.message || 'Gagal membalas pesan.');
+                    if (response.ok) {
+                        isFormDirty = false;
+                        alert('Balasan berhasil dikirim!');
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Gagal membalas pesan.');
+                    }
+                } catch (err) {
+                    alert('Terjadi kesalahan jaringan.');
                 }
-            } catch (err) {
-                alert('Terjadi kesalahan jaringan.');
-            }
-        });
+            });
+        }
 
         document.addEventListener('click', function(e) {
             const link = e.target.closest('a');
@@ -283,6 +294,7 @@
                 e.returnValue = '';
             }
         });
+    })();
     </script>
 </body>
 </html>

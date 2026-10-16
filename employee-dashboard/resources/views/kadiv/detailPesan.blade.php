@@ -93,20 +93,35 @@
     </div>
 
     <script>
-        const btnToggle = document.getElementById('btn-toggle-balas');
+    (function () {
+        const btnToggleBalas = document.getElementById('btn-toggle-balas');
         const formBalasan = document.getElementById('form-balasan');
         const pesanInput = document.getElementById('pesanInput');
         const formPesan = document.getElementById('formPesan');
         const messageId = @json($id);
-        const token = sessionStorage.getItem('staff_token');
+        const serverToken = @json($token ?? null);
+        let token = serverToken || sessionStorage.getItem('staff_token') || localStorage.getItem('staff_token');
+
+        if (serverToken) {
+            sessionStorage.setItem('staff_token', serverToken);
+            localStorage.setItem('staff_token', serverToken);
+        }
+
         let isFormDirty = false;
 
         function bukaForm() {
             formBalasan.classList.remove('hidden');
-            btnToggle.classList.add('hidden');
+            btnToggleBalas.classList.add('hidden');
         }
 
-        btnToggle.addEventListener('click', bukaForm);
+        function tutupForm() {
+            formBalasan.classList.add('hidden');
+            btnToggleBalas.classList.remove('hidden');
+        }
+
+        if (btnToggleBalas) {
+            btnToggleBalas.addEventListener('click', bukaForm);
+        }
 
         function renderAttachments(container, attachment) {
             container.replaceChildren();
@@ -139,7 +154,10 @@
 
         async function loadMessage() {
             if (!token) {
-                window.location.href = '/login';
+                document.getElementById('detail-message-subject').textContent = 'Sesi Login Tidak Ditemukan';
+                document.getElementById('detail-message-sender').textContent = 'Silakan login kembali.';
+                document.getElementById('detail-message-body').textContent = 'Token akses tidak tersedia di browser Anda.';
+                if (btnToggleBalas) btnToggleBalas.classList.add('hidden');
                 return;
             }
 
@@ -192,32 +210,44 @@
                         list.appendChild(card);
                     });
 
-                if (!message.can_reply) {
-                    btnToggle.disabled = true;
-                    btnToggle.title = 'Jenis pesan ini tidak dapat dibalas.';
+                if (!message.can_reply && btnToggleBalas) {
+                    btnToggleBalas.disabled = true;
+                    btnToggleBalas.title = 'Jenis pesan ini tidak dapat dibalas.';
                 }
             } catch (error) {
                 console.error('Gagal memuat pesan Kadiv:', error);
+                document.getElementById('detail-message-subject').textContent = 'Gagal Memuat Pesan';
                 document.getElementById('detail-message-sender').textContent = error.message;
+                document.getElementById('detail-message-body').textContent = 'Silakan coba muat ulang halaman atau login kembali jika sesi berakhir.';
+                if (btnToggleBalas) btnToggleBalas.classList.add('hidden');
             }
         }
 
         loadMessage();
-        pesanInput.addEventListener('input', function() {
-            isFormDirty = this.value.trim().length > 0;
-        });
 
-        document.getElementById('btnReset').addEventListener('click', () => {
-            isFormDirty = false;
-        });
+        if (pesanInput) {
+            pesanInput.addEventListener('input', function() {
+                isFormDirty = this.value.trim().length > 0;
+            });
+        }
 
-        document.getElementById('lampiranBalas').addEventListener('change', function() {
-            const file = this.files[0];
-            if (file && file.size > 200 * 1024 * 1024) {
-                alert('Ukuran file maksimal 200 MB');
-                this.value = '';
-            }
-        });
+        const btnReset = document.getElementById('btnReset');
+        if (btnReset) {
+            btnReset.addEventListener('click', () => {
+                isFormDirty = false;
+            });
+        }
+
+        const lampiranBalas = document.getElementById('lampiranBalas');
+        if (lampiranBalas) {
+            lampiranBalas.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file && file.size > 200 * 1024 * 1024) {
+                    alert('Ukuran file maksimal 200 MB');
+                    this.value = '';
+                }
+            });
+        }
 
         document.addEventListener('click', function(e) {
             const link = e.target.closest('a');
@@ -236,39 +266,37 @@
             }
         });
 
-        formPesan.addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const file = document.getElementById('lampiranBalas').files[0];
-            if (file && file.size > 200 * 1024 * 1024) {
-                alert('Ukuran file maksimal 200 MB');
-                return;
-            }
-            const payload = new FormData(this);
-            try {
-                const response = await fetch('/api/kadiv/pesan/' + encodeURIComponent(messageId) + '/balas', {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
-                    body: payload
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message || 'Balasan gagal dikirim.');
-                this.reset();
+        if (formPesan) {
+            formPesan.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const file = lampiranBalas ? lampiranBalas.files[0] : null;
+                if (file && file.size > 200 * 1024 * 1024) {
+                    alert('Ukuran file maksimal 200 MB');
+                    return;
+                }
+                const payload = new FormData(this);
+                try {
+                    const response = await fetch('/api/kadiv/pesan/' + encodeURIComponent(messageId) + '/balas', {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+                        body: payload
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message || 'Balasan gagal dikirim.');
+                    this.reset();
+                    isFormDirty = false;
+                    tutupForm();
+                    await loadMessage();
+                } catch (error) {
+                    alert(error.message);
+                }
+            });
+
+            formPesan.addEventListener('reset', function() {
                 isFormDirty = false;
-                tutupForm();
-                await loadMessage();
-            } catch (error) {
-                alert(error.message);
-            }
-        });
-
-        function tutupForm() {
-            formBalasan.classList.add('hidden');
-            btnToggle.classList.remove('hidden');
+            });
         }
-
-        formPesan.addEventListener('reset', function() {
-            isFormDirty = false;
-        });
+    })();
     </script>
 
 </body>
