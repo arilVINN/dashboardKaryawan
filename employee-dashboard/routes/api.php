@@ -79,21 +79,21 @@ Route::middleware([
         Route::get('/pesan/{id_pesan}', [HrdPesanController::class, 'show']);
         Route::post('/pesan/{id_pesan}/balas', [HrdPesanController::class, 'balas']);
 
-        // Manajemen Divisi
+        // Manajemen Divisi (mutasi hanya untuk HRD; Direksi read-only)
         Route::get('/divisi', [HrdDivisiController::class, 'index']);
-        Route::post('/divisi', [HrdDivisiController::class, 'store']);
+        Route::post('/divisi', [HrdDivisiController::class, 'store'])->middleware('deny.superadmin');
         Route::get('/divisi/{id}', [HrdDivisiController::class, 'show']);
-        Route::put('/divisi/{id}', [HrdDivisiController::class, 'update']);
-        Route::patch('/divisi/{id}', [HrdDivisiController::class, 'update']);
-        Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy']);
+        Route::put('/divisi/{id}', [HrdDivisiController::class, 'update'])->middleware('deny.superadmin');
+        Route::patch('/divisi/{id}', [HrdDivisiController::class, 'update'])->middleware('deny.superadmin');
+        Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy'])->middleware('deny.superadmin');
 
-        // Manajemen Staff
+        // Manajemen Staff (mutasi hanya untuk HRD; Direksi read-only)
         Route::get('/staff', [HrdStaffController::class, 'index']);
-        Route::post('/staff', [HrdStaffController::class, 'store']);
+        Route::post('/staff', [HrdStaffController::class, 'store'])->middleware('deny.superadmin');
         Route::get('/staff/{id}', [HrdStaffController::class, 'show']);
-        Route::put('/staff/{id}', [HrdStaffController::class, 'update']);
-        Route::patch('/staff/{id}', [HrdStaffController::class, 'update']);
-        Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
+        Route::put('/staff/{id}', [HrdStaffController::class, 'update'])->middleware('deny.superadmin');
+        Route::patch('/staff/{id}', [HrdStaffController::class, 'update'])->middleware('deny.superadmin');
+        Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy'])->middleware('deny.superadmin');
     });
     
 });

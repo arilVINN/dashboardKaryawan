@@ -62,11 +62,13 @@
 
     <div class="flex justify-between items-center mb-2">
         <h2 class="text-xl font-bold text-slate-800">Daftar Karyawan</h2>
-        <button type="button" data-staff-create onclick="bukaModalKaryawan()"
-            class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
-            Tambah
-        </button>
+        @unless (auth()->user()?->isSuperAdmin())
+            <button type="button" data-staff-create onclick="bukaModalKaryawan()"
+                class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
+                Tambah
+            </button>
+        @endunless
     </div>
 
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
@@ -133,30 +135,32 @@
                                         class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
                                         Detail
                                     </a>
-                                    <button type="button" data-staff-edit
-                                        data-id="{{ $k->id_karyawan }}"
-                                        data-nama="{{ $k->nama }}"
-                                        data-gender="{{ $k->jenis_kelamin }}"
-                                        data-lahir="{{ $k->tanggal_lahir }}"
-                                        data-rekrut="{{ $k->tanggal_rekrut }}"
-                                        data-email="{{ $k->email }}"
-                                        data-alamat="{{ $k->alamat }}"
-                                        data-telepon="{{ $k->no_telepon }}"
-                                        data-jabatan="{{ $k->jabatan }}"
-                                        data-status="{{ $k->status_aktif }}"
-                                        data-divisi="{{ $k->divisi_id_divisi }}"
-                                        data-username="{{ $k->user->username ?? '' }}"
-                                        onclick="bukaEditKaryawan(this)"
-                                        class="text-amber-600 hover:text-amber-800 font-medium hover:underline">
-                                        Edit
-                                    </button>
-                                    <button type="button" data-staff-delete
-                                        data-id="{{ $k->id_karyawan }}"
-                                        data-nama="{{ $k->nama }}"
-                                        onclick="hapusKaryawan(this)"
-                                        class="text-red-600 hover:text-red-800 font-medium hover:underline">
-                                        Hapus
-                                    </button>
+                                    @unless (auth()->user()?->isSuperAdmin())
+                                        <button type="button" data-staff-edit
+                                            data-id="{{ $k->id_karyawan }}"
+                                            data-nama="{{ $k->nama }}"
+                                            data-gender="{{ $k->jenis_kelamin }}"
+                                            data-lahir="{{ $k->tanggal_lahir }}"
+                                            data-rekrut="{{ $k->tanggal_rekrut }}"
+                                            data-email="{{ $k->email }}"
+                                            data-alamat="{{ $k->alamat }}"
+                                            data-telepon="{{ $k->no_telepon }}"
+                                            data-jabatan="{{ $k->jabatan }}"
+                                            data-status="{{ $k->status_aktif }}"
+                                            data-divisi="{{ $k->divisi_id_divisi }}"
+                                            data-username="{{ $k->user->username ?? '' }}"
+                                            onclick="bukaEditKaryawan(this)"
+                                            class="text-amber-600 hover:text-amber-800 font-medium hover:underline">
+                                            Edit
+                                        </button>
+                                        <button type="button" data-staff-delete
+                                            data-id="{{ $k->id_karyawan }}"
+                                            data-nama="{{ $k->nama }}"
+                                            onclick="hapusKaryawan(this)"
+                                            class="text-red-600 hover:text-red-800 font-medium hover:underline">
+                                            Hapus
+                                        </button>
+                                    @endunless
                                 </div>
                             </td>
                         </tr>

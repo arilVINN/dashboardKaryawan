@@ -9,10 +9,12 @@
 <div class="flex flex-col gap-3 w-full mt-2">
     <div class="flex justify-between items-center">
         <h2 class="text-xl font-bold text-slate-800">Manajemen Divisi</h2>
-        <button onclick="bukaModalDivisi()"
-            class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition">
-            Tambah
-        </button>
+        @unless (auth()->user()?->isSuperAdmin())
+            <button onclick="bukaModalDivisi()"
+                class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition">
+                Tambah
+            </button>
+        @endunless
     </div>
 
     <!-- Tabel Divisi -->
@@ -66,11 +68,13 @@
                                     class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
                                     Detail
                                 </a>
-                                <button type="button" onclick="hapusDivisi(this)" data-id="{{ $divisi->id_divisi }}"
-                                    data-nama="{{ $divisi->nama_divisi }}"
-                                    class="ml-3 text-red-600 hover:text-red-800 font-medium hover:underline">
-                                    Hapus
-                                </button>
+                                @unless (auth()->user()?->isSuperAdmin())
+                                    <button type="button" onclick="hapusDivisi(this)" data-id="{{ $divisi->id_divisi }}"
+                                        data-nama="{{ $divisi->nama_divisi }}"
+                                        class="ml-3 text-red-600 hover:text-red-800 font-medium hover:underline">
+                                        Hapus
+                                    </button>
+                                @endunless
 
                             </td>
                         </tr>

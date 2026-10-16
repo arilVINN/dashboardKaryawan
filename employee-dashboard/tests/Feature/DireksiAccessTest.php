@@ -198,4 +198,107 @@ class DireksiAccessTest extends TestCase
             ->postJson('/api/kadiv/tugas/TGS-1/review', ['status_review' => 'revisi'])
             ->assertForbidden();
     }
+
+    public function test_direksi_cannot_mutate_hrd_staff_or_divisions(): void
+    {
+        // API endpoints
+        $this->actingAs($this->direksi)->postJson('/api/hrd/staff', [
+            'nama' => 'Orang Baru',
+            'jenis_kelamin' => 'Laki-laki',
+            'jabatan' => 'Staff',
+            'divisi_id_divisi' => 'DIV-IT',
+            'username' => 'orangbaru',
+            'password' => 'pass123',
+        ])->assertForbidden();
+
+        $this->actingAs($this->direksi)
+            ->putJson('/api/hrd/staff/KRY-STF', ['nama' => 'Diubah'])
+            ->assertForbidden();
+
+        $this->actingAs($this->direksi)
+            ->deleteJson('/api/hrd/staff/KRY-STF')
+            ->assertForbidden();
+
+        $this->actingAs($this->direksi)->postJson('/api/hrd/divisi', [
+            'kode_divisi' => 'XX',
+            'nama_divisi' => 'Divisi X',
+            'status_aktif' => 'Aktif',
+        ])->assertForbidden();
+
+        $this->actingAs($this->direksi)
+            ->putJson('/api/hrd/divisi/DIV-IT', ['nama_divisi' => 'Diubah'])
+            ->assertForbidden();
+
+        $this->actingAs($this->direksi)
+            ->deleteJson('/api/hrd/divisi/DIV-IT')
+            ->assertForbidden();
+
+        // Web routes used by the fetch-based HRD forms
+        $this->actingAs($this->direksi)->post('/hrd/staff', [
+            'nama' => 'Orang Baru',
+            'jenis_kelamin' => 'Laki-laki',
+            'jabatan' => 'Staff',
+            'divisi_id_divisi' => 'DIV-IT',
+        ])->assertForbidden();
+
+        $this->actingAs($this->direksi)
+            ->put('/hrd/staff/KRY-STF', ['nama' => 'Diubah'])
+            ->assertForbidden();
+
+        $this->actingAs($this->direksi)
+            ->delete('/hrd/staff/KRY-STF')
+            ->assertForbidden();
+
+        $this->actingAs($this->direksi)
+            ->delete('/hrd/karyawan/KRY-STF')
+            ->assertForbidden();
+
+        $this->actingAs($this->direksi)->post('/hrd/divisi', [
+            'kode_divisi' => 'XX',
+            'nama_divisi' => 'Divisi X',
+            'status_aktif' => 'Aktif',
+        ])->assertForbidden();
+
+        $this->actingAs($this->direksi)
+            ->delete('/hrd/divisi/DIV-IT')
+            ->assertForbidden();
+    }
+
+    public function test_direksi_ui_hides_hrd_crud_actions(): void
+    {
+        $daftarKaryawan = $this->actingAs($this->direksi)->get('/hrd/daftarKaryawan')->assertOk()->getContent();
+        $this->assertStringNotContainsString('data-staff-create', $daftarKaryawan);
+        $this->assertStringNotContainsString('data-staff-edit', $daftarKaryawan);
+        $this->assertStringNotContainsString('data-staff-delete', $daftarKaryawan);
+        $this->assertStringContainsString('/hrd/detailKaryawan/', $daftarKaryawan); // detail stays
+
+        $manajemenDivisi = $this->actingAs($this->direksi)->get('/hrd/manajemenDivisi')->assertOk()->getContent();
+        $this->assertStringNotContainsString('onclick="bukaModalDivisi()"', $manajemenDivisi);
+        $this->assertStringNotContainsString('hapusDivisi(this)', $manajemenDivisi);
+
+        $dashboard = $this->actingAs($this->direksi)->get('/direksi/dashboard')->assertOk()->getContent();
+        $this->assertStringNotContainsString('onclick="bukaModalDivisi()"', $dashboard);
+        $this->assertStringNotContainsString('hapusDivisi(this)', $dashboard);
+    }
+
+    public function test_direksi_can_still_send_messages(): void
+    {
+        Event::fake();
+
+        // API messaging (kadiv) – Direksi may message a staff in the same division.
+        $this->actingAs($this->direksi)->postJson('/api/kadiv/pesan', [
+            'penerima_id_user' => 'USR-KRY-STF',
+            'tipe' => 'pesan',
+            'judul_pesan' => 'Halo',
+            'deskripsi' => 'Pesan dari Direksi.',
+        ])->assertCreated();
+
+        // Web messaging (hrd) – session route used by the HRD compose modal.
+        $this->actingAs($this->direksi)->post('/hrd/pesan', [
+            'penerima_id_user' => 'USR-KRY-STF',
+            'tipe' => 'pesan',
+            'judul_pesan' => 'Halo',
+            'deskripsi' => 'Pesan dari Direksi.',
+        ])->assertCreated();
+    }
 }

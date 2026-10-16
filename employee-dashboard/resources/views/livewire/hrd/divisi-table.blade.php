@@ -42,7 +42,7 @@
 
     <div class="flex justify-between items-center">
         <h2 class="text-xl font-bold text-slate-800">Daftar Divisi</h2>
-        @if ($manage)
+        @if ($manage && !auth()->user()?->isSuperAdmin())
             <button type="button" onclick="bukaModalDivisi()"
                 class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
@@ -103,7 +103,7 @@
                                     class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
                                     {{ $manage ? 'Detail' : 'Selengkapnya' }}
                                 </a>
-                                @if ($manage)
+                                @if ($manage && !auth()->user()?->isSuperAdmin())
                                     <button type="button" onclick="hapusDivisi(this)" data-id="{{ $divisi->id_divisi }}"
                                         data-nama="{{ $divisi->nama_divisi }}"
                                         class="ml-3 text-red-600 hover:text-red-800 font-medium hover:underline">

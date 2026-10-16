@@ -42,7 +42,7 @@
                     <div class="flex items-center justify-between gap-4">
                         <h1 id="detail-task-id" class="text-[28px] leading-[36px] font-bold text-black">Tugas</h1>
                         <button type="button" id="editTaskButton" data-modal-open="modalEditTugas" disabled
-                                class="h-9 px-5 rounded-[9px] bg-[#146C94] text-white text-sm font-medium hover:bg-[#0f5878] transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                                class="{{ auth()->user()?->isSuperAdmin() ? 'hidden' : '' }} h-9 px-5 rounded-[9px] bg-[#146C94] text-white text-sm font-medium hover:bg-[#0f5878] transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
                             Edit Tugas
                         </button>
                     </div>
@@ -100,7 +100,8 @@
                 {{-- AKSI / FORM REVISI --}}
                 <div class="mt-8">
 
-                    {{-- STATE 1: TOMBOL --}}
+                    {{-- STATE 1: TOMBOL (Kadiv-only; disembunyikan untuk Direksi) --}}
+                    <div @if (auth()->user()?->isSuperAdmin()) class="hidden" @endif>
                     <div id="aksiTombol" class="items-center gap-5" style="display: none;">
 
                         <button type="button"
@@ -115,6 +116,7 @@
                             Acc
                         </button>
 
+                    </div>
                     </div>
 
                     {{-- STATE 2: FORM REVISI (hidden by default) --}}

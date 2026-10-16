@@ -6,10 +6,12 @@
 <section class="flex flex-col gap-3 w-full mt-2 p-5">
     <div class="flex justify-between items-center pr-4 sm:pr-6 lg:pr-8 gap-3">
         <h3 class="text-lg font-semibold text-slate-800">Anggota Divisi</h3>
-        <button onclick="bukaModalKaryawan()" type="button"
-            class="px-6 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-semibold rounded-lg shadow-sm transition">
-            Tambah Karyawan
-        </button>
+        @unless (auth()->user()?->isSuperAdmin())
+            <button onclick="bukaModalKaryawan()" type="button"
+                class="px-6 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-semibold rounded-lg shadow-sm transition">
+                Tambah Karyawan
+            </button>
+        @endunless
     </div>
 
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full mt-2">
@@ -46,28 +48,30 @@
                                 {{ $anggota->no_telepon ?? '-' }}
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap text-center">
-                                <button type="button" onclick="bukaEditKaryawan(this)"
-                                    data-id="{{ $anggota->id_karyawan }}"
-                                    data-nama="{{ $anggota->nama }}"
-                                    data-gender="{{ $anggota->jenis_kelamin }}"
-                                    data-lahir="{{ $anggota->tanggal_lahir }}"
-                                    data-rekrut="{{ $anggota->tanggal_rekrut }}"
-                                    data-email="{{ $anggota->email }}"
-                                    data-alamat="{{ $anggota->alamat }}"
-                                    data-telepon="{{ $anggota->no_telepon }}"
-                                    data-jabatan="{{ $anggota->jabatan }}"
-                                    data-status="{{ $anggota->status_aktif }}"
-                                    data-divisi="{{ $divisi->id_divisi }}"
-                                    data-username="{{ $anggota->user->username ?? '' }}"
-                                    class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline mr-3">
-                                    Edit
-                                </button>
-                                <button type="button" onclick="hapusKaryawan(this)"
-                                    data-id="{{ $anggota->id_karyawan }}"
-                                    data-nama="{{ $anggota->nama }}"
-                                    class="text-red-600 hover:text-red-800 font-medium hover:underline">
-                                    Hapus
-                                </button>
+                                @unless (auth()->user()?->isSuperAdmin())
+                                    <button type="button" onclick="bukaEditKaryawan(this)"
+                                        data-id="{{ $anggota->id_karyawan }}"
+                                        data-nama="{{ $anggota->nama }}"
+                                        data-gender="{{ $anggota->jenis_kelamin }}"
+                                        data-lahir="{{ $anggota->tanggal_lahir }}"
+                                        data-rekrut="{{ $anggota->tanggal_rekrut }}"
+                                        data-email="{{ $anggota->email }}"
+                                        data-alamat="{{ $anggota->alamat }}"
+                                        data-telepon="{{ $anggota->no_telepon }}"
+                                        data-jabatan="{{ $anggota->jabatan }}"
+                                        data-status="{{ $anggota->status_aktif }}"
+                                        data-divisi="{{ $divisi->id_divisi }}"
+                                        data-username="{{ $anggota->user->username ?? '' }}"
+                                        class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline mr-3">
+                                        Edit
+                                    </button>
+                                    <button type="button" onclick="hapusKaryawan(this)"
+                                        data-id="{{ $anggota->id_karyawan }}"
+                                        data-nama="{{ $anggota->nama }}"
+                                        class="text-red-600 hover:text-red-800 font-medium hover:underline">
+                                        Hapus
+                                    </button>
+                                @endunless
                             </td>
                         </tr>
                     @empty

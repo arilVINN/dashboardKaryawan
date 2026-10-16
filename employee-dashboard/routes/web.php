@@ -218,18 +218,18 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
 
     // 2. Route Action/API Divisi (Dipanggil via Fetch JavaScript)
     Route::get('/divisi', [HrdDivisiController::class, 'index']);
-    Route::post('/divisi', [HrdDivisiController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
+    Route::post('/divisi', [HrdDivisiController::class, 'store'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle, read-only untuk Direksi
     Route::get('/divisi/{id}', [HrdDivisiController::class, 'show']);
-    Route::put('/divisi/{id}', [HrdDivisiController::class, 'update'])->middleware('throttle:submit-form'); // + throttle
-    Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
+    Route::put('/divisi/{id}', [HrdDivisiController::class, 'update'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle, read-only untuk Direksi
+    Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle, read-only untuk Direksi
 
-    Route::post('/staff', [HrdStaffController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
+    Route::post('/staff', [HrdStaffController::class, 'store'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle, read-only untuk Direksi
     Route::get('/staff', [HrdStaffController::class, 'index']); // Dipakai JS modal pesan HRD (session auth)
-    Route::put('/staff/{id}', [HrdStaffController::class, 'update'])->middleware('throttle:submit-form'); // + throttle
-    Route::post('/staff/{id}/foto', [HrdStaffController::class, 'updateFoto'])->middleware('throttle:submit-form');
-    Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
-    Route::delete('/karyawan/{id}', [HrdKaryawanDeletionController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
+    Route::put('/staff/{id}', [HrdStaffController::class, 'update'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle, read-only untuk Direksi
+    Route::post('/staff/{id}/foto', [HrdStaffController::class, 'updateFoto'])->middleware(['throttle:submit-form', 'deny.superadmin']); // read-only untuk Direksi
+    Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle, read-only untuk Direksi
+    Route::delete('/karyawan/{id}', [HrdKaryawanDeletionController::class, 'destroy'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle, read-only untuk Direksi
 
-    // Pesan via web session (dipakai JS modal pesan HRD)
+    // Pesan via web session (dipakai JS modal pesan HRD) — Direksi tetap boleh berkirim pesan
     Route::post('/pesan', [HrdPesanController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
 });
