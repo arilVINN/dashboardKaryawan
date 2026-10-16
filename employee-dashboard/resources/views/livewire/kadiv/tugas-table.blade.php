@@ -6,11 +6,13 @@
 <div class="flex flex-col gap-3 w-full mt-2">
     <div class="flex justify-between items-center">
         <h2 class="text-xl font-bold text-slate-800">Daftar Tugas</h2>
-        <button type="button" data-modal-open="modalTugasBaru"
-            class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
-            Tambah Tugas
-        </button>
+        @unless (auth()->user()?->isSuperAdmin())
+            <button type="button" data-modal-open="modalTugasBaru"
+                class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
+                Tambah Tugas
+            </button>
+        @endunless
     </div>
 
     @if (session('tugas_success'))
@@ -104,7 +106,12 @@
                             </td>
                             <td class="px-6 py-4 text-slate-500 text-center whitespace-nowrap">{{ $task->deadline ? \Illuminate\Support\Carbon::parse($task->deadline)->format('d/m/Y H:i') : '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-xs">
-                                <a href="{{ url('/kadiv/detailTugas/' . $task->id_tugas) }}"
+                                @php
+                                    $detailUrl = auth()->user()?->isSuperAdmin()
+                                        ? url('/direksi/tugas/' . $task->id_tugas)
+                                        : url('/kadiv/detailTugas/' . $task->id_tugas);
+                                @endphp
+                                <a href="{{ $detailUrl }}"
                                     class="text-[#0c88a9] hover:text-[#104958] transition font-medium">Detail</a>
                             </td>
                         </tr>
@@ -121,6 +128,7 @@
     <div>{{ $rows->links('vendor.pagination.custom') }}</div>
 </div>
 
+@unless (auth()->user()?->isSuperAdmin())
 {{-- MODAL BUAT TUGAS BARU --}}
 <div id="modalTugasBaru"
      class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(86,94,116,0.4)] backdrop-blur-sm transition-opacity duration-300 ease-in-out">
@@ -188,6 +196,7 @@
         </div>
     </form>
 </div>
+@endunless
 
 <script>
     document.addEventListener('livewire:initialized', () => {

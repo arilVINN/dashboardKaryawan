@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'deny.superadmin' => \App\Http\Middleware\DenySuperAdmin::class,
             'gateway.throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'gateway.format' => \App\Http\Middleware\ApiResponseFormatter::class,
         ]);

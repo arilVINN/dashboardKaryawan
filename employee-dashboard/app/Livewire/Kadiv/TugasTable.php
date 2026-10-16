@@ -48,7 +48,7 @@ class TugasTable extends Component
         $user = auth()->user();
 
         if (! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'kadiv'
+            || ! $user->hasAnyRole(['kadiv'])
             || ! $user->karyawan?->divisi_id_divisi) {
             abort(403);
         }
@@ -96,6 +96,11 @@ class TugasTable extends Component
     public function createTask(): void
     {
         $divisionId = $this->divisionId();
+
+        // Direksi/Pemimpin is a monitoring-only (read-only) role.
+        if (auth()->user()?->isSuperAdmin()) {
+            abort(403, 'Direksi hanya dapat memantau tugas (read-only).');
+        }
 
         $this->validate([
             'judul'      => 'required|string|max:100',

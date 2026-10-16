@@ -1,3 +1,6 @@
+@if (auth()->user()?->isSuperAdmin())
+    @include('component_direksi.sidebar')
+@else
 <aside id="sidebar" 
        class="w-64 flex flex-col h-screen shrink-0 bg-gradient-to-b from-[#044564] from-50% to-[#19A7CE] transition-all duration-300 ease-in-out">
     
@@ -94,3 +97,4 @@
         }
     });
 </script>
+@endif

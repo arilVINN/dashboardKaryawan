@@ -258,7 +258,7 @@ class PesanController extends Controller
         }
 
         $role = strtolower($user->role?->nama_role ?? '');
-        if ($role === 'kadiv') {
+        if ($user->hasAnyRole(['kadiv'])) {
             return $pesan->tugas?->karyawan?->user;
         }
 

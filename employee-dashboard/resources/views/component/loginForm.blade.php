@@ -123,6 +123,8 @@ document.getElementById('form-login').addEventListener('submit', async function(
                 window.location.href = '/kadiv/dashboard';
             } else if (role === 'hrd') {
                 window.location.href = '/hrd/dashboard';
+            } else if (role === 'direksi' || role === 'pemimpin') {
+                window.location.href = '/direksi/dashboard';
             } else {
                 window.location.href = '/';
             }

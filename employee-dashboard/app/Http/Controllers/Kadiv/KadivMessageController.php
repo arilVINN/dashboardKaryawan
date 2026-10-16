@@ -264,7 +264,7 @@ class KadivMessageController extends Controller
 
         $user->loadMissing(['role', 'karyawan.divisi']);
 
-        return strtolower($user->role?->nama_role ?? '') === 'kadiv' && $user->karyawan?->divisi
+        return $user->hasAnyRole(['kadiv']) && $user->karyawan?->divisi
             ? $user
             : null;
     }

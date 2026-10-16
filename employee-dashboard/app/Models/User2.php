@@ -34,6 +34,54 @@ class User2 extends Authenticatable
         'last_login_at' => 'datetime',
     ];
 
+    /**
+     * Role names that hold the highest (super-admin) authority. The
+     * "Direksi/Pemimpin" role is stored as `direksi`; `pemimpin` is accepted
+     * as an equivalent alias.
+     */
+    public const SUPERADMIN_ROLES = ['direksi', 'pemimpin'];
+
+    /**
+     * Roles inherited by a super-admin account: Direksi/Pemimpin may act on
+     * behalf of both HRD and Kadiv.
+     */
+    public const SUPERADMIN_INHERITED_ROLES = ['hrd', 'kadiv'];
+
+    /**
+     * Lower-cased role name of this account, or an empty string when the
+     * account has no role attached.
+     */
+    public function roleName(): string
+    {
+        return strtolower($this->role?->nama_role ?? '');
+    }
+
+    /**
+     * Whether this account is the super-admin role (Direksi/Pemimpin).
+     */
+    public function isSuperAdmin(): bool
+    {
+        return in_array($this->roleName(), self::SUPERADMIN_ROLES, true);
+    }
+
+    /**
+     * Case-insensitive role check that also honours the super-admin
+     * inheritance: Direksi/Pemimpin satisfies every HRD and Kadiv gate.
+     *
+     * @param  array<int, string>  $roles
+     */
+    public function hasAnyRole(array $roles): bool
+    {
+        $roles = array_map('strtolower', $roles);
+
+        if (in_array($this->roleName(), $roles, true)) {
+            return true;
+        }
+
+        return $this->isSuperAdmin()
+            && array_intersect($roles, self::SUPERADMIN_INHERITED_ROLES) !== [];
+    }
+
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id_role', 'id_role');

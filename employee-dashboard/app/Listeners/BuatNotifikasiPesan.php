@@ -40,8 +40,8 @@ class BuatNotifikasiPesan
             return;
         }
 
-        // Hanya buat notifikasi ketika pengirim adalah Kadiv.
-        if (strtolower($pengirim->role->nama_role ?? '') !== 'kadiv') {
+        // Hanya buat notifikasi ketika pengirim adalah Kadiv (atau Direksi/Pemimpin).
+        if (! $pengirim->hasAnyRole(['kadiv'])) {
             return;
         }
 

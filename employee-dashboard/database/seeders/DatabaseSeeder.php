@@ -229,7 +229,32 @@ class DatabaseSeeder extends Seeder
             'karyawan_id_karyawan' => $karyawanHrd->id_karyawan,
         ]);
         // -----------------
-        
-        $this->command->info('Berhasil Seed Database: 3 Role (staff, kadiv, hrd), 2 Divisi, 7 Karyawan!');
+        // --- ADD DIREKSI / PEMIMPIN (super-admin: HRD + Kadiv) ---
+        $roleDireksi = Role::firstOrCreate(
+            ['id_role' => 'RL004'],
+            ['nama_role' => 'direksi']
+        );
+
+        $karyawanDireksi = Karyawan::create([
+            'id_karyawan' => 'KR008',
+            'nama' => 'Bapak Direktur',
+            'jenis_kelamin' => 'Laki-laki',
+            'tanggal_lahir' => '1975-02-14',
+            'tanggal_rekrut' => '2010-01-01',
+            'no_telepon' => '08166778899',
+            'jabatan' => 'Direktur',
+            'divisi_id_divisi' => $divisiIT->id_divisi,
+        ]);
+
+        User2::create([
+            'id_user' => 'US008',
+            'username' => 'direksi',
+            'password' => Hash::make('pass123'),
+            'role_id_role' => $roleDireksi->id_role,
+            'karyawan_id_karyawan' => $karyawanDireksi->id_karyawan,
+        ]);
+        // -----------------
+
+        $this->command->info('Berhasil Seed Database: 4 Role (staff, kadiv, hrd, direksi), 2 Divisi, 8 Karyawan!');
     }
 }

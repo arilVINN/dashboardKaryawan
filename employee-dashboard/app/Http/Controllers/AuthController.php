@@ -93,6 +93,9 @@ class AuthController extends Controller
             return redirect()->intended('/hrd/dashboard');
         } elseif ($roleName === 'kadiv') {
             return redirect()->intended('/kadiv/dashboard');
+        } elseif (in_array($roleName, User2::SUPERADMIN_ROLES, true)) {
+            // Direksi/Pemimpin: land on the dedicated monitoring dashboard.
+            return redirect()->intended('/direksi/dashboard');
         } else {
             return redirect()->intended('/');
         }

@@ -94,7 +94,7 @@ class KadivDashboardController extends Controller
 
         $user->loadMissing(['role', 'karyawan.divisi']);
 
-        if (strtolower($user->role?->nama_role ?? '') !== 'kadiv' || ! $user->karyawan?->divisi) {
+        if (! $user->hasAnyRole(['kadiv']) || ! $user->karyawan?->divisi) {
             return null;
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User2;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -16,9 +17,9 @@ class CheckRole
         }
 
         // Case-insensitive comparison so 'Staff', 'staff', 'STAFF' all match.
-        $userRole = strtolower($user->role?->nama_role ?? '');
-
-        if (!in_array($userRole, array_map('strtolower', $roles), true)) {
+        // The Direksi/Pemimpin super-admin role also satisfies every HRD and
+        // Kadiv gate (see User2::hasAnyRole()).
+        if (! $user instanceof User2 || ! $user->hasAnyRole($roles)) {
             return response()->json(['message' => 'Forbidden. Akses ditolak.'], 403);
         }
 

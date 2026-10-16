@@ -58,14 +58,14 @@ Route::middleware([
         Route::get('/staff', [KadivStaffController::class, 'index']);
         Route::get('/staff/{id}', [KadivStaffController::class, 'show']);
 
-        // Manajemen Tugas
+        // Manajemen Tugas (mutasi hanya untuk Kadiv; Direksi read-only)
         Route::get('/tugas', [KadivTaskController::class, 'index']);
         Route::get('/tugas/{id}', [KadivTaskController::class, 'show']);
-        Route::post('/tugas', [KadivTaskController::class, 'store']);
-        Route::post('/tugas/{id}', [KadivTaskController::class, 'update']); // Some clients use POST for PUT when uploading files
-        Route::put('/tugas/{id}', [KadivTaskController::class, 'update']);
-        Route::delete('/tugas/{id}', [KadivTaskController::class, 'destroy']);
-        Route::post('/tugas/{id}/review', [KadivTaskController::class, 'review']);
+        Route::post('/tugas', [KadivTaskController::class, 'store'])->middleware('deny.superadmin');
+        Route::post('/tugas/{id}', [KadivTaskController::class, 'update'])->middleware('deny.superadmin'); // Some clients use POST for PUT when uploading files
+        Route::put('/tugas/{id}', [KadivTaskController::class, 'update'])->middleware('deny.superadmin');
+        Route::delete('/tugas/{id}', [KadivTaskController::class, 'destroy'])->middleware('deny.superadmin');
+        Route::post('/tugas/{id}/review', [KadivTaskController::class, 'review'])->middleware('deny.superadmin');
     });
 
     // HRD‑only routes

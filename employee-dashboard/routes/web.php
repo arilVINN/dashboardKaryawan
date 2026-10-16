@@ -13,6 +13,7 @@ use App\Http\Controllers\Hrd\HrdDivisiController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
 use App\Http\Controllers\Hrd\HrdDashboardController;
+use App\Http\Controllers\Direksi\DireksiTaskController;
 use App\Models\Divisi;
 
 
@@ -91,7 +92,7 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     });
 
     Route::post('/tugas', [KadivController::class, 'store'])
-        ->middleware('throttle:submit-form') // + throttle
+        ->middleware(['throttle:submit-form', 'deny.superadmin']) // + throttle, read-only untuk Direksi
         ->name('kadiv.tugas.store');
 
     Route::post('/tugas/{id}/revisi', function (Request $request, $id) {
@@ -112,7 +113,7 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
         return redirect()
             ->route('kadiv.detailTugas.show', $id)
             ->with('success', 'Revisi berhasil dikirim.');
-    })->middleware('throttle:submit-form')->name('kadiv.revisiTugas'); // + throttle
+    })->middleware(['throttle:submit-form', 'deny.superadmin'])->name('kadiv.revisiTugas'); // + throttle, read-only untuk Direksi
 
     // Pesan
     Route::get('/pesan', function () {
@@ -122,6 +123,16 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     Route::get('/detailPesan/{id}', function ($id) {
         return view('kadiv.detailPesan', compact('id'));
     })->name('kadiv.detailPesan');
+});
+
+
+// ================= DIREKSI / PEMIMPIN (super-admin, monitoring read-only) ================= //
+Route::middleware(['auth', 'role:direksi,pemimpin', 'throttle:umum'])->prefix('direksi')->group(function () {
+    Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('direksi.dashboard');
+
+    // Monitor tugas seluruh divisi (hanya baca).
+    Route::get('/tugas', [DireksiTaskController::class, 'index'])->name('direksi.tugas');
+    Route::get('/tugas/{id}', [DireksiTaskController::class, 'show'])->name('direksi.tugas.show');
 });
 
 

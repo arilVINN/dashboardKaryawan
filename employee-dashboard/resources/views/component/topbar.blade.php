@@ -1,19 +1,19 @@
 @php
     $topbarUser = auth()->user();
     $topbarEmployee = $topbarUser?->karyawan;
-    $pageRole = request()->is('hrd/*') ? 'hrd' : (request()->is('kadiv/*') ? 'kadiv' : 'staff');
+    $pageRole = request()->is('hrd/*') ? 'hrd' : (request()->is('kadiv/*') ? 'kadiv' : (request()->is('direksi/*') ? 'direksi' : 'staff'));
     $topbarNama = $topbarEmployee?->nama ?? $topbarUser?->username ?? 'Guest';
     $topbarDivisi = $topbarEmployee?->divisi?->nama_divisi ?? $topbarUser?->role?->nama_role ?? ucfirst($pageRole);
     $topbarRole = $topbarUser?->role?->nama_role ?? $pageRole;
     $topbarInitial = $topbarUser ? mb_strtoupper(mb_substr($topbarNama, 0, 1)) : 'U';
     $topbarFotoUrl = $topbarEmployee?->foto ? '/storage/'.$topbarEmployee->foto : null;
     $topbarProfileUrl = match ($pageRole) {
-        'hrd' => route('hrd.profile'),
+        'hrd', 'direksi' => route('hrd.profile'),
         'kadiv' => route('kadiv.profile'),
         default => url('/profile'),
     };
     $topbarProfileEndpoint = match ($pageRole) {
-        'hrd' => '/api/hrd/profile',
+        'hrd', 'direksi' => '/api/hrd/profile',
         'kadiv' => '/api/kadiv/profile',
         default => '/api/staff/profile',
     };

@@ -31,7 +31,7 @@ class StaffTable extends Component
         $user = auth()->user();
 
         if (! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'kadiv'
+            || ! $user->hasAnyRole(['kadiv'])
             || ! $user->karyawan?->divisi_id_divisi) {
             abort(403);
         }
