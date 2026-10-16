@@ -18,7 +18,7 @@
         @include('component.topbar')
         @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/kadiv/dashboard'), 'currentPage' => 'Daftar Tugas'])
 
-        <main class="flex-1 overflow-y-auto p-8 pt-6 pb-16">
+        <main class="flex-1 overflow-y-auto p-8 pt-6">
             <livewire:kadiv.tugas-table />
 
         </main>

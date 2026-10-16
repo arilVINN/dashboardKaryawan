@@ -15,7 +15,14 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         @include('component.topbar')
-        @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/tugas'), 'currentPage' => 'Detail Tugas'])
+        @php
+            $tugasFrom = request('from');
+            $tugasFrom = is_string($tugasFrom) ? $tugasFrom : null;
+            [$tugasParentText, $tugasParentUrl] = $tugasFrom === 'dashboard'
+                ? ['Dashboard', url('/')]
+                : ['Tugas', url('/tugas')];
+        @endphp
+        @include('component.breadcrumbs', ['parentText' => $tugasParentText, 'parentUrl' => $tugasParentUrl, 'currentPage' => 'Detail Tugas'])
 
         <main class="flex-1 overflow-y-auto p-8 pt-6">
             <h1 class="text-xl font-bold text-slate-900 mb-8">Tugas</h1>

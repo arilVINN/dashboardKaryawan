@@ -26,7 +26,7 @@
         ])
 
         {{-- MAIN CONTENT --}}
-        <main class="flex-1 overflow-y-auto p-8 pt-6 pb-16">
+        <main class="flex-1 overflow-y-auto p-8 pt-6">
             <h1 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2.5">
                 <span class="p-2 rounded-lg bg-teal-100 text-teal-600"><svg class="w-6 h-6" fill="none"
                         stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">

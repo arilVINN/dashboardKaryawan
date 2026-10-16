@@ -1,6 +1,8 @@
 @php
     $isCompact = $compact ?? false;
     $cellPadding = $isCompact ? 'px-4 py-3' : 'px-6 py-4';
+    $pesanFrom = $from ?? null;
+    $pesanFrom = is_string($pesanFrom) && $pesanFrom !== '' ? '?from=' . $pesanFrom : '';
 @endphp
 
 <div class="flex flex-col gap-3 w-full mt-2">
@@ -54,7 +56,7 @@
                                 {{ $pesan->tanggal_pesan }}
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap text-center text-xs">
-                                <a href="{{ route('hrd.detailPesan', $pesan->id_pesan) }}"
+                                <a href="{{ route('hrd.detailPesan', $pesan->id_pesan) . $pesanFrom }}"
                                     class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
                                     Buka
                                 </a>

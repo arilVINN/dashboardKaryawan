@@ -1,6 +1,7 @@
 @php
     $isCompact = $compact ?? false;
     $cellPadding = $isCompact ? 'px-4 py-3' : 'px-6 py-4';
+    $detailFrom = $isCompact ? '?from=dashboard' : '';
 @endphp
 
 <div class="flex flex-col gap-3">
@@ -163,7 +164,7 @@
                             </span>
                         </td>
                         <td class="{{ $cellPadding }} whitespace-nowrap text-center">
-                            <a href="/tugas/detail/${t.id_tugas}" class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
+                            <a href="/tugas/detail/${t.id_tugas}{{ $detailFrom }}" class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
                                 Lihat
                             </a>
                         </td>

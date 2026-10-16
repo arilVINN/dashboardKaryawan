@@ -19,7 +19,19 @@
 
         {{-- TOPBAR --}}
         @include('component.topbar')
-        @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/kadiv/tugas'), 'currentPage' => 'Detail Tugas'])
+        @php
+            $tugasFrom = request('from');
+            $tugasFrom = is_string($tugasFrom) ? $tugasFrom : null;
+            $tugasStaff = request('staff');
+            $tugasStaff = is_string($tugasStaff) && $tugasStaff !== '' ? $tugasStaff : null;
+            [$tugasParentText, $tugasParentUrl] = match (true) {
+                $tugasFrom === 'dashboard' => ['Dashboard', url('/kadiv/dashboard')],
+                $tugasFrom === 'staffDetail' && $tugasStaff => ['Detail Staff', url('/kadiv/manajemenStaff/' . $tugasStaff)],
+                $tugasFrom === 'staffDetail' => ['Manajemen Staff', url('/kadiv/manajemenStaff')],
+                default => ['Tugas', url('/kadiv/tugas')],
+            };
+        @endphp
+        @include('component.breadcrumbs', ['parentText' => $tugasParentText, 'parentUrl' => $tugasParentUrl, 'currentPage' => 'Detail Tugas'])
 
         {{-- CONTENT --}}
         <main class="flex-1 overflow-y-auto p-8 pt-6">

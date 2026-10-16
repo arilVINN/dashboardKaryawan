@@ -16,9 +16,16 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         @include('component.topbar')
-        @include('component.breadcrumbs', ['parentText' => 'Pesan', 'parentUrl' => url('/kadiv/pesan'), 'currentPage' => 'Detail Pesan'])
+        @php
+            $pesanFrom = request('from');
+            $pesanFrom = is_string($pesanFrom) ? $pesanFrom : null;
+            [$pesanParentText, $pesanParentUrl] = $pesanFrom === 'dashboard'
+                ? ['Dashboard', url('/kadiv/dashboard')]
+                : ['Pesan', url('/kadiv/pesan')];
+        @endphp
+        @include('component.breadcrumbs', ['parentText' => $pesanParentText, 'parentUrl' => $pesanParentUrl, 'currentPage' => 'Detail Pesan'])
 
-        <main class="flex-1 overflow-y-auto px-10 py-8">
+        <main class="flex-1 overflow-y-auto p-8 pt-6">
             <h1 class="text-2xl font-bold text-slate-900 mb-6">Pesan</h1>
 
             @if (session('success'))

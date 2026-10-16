@@ -16,9 +16,9 @@
 
         @include('component.topbar')
 
-        <main class="flex-1 overflow-y-auto">
+        <main class="flex-1 overflow-y-auto p-8 pt-6">
             
-            <div class="px-9 pt-7 pb-16">
+            <div>
 
                 @include('component.breadcrumbs', ['parentText' => 'Manajemen Staff', 'parentUrl' => url('/kadiv/manajemenStaff'), 'currentPage' => 'Detail Staff'])
                 <div class="mt-4 flex items-center justify-between">
@@ -126,7 +126,7 @@
                 const actionCell = document.createElement('td');
                 actionCell.className = 'px-6 py-4 text-center';
                 const action = document.createElement('a');
-                action.href = '/kadiv/detailTugas/' + encodeURIComponent(task.id_tugas);
+                action.href = '/kadiv/detailTugas/' + encodeURIComponent(task.id_tugas) + '?from=staffDetail&staff={{ $id }}';
                 action.className = 'text-[#0e9dc3] hover:text-[#0c88a9] hover:underline transition font-medium';
                 action.textContent = 'Lihat';
                 actionCell.appendChild(action);
