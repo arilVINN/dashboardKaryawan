@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Events\PesanDikirim;
 use App\Models\Pesan;
 use App\Models\User2;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,28 +16,28 @@ class HrdPesanController extends Controller
     public function page(Request $request)
     {
         $user = $request->user();
-        $pesans = $this->allMessages();
+        $pesans = $this->messageQuery()->paginate(5)->withQueryString();
 
         return view('hrd.pesan', [
             'pesans' => $pesans,
-            'totalPesan' => $pesans->count(),
-            'pesanMasuk' => $pesans->where('penerima_id_user', $user->id_user)->count(),
-            'pesanKeluar' => $pesans->where('pengirim_id_user', $user->id_user)->count(),
+            'totalPesan' => Pesan::count(),
+            'pesanMasuk' => Pesan::where('penerima_id_user', $user->id_user)->count(),
+            'pesanKeluar' => Pesan::where('pengirim_id_user', $user->id_user)->count(),
         ]);
     }
 
     public function daftarPage(Request $request)
     {
-        $pesans = $this->allMessages();
+        $pesans = $this->messageQuery()->paginate(5)->withQueryString();
 
         return view('hrd.daftarPesan', compact('pesans'));
     }
 
-    private function allMessages()
+    private function messageQuery(): Builder
     {
         return Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
             ->orderByDesc('created_at')
-            ->get();
+            ->orderByDesc('id_pesan');
     }
 
     public function detailPage(Request $request, string $id_pesan)
