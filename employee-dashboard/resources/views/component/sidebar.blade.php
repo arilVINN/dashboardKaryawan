@@ -49,6 +49,7 @@
 
 
 <script>
+(function () {
     const sidebar = document.getElementById('sidebar');
     const btnToggle = document.getElementById('btn-sidebar-toggle');
     const texts = document.querySelectorAll('.sidebar-text');
@@ -69,6 +70,7 @@
             localStorage.setItem(sidebarStorageKey, String(collapsed));
         });
     }
+})();
 
     document.addEventListener('DOMContentLoaded', function () {
         const profileBtn = document.getElementById('profile-dropdown-btn');
