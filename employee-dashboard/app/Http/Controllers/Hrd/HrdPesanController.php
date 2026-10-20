@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Hrd;
 use App\Http\Controllers\Controller;
 use App\Events\PesanDikirim;
 use App\Models\Pesan;
+use App\Models\SuratIzin;
 use App\Models\User2;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -22,7 +23,7 @@ class HrdPesanController extends Controller
             'pesans' => $pesans,
             'totalPesan' => Pesan::count(),
             'pesanMasuk' => Pesan::where('penerima_id_user', $user->id_user)->count(),
-            'pesanKeluar' => Pesan::where('pengirim_id_user', $user->id_user)->count(),
+            'suratIzinMasuk' => SuratIzin::count(),
         ]);
     }
 

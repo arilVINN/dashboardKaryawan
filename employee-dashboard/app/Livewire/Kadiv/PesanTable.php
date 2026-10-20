@@ -4,17 +4,20 @@ namespace App\Livewire\Kadiv;
 
 use App\Events\PesanDikirim;
 use App\Models\Pesan;
+use App\Models\SuratIzin;
 use App\Models\User2;
 use App\Presenters\MessagePresenter;
 use App\Queries\KadivMessageQuery;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class PesanTable extends Component
 {
     use WithPagination;
+    use WithFileUploads;
 
     #[Url]
     public string $search = '';
@@ -33,6 +36,12 @@ class PesanTable extends Component
 
     public string $recipientUserId = '';
     public string $isi = '';
+
+    // Properti untuk form Kirim Surat Izin
+    public string $judulSurat = '';
+    public string $tanggalIzin = '';
+    public $fileSurat = null;
+    public string $keteranganSurat = '';
 
     public function mount(): void
     {
@@ -132,12 +141,52 @@ class PesanTable extends Component
         }
     }
 
+    public function kirimSuratIzin(): void
+    {
+        $kadiv = $this->kadiv();
+
+        $this->validate([
+            'judulSurat' => 'required|string|max:100',
+            'tanggalIzin' => 'required|date',
+            'fileSurat' => 'nullable|file|max:20480',
+            'keteranganSurat' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            SuratIzin::create([
+                'id_surat' => $this->generateSuratId(),
+                'karyawan_id_karyawan' => $kadiv->karyawan->id_karyawan,
+                'judul_surat' => $this->judulSurat,
+                'tanggal_izin' => $this->tanggalIzin,
+                'keterangan' => $this->keteranganSurat,
+                'file' => $this->fileSurat ? $this->fileSurat->store('surat_izin', 'public') : null,
+            ]);
+
+            $this->reset(['judulSurat', 'tanggalIzin', 'fileSurat', 'keteranganSurat']);
+            session()->flash('pesan_success', 'Surat izin berhasil dikirim.');
+            $this->dispatch('tutup-modal-surat');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('kirimSuratIzin error: ' . $e->getMessage());
+            $this->addError('judulSurat', 'Gagal mengirim surat izin: ' . $e->getMessage());
+        }
+    }
+
     private function generateMessageId(): string
     {
         do {
             $id = 'PSN' . strtoupper(substr(uniqid('', true), -12));
             $id = str_replace('.', '', $id);
         } while (Pesan::whereKey($id)->exists());
+
+        return $id;
+    }
+
+    private function generateSuratId(): string
+    {
+        do {
+            $id = 'SRT' . strtoupper(substr(uniqid('', true), -10));
+            $id = str_replace('.', '', $id);
+        } while (SuratIzin::whereKey($id)->exists());
 
         return $id;
     }

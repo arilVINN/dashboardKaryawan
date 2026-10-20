@@ -8,6 +8,18 @@
         <h2 class="text-xl font-bold text-slate-800">Tabel Pesan</h2>
     @endif
 
+    <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold text-slate-800">Pesan</h2>
+        <button type="button" data-modal-open="modalSuratIzin"
+            class="text-sm px-4 py-2 bg-[#146C94] text-white rounded-lg font-medium hover:bg-[#0f5878] transition flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12h6m-6 4h6M9 8h1m5 12H7a2 2 0 01-2-2V6a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z" />
+            </svg>
+            Kirim Surat Izin
+        </button>
+    </div>
+
     @unless ($isCompact)
         <form id="staffPesanFilter" onsubmit="return false;"
             class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5">
@@ -49,7 +61,8 @@
                             <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
                                 <button type="button" onclick="setStaffPesanSort('judul')"
                                     class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                    Topik / Judul <span data-sort-indicator="judul" class="text-slate-300">&#8597;</span>
+                                    Topik / Judul <span data-sort-indicator="judul"
+                                        class="text-slate-300">&#8597;</span>
                                 </button>
                             </th>
                             <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
@@ -130,7 +143,8 @@
 
         tbody.innerHTML = '';
         if (semuaPesan.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">Belum ada pesan masuk.</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="4" class="text-center py-6 text-slate-400">Belum ada pesan masuk.</td></tr>';
             return;
         }
 
@@ -165,7 +179,10 @@
 
         try {
             const res = await fetch('/api/staff/pesan', {
-                headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Accept': 'application/json'
+                }
             });
             const json = await res.json();
 
@@ -194,7 +211,8 @@
             renderStaffPesan();
         } catch (error) {
             console.error('Gagal meload pesan', error);
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-red-500">Gagal mengambil data pesan</td></tr>';
+            tbody.innerHTML =
+                '<tr><td colspan="4" class="text-center py-6 text-red-500">Gagal mengambil data pesan</td></tr>';
         }
     }
 
@@ -212,7 +230,7 @@
         });
     }
 
-    window.setStaffPesanSort = function (col) {
+    window.setStaffPesanSort = function(col) {
         if (staffPesanSort === col) {
             staffPesanDir = staffPesanDir === 'asc' ? 'desc' : 'asc';
         } else {
@@ -222,7 +240,7 @@
         renderStaffPesan();
     };
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         loadStaffPesan();
         document.getElementById('staffPesanApply')?.addEventListener('click', renderStaffPesan);
         document.getElementById('staffPesanReset')?.addEventListener('click', () => {
@@ -234,4 +252,3 @@
         });
     });
 </script>
-
