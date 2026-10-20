@@ -7,6 +7,7 @@ use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Pesan;
 use App\Models\Role;
+use App\Models\SuratIzin;
 use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -104,6 +105,48 @@ class PesanTableTest extends TestCase
             ->set('search', 'rapat')
             ->assertSee('Rapat Mingguan')
             ->assertDontSee('Desain Logo');
+    }
+
+    public function test_staff_can_submit_surat_izin_from_the_page_form(): void
+    {
+        $response = $this->actingAs($this->staff)->post(route('staff.suratIzin.store'), [
+            'judul_surat' => 'Izin Sakit',
+            'tanggal_izin' => '2026-10-20',
+            'keterangan' => 'Sedang sakit',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success', 'Surat izin berhasil dikirim.');
+        $this->assertDatabaseHas('surat_izin', [
+            'karyawan_id_karyawan' => $this->staff->karyawan_id_karyawan,
+            'judul_surat' => 'Izin Sakit',
+            'keterangan' => 'Sedang sakit',
+        ]);
+        $this->assertSame(6, strlen(SuratIzin::query()->value('id_surat')));
+    }
+
+    public function test_surat_izin_modal_is_rendered_once_on_staff_pages(): void
+    {
+        foreach (['/pesan', '/'] as $path) {
+            $response = $this->actingAs($this->staff)->get($path);
+
+            $response->assertOk()->assertSee('name="judul_surat"', false);
+            $this->assertSame(1, substr_count($response->getContent(), 'id="modalSuratIzin"'));
+        }
+    }
+
+    public function test_non_staff_cannot_submit_surat_izin(): void
+    {
+        $hrd = User2::where('username', 'hrdsatu')->firstOrFail();
+
+        $this->actingAs($hrd)
+            ->post(route('staff.suratIzin.store'), [
+                'judul_surat' => 'Izin Sakit',
+                'tanggal_izin' => '2026-10-20',
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('surat_izin', 0);
     }
 
     public function test_non_staff_is_forbidden(): void

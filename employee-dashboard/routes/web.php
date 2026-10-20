@@ -13,6 +13,7 @@ use App\Http\Controllers\Hrd\HrdDivisiController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
 use App\Http\Controllers\Hrd\HrdDashboardController;
+use App\Http\Controllers\Staff\SuratIzinController;
 use App\Models\Divisi;
 
 
@@ -222,3 +223,25 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     // Pesan via web session (dipakai JS modal pesan HRD)
     Route::post('/pesan', [HrdPesanController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
 });
+
+
+//surat izin
+Route::post('/surat-izin', [KadivController::class, 'storeSuratIzin'])
+    ->middleware('throttle:submit-form')
+    ->name('kadiv.suratIzin.store');
+
+    // di dalam grup staff yang sudah ada (middleware ['auth', 'role:staff'])
+Route::post('/surat-izin', [SuratIzinController::class, 'store'])
+    ->middleware(['auth', 'role:staff', 'throttle:submit-form'])
+    ->name('staff.suratIzin.store');
+
+// di dalam grup hrd yang sudah ada (middleware ['auth', 'role:hrd', 'throttle:umum'])
+Route::get('/suratIzin', [HrdDashboardController::class, 'suratIzinPage'])
+    ->middleware(['auth', 'role:hrd', 'throttle:pencarian'])
+    ->name('hrd.suratIzin');
+Route::post('/suratIzin/{suratIzin}/acc', [HrdDashboardController::class, 'approveSuratIzin'])
+    ->middleware(['auth', 'role:hrd', 'throttle:submit-form'])
+    ->name('hrd.suratIzin.acc');
+Route::post('/suratIzin/{suratIzin}/tolak', [HrdDashboardController::class, 'rejectSuratIzin'])
+    ->middleware(['auth', 'role:hrd', 'throttle:submit-form'])
+    ->name('hrd.suratIzin.tolak');

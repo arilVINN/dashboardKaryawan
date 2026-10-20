@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Role;
+use App\Models\SuratIzin;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -176,6 +177,85 @@ class HrdListUiTest extends TestCase
         $this->actingAs($this->hrd)->get('/hrd/manajemenDivisi')
             ->assertSee('data-breadcrumb-parent="Dashboard"', false)
             ->assertSee('data-breadcrumb-current="Manajemen Divisi"', false);
+    }
+
+    public function test_pesan_keluar_card_links_to_incoming_leave_requests(): void
+    {
+        SuratIzin::create([
+            'id_surat' => 'SRT001',
+            'karyawan_id_karyawan' => 'KRY-A',
+            'judul_surat' => 'Izin Sakit',
+            'tanggal_izin' => '2026-10-20',
+            'keterangan' => 'Tidak enak badan',
+        ]);
+
+        $this->actingAs($this->hrd)->get('/hrd/pesan')
+            ->assertOk()
+            ->assertSee('Surat Izin Masuk')
+            ->assertSee(route('hrd.suratIzin'), false)
+            ->assertSee('>1</span>', false);
+    }
+
+    public function test_hrd_can_open_incoming_leave_request_list(): void
+    {
+        SuratIzin::create([
+            'id_surat' => 'SRT002',
+            'karyawan_id_karyawan' => 'KRY-A',
+            'judul_surat' => 'Izin Sakit',
+            'tanggal_izin' => '2026-10-20',
+            'keterangan' => 'Tidak enak badan',
+        ]);
+
+        $this->actingAs($this->hrd)->get(route('hrd.suratIzin'))
+            ->assertOk()
+            ->assertSee('Surat Izin Masuk')
+            ->assertSee('Andi Wijaya')
+            ->assertSee('Izin Sakit')
+            ->assertSee('Tidak enak badan');
+    }
+
+    public function test_hrd_can_approve_and_reject_pending_leave_requests(): void
+    {
+        SuratIzin::create([
+            'id_surat' => 'SRT003',
+            'karyawan_id_karyawan' => 'KRY-A',
+            'judul_surat' => 'Izin Disetujui',
+            'tanggal_izin' => '2026-10-20',
+        ]);
+        SuratIzin::create([
+            'id_surat' => 'SRT004',
+            'karyawan_id_karyawan' => 'KRY-B',
+            'judul_surat' => 'Izin Ditolak',
+            'tanggal_izin' => '2026-10-20',
+        ]);
+
+        $this->actingAs($this->hrd)
+            ->post(route('hrd.suratIzin.acc', 'SRT003'))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Surat izin berhasil disetujui.');
+        $this->assertDatabaseHas('surat_izin', ['id_surat' => 'SRT003', 'status' => 'Disetujui']);
+
+        $this->post(route('hrd.suratIzin.tolak', 'SRT004'))
+            ->assertRedirect()
+            ->assertSessionHas('success', 'Surat izin berhasil ditolak.');
+        $this->assertDatabaseHas('surat_izin', ['id_surat' => 'SRT004', 'status' => 'Ditolak']);
+    }
+
+    public function test_hrd_cannot_process_a_leave_request_twice(): void
+    {
+        SuratIzin::create([
+            'id_surat' => 'SRT005',
+            'karyawan_id_karyawan' => 'KRY-A',
+            'judul_surat' => 'Izin Selesai',
+            'tanggal_izin' => '2026-10-20',
+            'status' => 'Disetujui',
+        ]);
+
+        $this->actingAs($this->hrd)
+            ->post(route('hrd.suratIzin.tolak', 'SRT005'))
+            ->assertStatus(409);
+
+        $this->assertDatabaseHas('surat_izin', ['id_surat' => 'SRT005', 'status' => 'Disetujui']);
     }
 
     public function test_hrd_detail_pesan_breadcrumb_points_to_pesan(): void

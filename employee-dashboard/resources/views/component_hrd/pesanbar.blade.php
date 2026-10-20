@@ -2,7 +2,7 @@
     $total = [
         'pesan' => $totalPesan ?? 0,
         'masuk' => $pesanMasuk ?? 0,
-        'keluar' => $pesanKeluar ?? 0,
+        'suratIzinMasuk' => $suratIzinMasuk ?? 0,
     ];
 @endphp
 
@@ -31,18 +31,17 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <a href="{{ route('hrd.suratIzin') }}"
+        class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-[#146C94]">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Pesan Keluar</span>
-            <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['keluar'] }}</span>
+            <span class="text-sm font-bold text-slate-500">Surat Izin Masuk</span>
+            <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['suratIzinMasuk'] }}</span>
         </div>
         <svg class="w-8 h-8 text-slate-800" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
-                d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12">
+                d="M7 3.75h7l4 4v12.5H7a2 2 0 0 1-2-2v-12.5a2 2 0 0 1 2-2zm7 0v4h4M8.5 12h7M8.5 15.5h7">
             </path>
         </svg>
-
-
-    </div>
+    </a>
 
 </div>

@@ -8,6 +8,7 @@ use App\Models\Karyawan;
 use App\Models\Divisi;
 use App\Models\Tugas;
 use App\Models\Pesan;
+use App\Models\SuratIzin;
 
 class HrdDashboardController extends Controller
 {
@@ -59,11 +60,11 @@ class HrdDashboardController extends Controller
         $ongoingBase = Tugas::statusEfektif(Tugas::STATUS_BERJALAN);
 
         $revisiTugas = (clone $ongoingBase)
-            ->whereHas('submitTugas', fn ($q) => $q->where('status_review', 'revisi'))
+            ->whereHas('submitTugas', fn($q) => $q->where('status_review', 'revisi'))
             ->count();
 
         $ongoingTugas = (clone $ongoingBase)
-            ->whereDoesntHave('submitTugas', fn ($q) => $q->where('status_review', 'revisi'))
+            ->whereDoesntHave('submitTugas', fn($q) => $q->where('status_review', 'revisi'))
             ->count();
 
         $pendingTugas = Tugas::statusEfektif(Tugas::STATUS_BARU)->count()
@@ -102,5 +103,32 @@ class HrdDashboardController extends Controller
             'pesan',
             'divisiTerbesar'
         ));
+    }
+
+    public function suratIzinPage()
+    {
+        $suratIzin = SuratIzin::with('karyawan.user.role')
+            ->latest()
+            ->paginate(5);
+
+        return view('hrd.suratIzin', compact('suratIzin'));
+    }
+
+    public function approveSuratIzin(SuratIzin $suratIzin)
+    {
+        abort_unless($suratIzin->status === 'Pending', 409, 'Surat izin sudah diproses.');
+
+        $suratIzin->update(['status' => 'Disetujui']);
+
+        return back()->with('success', 'Surat izin berhasil disetujui.');
+    }
+
+    public function rejectSuratIzin(SuratIzin $suratIzin)
+    {
+        abort_unless($suratIzin->status === 'Pending', 409, 'Surat izin sudah diproses.');
+
+        $suratIzin->update(['status' => 'Ditolak']);
+
+        return back()->with('success', 'Surat izin berhasil ditolak.');
     }
 }
