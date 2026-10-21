@@ -50,6 +50,29 @@ class StaffTugasController extends Controller
         ]);
     }
 
+    // PATCH /staff/tugas/{id}/toggle-checklist
+    public function toggleChecklist(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'selesai' => 'required|boolean',
+        ]);
+
+        $tugas = Tugas::where('id_tugas', $id)
+            ->where('karyawan_id_karyawan', $request->user()->karyawan_id_karyawan)
+            ->first();
+
+        if (! $tugas) {
+            return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
+        }
+
+        $tugas->update(['checklist_selesai' => $validated['selesai']]);
+
+        return response()->json([
+            'message' => 'Checklist tugas berhasil diperbarui',
+            'data' => $tugas,
+        ]);
+    }
+
     // POST /staff/tugas/{id}/submit
      public function submit(Request $request, $id)
     {

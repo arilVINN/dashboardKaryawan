@@ -52,9 +52,11 @@ class PesanTable extends Component
     {
         $user = auth()->user();
 
-        if (! $user instanceof User2
+        if (
+            ! $user instanceof User2
             || strtolower($user->role?->nama_role ?? '') !== 'kadiv'
-            || ! $user->karyawan?->divisi_id_divisi) {
+            || ! $user->karyawan?->divisi_id_divisi
+        ) {
             abort(403);
         }
 
@@ -101,22 +103,13 @@ class PesanTable extends Component
     public function sendMessage(): void
     {
         $kadiv = $this->kadiv();
-        $divisionId = $kadiv->karyawan->divisi_id_divisi;
 
         $this->validate([
             'recipientUserId' => 'required|string|exists:users2,id_user',
             'isi' => 'required|string|max:2000',
         ]);
 
-        $recipient = User2::with(['role', 'karyawan'])->find($this->recipientUserId);
-        $recipientRole = strtolower($recipient->role?->nama_role ?? '');
-        $sameDivisionStaff = $recipientRole === 'staff'
-            && $recipient->karyawan?->divisi_id_divisi === $divisionId;
-
-        if (! $sameDivisionStaff && $recipientRole !== 'hrd') {
-            $this->addError('recipientUserId', 'Penerima harus Staff di divisi Anda atau HRD.');
-            return;
-        }
+        $recipient = User2::find($this->recipientUserId);
 
         try {
             $message = Pesan::create([
@@ -194,7 +187,6 @@ class PesanTable extends Component
     public function render()
     {
         $kadiv = $this->kadiv();
-        $divisionId = $kadiv->karyawan->divisi_id_divisi;
 
         $messages = KadivMessageQuery::forUser($kadiv)
             ->apply([
@@ -205,16 +197,10 @@ class PesanTable extends Component
                 'q' => $this->search,
             ])
             ->paginate(10)
-            ->through(fn (Pesan $message) => MessagePresenter::for($message, $kadiv));
+            ->through(fn(Pesan $message) => MessagePresenter::for($message, $kadiv));
 
         $recipients = User2::with(['karyawan', 'role'])
-            ->where(function ($q) use ($divisionId): void {
-                $q->whereHas('role', fn ($r) => $r->whereRaw('LOWER(nama_role) = ?', ['hrd']))
-                    ->orWhere(function ($q2) use ($divisionId): void {
-                        $q2->whereHas('role', fn ($r) => $r->whereRaw('LOWER(nama_role) = ?', ['staff']))
-                            ->whereHas('karyawan', fn ($k) => $k->where('divisi_id_divisi', $divisionId));
-                    });
-            })
+            ->where('id_user', '!=', $kadiv->id_user)
             ->get();
 
         return view('livewire.kadiv.pesan-table', ['messages' => $messages, 'recipients' => $recipients]);
