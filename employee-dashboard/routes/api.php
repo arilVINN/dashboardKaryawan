@@ -42,6 +42,7 @@ Route::middleware([
         Route::get('/notifikasi', [\App\Http\Controllers\Staff\NotifikasiController::class, 'index']);
         Route::get('/tugas', [StaffTugasController::class, 'index']);
         Route::get('/tugas/{id}', [StaffTugasController::class, 'show']);
+        Route::patch('/tugas/{id}/toggle-checklist', [StaffTugasController::class, 'toggleChecklist']);
         Route::post('/tugas/{id}/submit', [StaffTugasController::class, 'submit']);
         Route::get('/pesan', [PesanController::class, 'index']);
         Route::get('/pesan/{id_pesan}', [PesanController::class, 'show']);

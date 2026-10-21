@@ -61,8 +61,13 @@ class Tugas extends Model
         'deadline',
         'progress',
         'status',
+        'checklist_selesai',
         'tanggal_dibuat',
         'tanggal_update',
+    ];
+
+    protected $casts = [
+        'checklist_selesai' => 'boolean',
     ];
 
     protected static function booted(): void
