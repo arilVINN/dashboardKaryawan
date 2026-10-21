@@ -260,6 +260,8 @@
         loadStaffTugas();
     };
 
+    window.loadStaffTugas = loadStaffTugas;
+
     document.addEventListener('DOMContentLoaded', function () {
         loadStaffTugas();
         document.getElementById('staffTugasApply')?.addEventListener('click', loadStaffTugas);
