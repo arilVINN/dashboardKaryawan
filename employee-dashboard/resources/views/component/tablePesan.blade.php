@@ -240,6 +240,8 @@
         renderStaffPesan();
     };
 
+    window.loadStaffPesan = loadStaffPesan;
+
     document.addEventListener('DOMContentLoaded', function() {
         loadStaffPesan();
         document.getElementById('staffPesanApply')?.addEventListener('click', renderStaffPesan);

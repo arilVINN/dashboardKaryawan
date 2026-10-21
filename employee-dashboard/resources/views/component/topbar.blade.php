@@ -152,3 +152,5 @@
         HTMLFormElement.prototype.submit.call(form);
     });
 </script>
+<!-- Toast container tersedia di semua halaman staff via topbar -->
+<div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
