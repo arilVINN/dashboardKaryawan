@@ -25,8 +25,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 items-start mt-6">
                 @include('component.tableTugas',['compact' => true])
-                @include('component.tablePesan',['compact' => true])
-                @include('components.modalSuratIzin', ['routeSurat' => 'staff.suratIzin.store'])
+
             </div>
         </main>
 
