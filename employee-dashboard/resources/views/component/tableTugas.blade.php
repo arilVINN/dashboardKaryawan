@@ -67,9 +67,6 @@
                             <th class="px-4 py-3 font-medium whitespace-nowrap">Status</th>
                         @endif
                         <th class="px-4 py-3 font-medium whitespace-nowrap text-center">Aksi</th>
-                        @unless ($isCompact)
-                            <th class="px-4 py-3 font-medium whitespace-nowrap text-center">Checklist</th>
-                        @endunless
                     </tr>
                 </thead>
                 <tbody id="tbody-tugas" class="divide-y divide-slate-200">
@@ -170,14 +167,6 @@
                                 Lihat
                             </a>
                         </td>
-                        @unless ($isCompact)
-                            <td class="{{ $cellPadding }} whitespace-nowrap text-center">
-                                <input type="checkbox" data-checklist data-task-id="${t.id_tugas}"
-                                    aria-label="Checklist tugas ${t.judul_tugas}"
-                                    class="h-4 w-4 accent-[#004A65]"
-                                    ${t.checklist_selesai ? 'checked' : ''}>
-                            </td>
-                        @endunless
                     </tr>`;
 
                 tbody.innerHTML += rowHtml;
@@ -189,52 +178,6 @@
             tbody.innerHTML = `<tr><td colspan="${isCompact ? 4 : 5}" class="text-center py-6 text-red-500">Gagal mengambil data tugas</td></tr>`;
         }
     }
-
-    document.getElementById('tbody-tugas')?.addEventListener('change', async (event) => {
-        const checkbox = event.target;
-        if (!(checkbox instanceof HTMLInputElement) || !checkbox.matches('[data-checklist]')) return;
-
-        const previousValue = !checkbox.checked;
-        const token = localStorage.getItem('staff_token') || sessionStorage.getItem('staff_token');
-        if (!token) {
-            checkbox.checked = previousValue;
-            alert('Sesi Anda berakhir. Silakan masuk kembali.');
-            return;
-        }
-
-        checkbox.disabled = true;
-        try {
-            const response = await fetch(
-                `/api/staff/tugas/${encodeURIComponent(checkbox.dataset.taskId)}/toggle-checklist`,
-                {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ selesai: checkbox.checked })
-                }
-            );
-
-            if (!response.ok) {
-                let message = `Gagal memperbarui checklist (HTTP ${response.status}).`;
-                try {
-                    const payload = await response.json();
-                    if (typeof payload.message === 'string') message = payload.message;
-                } catch (error) {
-                    console.error('Gagal membaca respons pembaruan checklist', error);
-                }
-                throw new Error(message);
-            }
-
-        } catch (error) {
-            checkbox.checked = previousValue;
-            alert(error instanceof Error ? error.message : 'Gagal memperbarui checklist.');
-        } finally {
-            checkbox.disabled = false;
-        }
-    });
 
     function updateStaffTugasSortIndicators() {
         document.querySelectorAll('[data-sort-indicator]').forEach((el) => {

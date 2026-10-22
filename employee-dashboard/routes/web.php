@@ -47,6 +47,10 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
         return view('staff.detailTugas');
     })->name('tugas.detail');
 
+    Route::get('/project/detail/{id}', function (string $id) {
+        return view('staff.detailProject', ['id' => $id]);
+    })->name('project.detail');
+
     Route::get('/profile', function () {
         return view('staff.detailProfile');
     })->name('profile');
@@ -230,7 +234,7 @@ Route::post('/surat-izin', [KadivController::class, 'storeSuratIzin'])
     ->middleware('throttle:submit-form')
     ->name('kadiv.suratIzin.store');
 
-    // di dalam grup staff yang sudah ada (middleware ['auth', 'role:staff'])
+// di dalam grup staff yang sudah ada (middleware ['auth', 'role:staff'])
 Route::post('/surat-izin', [SuratIzinController::class, 'store'])
     ->middleware(['auth', 'role:staff', 'throttle:submit-form'])
     ->name('staff.suratIzin.store');
@@ -245,3 +249,8 @@ Route::post('/suratIzin/{suratIzin}/acc', [HrdDashboardController::class, 'appro
 Route::post('/suratIzin/{suratIzin}/tolak', [HrdDashboardController::class, 'rejectSuratIzin'])
     ->middleware(['auth', 'role:hrd', 'throttle:submit-form'])
     ->name('hrd.suratIzin.tolak');
+
+//project 
+Route::post('/project', [KadivController::class, 'storeProject'])
+    ->middleware('throttle:submit-form')
+    ->name('kadiv.project.store');
