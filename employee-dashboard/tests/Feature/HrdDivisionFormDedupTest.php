@@ -224,14 +224,14 @@ class HrdDivisionFormDedupTest extends TestCase
         $this->assertStringContainsString('input-foto-edit-karyawan', $editChunk);
     }
 
-    public function test_create_accepts_tanggal_rekrut(): void
+    public function test_create_accepts_tanggal_masuk(): void
     {
         $this->actingAs($this->hrd)
             ->postJson('/hrd/staff', [
                 'nama' => 'Calon Karyawan',
                 'jenis_kelamin' => 'Laki-laki',
                 'jabatan' => 'Staff',
-                'tanggal_rekrut' => '2026-02-01',
+                'tanggal_masuk' => '2026-02-01',
                 'divisi_id_divisi' => 'DIV-EMPTY',
                 'username' => 'calonrekrut',
                 'password' => 'password',
@@ -239,18 +239,18 @@ class HrdDivisionFormDedupTest extends TestCase
             ->assertCreated();
 
         $this->assertDatabaseHas('karyawans', [
-            'tanggal_rekrut' => '2026-02-01',
+            'tanggal_masuk' => '2026-02-01',
         ]);
     }
 
-    public function test_modals_offer_tanggal_rekrut_date_input(): void
+    public function test_modals_offer_tanggal_masuk_date_input(): void
     {
         $html = $this->actingAs($this->hrd)
             ->get('/hrd/detailDivisi/DIV-EMPTY')
             ->assertOk()
             ->getContent();
 
-        $this->assertSame(2, substr_count($html, 'type="date" name="tanggal_rekrut"'));
+        $this->assertSame(2, substr_count($html, 'type="date" name="tanggal_masuk"'));
 
         $createChunk = substr($html, strpos($html, 'formTambahKaryawan'));
         $createChunk = substr($createChunk, 0, strpos($createChunk, 'Kepegawaian'));
@@ -264,7 +264,7 @@ class HrdDivisionFormDedupTest extends TestCase
         $this->assertSame(1, substr_count($between, 'name="'));
     }
 
-    public function test_tanggal_rekrut_lives_in_kepegawaian_section(): void
+    public function test_tanggal_masuk_lives_in_kepegawaian_section(): void
     {
         $html = $this->actingAs($this->hrd)
             ->get('/hrd/detailDivisi/DIV-EMPTY')
@@ -274,11 +274,11 @@ class HrdDivisionFormDedupTest extends TestCase
         foreach (['formTambahKaryawan', 'formEditKaryawan'] as $formId) {
             $chunk = substr($html, strpos($html, $formId));
             $pegawaiChunk = substr($chunk, 0, strpos($chunk, 'Kepegawaian'));
-            $this->assertStringNotContainsString('name="tanggal_rekrut"', $pegawaiChunk);
+            $this->assertStringNotContainsString('name="tanggal_masuk"', $pegawaiChunk);
 
             $kepegawaianChunk = substr($chunk, strpos($chunk, 'Kepegawaian'));
             $kepegawaianChunk = substr($kepegawaianChunk, 0, strpos($kepegawaianChunk, 'Akun Login'));
-            $this->assertStringContainsString('type="date" name="tanggal_rekrut"', $kepegawaianChunk);
+            $this->assertStringContainsString('type="date" name="tanggal_masuk"', $kepegawaianChunk);
         }
     }
 

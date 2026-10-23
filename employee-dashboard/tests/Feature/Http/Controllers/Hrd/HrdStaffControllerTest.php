@@ -68,5 +68,6 @@ class HrdStaffControllerTest extends TestCase
             'username' => 'karyawanbaru',
             'role_id_role' => $staffRole->id_role,
         ]);
+
     }
 }

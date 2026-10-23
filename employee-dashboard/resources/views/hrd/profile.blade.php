@@ -131,7 +131,7 @@
                 'hrd-profile-phone': profile.no_telepon,
                 'hrd-profile-job': profile.jabatan,
                 'hrd-profile-division': profile.divisi,
-                'hrd-profile-hire-date': profile.tanggal_rekrut,
+                'hrd-profile-hire-date': profile.tanggal_masuk || profile.tanggal_rekrut,
                 'hrd-profile-created-date': profile.tanggal_dibuat,
                 'hrd-profile-personal-name': profile.nama,
                 'hrd-profile-personal-email': profile.email,

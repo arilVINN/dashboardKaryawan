@@ -21,7 +21,7 @@ class HrdKaryawanController extends Controller
 
     public function detailPage(string $id)
     {
-        $karyawan = Karyawan::with(['divisi', 'user.role', 'tugas'])
+        $karyawan = Karyawan::with(['divisi', 'user.role', 'tugas', 'lampiran'])
             ->where('id_karyawan', $id)
             ->firstOrFail();
 

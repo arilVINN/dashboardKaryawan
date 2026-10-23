@@ -28,10 +28,10 @@ class HrdStaffCrudTest extends TestCase
 
         Divisi::create(['id_divisi' => 'DIV-IT', 'kode_divisi' => 'IT', 'nama_divisi' => 'Teknologi Informasi', 'status_aktif' => 'Aktif']);
 
-        Karyawan::create(['id_karyawan' => 'KRY-1', 'nama' => 'Andi Wijaya', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1995-05-05', 'tanggal_rekrut' => '2026-01-01', 'no_telepon' => '081234567890', 'email' => 'andi@example.test', 'jabatan' => 'Engineer', 'divisi_id_divisi' => 'DIV-IT']);
+        Karyawan::create(['id_karyawan' => 'KRY-1', 'nama' => 'Andi Wijaya', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1995-05-05', 'tanggal_masuk' => '2026-01-01', 'no_telepon' => '081234567890', 'email' => 'andi@example.test', 'jabatan' => 'Engineer', 'divisi_id_divisi' => 'DIV-IT']);
         User2::create(['id_user' => 'USR-1', 'username' => 'andi', 'password' => Hash::make('pass123'), 'role_id_role' => 'ROLE-STAFF', 'karyawan_id_karyawan' => 'KRY-1']);
 
-        Karyawan::create(['id_karyawan' => 'KRY-HRD', 'nama' => 'HRD User', 'jenis_kelamin' => 'Perempuan', 'tanggal_lahir' => '1990-01-01', 'tanggal_rekrut' => '2020-01-01', 'no_telepon' => '0812', 'jabatan' => 'HRD', 'divisi_id_divisi' => 'DIV-IT']);
+        Karyawan::create(['id_karyawan' => 'KRY-HRD', 'nama' => 'HRD User', 'jenis_kelamin' => 'Perempuan', 'tanggal_lahir' => '1990-01-01', 'tanggal_masuk' => '2020-01-01', 'no_telepon' => '0812', 'jabatan' => 'HRD', 'divisi_id_divisi' => 'DIV-IT']);
         $this->hrd = User2::create(['id_user' => 'USR-HRD', 'username' => 'hrduser', 'password' => Hash::make('pass123'), 'role_id_role' => 'ROLE-HRD', 'karyawan_id_karyawan' => 'KRY-HRD']);
 
         Tugas::create([

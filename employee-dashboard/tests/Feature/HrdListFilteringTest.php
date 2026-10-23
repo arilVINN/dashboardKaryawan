@@ -53,7 +53,7 @@ class HrdListFilteringTest extends TestCase
             'nama' => $nama,
             'jenis_kelamin' => 'Laki-laki',
             'tanggal_lahir' => '1995-01-01',
-            'tanggal_rekrut' => '2026-01-01',
+            'tanggal_masuk' => '2026-01-01',
             'no_telepon' => '081234567890',
             'jabatan' => $jabatan,
             'divisi_id_divisi' => $divisiId,

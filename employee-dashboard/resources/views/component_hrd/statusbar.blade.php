@@ -10,7 +10,7 @@
 @endphp
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
-    <a href="/hrd/daftarKaryawan"
+    <a href="{{ route('hrd.daftarKaryawan') }}"
         class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between hover:text-blue-600 hover:bg-blue-100 transition-all duration-300">
         <div class="flex flex-col">
             <span class="text-sm font-bold">Total Karyawan</span>
@@ -24,20 +24,19 @@
         </svg>
     </a>
 
-    <a href="#"
+    <a href="{{ route('hrd.analitikKaryawan') }}"
         class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between  hover:text-blue-600 hover:bg-blue-100 transition-all duration-300">
         <div class="flex flex-col">
             <span class="text-sm font-bold">Total Divisi</span>
             <span class="text-xl font-bold mt-1"
                 data-dashboard-metric="total-divisi">{{ $totalDivisi }}</span>
         </div>
-        <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6"></path>
+        <svg class="w-8 h-8 text-violet-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21"></path>
         </svg>
     </a>
 
-    <a href="#"
+    <a href="{{ route('hrd.pesan') }}"
         class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between  hover:text-blue-600 hover:bg-blue-100 transition-all duration-300">
         <div class="flex flex-col">
             <span class="text-sm font-bold">Total Pesan</span>

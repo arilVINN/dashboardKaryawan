@@ -284,7 +284,7 @@
                 'profile-header-phone': profile.no_telepon,
                 'profile-role': profile.jabatan,
                 'profile-division': profile.divisi,
-                'profile-hire-date': profile.tanggal_rekrut,
+                'profile-hire-date': profile.tanggal_masuk || profile.tanggal_rekrut,
                 'profile-created-date': profile.tanggal_dibuat,
                 'profile-email': profile.email,
                 'profile-address': profile.alamat,

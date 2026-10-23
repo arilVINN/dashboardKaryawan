@@ -24,7 +24,7 @@ class TopbarTest extends TestCase
             ['id_role' => 'ROLE-HRD', 'nama_role' => 'HRD'],
         ]);
         Divisi::create(['id_divisi' => 'DIV-IT', 'kode_divisi' => 'IT', 'nama_divisi' => 'Teknologi Informasi', 'status_aktif' => 'Aktif']);
-        Karyawan::create(['id_karyawan' => 'KRY-HRD', 'nama' => 'Darmawan HRD', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1990-01-01', 'tanggal_rekrut' => '2020-01-01', 'no_telepon' => '0812', 'jabatan' => 'HRD', 'divisi_id_divisi' => 'DIV-IT']);
+        Karyawan::create(['id_karyawan' => 'KRY-HRD', 'nama' => 'Darmawan HRD', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1990-01-01', 'tanggal_masuk' => '2020-01-01', 'no_telepon' => '0812', 'jabatan' => 'HRD', 'divisi_id_divisi' => 'DIV-IT']);
 
         $this->hrd = User2::create([
             'id_user' => 'USR-HRD',

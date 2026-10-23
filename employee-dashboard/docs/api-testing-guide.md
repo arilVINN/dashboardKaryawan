@@ -500,7 +500,9 @@ Body JSON:
   "nama": "John Doe",
   "jenis_kelamin": "Laki-laki",
   "tanggal_lahir": "1995-05-05",
-  "tanggal_rekrut": "2026-01-15",
+  "tanggal_masuk": "2026-01-15",
+  "tanggal_akhir_kontrak": null,
+  "no_rekening": "1234567890",
   "no_telepon": "081234567890",
   "jabatan": "Backend Developer",
   "divisi_id_divisi": "DV001",
@@ -520,7 +522,7 @@ Body JSON:
 
 ### PUT/PATCH `/api/hrd/staff/{id}` — Edit staff
 
-Body JSON parsial. Field profil yang dapat diubah: `nama`, `jenis_kelamin`, `tanggal_lahir`, `tanggal_rekrut`, `no_telepon`, `jabatan`, dan `divisi_id_divisi`. Field akun opsional: `username`, `password`, serta `role_id_role`. Role yang diizinkan hanya ID role dengan nama `kadiv` atau `staff`.
+Body JSON parsial. Field profil yang dapat diubah: `nama`, `jenis_kelamin`, `tanggal_lahir`, `tanggal_masuk`, `no_rekening`, `tanggal_akhir_kontrak`, `no_telepon`, `jabatan`, dan `divisi_id_divisi`. Field akun opsional: `username`, `password`, serta `role_id_role`. Role yang diizinkan hanya ID role dengan nama `kadiv` atau `staff`.
 
 - `200` → data staff terbaru
 - `404` → staff tidak ditemukan

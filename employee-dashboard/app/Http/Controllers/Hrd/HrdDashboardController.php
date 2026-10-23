@@ -131,4 +131,48 @@ class HrdDashboardController extends Controller
 
         return back()->with('success', 'Surat izin berhasil ditolak.');
     }
+
+    public function analitikKaryawan()
+    {
+        $totalDivisi = Divisi::count();
+        $totalKaryawanAktif = Karyawan::where('aktif', true)->count();
+
+        $gender = Karyawan::where('aktif', true)
+            ->selectRaw('jenis_kelamin, COUNT(*) as jumlah')
+            ->groupBy('jenis_kelamin')
+            ->pluck('jumlah', 'jenis_kelamin');
+
+        $pendidikan = Karyawan::where('aktif', true)
+            ->selectRaw('pendidikan, COUNT(*) as jumlah')
+            ->groupBy('pendidikan')
+            ->pluck('jumlah', 'pendidikan');
+
+        $jobLevel = Karyawan::where('aktif', true)
+            ->selectRaw('job_level, COUNT(*) as jumlah')
+            ->groupBy('job_level')
+            ->pluck('jumlah', 'job_level');
+
+        $statusKaryawan = Karyawan::where('aktif', true)
+            ->selectRaw("
+                CASE
+                    WHEN tanggal_akhir_kontrak IS NULL THEN 'Tetap'
+                    ELSE 'Tidak Tetap'
+                END as status_karyawan,
+                COUNT(*) as jumlah
+            ")
+            ->groupByRaw("CASE WHEN tanggal_akhir_kontrak IS NULL THEN 'Tetap' ELSE 'Tidak Tetap' END")
+            ->pluck('jumlah', 'status_karyawan');
+
+        $divisiList = Divisi::withCount(['karyawans' => fn($q) => $q->where('aktif', true)])->get();
+
+        return view('hrd.analitikKaryawan', compact(
+            'totalDivisi',
+            'totalKaryawanAktif',
+            'gender',
+            'pendidikan',
+            'jobLevel',
+            'statusKaryawan',
+            'divisiList'
+        ));
+    }
 }
