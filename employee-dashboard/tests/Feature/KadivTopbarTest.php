@@ -24,7 +24,7 @@ class KadivTopbarTest extends TestCase
             ['id_role' => 'ROLE-KADIV', 'nama_role' => 'Kadiv'],
         ]);
         Divisi::create(['id_divisi' => 'DIV-IT', 'kode_divisi' => 'IT', 'nama_divisi' => 'Teknologi Informasi', 'status_aktif' => 'Aktif']);
-        Karyawan::create(['id_karyawan' => 'KRY-KADIV', 'nama' => 'Pak Tono', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1985-01-01', 'tanggal_rekrut' => '2019-01-01', 'no_telepon' => '0812', 'email' => 'tono@silindo.test', 'jabatan' => 'Kadiv', 'divisi_id_divisi' => 'DIV-IT']);
+        Karyawan::create(['id_karyawan' => 'KRY-KADIV', 'nama' => 'Pak Tono', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1985-01-01', 'tanggal_masuk' => '2019-01-01', 'no_telepon' => '0812', 'email' => 'tono@silindo.test', 'jabatan' => 'Kadiv', 'divisi_id_divisi' => 'DIV-IT']);
 
         $this->kadiv = User2::create([
             'id_user' => 'USR-KADIV',

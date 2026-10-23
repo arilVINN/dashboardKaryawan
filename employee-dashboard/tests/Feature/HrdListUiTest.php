@@ -29,10 +29,10 @@ class HrdListUiTest extends TestCase
         Divisi::create(['id_divisi' => 'DIV-IT', 'kode_divisi' => 'IT', 'nama_divisi' => 'Teknologi Informasi', 'status_aktif' => 'Aktif']);
         Divisi::create(['id_divisi' => 'DIV-OPS', 'kode_divisi' => 'OPS', 'nama_divisi' => 'Operasional', 'status_aktif' => 'Nonaktif']);
 
-        Karyawan::create(['id_karyawan' => 'KRY-A', 'nama' => 'Andi Wijaya', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1995-01-01', 'tanggal_rekrut' => '2026-01-01', 'no_telepon' => '0812', 'jabatan' => 'Engineer', 'divisi_id_divisi' => 'DIV-IT']);
-        Karyawan::create(['id_karyawan' => 'KRY-B', 'nama' => 'Budi Santoso', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1995-01-01', 'tanggal_rekrut' => '2026-01-01', 'no_telepon' => '0812', 'jabatan' => 'Operator', 'divisi_id_divisi' => 'DIV-OPS']);
+        Karyawan::create(['id_karyawan' => 'KRY-A', 'nama' => 'Andi Wijaya', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1995-01-01', 'tanggal_masuk' => '2026-01-01', 'no_telepon' => '0812', 'jabatan' => 'Engineer', 'divisi_id_divisi' => 'DIV-IT']);
+        Karyawan::create(['id_karyawan' => 'KRY-B', 'nama' => 'Budi Santoso', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1995-01-01', 'tanggal_masuk' => '2026-01-01', 'no_telepon' => '0812', 'jabatan' => 'Operator', 'divisi_id_divisi' => 'DIV-OPS']);
 
-        Karyawan::create(['id_karyawan' => 'KRY-HRD', 'nama' => 'HRD User', 'jenis_kelamin' => 'Perempuan', 'tanggal_lahir' => '1990-01-01', 'tanggal_rekrut' => '2020-01-01', 'no_telepon' => '0812', 'jabatan' => 'HRD', 'divisi_id_divisi' => 'DIV-IT']);
+        Karyawan::create(['id_karyawan' => 'KRY-HRD', 'nama' => 'HRD User', 'jenis_kelamin' => 'Perempuan', 'tanggal_lahir' => '1990-01-01', 'tanggal_masuk' => '2020-01-01', 'no_telepon' => '0812', 'jabatan' => 'HRD', 'divisi_id_divisi' => 'DIV-IT']);
         $this->hrd = User2::create([
             'id_user' => 'USR-HRD',
             'username' => 'hrduser',
@@ -52,6 +52,27 @@ class HrdListUiTest extends TestCase
             ->assertSee('wire:click="sortBy(\'divisi\')"', false)
             ->assertSee('wire:click="sortBy(\'jabatan\')"', false)
             ->assertDontSee('wire:click="sortBy(\'status\')"', false);
+    }
+
+    public function test_employee_analytics_classifies_contract_staff_as_non_permanent(): void
+    {
+        Karyawan::create([
+            'id_karyawan' => 'KRY-CONTRACT',
+            'nama' => 'Karyawan Kontrak',
+            'jenis_kelamin' => 'Perempuan',
+            'tanggal_masuk' => '2026-01-01',
+            'tanggal_akhir_kontrak' => '2027-01-01',
+            'jabatan' => 'Staff',
+            'divisi_id_divisi' => 'DIV-IT',
+        ]);
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/analitikKaryawan')
+            ->assertOk()
+            ->assertViewHas('statusKaryawan', function ($statusKaryawan): bool {
+                return (int) $statusKaryawan->get('Tetap') === 3
+                    && (int) $statusKaryawan->get('Tidak Tetap') === 1;
+            });
     }
 
     // NOTE: header direction toggling moved to

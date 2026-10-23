@@ -40,8 +40,8 @@ class StaffRoutesTest extends TestCase
         ]);
         Divisi::create(['id_divisi' => 'DIV-IT', 'kode_divisi' => 'IT', 'nama_divisi' => 'Teknologi Informasi', 'status_aktif' => 'Aktif']);
 
-        Karyawan::create(['id_karyawan' => 'KRY-S', 'nama' => 'Staff Satu', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1995-01-01', 'tanggal_rekrut' => '2026-01-01', 'no_telepon' => '0812', 'jabatan' => 'Staff', 'divisi_id_divisi' => 'DIV-IT']);
-        Karyawan::create(['id_karyawan' => 'KRY-H', 'nama' => 'HRD Satu', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1990-01-01', 'tanggal_rekrut' => '2023-01-01', 'no_telepon' => '0813', 'jabatan' => 'HRD', 'divisi_id_divisi' => 'DIV-IT']);
+        Karyawan::create(['id_karyawan' => 'KRY-S', 'nama' => 'Staff Satu', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1995-01-01', 'tanggal_masuk' => '2026-01-01', 'no_telepon' => '0812', 'jabatan' => 'Staff', 'divisi_id_divisi' => 'DIV-IT']);
+        Karyawan::create(['id_karyawan' => 'KRY-H', 'nama' => 'HRD Satu', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1990-01-01', 'tanggal_masuk' => '2023-01-01', 'no_telepon' => '0813', 'jabatan' => 'HRD', 'divisi_id_divisi' => 'DIV-IT']);
 
         $this->staff = User2::create([
             'id_user' => 'USR-S',

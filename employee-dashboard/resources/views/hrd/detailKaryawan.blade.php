@@ -44,7 +44,9 @@
                                 'No. Telepon' => $karyawan->no_telepon,
                                 'Email' => $karyawan->email,
                                 'Alamat' => $karyawan->alamat,
-                                'Tanggal Rekrut' => $karyawan->tanggal_rekrut ? \Carbon\Carbon::parse($karyawan->tanggal_rekrut)->format('d M Y') : null,
+                                'No. Rekening' => $karyawan->no_rekening,
+                                'Tanggal Masuk' => ($karyawan->tanggal_masuk ?? $karyawan->tanggal_rekrut) ? \Carbon\Carbon::parse($karyawan->tanggal_masuk ?? $karyawan->tanggal_rekrut)->format('d M Y') : null,
+                                'Tanggal Akhir Kontrak' => $karyawan->tanggal_akhir_kontrak ? \Carbon\Carbon::parse($karyawan->tanggal_akhir_kontrak)->format('d M Y') : 'Karyawan Tetap / Tidak Ada',
                             ];
                         @endphp
                         @foreach ($info as $label => $nilai)
@@ -84,6 +86,86 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Section Dokumen Lampiran Karyawan -->
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden p-6">
+                <div class="flex items-center justify-between pb-4 border-b border-slate-200 mb-5">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Lampiran Dokumen</h2>
+                        <p class="text-xs text-slate-500">Berkas dan dokumen data diri karyawan yang telah diunggah.</p>
+                    </div>
+                    <span class="px-3 py-1 bg-blue-50 text-[#0097B2] rounded-full text-xs font-semibold">
+                        {{ $karyawan->lampiran ? $karyawan->lampiran->count() : 0 }} Dokumen
+                    </span>
+                </div>
+
+                @php
+                    $katalogJenis = [
+                        'lamaran' => 'Surat Lamaran',
+                        'ijazah' => 'Ijazah',
+                        'transkrip' => 'Transkrip Nilai',
+                        'ktp' => 'Kartu Tanda Penduduk (KTP)',
+                        'kk' => 'Kartu Keluarga (KK)',
+                        'offering_letter' => 'Offering Letter',
+                        'lainnya' => 'Dokumen Lainnya / SK',
+                    ];
+                    $lampiranByJenis = ($karyawan->lampiran ?? collect())->groupBy('jenis_lampiran');
+                @endphp
+
+                @if (!$karyawan->lampiran || $karyawan->lampiran->isEmpty())
+                    <div class="text-center py-8 text-slate-400 text-sm">
+                        <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                        </svg>
+                        Belum ada lampiran dokumen yang diunggah untuk karyawan ini.
+                    </div>
+                @else
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach ($katalogJenis as $kodeJenis => $namaJenis)
+                            @php
+                                $items = $lampiranByJenis->get($kodeJenis, collect());
+                            @endphp
+                            <div class="border border-slate-200 rounded-lg p-4 bg-slate-50/50 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h3 class="text-sm font-bold text-slate-700">{{ $namaJenis }}</h3>
+                                        <span class="text-xs px-2 py-0.5 rounded-full {{ $items->isNotEmpty() ? 'bg-green-100 text-green-700 font-semibold' : 'bg-slate-200 text-slate-500' }}">
+                                            {{ $items->count() }} file
+                                        </span>
+                                    </div>
+
+                                    @if ($items->isNotEmpty())
+                                        <ul class="divide-y divide-slate-200 text-xs text-slate-600">
+                                            @foreach ($items as $lampiran)
+                                                <li class="py-2 flex items-center justify-between gap-2">
+                                                    <div class="min-w-0 flex-1">
+                                                        <p class="font-medium text-slate-800 truncate" title="{{ $lampiran->nama_file }}">
+                                                            {{ $lampiran->nama_file }}
+                                                        </p>
+                                                        <p class="text-[10px] text-slate-400">
+                                                            {{ $lampiran->created_at ? $lampiran->created_at->format('d M Y, H:i') : '-' }}
+                                                        </p>
+                                                    </div>
+                                                    <a href="{{ route('hrd.lampiran.download', $lampiran->id_lampiran) }}"
+                                                        class="shrink-0 px-2.5 py-1 bg-[#0097B2] hover:bg-[#008199] text-white text-xs font-medium rounded transition flex items-center gap-1"
+                                                        title="Download File">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                                        </svg>
+                                                        <span>Unduh</span>
+                                                    </a>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        <p class="text-xs text-slate-400 italic py-1">Tidak ada dokumen</p>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
 
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">

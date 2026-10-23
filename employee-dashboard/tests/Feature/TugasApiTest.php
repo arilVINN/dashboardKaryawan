@@ -288,7 +288,7 @@ class TugasApiTest extends TestCase
             'nama' => 'Joko (Teman Divisi)',
             'jenis_kelamin' => 'Laki-laki',
             'tanggal_lahir' => '1996-01-01',
-            'tanggal_rekrut' => '2023-01-10',
+            'tanggal_masuk' => '2023-01-10',
             'no_telepon' => '08111',
             'jabatan' => 'Frontend',
             'divisi_id_divisi' => $staffA->karyawan->divisi_id_divisi, // Satu divisi!

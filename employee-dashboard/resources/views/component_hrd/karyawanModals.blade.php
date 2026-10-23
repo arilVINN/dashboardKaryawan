@@ -68,6 +68,10 @@
                             <textarea name="alamat" rows="2" class="{{ $formControl }}" placeholder="Jalan, nomor, kota"></textarea>
                         </div>
                         <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">NO. REKENING (OPSIONAL)</label>
+                            <input type="text" name="no_rekening" maxlength="50" placeholder="Contoh: BCA 1234567890" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
                             <label class="text-xs font-bold text-slate-500">FOTO PROFIL (JPG/PNG/WEBP, MAKS. 2 MB,
                                 OPSIONAL)</label>
                             <input type="file" id="input-foto-karyawan" accept="image/jpeg,image/png,image/webp"
@@ -111,8 +115,12 @@
                             @endif
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
-                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
+                            <label class="text-xs font-bold text-slate-500">TANGGAL MASUK</label>
+                            <input type="date" name="tanggal_masuk" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">TANGGAL AKHIR KONTRAK (KOSONGKAN JIKA TETAP)</label>
+                            <input type="date" name="tanggal_akhir_kontrak" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">STATUS</label>
@@ -121,6 +129,43 @@
                                     <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
                             </select>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="space-y-4">
+                    <div class="flex items-center gap-2">
+                        <span class="h-4 w-1 rounded bg-[#0097B2]"></span>
+                        <h4 class="text-xs font-bold uppercase tracking-wide text-slate-600">Upload Lampiran (Maks 5MB per file, PDF/JPG/PNG)</h4>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">SURAT LAMARAN (OPSIONAL)</label>
+                            <input type="file" name="lampiran[lamaran]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">IJAZAH (OPSIONAL)</label>
+                            <input type="file" name="lampiran[ijazah]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">TRANSKRIP NILAI (OPSIONAL)</label>
+                            <input type="file" name="lampiran[transkrip]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">KTP (OPSIONAL)</label>
+                            <input type="file" name="lampiran[ktp]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">KARTU KELUARGA / KK (OPSIONAL)</label>
+                            <input type="file" name="lampiran[kk]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">OFFERING LETTER (OPSIONAL)</label>
+                            <input type="file" name="lampiran[offering_letter]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">LAINNYA / SK (OPSIONAL)</label>
+                            <input type="file" name="lampiran[lainnya]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
                         </div>
                     </div>
                 </section>
@@ -214,6 +259,10 @@
                             <textarea name="alamat" rows="2" class="{{ $formControl }}" placeholder="Jalan, nomor, kota"></textarea>
                         </div>
                         <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">NO. REKENING (OPSIONAL)</label>
+                            <input type="text" name="no_rekening" maxlength="50" placeholder="Contoh: BCA 1234567890" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
                             <label class="text-xs font-bold text-slate-500">FOTO PROFIL BARU (JPG/PNG/WEBP, MAKS. 2 MB,
                                 OPSIONAL)</label>
                             <input type="file" id="input-foto-edit-karyawan"
@@ -246,8 +295,12 @@
                             </select>
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-bold text-slate-500">TANGGAL REKRUT</label>
-                            <input type="date" name="tanggal_rekrut" class="{{ $formControl }}">
+                            <label class="text-xs font-bold text-slate-500">TANGGAL MASUK</label>
+                            <input type="date" name="tanggal_masuk" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">TANGGAL AKHIR KONTRAK (KOSONGKAN JIKA TETAP)</label>
+                            <input type="date" name="tanggal_akhir_kontrak" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">STATUS</label>
@@ -256,6 +309,43 @@
                                     <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
                             </select>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="space-y-4">
+                    <div class="flex items-center gap-2">
+                        <span class="h-4 w-1 rounded bg-[#0097B2]"></span>
+                        <h4 class="text-xs font-bold uppercase tracking-wide text-slate-600">Upload Lampiran (Maks 5MB per file, PDF/JPG/PNG)</h4>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">SURAT LAMARAN (OPSIONAL)</label>
+                            <input type="file" name="lampiran[lamaran]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">IJAZAH (OPSIONAL)</label>
+                            <input type="file" name="lampiran[ijazah]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">TRANSKRIP NILAI (OPSIONAL)</label>
+                            <input type="file" name="lampiran[transkrip]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">KTP (OPSIONAL)</label>
+                            <input type="file" name="lampiran[ktp]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">KARTU KELUARGA / KK (OPSIONAL)</label>
+                            <input type="file" name="lampiran[kk]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">OFFERING LETTER (OPSIONAL)</label>
+                            <input type="file" name="lampiran[offering_letter]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5 sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500">LAINNYA / SK (OPSIONAL)</label>
+                            <input type="file" name="lampiran[lainnya]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
                         </div>
                     </div>
                 </section>
@@ -321,7 +411,15 @@
         form.elements['nama'].value = button.dataset.nama || '';
         form.elements['jenis_kelamin'].value = button.dataset.gender || 'Laki-laki';
         form.elements['tanggal_lahir'].value = button.dataset.lahir || '';
-        form.elements['tanggal_rekrut'].value = button.dataset.rekrut || '';
+        if (form.elements['tanggal_masuk']) {
+            form.elements['tanggal_masuk'].value = button.dataset.masuk || button.dataset.rekrut || '';
+        }
+        if (form.elements['tanggal_akhir_kontrak']) {
+            form.elements['tanggal_akhir_kontrak'].value = button.dataset.akhirKontrak || '';
+        }
+        if (form.elements['no_rekening']) {
+            form.elements['no_rekening'].value = button.dataset.rekening || '';
+        }
         form.elements['email'].value = button.dataset.email || '';
         form.elements['alamat'].value = button.dataset.alamat || '';
         form.elements['no_telepon'].value = button.dataset.telepon || '';
@@ -384,11 +482,22 @@
         event.preventDefault();
         const form = event.currentTarget;
         const button = document.getElementById('btnSubmitKaryawan');
-        const data = Object.fromEntries(new FormData(form).entries());
-        delete data._token;
+        const formData = new FormData(form);
         button.disabled = true;
         try {
-            const result = await kirimStaff('{{ url('/hrd/staff') }}', 'POST', data, form);
+            const response = await fetch('{{ url('/hrd/staff') }}', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': karyawanCsrf(form),
+                },
+                body: formData,
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                const errors = result.errors ? Object.values(result.errors).flat().join('\n') : result.message;
+                throw new Error(errors || 'Permintaan gagal.');
+            }
             const createdId = result.data && result.data.karyawan ? result.data.karyawan.id_karyawan : null;
             if (createdId) {
                 await unggahFotoKaryawan('{{ url('/hrd/staff') }}/' + encodeURIComponent(createdId) + '/foto',
@@ -407,15 +516,27 @@
         event.preventDefault();
         const form = event.currentTarget;
         const button = document.getElementById('btnSimpanEditKaryawan');
-        const data = Object.fromEntries(new FormData(form).entries());
-        const id = data.id_karyawan;
-        delete data._token;
-        delete data.id_karyawan;
-        if (!data.password) delete data.password;
+        const formData = new FormData(form);
+        const id = formData.get('id_karyawan');
+        if (!formData.get('password')) {
+            formData.delete('password');
+        }
+        formData.append('_method', 'PUT');
         button.disabled = true;
         try {
-            const result = await kirimStaff('{{ url('/hrd/staff') }}/' + encodeURIComponent(id), 'PUT', data,
-                form);
+            const response = await fetch('{{ url('/hrd/staff') }}/' + encodeURIComponent(id), {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': karyawanCsrf(form),
+                },
+                body: formData,
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                const errors = result.errors ? Object.values(result.errors).flat().join('\n') : result.message;
+                throw new Error(errors || 'Gagal mengubah data karyawan.');
+            }
             await unggahFotoKaryawan('{{ url('/hrd/staff') }}/' + encodeURIComponent(id) + '/foto',
                 'input-foto-edit-karyawan', form);
             alert(result.message || 'Data karyawan berhasil diperbarui.');

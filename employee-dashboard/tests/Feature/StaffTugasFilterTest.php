@@ -24,7 +24,7 @@ class StaffTugasFilterTest extends TestCase
 
         Role::insert([['id_role' => 'ROLE-STAFF', 'nama_role' => 'Staff']]);
         Divisi::create(['id_divisi' => 'DIV-IT', 'kode_divisi' => 'IT', 'nama_divisi' => 'Teknologi Informasi', 'status_aktif' => 'Aktif']);
-        Karyawan::create(['id_karyawan' => 'KRY-S', 'nama' => 'Staff Satu', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1995-01-01', 'tanggal_rekrut' => '2026-01-01', 'no_telepon' => '0812', 'jabatan' => 'Staff', 'divisi_id_divisi' => 'DIV-IT']);
+        Karyawan::create(['id_karyawan' => 'KRY-S', 'nama' => 'Staff Satu', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1995-01-01', 'tanggal_masuk' => '2026-01-01', 'no_telepon' => '0812', 'jabatan' => 'Staff', 'divisi_id_divisi' => 'DIV-IT']);
         $this->staff = User2::create([
             'id_user' => 'USR-S',
             'username' => 'staffsatu',

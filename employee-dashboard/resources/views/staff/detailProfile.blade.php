@@ -193,7 +193,7 @@ U
                         document.getElementById('prof-divisi').textContent = p.divisi;
                         document.getElementById('prof-dibuat').textContent = p.tanggal_dibuat;
                         
-                        let rekrut = p.tanggal_rekrut;
+                        let rekrut = p.tanggal_masuk || p.tanggal_rekrut;
                         if (rekrut && rekrut !== '-') {
                             const d = new Date(rekrut);
                             rekrut = d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'][d.getMonth()] + ' ' + d.getFullYear();

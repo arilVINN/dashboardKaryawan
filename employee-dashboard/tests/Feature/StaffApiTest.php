@@ -371,7 +371,7 @@ class StaffApiTest extends TestCase
             'nama' => $name,
             'jenis_kelamin' => 'Laki-laki',
             'tanggal_lahir' => '2000-01-01',
-            'tanggal_rekrut' => '2026-01-10',
+            'tanggal_masuk' => '2026-01-10',
             'no_telepon' => '081234567890',
             'jabatan' => $name,
             'divisi_id_divisi' => 'DIV-IT',

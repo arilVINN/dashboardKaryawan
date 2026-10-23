@@ -226,13 +226,26 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
 
     Route::post('/staff', [HrdStaffController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
     Route::get('/staff', [HrdStaffController::class, 'index']); // Dipakai JS modal pesan HRD (session auth)
-    Route::put('/staff/{id}', [HrdStaffController::class, 'update'])->middleware('throttle:submit-form'); // + throttle
+    Route::match(['put', 'post'], '/staff/{id}', [HrdStaffController::class, 'update'])->middleware('throttle:submit-form'); // + throttle
     Route::post('/staff/{id}/foto', [HrdStaffController::class, 'updateFoto'])->middleware('throttle:submit-form');
     Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
     Route::delete('/karyawan/{id}', [HrdKaryawanDeletionController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
 
+    Route::get('/lampiran/{id}/download', function ($id) {
+        $lampiran = \App\Models\LampiranKaryawan::findOrFail($id);
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($lampiran->path_file)) {
+            abort(404, 'File lampiran tidak ditemukan di storage.');
+        }
+        return \Illuminate\Support\Facades\Storage::disk('public')->download($lampiran->path_file, $lampiran->nama_file);
+    })->name('hrd.lampiran.download');
+
     // Pesan via web session (dipakai JS modal pesan HRD)
     Route::post('/pesan', [HrdPesanController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
+
+    //hr analitik karyawan
+    Route::get('/analitikKaryawan', [HrdDashboardController::class, 'analitikKaryawan'])
+        ->middleware('throttle:pencarian')
+        ->name('hrd.analitikKaryawan');
 });
 
 

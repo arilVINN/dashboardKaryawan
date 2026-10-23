@@ -22,7 +22,10 @@ class Karyawan extends Model
         'nama',
         'jenis_kelamin',
         'tanggal_lahir',
+        'tanggal_masuk',
         'tanggal_rekrut',
+        'tanggal_akhir_kontrak',
+        'no_rekening',
         'no_telepon',
         'email',
         'alamat',
@@ -30,7 +33,38 @@ class Karyawan extends Model
         'status_aktif',
         'foto',
         'divisi_id_divisi',
+        'pendidikan',
+        'job_level',
+        'status_karyawan',
+        'aktif',
     ];
+
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+        'tanggal_masuk' => 'date',
+        'tanggal_akhir_kontrak' => 'date',
+        'aktif' => 'boolean',
+    ];
+
+    public function getTanggalRekrutAttribute()
+    {
+        return $this->attributes['tanggal_masuk'] ?? null;
+    }
+
+    public function setTanggalRekrutAttribute($value): void
+    {
+        $this->attributes['tanggal_masuk'] = $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null;
+    }
+
+    public function setAttribute($key, $value)
+    {
+        if (in_array($key, ['tanggal_masuk', 'tanggal_lahir', 'tanggal_akhir_kontrak'], true)) {
+            $this->attributes[$key] = $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null;
+            return $this;
+        }
+
+        return parent::setAttribute($key, $value);
+    }
 
     /**
      * Jabatan titles without division qualifiers. The division is stored
@@ -73,6 +107,20 @@ class Karyawan extends Model
             'karyawan_id_karyawan',
             'id_karyawan'
         );
+    }
+
+    public function lampiran(): HasMany
+    {
+        return $this->hasMany(
+            LampiranKaryawan::class,
+            'karyawan_id_karyawan',
+            'id_karyawan'
+        );
+    }
+
+    public function lampiranKaryawan(): HasMany
+    {
+        return $this->lampiran();
     }
 
     public function hasRole(string $roleName): bool
