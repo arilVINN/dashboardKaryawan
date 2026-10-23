@@ -54,6 +54,9 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/profile', function () {
         return view('staff.detailProfile');
     })->name('profile');
+
+    Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'index'])->name('kalender');
+    Route::get('/kalender/events', [\App\Http\Controllers\Staff\KalenderController::class, 'events'])->name('kalender.events');
 });
 
 Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->group(function () {
@@ -131,6 +134,10 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
         $token = $user ? $user->createToken('web_token')->plainTextToken : null;
         return view('kadiv.detailPesan', ['id' => $id, 'token' => $token]);
     })->name('kadiv.detailPesan');
+
+    // Kalender
+    Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexKadiv'])->name('kadiv.kalender');
+    Route::get('/kalender/events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsKadiv'])->name('kadiv.kalender.events');
 });
 
 

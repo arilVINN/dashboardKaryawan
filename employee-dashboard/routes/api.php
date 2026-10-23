@@ -56,6 +56,7 @@ Route::middleware([
         Route::put('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update']);
         Route::put('/profile/password', [\App\Http\Controllers\Staff\ProfileController::class, 'updatePassword']);
         Route::post('/profile/foto', [\App\Http\Controllers\Staff\ProfileController::class, 'updateFoto']);
+        Route::get('/kalender-events', [\App\Http\Controllers\Staff\KalenderController::class, 'events']);
     });
 
     // Kadiv‑only routes
@@ -72,6 +73,7 @@ Route::middleware([
         Route::put('/tugas/{id}', [KadivTaskController::class, 'update']);
         Route::delete('/tugas/{id}', [KadivTaskController::class, 'destroy']);
         Route::post('/tugas/{id}/review', [KadivTaskController::class, 'review']);
+        Route::get('/kalender-events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsKadiv']);
     });
 
     // HRD‑only routes
