@@ -3,17 +3,19 @@
     $tugasBuckets = $tugasBuckets ?? ['ongoing' => 0, 'pending' => 0, 'revisi' => 0];
     $bucketTotal = array_sum($tugasBuckets);
     $persen = [
-        'ongoing' => $bucketTotal > 0 ? (int) round($tugasBuckets['ongoing'] / $bucketTotal * 100) : 0,
-        'pending' => $bucketTotal > 0 ? (int) round($tugasBuckets['pending'] / $bucketTotal * 100) : 0,
-        'revisi' => $bucketTotal > 0 ? (int) round($tugasBuckets['revisi'] / $bucketTotal * 100) : 0,
+        'ongoing' => $bucketTotal > 0 ? (int) round(($tugasBuckets['ongoing'] / $bucketTotal) * 100) : 0,
+        'pending' => $bucketTotal > 0 ? (int) round(($tugasBuckets['pending'] / $bucketTotal) * 100) : 0,
+        'revisi' => $bucketTotal > 0 ? (int) round(($tugasBuckets['revisi'] / $bucketTotal) * 100) : 0,
     ];
 @endphp
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
-    <a href="/hrd/daftarKaryawan" class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between hover:bg-blue-100 transition-all duration-300">
+    <a href="/hrd/daftarKaryawan"
+        class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between hover:text-blue-600 hover:bg-blue-100 transition-all duration-300">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Total Karyawan</span>
-            <span class="text-xl font-bold text-slate-800 mt-1" data-dashboard-metric="total-staff">{{ $totalStaff }}</span>
+            <span class="text-sm font-bold">Total Karyawan</span>
+            <span class="text-xl font-bold mt-1"
+                data-dashboard-metric="total-staff">{{ $totalStaff }}</span>
         </div>
         <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
@@ -22,26 +24,32 @@
         </svg>
     </a>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <a href="#"
+        class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between  hover:text-blue-600 hover:bg-blue-100 transition-all duration-300">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Total Divisi</span>
-            <span class="text-xl font-bold text-slate-800 mt-1" data-dashboard-metric="total-divisi">{{ $totalDivisi }}</span>
+            <span class="text-sm font-bold">Total Divisi</span>
+            <span class="text-xl font-bold mt-1"
+                data-dashboard-metric="total-divisi">{{ $totalDivisi }}</span>
         </div>
         <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10"></circle>
             <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6"></path>
         </svg>
-    </div>
+    </a>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <a href="#"
+        class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between  hover:text-blue-600 hover:bg-blue-100 transition-all duration-300">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Total Pesan</span>
-            <span class="text-xl font-bold text-slate-800 mt-1" data-dashboard-metric="total-pesan">{{ $totalPesanPerusahaan }}</span>
+            <span class="text-sm font-bold">Total Pesan</span>
+            <span class="text-xl font-bold mt-1"
+                data-dashboard-metric="total-pesan">{{ $totalPesanPerusahaan }}</span>
         </div>
         <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"></path>
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75">
+            </path>
         </svg>
-    </div>
+    </a>
 
     <div class="rounded-md drop-shadow-md bg-white p-4 flex flex-col justify-center">
         <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">Presentase</span>
@@ -88,7 +96,9 @@
                 data: {
                     labels: ['Ongoing', 'Pending', 'Revisi'],
                     datasets: [{
-                        data: [{{ $persen['ongoing'] }}, {{ $persen['pending'] }}, {{ $persen['revisi'] }}],
+                        data: [{{ $persen['ongoing'] }}, {{ $persen['pending'] }},
+                            {{ $persen['revisi'] }}
+                        ],
                         backgroundColor: [
                             '#22c55e', // text-green-500
                             '#eab308', // text-yellow-500
