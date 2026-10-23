@@ -36,6 +36,14 @@
             <span class="sidebar-text whitespace-nowrap transition-all duration-200">Tugas</span>
         </a>
 
+        <a href="{{ url('/kalender') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('kalender*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-200">Kalender</span>
+        </a>
+
         <a href="{{ url('/pesan') }}"
            class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('pesan*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
