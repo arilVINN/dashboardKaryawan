@@ -130,6 +130,59 @@
         .fc-daygrid-event-dot {
             display: none !important;
         }
+
+        /* ========== LIST VIEW STYLING ========== */
+        /* Header tanggal di list view - perhalus warna */
+        .fc-list-day-cushion,
+        .fc-list-day th {
+            background-color: #F1F5F9 !important;
+            border-color: #E2E8F0 !important;
+        }
+        .fc-list-day-text,
+        .fc-list-day-side-text {
+            color: #475569 !important;
+            font-weight: 600 !important;
+            font-size: 0.8125rem !important;
+            text-decoration: none !important;
+        }
+        /* Reset border/radius dari rule .fc-event global untuk list view */
+        .fc-list-event,
+        .fc-list-event td,
+        .fc-list-event a,
+        .fc-list-event .fc-event-main {
+            border-radius: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            background-color: transparent !important;
+        }
+        /* Garis pemisah - samakan semua sisi ke #E2E8F0 */
+        .fc-list-table td,
+        .fc-list-table th,
+        .fc-list-table tr,
+        .fc-list-event td,
+        .fc-list-day td,
+        .fc-list-day th {
+            border-color: #E2E8F0 !important;
+            border-width: 1px !important;
+        }
+        .fc-list-event:hover td {
+            background-color: #F8FAFC !important;
+        }
+        /* Sembunyikan dot default di list view */
+        .fc-list-event-dot {
+            display: none !important;
+        }
+        /* Kolom waktu di list view */
+        .fc-list-event-time {
+            color: #64748B !important;
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            white-space: nowrap !important;
+        }
+        /* Container event di list view - beri ruang penuh */
+        .fc-list-event-title {
+            width: 100% !important;
+        }
     </style>
 </head>
 
@@ -438,23 +491,42 @@
                     const title = props.judul_murni || arg.event.title;
                     const time = arg.timeText;
                     const dotColor = props.dot_color || '#004A65';
+                    const isList = arg.view.type.startsWith('list');
 
                     const el = document.createElement('div');
-                    el.className = 'w-full px-1.5 py-1 leading-snug flex flex-col gap-0.5 overflow-hidden';
-                    el.innerHTML = `
-                        <div class="flex items-center justify-between gap-1 overflow-hidden">
-                            <span class="inline-flex items-center gap-1.5 font-bold text-[10.5px] truncate max-w-[85%] text-slate-800">
-                                <span class="w-3.5 h-3.5 rounded-full text-white flex items-center justify-center text-[8px] font-extrabold shrink-0" style="background-color: ${escapeHtml(dotColor)};">
-                                    ${escapeHtml(staffInitial)}
-                                </span>
-                                <span class="truncate font-bold">${escapeHtml(staffName)}</span>
+
+                    if (isList) {
+                        // List view: nama penuh tanpa truncate, layout horizontal
+                        el.className = 'flex items-center gap-2 py-0.5 w-full';
+                        el.innerHTML = `
+                            <span class="w-5 h-5 rounded-full text-white flex items-center justify-center text-[9px] font-extrabold shrink-0"
+                                  style="background-color: ${escapeHtml(dotColor)};">
+                                ${escapeHtml(staffInitial)}
                             </span>
-                            ${time ? `<span class="text-[9.5px] font-bold opacity-75 shrink-0">${time}</span>` : ''}
-                        </div>
-                        <div class="font-medium text-[11px] truncate leading-tight text-slate-900" title="${escapeHtml(title)}">
-                            ${escapeHtml(title)}
-                        </div>
-                    `;
+                            <span class="font-bold text-[12px] text-slate-800 shrink-0">${escapeHtml(staffName)}</span>
+                            <span class="text-slate-400 shrink-0">—</span>
+                            <span class="text-[12px] text-slate-700 font-medium" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
+                        `;
+                    } else {
+                        // Month view: layout compact dengan truncate
+                        el.className = 'w-full px-1.5 py-1 leading-snug flex flex-col gap-0.5 overflow-hidden';
+                        el.innerHTML = `
+                            <div class="flex items-center justify-between gap-1 overflow-hidden">
+                                <span class="inline-flex items-center gap-1.5 font-bold text-[10.5px] truncate max-w-[85%] text-slate-800">
+                                    <span class="w-3.5 h-3.5 rounded-full text-white flex items-center justify-center text-[8px] font-extrabold shrink-0"
+                                          style="background-color: ${escapeHtml(dotColor)};">
+                                        ${escapeHtml(staffInitial)}
+                                    </span>
+                                    <span class="truncate font-bold">${escapeHtml(staffName)}</span>
+                                </span>
+                                ${time ? `<span class="text-[9.5px] font-bold opacity-75 shrink-0">${time}</span>` : ''}
+                            </div>
+                            <div class="font-medium text-[11px] truncate leading-tight text-slate-900" title="${escapeHtml(title)}">
+                                ${escapeHtml(title)}
+                            </div>
+                        `;
+                    }
+
                     return { domNodes: [el] };
                 },
                 eventClick: function(info) {

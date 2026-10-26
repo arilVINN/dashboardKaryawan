@@ -181,6 +181,10 @@ Route::post('/profile', function (Request $request) {
 Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
 
+    // Kalender
+    Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexHrd'])->name('hrd.kalender');
+    Route::get('/kalender/events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsHrd'])->name('hrd.kalender.events');
+
     Route::get('/profile', function () {
         return view('hrd.profile');
     })->name('hrd.profile');
