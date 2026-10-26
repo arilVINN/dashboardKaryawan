@@ -27,6 +27,11 @@ class HrdDashboardController extends Controller
 
         $totalPesanPerusahaan = Pesan::count();
 
+        $totalKaryawanAktif = Karyawan::where('aktif', true)->count();
+        $totalKeluarTahunIni = Karyawan::whereNotNull('tanggal_keluar')
+            ->whereYear('tanggal_keluar', now()->year)
+            ->count();
+
         // 5 divisi terbesar (untuk widget dan JSON)
         $divisiTerbesar = Divisi::withCount('karyawans')
             ->orderByDesc('karyawans_count')
@@ -101,7 +106,9 @@ class HrdDashboardController extends Controller
             'totalPesanPerusahaan',
             'divisis',
             'pesan',
-            'divisiTerbesar'
+            'divisiTerbesar',
+            'totalKaryawanAktif',
+            'totalKeluarTahunIni'
         ));
     }
 
@@ -173,6 +180,46 @@ class HrdDashboardController extends Controller
             'jobLevel',
             'statusKaryawan',
             'divisiList'
+        ));
+    }
+
+    public function turnoverKaryawan()
+    {
+        $namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        $turnoverRaw = Karyawan::whereNotNull('tanggal_keluar')
+            ->where('tanggal_keluar', '>=', now()->subMonths(11)->startOfMonth())
+            ->selectRaw("strftime('%Y-%m', tanggal_keluar) as periode, COUNT(*) as jumlah")
+            ->groupBy('periode')
+            ->pluck('jumlah', 'periode');
+
+        $turnoverLabel = [];
+        $turnoverData = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $bulan = now()->subMonths($i);
+            $key = $bulan->format('Y-m');
+            $turnoverLabel[] = $namaBulan[$bulan->month - 1] . ' ' . $bulan->format('y');
+            $turnoverData[] = $turnoverRaw[$key] ?? 0;
+        }
+
+        $totalKeluarTahunIni = Karyawan::whereNotNull('tanggal_keluar')
+            ->whereYear('tanggal_keluar', now()->year)
+            ->count();
+
+        $totalKaryawanAktif = Karyawan::where('aktif', true)->count();
+
+        $daftarKeluar = Karyawan::whereNotNull('tanggal_keluar')
+            ->with('divisi:id_divisi,nama_divisi')
+            ->orderByDesc('tanggal_keluar')
+            ->limit(20)
+            ->get();
+
+        return view('hrd.turnoverKaryawan', compact(
+            'turnoverLabel',
+            'turnoverData',
+            'totalKeluarTahunIni',
+            'totalKaryawanAktif',
+            'daftarKeluar'
         ));
     }
 }

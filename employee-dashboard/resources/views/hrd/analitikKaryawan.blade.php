@@ -83,8 +83,7 @@
             </div>
 
             <div>
-                <h1 class="text-2xl font-bold text-slate-800">Persentasi Karyawan</h1>
-                <p class="text-sm text-gray-500 mt-1">Persenan data karyawan</p>
+                <h1 class="text-2xl font-bold text-slate-800">Persentasi Data Karyawan</h1>
             </div>
 
             {{-- BREAKDOWN --}}

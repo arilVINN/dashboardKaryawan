@@ -147,9 +147,13 @@ class HrdListUiTest extends TestCase
     public function test_dashboard_divisi_table_stays_non_sortable(): void
     {
         // tabelDivisi is shared; the dashboard must not get the sortable markup.
-        $this->actingAs($this->hrd)->get('/hrd/dashboard')
+        $response = $this->actingAs($this->hrd)->get('/hrd/dashboard')
             ->assertOk()
             ->assertDontSee('data-sort=', false);
+
+        $this->assertStringContainsString('<td class="px-6 py-4 whitespace-nowrap text-center text-xs">', $response->getContent());
+        $this->assertStringContainsString('<div class="flex justify-center items-center gap-2">', $response->getContent());
+        $this->assertDoesNotMatchRegularExpression('/<td\b[^>]*\bflex\b/', $response->getContent());
     }
 
 

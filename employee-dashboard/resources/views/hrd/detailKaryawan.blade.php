@@ -15,23 +15,66 @@
         @include('component.breadcrumbs', ['parentText' => 'Karyawan', 'parentUrl' => url('/hrd/daftarKaryawan'), 'currentPage' => 'Detail Karyawan'])
 
         <main class="flex-1 overflow-y-auto p-8 pt-6 bg-slate-50 space-y-6">
-            <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 flex items-center gap-5">
-                <div class="w-20 h-20 rounded-full bg-[#0097B2] text-white text-3xl font-bold flex items-center justify-center shrink-0">
-                    {{ strtoupper(substr($karyawan->nama, 0, 1)) }}
-                </div>
-                <div class="min-w-0">
-                    <h1 class="text-2xl font-bold text-slate-900 truncate">{{ $karyawan->nama }}</h1>
-                    <p class="text-sm text-slate-500">{{ $karyawan->jabatan }} · {{ $karyawan->id_karyawan }}</p>
-                    <div class="mt-2 flex flex-wrap gap-2">
-                        <span class="px-2.5 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs font-bold">
-                            {{ $karyawan->divisi->nama_divisi ?? 'Tanpa divisi' }}
-                        </span>
-                        <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">
-                            {{ $karyawan->user?->role?->nama_role ?? 'Belum ada akun' }}
-                        </span>
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 flex flex-col lg:flex-row lg:items-center gap-5">
+                <div class="flex items-center gap-5 min-w-0 flex-1">
+                    <div class="w-20 h-20 rounded-full bg-[#0097B2] text-white text-3xl font-bold flex items-center justify-center shrink-0">
+                        {{ strtoupper(substr($karyawan->nama, 0, 1)) }}
+                    </div>
+                    <div class="min-w-0">
+                        <h1 class="text-2xl font-bold text-slate-900 truncate">{{ $karyawan->nama }}</h1>
+                        <p class="text-sm text-slate-500">{{ $karyawan->jabatan }} · {{ $karyawan->id_karyawan }}</p>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            <span class="px-2.5 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs font-bold">
+                                {{ $karyawan->divisi->nama_divisi ?? 'Tanpa divisi' }}
+                            </span>
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">
+                                {{ $karyawan->user?->role?->nama_role ?? 'Belum ada akun' }}
+                            </span>
+                            <span class="px-2.5 py-1 {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }} rounded-full text-xs font-bold">
+                                {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'Tidak Aktif' : 'Aktif' }}
+                            </span>
+                        </div>
                     </div>
                 </div>
+                @if ($karyawan->tanggal_keluar)
+                    <p class="text-sm text-slate-600">
+                        Tanggal keluar:
+                        <span class="font-semibold">{{ $karyawan->tanggal_keluar->format('d M Y') }}</span>
+                    </p>
+                @else
+                    <form method="POST" action="{{ route('hrd.karyawan.keluar', $karyawan->id_karyawan) }}"
+                        onsubmit="return confirm('Tandai {{ $karyawan->nama }} sebagai karyawan keluar? Akun akan dinonaktifkan dan riwayat tugas tetap tersimpan.');"
+                        class="flex flex-col sm:flex-row sm:items-end gap-3">
+                        @csrf
+                        @method('PATCH')
+                        <div>
+                            <label for="tanggal_keluar" class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Keluar</label>
+                            <input id="tanggal_keluar" name="tanggal_keluar" type="date"
+                                value="{{ old('tanggal_keluar', now()->toDateString()) }}"
+                                max="{{ now()->toDateString() }}" required
+                                class="rounded-md border-slate-300 text-sm focus:border-[#0097B2] focus:ring-[#0097B2]">
+                            @error('tanggal_keluar')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <button type="submit"
+                            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-md transition">
+                            Tandai Karyawan Keluar
+                        </button>
+                    </form>
+                @endif
             </div>
+
+            @if (session('success'))
+                <div class="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800" role="status">
+                    {{ session('success') }}
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800" role="alert">
+                    {{ session('error') }}
+                </div>
+            @endif
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">

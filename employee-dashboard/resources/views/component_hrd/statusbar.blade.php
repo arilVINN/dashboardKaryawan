@@ -11,11 +11,10 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
     <a href="{{ route('hrd.daftarKaryawan') }}"
-        class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between hover:text-blue-600 hover:bg-blue-100 transition-all duration-300">
+        class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between hover:shadow-lg transition block">
         <div class="flex flex-col">
             <span class="text-sm font-bold">Total Karyawan</span>
-            <span class="text-xl font-bold mt-1"
-                data-dashboard-metric="total-staff">{{ $totalStaff }}</span>
+            <span class="text-xl font-bold mt-1" data-dashboard-metric="total-staff">{{ $totalStaff }}</span>
         </div>
         <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
@@ -25,23 +24,23 @@
     </a>
 
     <a href="{{ route('hrd.analitikKaryawan') }}"
-        class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between  hover:text-blue-600 hover:bg-blue-100 transition-all duration-300">
+        class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between  hover:shadow-lg transition block">
         <div class="flex flex-col">
             <span class="text-sm font-bold">Total Divisi</span>
-            <span class="text-xl font-bold mt-1"
-                data-dashboard-metric="total-divisi">{{ $totalDivisi }}</span>
+            <span class="text-xl font-bold mt-1" data-dashboard-metric="total-divisi">{{ $totalDivisi }}</span>
         </div>
         <svg class="w-8 h-8 text-violet-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21"></path>
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21">
+            </path>
         </svg>
     </a>
 
     <a href="{{ route('hrd.pesan') }}"
-        class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between  hover:text-blue-600 hover:bg-blue-100 transition-all duration-300">
+        class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between hover:shadow-lg transition block">
         <div class="flex flex-col">
             <span class="text-sm font-bold">Total Pesan</span>
-            <span class="text-xl font-bold mt-1"
-                data-dashboard-metric="total-pesan">{{ $totalPesanPerusahaan }}</span>
+            <span class="text-xl font-bold mt-1" data-dashboard-metric="total-pesan">{{ $totalPesanPerusahaan }}</span>
         </div>
         <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
@@ -50,79 +49,72 @@
         </svg>
     </a>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex flex-col justify-center">
-        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">Presentase</span>
+    <a href="{{ route('hrd.turnoverKaryawan') }}"
+        class="rounded-md drop-shadow-md bg-white p-4 flex flex-col justify-center hover:shadow-lg transition block">
+        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">Turnover Karyawan</span>
 
         <div class="flex items-center gap-3">
             <div class="relative w-14 h-14 shrink-0">
-                <canvas id="miniChart"></canvas>
+                <canvas id="miniChartTurnover"></canvas>
             </div>
 
             <div class="flex-1 space-y-1 text-[10px] font-bold text-slate-600">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span> Ongoing
+                        <span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span> Keluar
                     </div>
-                    <span class="text-slate-800">{{ $persen['ongoing'] }}%</span>
+                    <span class="text-slate-800">{{ $totalKeluarTahunIni }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-yellow-500"></span> Pending
+                        <span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span> Aktif
                     </div>
-                    <span class="text-slate-800">{{ $persen['pending'] }}%</span>
+                    <span class="text-slate-800">{{ $totalKaryawanAktif }}</span>
                 </div>
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span> Revisi
-                    </div>
-                    <span class="text-slate-800">{{ $persen['revisi'] }}%</span>
+                <div class="flex justify-between items-center pt-0.5">
+                    <span class="text-[9px] text-slate-400 normal-case font-medium">Lihat detail →</span>
                 </div>
             </div>
         </div>
-    </div>
+    </a>
 
-</div>
+    <!-- Script grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('miniChartTurnover');
 
-<!-- Script grafik  -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('miniChart');
-
-        if (ctx) {
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Ongoing', 'Pending', 'Revisi'],
-                    datasets: [{
-                        data: [{{ $persen['ongoing'] }}, {{ $persen['pending'] }},
-                            {{ $persen['revisi'] }}
-                        ],
-                        backgroundColor: [
-                            '#22c55e', // text-green-500
-                            '#eab308', // text-yellow-500
-                            '#ef4444' // text-red-500
-                        ],
-                        borderWidth: 0,
-                        cutout: '60%' // Semakin besar, donat semakin tipis
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            enabled: false
-                        }
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Keluar', 'Aktif'],
+                        datasets: [{
+                            data: [{{ $totalKeluarTahunIni }}, {{ $totalKaryawanAktif }}],
+                            backgroundColor: [
+                                '#ef4444', // text-red-500 — keluar
+                                '#22c55e', // text-green-500 — aktif
+                            ],
+                            borderWidth: 0,
+                            cutout: '60%'
+                        }]
                     },
-                    layout: {
-                        padding: 0
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: false
+                            }
+                        },
+                        layout: {
+                            padding: 0
+                        }
                     }
-                }
-            });
-        }
-    });
-</script>
+                });
+            }
+        });
+    </script>

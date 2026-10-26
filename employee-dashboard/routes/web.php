@@ -197,6 +197,9 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     Route::get('/detailDivisi/{id}', [HrdDivisiController::class, 'detailPage'])->name('hrd.detailDivisi');
 
     Route::get('/detailKaryawan/{id}', [HrdKaryawanController::class, 'detailPage'])->name('hrd.detailKaryawan');
+    Route::patch('/detailKaryawan/{id}/keluar', [HrdKaryawanController::class, 'tandaiKeluar'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.karyawan.keluar');
 
     Route::get('/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage'])
         ->middleware('throttle:pencarian') // + throttle (ada filter: nama, divisi, jabatan, status)
@@ -246,6 +249,10 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     Route::get('/analitikKaryawan', [HrdDashboardController::class, 'analitikKaryawan'])
         ->middleware('throttle:pencarian')
         ->name('hrd.analitikKaryawan');
+    //turnover karyawan hr
+    Route::get('/turnoverKaryawan', [HrdDashboardController::class, 'turnoverKaryawan'])
+        ->middleware('throttle:pencarian')
+        ->name('hrd.turnoverKaryawan');
 });
 
 

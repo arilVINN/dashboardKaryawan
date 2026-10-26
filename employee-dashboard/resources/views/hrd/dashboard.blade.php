@@ -20,7 +20,7 @@
             @include('component_hrd.statusbar')
         </div>
         
-        <main class="flex-1 overflow-y-auto p-8 pt-6">
+        <main class="flex-1 overflow-y-auto pt-6">
             @include('component_hrd.tabelDivisi')
             <!-- Konten -->
             
