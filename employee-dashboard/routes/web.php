@@ -57,6 +57,11 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
 
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'index'])->name('kalender');
     Route::get('/kalender/events', [\App\Http\Controllers\Staff\KalenderController::class, 'events'])->name('kalender.events');
+
+    // Pusat Data & Arsip
+    Route::get('/pusat-data', function () {
+        return view('staff.pusatData');
+    })->name('staff.pusatData');
 });
 
 Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->group(function () {
@@ -138,6 +143,11 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     // Kalender
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexKadiv'])->name('kadiv.kalender');
     Route::get('/kalender/events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsKadiv'])->name('kadiv.kalender.events');
+
+    // Pusat Data & Arsip
+    Route::get('/pusat-data', function () {
+        return view('kadiv.pusatData');
+    })->name('kadiv.pusatData');
 });
 
 
@@ -184,6 +194,11 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     // Kalender
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexHrd'])->name('hrd.kalender');
     Route::get('/kalender/events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsHrd'])->name('hrd.kalender.events');
+
+    // Pusat Data & Arsip
+    Route::get('/pusat-data', function () {
+        return view('hrd.pusatData');
+    })->name('hrd.pusatData');
 
     Route::get('/profile', function () {
         return view('hrd.profile');
