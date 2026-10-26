@@ -95,6 +95,9 @@ Route::middleware([
         Route::patch('/divisi/{id}', [HrdDivisiController::class, 'update']);
         Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy']);
 
+        // Kalender
+        Route::get('/kalender-events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsHrd']);
+
         // Manajemen Staff
         Route::get('/staff', [HrdStaffController::class, 'index']);
         Route::post('/staff', [HrdStaffController::class, 'store']);

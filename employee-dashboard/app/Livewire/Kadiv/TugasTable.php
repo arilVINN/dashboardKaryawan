@@ -135,9 +135,11 @@ class TugasTable extends Component
         $this->validate([
             'judul'      => 'required|string|max:100',
             'deskripsi'  => 'required|string',
-            'tenggat'    => 'required|date',
+            'tenggat'    => 'required|date|after:now',
             'recipient'  => 'required|string',
             'attachment' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
+        ], [
+            'tenggat.after' => 'Invalid tanggal: tidak bisa mengambil waktu masa lalu.',
         ]);
 
         $staffIds = Karyawan::where('divisi_id_divisi', $divisionId)

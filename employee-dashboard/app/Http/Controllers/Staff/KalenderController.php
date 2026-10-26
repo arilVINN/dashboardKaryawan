@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Models\Divisi;
+use App\Models\Karyawan;
 use App\Models\SuratIzin;
 use App\Models\Tugas;
 use App\Queries\KadivTugasQuery;
@@ -253,6 +255,126 @@ class KalenderController extends Controller
 
         return response()->json([
             'message' => 'Data event kalender divisi',
+            'data'    => $events,
+        ]);
+    }
+
+    /**
+     * Tampilkan halaman kalender untuk HRD (seluruh divisi & perusahaan).
+     */
+    public function indexHrd(Request $request)
+    {
+        $divisiList = Divisi::orderBy('nama_divisi', 'asc')->get();
+        $staffList = Karyawan::with('divisi')
+            ->orderBy('nama', 'asc')
+            ->get();
+
+        return view('hrd.kalender', compact('divisiList', 'staffList'));
+    }
+
+    /**
+     * Endpoint API untuk data event kalender HRD (seluruh divisi, tahu dari siapa ke siapa).
+     */
+    public function eventsHrd(Request $request)
+    {
+        $user = $request->user() ?: auth()->user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        $divisiFilter = $request->input('divisi');
+        $staffFilter  = $request->input('staff');
+        $statusFilter = $request->input('status');
+
+        // Map Kadiv per divisi untuk lookup "Pemberi Tugas (Dari)"
+        $kadivList = Karyawan::whereHas('user.role', fn($q) => $q->whereRaw('LOWER(nama_role) = ?', ['kadiv']))
+            ->orWhere('jabatan', 'ilike', '%kepala divisi%')
+            ->get()
+            ->keyBy('divisi_id_divisi');
+
+        $query = Tugas::with(['karyawan.divisi', 'submitTugas', 'latestSubmitTugas']);
+
+        if ($divisiFilter) {
+            $query->whereHas('karyawan', fn($q) => $q->where('divisi_id_divisi', $divisiFilter));
+        }
+
+        if ($staffFilter) {
+            $query->where('karyawan_id_karyawan', $staffFilter);
+        }
+
+        if ($statusFilter && in_array($statusFilter, Tugas::ALL_STATUSES, true)) {
+            $query->statusEfektif($statusFilter);
+        }
+
+        $tugasList = $query->orderBy('tanggal_dibuat', 'desc')->get();
+
+        $events = [];
+
+        foreach ($tugasList as $tugas) {
+            $effectiveStatus = $tugas->status_efektif;
+            $style = self::getStatusStyle($effectiveStatus);
+
+            $startDate = $tugas->deadline ?: $tugas->tanggal_dibuat ?: $tugas->created_at;
+            if (!$startDate) {
+                continue;
+            }
+
+            $carbonDate = Carbon::parse($startDate);
+            $karyawan = $tugas->karyawan;
+            $penerimaNama = $karyawan->nama ?? 'Staff';
+            $penerimaJabatan = $karyawan->jabatan ?? 'Staff';
+            $penerimaId = $tugas->karyawan_id_karyawan;
+            $divisiId = $karyawan?->divisi_id_divisi;
+            $divisiNama = $karyawan?->divisi?->nama_divisi ?? 'Tanpa Divisi';
+
+            $kadiv = $divisiId ? ($kadivList[$divisiId] ?? null) : null;
+            $pengirimNama = $kadiv ? $kadiv->nama : ('Kadiv ' . $divisiNama);
+            $pengirimJabatan = $kadiv ? $kadiv->jabatan : 'Kepala Divisi';
+            $pengirimId = $kadiv ? $kadiv->id_karyawan : null;
+
+            $events[] = [
+                'id'              => $tugas->id_tugas,
+                'title'           => '[' . $divisiNama . '] ' . $pengirimNama . ' ➔ ' . $penerimaNama . ': ' . $tugas->judul_tugas,
+                'start'           => $carbonDate->toIso8601String(),
+                'allDay'          => empty($tugas->deadline) || $carbonDate->format('H:i:s') === '00:00:00',
+                'backgroundColor' => $style['backgroundColor'],
+                'borderColor'     => $style['borderColor'],
+                'textColor'       => $style['textColor'],
+                'extendedProps'   => [
+                    'type'             => 'tugas',
+                    'id_tugas'         => $tugas->id_tugas,
+                    'judul_murni'      => $tugas->judul_tugas,
+                    'divisi_id'        => $divisiId,
+                    'divisi_nama'      => $divisiNama,
+                    'pengirim_id'      => $pengirimId,
+                    'pengirim_nama'    => $pengirimNama,
+                    'pengirim_jabatan' => $pengirimJabatan,
+                    'staff_id'         => $penerimaId,
+                    'staff_nama'       => $penerimaNama,
+                    'staff_jabatan'    => $penerimaJabatan,
+                    'staff_initial'    => strtoupper(substr($penerimaNama, 0, 1)),
+                    'status'           => $effectiveStatus,
+                    'status_label'     => $style['label'],
+                    'badge_class'      => $style['badgeClass'],
+                    'dot_color'        => $style['dotColor'],
+                    'deskripsi'        => $tugas->deskripsi ?? 'Tidak ada deskripsi',
+                    'deadline_label'   => $tugas->deadline
+                        ? Carbon::parse($tugas->deadline)->locale('id')->isoFormat('dddd, D MMMM Y, HH:mm')
+                        : 'Tidak ditentukan',
+                    'tanggal_dibuat'   => $tugas->tanggal_dibuat
+                        ? Carbon::parse($tugas->tanggal_dibuat)->locale('id')->isoFormat('D MMMM Y')
+                        : '-',
+                    'has_submission'   => $tugas->latestSubmitTugas !== null,
+                    'submission_date'  => $tugas->latestSubmitTugas?->created_at
+                        ? Carbon::parse($tugas->latestSubmitTugas->created_at)->locale('id')->isoFormat('D MMMM Y, HH:mm')
+                        : null,
+                    'detail_url'       => null,
+                ],
+            ];
+        }
+
+        return response()->json([
+            'message' => 'Data event kalender HRD',
             'data'    => $events,
         ]);
     }
