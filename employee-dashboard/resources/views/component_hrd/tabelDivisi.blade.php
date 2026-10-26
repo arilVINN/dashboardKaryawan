@@ -60,18 +60,18 @@
                                     </span>
                                 @endif
                             </td>
-                            <td
-                                class="{{ $cellPadding }} whitespace-nowrap text-center text-xs gap-2 flex justify-center items-center">
-                                <a href="{{ url('/hrd/detailDivisi/' . $divisi->id_divisi) }}"
-                                    class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
-                                    Detail
-                                </a>
-                                <button type="button" onclick="hapusDivisi(this)" data-id="{{ $divisi->id_divisi }}"
-                                    data-nama="{{ $divisi->nama_divisi }}"
-                                    class="ml-3 text-red-600 hover:text-red-800 font-medium hover:underline">
-                                    Hapus
-                                </button>
-
+                            <td class="{{ $cellPadding }} whitespace-nowrap text-center text-xs">
+                                <div class="flex justify-center items-center gap-2">
+                                    <a href="{{ url('/hrd/detailDivisi/' . $divisi->id_divisi) }}"
+                                        class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
+                                        Detail
+                                    </a>
+                                    <button type="button" onclick="hapusDivisi(this)" data-id="{{ $divisi->id_divisi }}"
+                                        data-nama="{{ $divisi->nama_divisi }}"
+                                        class="text-red-600 hover:text-red-800 font-medium hover:underline">
+                                        Hapus
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty

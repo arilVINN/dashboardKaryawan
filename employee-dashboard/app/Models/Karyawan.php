@@ -31,6 +31,7 @@ class Karyawan extends Model
         'alamat',
         'jabatan',
         'status_aktif',
+        'tanggal_keluar',
         'foto',
         'divisi_id_divisi',
         'pendidikan',
@@ -43,6 +44,7 @@ class Karyawan extends Model
         'tanggal_lahir' => 'date',
         'tanggal_masuk' => 'date',
         'tanggal_akhir_kontrak' => 'date',
+        'tanggal_keluar' => 'date',
         'aktif' => 'boolean',
     ];
 
@@ -58,7 +60,7 @@ class Karyawan extends Model
 
     public function setAttribute($key, $value)
     {
-        if (in_array($key, ['tanggal_masuk', 'tanggal_lahir', 'tanggal_akhir_kontrak'], true)) {
+        if (in_array($key, ['tanggal_masuk', 'tanggal_lahir', 'tanggal_akhir_kontrak', 'tanggal_keluar'], true)) {
             $this->attributes[$key] = $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null;
             return $this;
         }
@@ -75,6 +77,7 @@ class Karyawan extends Model
         'Kepala Divisi',
         'Wakil Kepala Divisi',
         'Staff',
+        'HRD Manager',
     ];
 
     public const STATUS_OPTIONS = [

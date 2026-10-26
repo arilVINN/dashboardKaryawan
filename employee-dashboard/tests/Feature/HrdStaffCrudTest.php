@@ -76,8 +76,68 @@ class HrdStaffCrudTest extends TestCase
             ->assertSee('Andi Wijaya')
             ->assertSee('Teknologi Informasi')
             ->assertSee('Bikin API')
+            ->assertSee('Tandai Karyawan Keluar')
             ->assertSee('data-breadcrumb-parent="Karyawan"', false)
             ->assertSee('data-breadcrumb-current="Detail Karyawan"', false);
+    }
+
+    public function test_hrd_can_mark_employee_as_departed_without_deleting_task_history(): void
+    {
+        $tanggalKeluar = now()->subDay()->toDateString();
+
+        $this->actingAs($this->hrd)
+            ->patch('/hrd/detailKaryawan/KRY-1/keluar', ['tanggal_keluar' => $tanggalKeluar])
+            ->assertRedirect('/hrd/detailKaryawan/KRY-1')
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('karyawans', [
+            'id_karyawan' => 'KRY-1',
+            'tanggal_keluar' => $tanggalKeluar,
+            'status_aktif' => 'Tidak Aktif',
+            'aktif' => false,
+        ]);
+        $this->assertDatabaseHas('users2', ['id_user' => 'USR-1']);
+        $this->assertDatabaseHas('tugas', [
+            'id_tugas' => 'TG-1',
+            'karyawan_id_karyawan' => 'KRY-1',
+        ]);
+        $this->postJson('/api/login', [
+            'username' => 'andi',
+            'password' => 'pass123',
+        ])->assertForbidden();
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/turnoverKaryawan')
+            ->assertOk()
+            ->assertSee('Andi Wijaya')
+            ->assertSee('Teknologi Informasi');
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/detailKaryawan/KRY-1')
+            ->assertOk()
+            ->assertSee('Tanggal keluar:')
+            ->assertDontSee('Tandai Karyawan Keluar');
+    }
+
+    public function test_departure_date_cannot_be_in_the_future(): void
+    {
+        $this->actingAs($this->hrd)
+            ->from('/hrd/detailKaryawan/KRY-1')
+            ->patch('/hrd/detailKaryawan/KRY-1/keluar', [
+                'tanggal_keluar' => now()->addDay()->toDateString(),
+            ])
+            ->assertRedirect('/hrd/detailKaryawan/KRY-1')
+            ->assertSessionHasErrors('tanggal_keluar');
+
+        $this->assertDatabaseHas('karyawans', [
+            'id_karyawan' => 'KRY-1',
+            'status_aktif' => 'Aktif',
+            'aktif' => true,
+        ]);
+        $this->assertDatabaseMissing('karyawans', [
+            'id_karyawan' => 'KRY-1',
+            'tanggal_keluar' => now()->addDay()->toDateString(),
+        ]);
     }
 
     public function test_staff_detail_page_returns_404_for_unknown_id(): void

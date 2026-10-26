@@ -37,7 +37,7 @@ class HrdManagementApiTest extends TestCase
         $this->hrd = $this->createAccount('EMP-HRD', 'HRD', 'DIV-IT', 'ROLE-HRD', 'hrd');
     }
 
-    public function test_hrd_can_edit_staff_and_change_only_between_staff_and_kadiv_roles(): void
+    public function test_hrd_can_edit_staff_and_assign_hrd_role(): void
     {
         $staff = $this->createAccount('EMP-STAFF', 'Staff', 'DIV-IT', 'ROLE-STAFF', 'staff');
 
@@ -57,8 +57,29 @@ class HrdManagementApiTest extends TestCase
 
         $this->actingAs($this->hrd)
             ->patchJson('/api/hrd/staff/EMP-STAFF', ['role_id_role' => 'ROLE-HRD'])
-            ->assertUnprocessable()
-            ->assertJsonPath('message', 'Role staff hanya boleh kadiv atau staff');
+            ->assertOk()
+            ->assertJsonPath('data.user.role.nama_role', 'HRD');
+
+        $this->assertDatabaseHas('users2', [
+            'id_user' => $staff->id_user,
+            'role_id_role' => 'ROLE-HRD',
+        ]);
+    }
+
+    public function test_hrd_manager_position_restores_hrd_account_role(): void
+    {
+        $staff = $this->createAccount('EMP-STAFF', 'Staff', 'DIV-IT', 'ROLE-STAFF', 'staff');
+
+        $this->actingAs($this->hrd)
+            ->putJson('/api/hrd/staff/EMP-STAFF', ['jabatan' => 'HRD Manager'])
+            ->assertOk()
+            ->assertJsonPath('data.jabatan', 'HRD Manager')
+            ->assertJsonPath('data.user.role.nama_role', 'HRD');
+
+        $this->assertDatabaseHas('users2', [
+            'id_user' => $staff->id_user,
+            'role_id_role' => 'ROLE-HRD',
+        ]);
     }
 
     public function test_head_division_position_assigns_kadiv_role_and_appears_as_division_head(): void
@@ -67,6 +88,7 @@ class HrdManagementApiTest extends TestCase
             ->get('/hrd/detailDivisi/DIV-EMPTY')
             ->assertOk()
             ->assertSee('modalTambahKaryawan', false)
+            ->assertSee('HRD Manager')
             ->assertSee('name="jabatan"', false);
 
         $response = $this->actingAs($this->hrd)

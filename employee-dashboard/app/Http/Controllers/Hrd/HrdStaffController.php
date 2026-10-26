@@ -247,10 +247,10 @@ class HrdStaffController extends Controller
         if (isset($validated['role_id_role'])) {
             $role = Role::where('id_role', $validated['role_id_role'])->first();
 
-            if (!in_array(strtolower($role->nama_role), ['kadiv', 'staff'], true)) {
+            if (!in_array(strtolower($role->nama_role), ['kadiv', 'staff', 'hrd'], true)) {
                 return response()->json([
-                    'message' => 'Role staff hanya boleh kadiv atau staff',
-                    'errors' => ['role_id_role' => ['Role staff hanya boleh kadiv atau staff']],
+                    'message' => 'Role akun hanya boleh kadiv, staff, atau hrd',
+                    'errors' => ['role_id_role' => ['Role akun hanya boleh kadiv, staff, atau hrd']],
                 ], 422);
             }
         }
@@ -386,6 +386,10 @@ class HrdStaffController extends Controller
 
         if (preg_match('/^kepala\s+divisi(?:\s|$)/i', $normalized) === 1) {
             return 'kadiv';
+        }
+
+        if ($normalized === 'hrd manager') {
+            return 'hrd';
         }
 
         if (in_array($normalized, ['staff', 'wakil kepala divisi'], true)) {
