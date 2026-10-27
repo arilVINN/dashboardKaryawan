@@ -215,7 +215,7 @@ class KalenderController extends Controller
             }
 
             $carbonDate = Carbon::parse($startDate);
-            $namaStaff = $tugas->karyawan->nama ?? 'Staff';
+            $namaStaff = $tugas->karyawan?->nama ?? 'Staff';
 
             $events[] = [
                 'id'              => $tugas->id_tugas,
@@ -231,7 +231,7 @@ class KalenderController extends Controller
                     'judul_murni'     => $tugas->judul_tugas,
                     'staff_id'        => $tugas->karyawan_id_karyawan,
                     'staff_nama'      => $namaStaff,
-                    'staff_jabatan'   => $tugas->karyawan->jabatan ?? 'Staff',
+                    'staff_jabatan'   => $tugas->karyawan?->jabatan ?? 'Staff',
                     'staff_initial'   => strtoupper(substr($namaStaff, 0, 1)),
                     'status'          => $effectiveStatus,
                     'status_label'    => $style['label'],
@@ -288,7 +288,7 @@ class KalenderController extends Controller
 
         // Map Kadiv per divisi untuk lookup "Pemberi Tugas (Dari)"
         $kadivList = Karyawan::whereHas('user.role', fn($q) => $q->whereRaw('LOWER(nama_role) = ?', ['kadiv']))
-            ->orWhere('jabatan', 'ilike', '%kepala divisi%')
+            ->orWhereRaw('LOWER(jabatan) LIKE ?', ['%kepala divisi%'])
             ->get()
             ->keyBy('divisi_id_divisi');
 
@@ -321,8 +321,8 @@ class KalenderController extends Controller
 
             $carbonDate = Carbon::parse($startDate);
             $karyawan = $tugas->karyawan;
-            $penerimaNama = $karyawan->nama ?? 'Staff';
-            $penerimaJabatan = $karyawan->jabatan ?? 'Staff';
+            $penerimaNama = $karyawan?->nama ?? 'Staff';
+            $penerimaJabatan = $karyawan?->jabatan ?? 'Staff';
             $penerimaId = $tugas->karyawan_id_karyawan;
             $divisiId = $karyawan?->divisi_id_divisi;
             $divisiNama = $karyawan?->divisi?->nama_divisi ?? 'Tanpa Divisi';
