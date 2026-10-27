@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Kalender Kegiatan Divisi - PT Silindo</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -19,12 +20,31 @@
         }
         .fc {
             font-family: inherit;
+            border: none !important;
         }
-        /* Tabel FullCalendar kotak tegas 90 derajat (tanpa lengkungan) */
+        /* Toolbar navigasi di luar tabel */
+        .fc .fc-toolbar {
+            border: none !important;
+            margin-bottom: 1.25rem !important;
+        }
+        /* Tabel FullCalendar kotak tegas 90 derajat & selalu 100% fit container (7 kolom sama rata) */
         .fc-scrollgrid,
         .fc-theme-standard .fc-scrollgrid {
             border: 1px solid #CBD5E1 !important;
             border-radius: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: fixed !important;
+        }
+        .fc-scrollgrid-sync-table,
+        .fc-col-header,
+        .fc-daygrid-body {
+            width: 100% !important;
+        }
+        .fc-col-header-cell,
+        .fc-daygrid-day {
+            width: 14.2857% !important;
+            max-width: 14.2857% !important;
         }
         .fc-scrollgrid-section-header,
         .fc-scrollgrid-section-header > th,
@@ -33,11 +53,43 @@
             padding: 0 !important;
             margin: 0 !important;
         }
-        /* Semua sel dan garis menggunakan #CBD5E1 */
+        /* Semua sel dan garis menggunakan #CBD5E1 dan selalu rata ATAS */
         .fc-theme-standard th,
         .fc-theme-standard td,
-        .fc-scrollgrid-sync-table td {
+        .fc-scrollgrid-sync-table td,
+        .fc-daygrid-day {
             border-color: #CBD5E1 !important;
+            vertical-align: top !important;
+        }
+        .fc-daygrid-day-frame {
+            vertical-align: top !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: flex-start !important;
+            min-height: 90px !important;
+        }
+        .fc-daygrid-day-top {
+            display: flex !important;
+            flex-direction: row-reverse !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            padding: 4px 6px 2px !important;
+        }
+        .fc-daygrid-day-number {
+            color: #334155 !important;
+            font-weight: 600 !important;
+            font-size: 0.8125rem !important;
+            padding: 2px 4px !important;
+            text-decoration: none !important;
+            line-height: 1 !important;
+        }
+        .fc-day-other .fc-daygrid-day-number {
+            color: #94A3B8 !important;
+            opacity: 0.6;
+        }
+        .fc-daygrid-day-events {
+            margin-top: 2px !important;
+            padding: 0 2px !important;
         }
         /* Header hari menyambung sempurna ke garis atas dan bawah */
         .fc-col-header-cell {
@@ -58,12 +110,6 @@
             font-weight: 600 !important;
             font-size: 0.8125rem !important;
             line-height: 1.25rem !important;
-            text-decoration: none !important;
-        }
-        .fc-daygrid-day-number {
-            color: #334155 !important;
-            font-weight: 600 !important;
-            padding: 6px 8px !important;
             text-decoration: none !important;
         }
         .fc .fc-toolbar-title {
@@ -129,6 +175,43 @@
         /* Sembunyikan dot/bullet bawaan FullCalendar */
         .fc-daygrid-event-dot {
             display: none !important;
+        }
+
+        /* Popover dan link "+X lainnya" */
+        .fc-more-link {
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            color: #004A65 !important;
+            background-color: #E0F2FE !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            text-decoration: none !important;
+            display: inline-block !important;
+            margin: 2px 0 0 2px !important;
+        }
+        .fc-more-link:hover {
+            background-color: #BAE6FD !important;
+            text-decoration: none !important;
+        }
+        .fc-popover {
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+            overflow: hidden !important;
+            z-index: 100 !important;
+        }
+        .fc-popover-header {
+            background-color: #F8FAFC !important;
+            padding: 8px 12px !important;
+            border-bottom: 1px solid #E2E8F0 !important;
+            font-weight: 700 !important;
+            color: #1E293B !important;
+            font-size: 0.8125rem !important;
+        }
+        .fc-popover-body {
+            padding: 8px !important;
+            max-height: 280px !important;
+            overflow-y: auto !important;
         }
 
         /* ========== LIST VIEW STYLING ========== */
@@ -273,6 +356,16 @@
 
             <!-- Calendar Card -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <!-- Tombol tambah note -->
+                <div class="flex items-center justify-end mb-3">
+                    <button type="button" onclick="openModalNote()"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#004A65] hover:bg-[#003347] text-white text-xs font-bold rounded-lg transition shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Tambah Note
+                    </button>
+                </div>
                 <div id="calendar"></div>
             </div>
 
@@ -347,8 +440,159 @@
         </div>
     </div>
 
+    <!-- Modal Input Form Tambah Note -->
+    <div id="modal-tambah-note" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" style="display:none; pointer-events:none;">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden transform transition-all duration-200" onclick="event.stopPropagation()">
+            <!-- Header Modal -->
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="p-1.5 rounded-lg bg-blue-100 text-[#004A65]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                    </span>
+                    <h3 class="text-base font-bold text-slate-800">Tambah Catatan / Note</h3>
+                </div>
+                <button type="button" onclick="closeModalNote()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-200/60">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Form Body -->
+            <form id="form-tambah-note" onsubmit="submitTambahNote(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold tracking-wide text-slate-600 mb-1.5">TANGGAL <span class="text-red-500">*</span></label>
+                    <input type="date" id="note-input-tanggal" required
+                        class="w-full h-10 rounded-lg border border-slate-300 px-3 text-sm text-slate-800 outline-none focus:border-[#004A65] focus:ring-1 focus:ring-[#004A65]">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold tracking-wide text-slate-600 mb-1.5">JUDUL NOTE <span class="text-red-500">*</span></label>
+                    <input type="text" id="note-input-judul" required placeholder="Contoh: Reminder evaluasi mingguan, follow up berkas..."
+                        class="w-full h-10 rounded-lg border border-slate-300 px-3 text-sm text-slate-800 outline-none focus:border-[#004A65] focus:ring-1 focus:ring-[#004A65]">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold tracking-wide text-slate-600 mb-1.5">KETERANGAN / DETAIL (OPSIONAL)</label>
+                    <textarea id="note-input-detail" rows="3" placeholder="Catatan detail tambahan..."
+                        class="w-full resize-none rounded-lg border border-slate-300 p-3 text-sm text-slate-800 outline-none focus:border-[#004A65] focus:ring-1 focus:ring-[#004A65]"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold tracking-wide text-slate-600 mb-1.5">LABEL WARNA</label>
+                    <div class="grid grid-cols-6 gap-2" id="note-color-picker">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="note-warna" value="slate" class="peer sr-only" checked>
+                            <div class="h-8 rounded-lg border-2 border-slate-300 bg-slate-100 flex items-center justify-center peer-checked:border-[#004A65] peer-checked:ring-2 peer-checked:ring-[#004A65]/30">
+                                <span class="w-3 h-3 rounded-full bg-slate-500"></span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="note-warna" value="blue" class="peer sr-only">
+                            <div class="h-8 rounded-lg border-2 border-slate-300 bg-blue-50 flex items-center justify-center peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-400">
+                                <span class="w-3 h-3 rounded-full bg-blue-600"></span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="note-warna" value="green" class="peer sr-only">
+                            <div class="h-8 rounded-lg border-2 border-slate-300 bg-emerald-50 flex items-center justify-center peer-checked:border-emerald-600 peer-checked:ring-2 peer-checked:ring-emerald-400">
+                                <span class="w-3 h-3 rounded-full bg-emerald-600"></span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="note-warna" value="amber" class="peer sr-only">
+                            <div class="h-8 rounded-lg border-2 border-slate-300 bg-amber-50 flex items-center justify-center peer-checked:border-amber-600 peer-checked:ring-2 peer-checked:ring-amber-400">
+                                <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="note-warna" value="red" class="peer sr-only">
+                            <div class="h-8 rounded-lg border-2 border-slate-300 bg-red-50 flex items-center justify-center peer-checked:border-red-600 peer-checked:ring-2 peer-checked:ring-red-400">
+                                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="note-warna" value="purple" class="peer sr-only">
+                            <div class="h-8 rounded-lg border-2 border-slate-300 bg-purple-50 flex items-center justify-center peer-checked:border-purple-600 peer-checked:ring-2 peer-checked:ring-purple-400">
+                                <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="note-error-message" class="text-xs text-red-600 hidden"></div>
+
+                <!-- Footer Modal -->
+                <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+                    <button type="button" onclick="closeModalNote()"
+                        class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+                        Batal
+                    </button>
+                    <button type="submit" id="btn-submit-note"
+                        class="inline-flex items-center gap-1.5 px-5 py-2 bg-[#004A65] hover:bg-[#003347] text-white text-sm font-bold rounded-lg transition shadow-sm">
+                        <span>Simpan Note</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Detail Note -->
+    <div id="modal-detail-note" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" style="display:none; pointer-events:none;">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden transform transition-all duration-200" onclick="event.stopPropagation()">
+            <!-- Header Modal -->
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-sky-100 text-sky-800">Catatan Pribadi</span>
+                    <span id="detail-note-date" class="text-xs text-slate-500 font-medium"></span>
+                </div>
+                <button type="button" onclick="closeModalDetailNote()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-200/60">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Body Modal -->
+            <div class="p-6 space-y-4">
+                <div>
+                    <h3 id="detail-note-title" class="text-lg font-bold text-slate-800 leading-snug">Judul Note</h3>
+                </div>
+
+                <div id="detail-note-body-wrapper">
+                    <span class="text-xs text-slate-500 font-medium block mb-1">Keterangan:</span>
+                    <div id="detail-note-content" class="text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-xl p-3 max-h-48 overflow-y-auto whitespace-pre-line leading-relaxed">
+                        -
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                <button type="button" id="btn-delete-note" onclick="hapusCurrentNote()"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    Hapus
+                </button>
+                <button type="button" onclick="closeModalDetailNote()"
+                    class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let calendarInstance = null;
+        let currentSelectedNoteId = null;
+
+        function getCsrfToken() {
+            return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        }
 
         function escapeHtml(text) {
             if (!text) return '';
@@ -359,6 +603,176 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
         }
+
+        // --- MODAL NOTE PRIBADI ---
+        function openModalNote(defaultDate = null) {
+            const modal = document.getElementById('modal-tambah-note');
+            const dateInput = document.getElementById('note-input-tanggal');
+            const judulInput = document.getElementById('note-input-judul');
+            const detailInput = document.getElementById('note-input-detail');
+            const errorEl = document.getElementById('note-error-message');
+
+            if (errorEl) {
+                errorEl.textContent = '';
+                errorEl.classList.add('hidden');
+            }
+
+            judulInput.value = '';
+            detailInput.value = '';
+
+            if (defaultDate) {
+                dateInput.value = defaultDate;
+            } else {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const dd = String(today.getDate()).padStart(2, '0');
+                dateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+
+            modal.style.display = 'flex';
+            modal.style.pointerEvents = '';
+            setTimeout(() => judulInput.focus(), 100);
+        }
+
+        function closeModalNote() {
+            const modal = document.getElementById('modal-tambah-note');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.style.pointerEvents = 'none';
+            }
+        }
+
+        function submitTambahNote(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-note');
+            const errorEl = document.getElementById('note-error-message');
+            const tanggal = document.getElementById('note-input-tanggal').value;
+            const judul = document.getElementById('note-input-judul').value.trim();
+            const detail = document.getElementById('note-input-detail').value.trim();
+            const warnaRadio = document.querySelector('input[name="note-warna"]:checked');
+            const warna = warnaRadio ? warnaRadio.value : 'slate';
+
+            if (!judul) {
+                if (errorEl) {
+                    errorEl.textContent = 'Judul note wajib diisi.';
+                    errorEl.classList.remove('hidden');
+                }
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>Menyimpan...</span>';
+
+            fetch('/kadiv/kalender/notes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken()
+                },
+                body: JSON.stringify({ tanggal, judul, detail, warna })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(data => { throw new Error(data.message || 'Gagal menyimpan note'); });
+                }
+                return res.json();
+            })
+            .then(result => {
+                closeModalNote();
+                if (calendarInstance) {
+                    calendarInstance.refetchEvents();
+                }
+            })
+            .catch(err => {
+                if (errorEl) {
+                    errorEl.textContent = err.message;
+                    errorEl.classList.remove('hidden');
+                }
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Simpan Note</span>';
+            });
+        }
+
+        function openModalDetailNote(event) {
+            const props = event.extendedProps || {};
+            currentSelectedNoteId = props.note_id || null;
+
+            const modal = document.getElementById('modal-detail-note');
+            const titleEl = document.getElementById('detail-note-title');
+            const dateEl = document.getElementById('detail-note-date');
+            const contentEl = document.getElementById('detail-note-content');
+
+            titleEl.textContent = props.judul || event.title;
+            dateEl.textContent = props.tanggal_label || '-';
+            contentEl.textContent = props.detail ? props.detail : 'Tidak ada keterangan tambahan.';
+
+            modal.style.display = 'flex';
+            modal.style.pointerEvents = '';
+        }
+
+        function closeModalDetailNote() {
+            const modal = document.getElementById('modal-detail-note');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.style.pointerEvents = 'none';
+            }
+            currentSelectedNoteId = null;
+        }
+
+        function hapusCurrentNote() {
+            if (!currentSelectedNoteId) return;
+
+            if (!confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
+                return;
+            }
+
+            const btn = document.getElementById('btn-delete-note');
+            btn.disabled = true;
+            btn.textContent = 'Menghapus...';
+
+            fetch('/kadiv/kalender/notes/' + currentSelectedNoteId, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken()
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Gagal menghapus note');
+                return res.json();
+            })
+            .then(() => {
+                closeModalDetailNote();
+                if (calendarInstance) {
+                    calendarInstance.refetchEvents();
+                }
+            })
+            .catch(err => {
+                alert(err.message);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg> Hapus`;
+            });
+        }
+
+        document.getElementById('modal-tambah-note')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                e.stopPropagation();
+                closeModalNote();
+            }
+        });
+
+        document.getElementById('modal-detail-note')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                e.stopPropagation();
+                closeModalDetailNote();
+            }
+        });
 
         function openModalEvent(event) {
             const props = event.extendedProps || {};
@@ -435,6 +849,13 @@
                 initialView: 'dayGridMonth',
                 locale: 'id',
                 firstDay: 1, // Senin
+                height: 'auto',
+                dayMaxEvents: 3, // Maksimal 3 event tampil per hari
+                moreLinkText: function(n) {
+                    return '+' + n + ' lainnya';
+                },
+                defaultTimedEventDuration: '00:00:01', // Cegah deadline 23:59 nyebrang ke hari berikutnya
+                nextDayThreshold: '24:00:00',
                 eventDisplay: 'block',
                 displayEventTime: true,
                 eventTimeFormat: {
@@ -468,32 +889,55 @@
                     if (status) params.set('status', status);
 
                     const query = params.toString();
-                    fetch('/kadiv/kalender/events' + (query ? '?' + query : ''), {
-                        headers: headers
-                    })
-                    .then(res => {
-                        if (!res.ok) throw new Error('Gagal mengambil data event divisi');
-                        return res.json();
-                    })
-                    .then(result => {
-                        successCallback(result.data || []);
+
+                    Promise.all([
+                        fetch('/kadiv/kalender/events' + (query ? '?' + query : ''), { headers }).then(r => r.ok ? r.json() : { data: [] }),
+                        fetch('/kadiv/kalender/notes', { headers }).then(r => r.ok ? r.json() : { data: [] })
+                    ])
+                    .then(([eventsRes, notesRes]) => {
+                        const allItems = [...(eventsRes.data || []), ...(notesRes.data || [])];
+                        successCallback(allItems);
                     })
                     .catch(err => {
                         console.error('Error load events kadiv:', err);
                         failureCallback(err);
                     });
                 },
+                dateClick: function(info) {
+                    openModalNote(info.dateStr);
+                },
                 /* Tampilan Kustom Event untuk Kadiv: Menampilkan Nama Karyawan dengan warna lingkaran senada */
                 eventContent: function(arg) {
                     const props = arg.event.extendedProps || {};
+                    const isList = arg.view.type.startsWith('list');
+                    const el = document.createElement('div');
+
+                    // Tampilan Khusus Note Pribadi
+                    if (props.type === 'note') {
+                        if (isList) {
+                            el.className = 'flex items-center gap-2 py-0.5 w-full';
+                            el.innerHTML = `
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 shrink-0">Catatan</span>
+                                <span class="font-bold text-[12px] text-slate-800" title="${escapeHtml(arg.event.title)}">${escapeHtml(arg.event.title)}</span>
+                            `;
+                        } else {
+                            el.className = 'w-full px-1.5 py-1 leading-snug flex items-center gap-1.5 overflow-hidden';
+                            el.innerHTML = `
+                                <svg class="w-3.5 h-3.5 shrink-0 opacity-80" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"/>
+                                    <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="font-bold text-[11px] truncate text-slate-900" title="${escapeHtml(arg.event.title)}">${escapeHtml(arg.event.title)}</span>
+                            `;
+                        }
+                        return { domNodes: [el] };
+                    }
+
                     const staffName = props.staff_nama || 'Staff';
                     const staffInitial = props.staff_initial || staffName.charAt(0).toUpperCase();
                     const title = props.judul_murni || arg.event.title;
                     const time = arg.timeText;
                     const dotColor = props.dot_color || '#004A65';
-                    const isList = arg.view.type.startsWith('list');
-
-                    const el = document.createElement('div');
 
                     if (isList) {
                         // List view: nama penuh tanpa truncate, layout horizontal
@@ -531,15 +975,42 @@
                 },
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
-                    openModalEvent(info.event);
+                    if (info.event.extendedProps?.type === 'note') {
+                        openModalDetailNote(info.event);
+                    } else {
+                        openModalEvent(info.event);
+                    }
                 },
                 eventDidMount: function(info) {
-                    const staff = info.event.extendedProps.staff_nama || 'Staff';
-                    info.el.setAttribute('title', `[${staff}] ${info.event.title}`);
+                    if (info.event.extendedProps?.type === 'note') {
+                        info.el.setAttribute('title', `Catatan: ${info.event.title}`);
+                    } else {
+                        const staff = info.event.extendedProps.staff_nama || 'Staff';
+                        info.el.setAttribute('title', `[${staff}] ${info.event.title}`);
+                    }
                 }
             });
 
             calendarInstance.render();
+
+            // ResizeObserver & listener agar saat sidebar dibuka/ditutup (w-64 vs w-20),
+            // ukuran 7 kolom kalender langsung otomatis menyesuaikan secara proporsional
+            if (window.ResizeObserver) {
+                const resizeObserver = new ResizeObserver(() => {
+                    if (calendarInstance) {
+                        calendarInstance.updateSize();
+                    }
+                });
+                resizeObserver.observe(calendarEl);
+            }
+
+            document.getElementById('btn-sidebar-toggle')?.addEventListener('click', function() {
+                setTimeout(() => {
+                    if (calendarInstance) {
+                        calendarInstance.updateSize();
+                    }
+                }, 320);
+            });
 
             // Event listener filter otomatis saat dropdown diganti
             document.getElementById('kadivStaffFilter')?.addEventListener('change', applyKadivFilters);
