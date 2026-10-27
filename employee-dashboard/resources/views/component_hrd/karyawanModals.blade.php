@@ -424,7 +424,7 @@
         form.elements['alamat'].value = button.dataset.alamat || '';
         form.elements['no_telepon'].value = button.dataset.telepon || '';
         form.elements['jabatan'].value = button.dataset.jabatan || '';
-        form.elements['status_aktif'].value = button.dataset.status || 'Aktif';
+        form.elements['status_aktif'].value = button.dataset.status || 'Aktif';//kemungkinan di hapus
         form.elements['divisi_id_divisi'].value = button.dataset.divisi || '';
         form.elements['username'].value = button.dataset.username || '';
         form.elements['password'].value = '';

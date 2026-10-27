@@ -288,7 +288,7 @@ class KalenderController extends Controller
 
         // Map Kadiv per divisi untuk lookup "Pemberi Tugas (Dari)"
         $kadivList = Karyawan::whereHas('user.role', fn($q) => $q->whereRaw('LOWER(nama_role) = ?', ['kadiv']))
-            ->orWhere('jabatan', 'ilike', '%kepala divisi%')
+            ->orWhere('jabatan', 'like', '%kepala divisi%')
             ->get()
             ->keyBy('divisi_id_divisi');
 
