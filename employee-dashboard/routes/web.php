@@ -58,6 +58,11 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'index'])->name('kalender');
     Route::get('/kalender/events', [\App\Http\Controllers\Staff\KalenderController::class, 'events'])->name('kalender.events');
 
+    // Kalender Note (staff)
+    Route::get('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'index'])->name('kalender.notes.index');
+    Route::post('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'store'])->name('kalender.notes.store')->middleware('throttle:submit-form');
+    Route::delete('/kalender/notes/{id}', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'destroy'])->name('kalender.notes.destroy')->middleware('throttle:submit-form');
+
     // Pusat Data & Arsip
     Route::get('/pusat-data', function () {
         return view('staff.pusatData');
@@ -144,6 +149,11 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexKadiv'])->name('kadiv.kalender');
     Route::get('/kalender/events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsKadiv'])->name('kadiv.kalender.events');
 
+    // Kalender Note (kadiv)
+    Route::get('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'index'])->name('kadiv.kalender.notes.index');
+    Route::post('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'store'])->name('kadiv.kalender.notes.store')->middleware('throttle:submit-form');
+    Route::delete('/kalender/notes/{id}', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'destroy'])->name('kadiv.kalender.notes.destroy')->middleware('throttle:submit-form');
+
     // Pusat Data & Arsip
     Route::get('/pusat-data', function () {
         return view('kadiv.pusatData');
@@ -194,6 +204,11 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     // Kalender
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexHrd'])->name('hrd.kalender');
     Route::get('/kalender/events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsHrd'])->name('hrd.kalender.events');
+
+    // Kalender Note (hrd)
+    Route::get('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'index'])->name('hrd.kalender.notes.index');
+    Route::post('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'store'])->name('hrd.kalender.notes.store')->middleware('throttle:submit-form');
+    Route::delete('/kalender/notes/{id}', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'destroy'])->name('hrd.kalender.notes.destroy')->middleware('throttle:submit-form');
 
     // Pusat Data & Arsip
     Route::get('/pusat-data', function () {
