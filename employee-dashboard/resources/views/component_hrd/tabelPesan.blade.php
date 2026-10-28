@@ -75,11 +75,11 @@
 
     {{-- MODAL KIRIM PESAN --}}
     <div id="modalKirimPesanHrd"
-        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300">
+        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-150">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="tutupModalPesanHrd()"></div>
 
         <div id="modalBoxPesanHrd"
-            class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transition-all duration-300">
+            class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transition-all duration-150">
             <div class="flex items-center justify-between p-4 border-b border-dashed border-gray-300">
                 <div class="flex items-center gap-3">
                     <div class="bg-cyan-100 p-1.5 rounded text-cyan-700">

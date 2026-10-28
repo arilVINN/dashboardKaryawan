@@ -139,7 +139,7 @@
             font-weight: 500;
             text-transform: capitalize;
             box-shadow: none !important;
-            transition: all 0.15s ease-in-out;
+            transition: all 0.1s ease-out;
         }
         .fc .fc-button-primary:hover:not(:disabled) {
             background-color: #003347;
@@ -375,7 +375,7 @@
 
     <!-- Modal Detail Event / Tugas Khusus Kadiv -->
     <div id="modal-event" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" style="display:none; pointer-events:none;">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all duration-200" onclick="event.stopPropagation()">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all duration-150" onclick="event.stopPropagation()">
             <!-- Header Modal -->
             <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -442,7 +442,7 @@
 
     <!-- Modal Input Form Tambah Note -->
     <div id="modal-tambah-note" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" style="display:none; pointer-events:none;">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden transform transition-all duration-200" onclick="event.stopPropagation()">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden transform transition-all duration-150" onclick="event.stopPropagation()">
             <!-- Header Modal -->
             <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -541,7 +541,7 @@
 
     <!-- Modal Detail Note -->
     <div id="modal-detail-note" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" style="display:none; pointer-events:none;">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden transform transition-all duration-200" onclick="event.stopPropagation()">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden transform transition-all duration-150" onclick="event.stopPropagation()">
             <!-- Header Modal -->
             <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -1009,7 +1009,7 @@
                     if (calendarInstance) {
                         calendarInstance.updateSize();
                     }
-                }, 320);
+                }, 160);
             });
 
             // Event listener filter otomatis saat dropdown diganti

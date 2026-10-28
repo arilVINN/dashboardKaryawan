@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Models\CalendarNote;
 use App\Models\Notifikasi;
 use App\Models\Pesan;
 use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
@@ -74,6 +76,49 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Ambil catatan kalender yang jatuh besok (pengingat sehari sebelum)
+        $besok = Carbon::tomorrow()->toDateString();
+        $tanggalLabel = Carbon::parse($besok)->locale('id')->isoFormat('dddd, D MMMM Y');
+
+        $notesBesok = CalendarNote::query()
+            ->where('user_id_user', $user->id_user)
+            ->whereDate('tanggal', $besok)
+            ->get();
+
+        // Buat objek virtual notifikasi pengingat dari note besok
+        $pengingatNote = $notesBesok->map(function (CalendarNote $note) use ($tanggalLabel) {
+            return [
+                'id_notifikasi'      => 'note-reminder-' . $note->id,
+                'judul_notifikasi'   => 'Pengingat Kalender',
+                'isi_notif'          => "Catatan \"{$note->judul}\" dijadwalkan besok, {$tanggalLabel}.",
+                'tanggal_notifikasi' => now()->toDateString(),
+                'created_at'         => now()->toISOString(),
+                'is_note_reminder'   => true,
+            ];
+        })->values()->all();
+
+        // Ambil tugas staf yang tenggat waktunya (deadline) besok
+        $tugasBesok = $karyawanId ? Tugas::query()
+            ->where('karyawan_id_karyawan', $karyawanId)
+            ->where('status', '!=', Tugas::STATUS_SUDAH_ACC)
+            ->whereDate('deadline', $besok)
+            ->get() : collect();
+
+        $pengingatTugas = $tugasBesok->map(function (Tugas $tugas) use ($tanggalLabel) {
+            $waktuDeadline = Carbon::parse($tugas->deadline);
+            $jam = $waktuDeadline->format('H.i');
+            $waktuLabel = $jam !== '00.00' ? " pukul {$jam}" : '';
+
+            return [
+                'id_notifikasi'      => 'tugas-reminder-' . $tugas->id_tugas,
+                'judul_notifikasi'   => 'Pengingat Tugas',
+                'isi_notif'          => "Tugas \"{$tugas->judul_tugas}\" tenggat waktunya besok, {$tanggalLabel}{$waktuLabel}.",
+                'tanggal_notifikasi' => now()->toDateString(),
+                'created_at'         => now()->toISOString(),
+                'is_tugas_reminder'  => true,
+            ];
+        })->values()->all();
+
         return response()->json([
             'data' => [
                 'statistik' => [
@@ -101,15 +146,19 @@ class DashboardController extends Controller
                         ] : null,
                     ];
                 }),
-                'notifikasi_terbaru' => $notifikasiTerbaru->map(function (Notifikasi $notifikasi) {
-                    return [
-                        'id_notifikasi' => $notifikasi->id_notifikasi,
-                        'judul_notifikasi' => $notifikasi->judul_notifikasi,
-                        'isi_notif' => $notifikasi->isi_notif,
-                        'tanggal_notifikasi' => $notifikasi->tanggal_notifikasi,
-                        'created_at' => $notifikasi->created_at,
-                    ];
-                }),
+                'notifikasi_terbaru' => array_merge(
+                    $pengingatNote,
+                    $pengingatTugas,
+                    $notifikasiTerbaru->map(function (Notifikasi $notifikasi) {
+                        return [
+                            'id_notifikasi'      => $notifikasi->id_notifikasi,
+                            'judul_notifikasi'   => $notifikasi->judul_notifikasi,
+                            'isi_notif'          => $notifikasi->isi_notif,
+                            'tanggal_notifikasi' => $notifikasi->tanggal_notifikasi,
+                            'created_at'         => $notifikasi->created_at,
+                        ];
+                    })->all()
+                ),
             ],
         ]);
     }

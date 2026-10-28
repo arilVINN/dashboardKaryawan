@@ -122,10 +122,10 @@
 
     {{-- MODAL KIRIM PESAN --}}
     <div id="modalKirimPesan"
-        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300">
+        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-150">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" data-modal-close="modalKirimPesan"></div>
         <form wire:submit="sendMessage" data-modal-panel
-            class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transition-all duration-300">
+            class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transition-all duration-150">
             <div class="flex items-center justify-between p-4 border-b border-dashed border-gray-300">
                 <h3 class="text-base font-bold text-slate-900">Kirim Pesan</h3>
                 <button type="button" data-modal-close="modalKirimPesan"
@@ -173,9 +173,9 @@
 
     {{-- MODAL KIRIM SURAT IZIN --}}
     <div id="modalSuratIzin"
-        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(86,94,116,0.4)] backdrop-blur-sm transition-opacity duration-300 ease-in-out">
+        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(86,94,116,0.4)] backdrop-blur-sm transition-opacity duration-150 ease-in-out">
         <form wire:submit="kirimSuratIzin" data-modal-panel
-            class="relative flex max-h-[90vh] w-full max-w-[420px] flex-col overflow-hidden rounded-xl bg-white shadow-[0_8px_16px_rgba(0,0,0,0.12)] scale-95 translate-y-2 transition-all duration-300 ease-in-out">
+            class="relative flex max-h-[90vh] w-full max-w-[420px] flex-col overflow-hidden rounded-xl bg-white shadow-[0_8px_16px_rgba(0,0,0,0.12)] scale-95 translate-y-2 transition-all duration-150 ease-in-out">
             <div class="flex items-center justify-between rounded-t-xl border-b border-[#E2E8F0] bg-[#F8FAFC] px-6 py-4">
                 <div class="flex items-center gap-3">
                     <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#D9EEF5] text-[#146C94]">

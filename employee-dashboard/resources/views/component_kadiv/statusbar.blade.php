@@ -1,6 +1,6 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
+    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-150 hover:scale-105">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Tugas Yang Belum</span>
             <span id="stat-berjalan" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
@@ -13,7 +13,7 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
+    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-150 hover:scale-105">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Tugas Belum Di-acc</span>
             <span id="stat-pending" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
@@ -24,7 +24,7 @@
         </svg>
     </div>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-300 hover:scale-105">
+    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-150 hover:scale-105">
         <div class="flex flex-col">
             <span class="text-sm font-bold text-slate-500">Tugas Selesai</span>
             <span id="stat-selesai" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>

@@ -1,7 +1,7 @@
 <div id="modalSuratIzin"
      class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4
             bg-[rgba(86,94,116,0.4)] backdrop-blur-sm
-            transition-opacity duration-300 ease-in-out">
+            transition-opacity duration-150 ease-in-out">
 
     <form data-modal-panel
           action="{{ route($routeSurat) }}"
@@ -9,7 +9,7 @@
           enctype="multipart/form-data"
           class="bg-white rounded-xl w-full max-w-[420px] max-h-[90vh] flex flex-col
                  shadow-[0_8px_16px_rgba(0,0,0,0.12)]
-                 scale-95 translate-y-2 transition-all duration-300 ease-in-out">
+                 scale-95 translate-y-2 transition-all duration-150 ease-in-out">
         @csrf
 
         {{-- HEADER --}}
