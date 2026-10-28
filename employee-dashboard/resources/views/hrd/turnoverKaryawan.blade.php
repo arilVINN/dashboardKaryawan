@@ -32,7 +32,7 @@
                 <canvas id="chartTurnoverDetail" height="90"></canvas>
             </div>
 
-            <h1 class="text-2xl font-bold text-slate-800">Riwaya Karyawan Keluar</h1>
+            <h1 class="text-2xl font-bold text-slate-800">Riwayat Karyawan Keluar</h1>
 
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
 

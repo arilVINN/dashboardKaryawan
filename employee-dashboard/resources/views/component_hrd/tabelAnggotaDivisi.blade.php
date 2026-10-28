@@ -60,6 +60,7 @@
                                     data-telepon="{{ $anggota->no_telepon }}"
                                     data-jabatan="{{ $anggota->jabatan }}"
                                     data-status="{{ $anggota->status_aktif }}"
+                                    data-tanggal-keluar="{{ $anggota->tanggal_keluar }}"
                                     data-divisi="{{ $divisi->id_divisi }}"
                                     data-username="{{ $anggota->user->username ?? '' }}"
                                     class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline mr-3">
@@ -85,4 +86,3 @@
         </div>
     </div>
 </section>
-

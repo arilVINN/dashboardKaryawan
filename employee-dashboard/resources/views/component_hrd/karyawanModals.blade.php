@@ -69,7 +69,8 @@
                         </div>
                         <div class="flex flex-col gap-1.5 sm:col-span-2">
                             <label class="text-xs font-bold text-slate-500">NO. REKENING (OPSIONAL)</label>
-                            <input type="text" name="no_rekening" maxlength="50" placeholder="Contoh: BCA 1234567890" class="{{ $formControl }}">
+                            <input type="text" name="no_rekening" maxlength="50" placeholder="Contoh: BCA 1234567890"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5 sm:col-span-2">
                             <label class="text-xs font-bold text-slate-500">FOTO PROFIL (JPG/PNG/WEBP, MAKS. 2 MB,
@@ -119,8 +120,29 @@
                             <input type="date" name="tanggal_masuk" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-bold text-slate-500">TANGGAL AKHIR KONTRAK (KOSONGKAN JIKA TETAP)</label>
+                            <label class="text-xs font-bold text-slate-500">TANGGAL AKHIR KONTRAK</label>
                             <input type="date" name="tanggal_akhir_kontrak" class="{{ $formControl }}">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">PENDIDIKAN TERAKHIR</label>
+                            <select name="pendidikan" class="{{ $formControl }}">
+                                <option value="">Pilih pendidikan</option>
+                                <option value="SMA/SMK">SMA/SMK</option>
+                                <option value="D3">D3</option>
+                                <option value="S1">S1</option>
+                                <option value="S2">S2</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">JOB LEVEL</label>
+                            <select name="job_level" class="{{ $formControl }}">
+                                <option value="">Pilih job level</option>
+                                <option value="Magang">Magang</option>
+                                <option value="Junior">Junior</option>
+                                <option value="Staff">Staff</option>
+                                <option value="Senior">Senior</option>
+                                <option value="Manager">Manager</option>
+                            </select>
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">STATUS</label>
@@ -129,6 +151,9 @@
                                     <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
                             </select>
+                            <p id="statusEditKaryawanHint" class="hidden text-xs text-red-600">
+                                Karyawan yang sudah ditandai keluar tidak dapat diaktifkan kembali.
+                            </p>
                         </div>
                     </div>
                 </section>
@@ -136,36 +161,44 @@
                 <section class="space-y-4">
                     <div class="flex items-center gap-2">
                         <span class="h-4 w-1 rounded bg-[#0097B2]"></span>
-                        <h4 class="text-xs font-bold uppercase tracking-wide text-slate-600">Upload Lampiran (Maks 5MB per file, PDF/JPG/PNG)</h4>
+                        <h4 class="text-xs font-bold uppercase tracking-wide text-slate-600">Upload Lampiran (Maks 5MB
+                            per file, PDF/JPG/PNG)</h4>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">SURAT LAMARAN (OPSIONAL)</label>
-                            <input type="file" name="lampiran[lamaran]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[lamaran]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">IJAZAH (OPSIONAL)</label>
-                            <input type="file" name="lampiran[ijazah]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[ijazah]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">TRANSKRIP NILAI (OPSIONAL)</label>
-                            <input type="file" name="lampiran[transkrip]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[transkrip]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">KTP (OPSIONAL)</label>
-                            <input type="file" name="lampiran[ktp]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[ktp]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">KARTU KELUARGA / KK (OPSIONAL)</label>
-                            <input type="file" name="lampiran[kk]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[kk]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">OFFERING LETTER (OPSIONAL)</label>
-                            <input type="file" name="lampiran[offering_letter]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[offering_letter]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5 sm:col-span-2">
                             <label class="text-xs font-bold text-slate-500">LAINNYA / SK (OPSIONAL)</label>
-                            <input type="file" name="lampiran[lainnya]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[lainnya]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                     </div>
                 </section>
@@ -260,7 +293,8 @@
                         </div>
                         <div class="flex flex-col gap-1.5 sm:col-span-2">
                             <label class="text-xs font-bold text-slate-500">NO. REKENING (OPSIONAL)</label>
-                            <input type="text" name="no_rekening" maxlength="50" placeholder="Contoh: BCA 1234567890" class="{{ $formControl }}">
+                            <input type="text" name="no_rekening" maxlength="50"
+                                placeholder="Contoh: BCA 1234567890" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5 sm:col-span-2">
                             <label class="text-xs font-bold text-slate-500">FOTO PROFIL BARU (JPG/PNG/WEBP, MAKS. 2 MB,
@@ -299,12 +333,34 @@
                             <input type="date" name="tanggal_masuk" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <label class="text-xs font-bold text-slate-500">TANGGAL AKHIR KONTRAK (KOSONGKAN JIKA TETAP)</label>
+                            <label class="text-xs font-bold text-slate-500">TANGGAL AKHIR KONTRAK</label>
                             <input type="date" name="tanggal_akhir_kontrak" class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">PENDIDIKAN TERAKHIR</label>
+                            <select name="pendidikan" class="{{ $formControl }}">
+                                <option value="">Pilih pendidikan</option>
+                                <option value="SMA/SMK">SMA/SMK</option>
+                                <option value="D3">D3</option>
+                                <option value="S1">S1</option>
+                                <option value="S2">S2</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-xs font-bold text-slate-500">JOB LEVEL</label>
+                            <select name="job_level" class="{{ $formControl }}">
+                                <option value="">Pilih job level</option>
+                                <option value="Magang">Magang</option>
+                                <option value="Junior">Junior</option>
+                                <option value="Staff">Staff</option>
+                                <option value="Senior">Senior</option>
+                                <option value="Manager">Manager</option>
+                            </select>
+                        </div>
+
+                        <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">STATUS</label>
-                            <select name="status_aktif" required class="{{ $formControl }}">
+                            <select name="status_aktif" id="edit_status_aktif" required class="{{ $formControl }}">
                                 @foreach (\App\Models\Karyawan::STATUS_OPTIONS as $option)
                                     <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
@@ -316,36 +372,44 @@
                 <section class="space-y-4">
                     <div class="flex items-center gap-2">
                         <span class="h-4 w-1 rounded bg-[#0097B2]"></span>
-                        <h4 class="text-xs font-bold uppercase tracking-wide text-slate-600">Upload Lampiran (Maks 5MB per file, PDF/JPG/PNG)</h4>
+                        <h4 class="text-xs font-bold uppercase tracking-wide text-slate-600">Upload Lampiran (Maks 5MB
+                            per file, PDF/JPG/PNG)</h4>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">SURAT LAMARAN (OPSIONAL)</label>
-                            <input type="file" name="lampiran[lamaran]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[lamaran]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">IJAZAH (OPSIONAL)</label>
-                            <input type="file" name="lampiran[ijazah]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[ijazah]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">TRANSKRIP NILAI (OPSIONAL)</label>
-                            <input type="file" name="lampiran[transkrip]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[transkrip]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">KTP (OPSIONAL)</label>
-                            <input type="file" name="lampiran[ktp]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[ktp]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">KARTU KELUARGA / KK (OPSIONAL)</label>
-                            <input type="file" name="lampiran[kk]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[kk]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">OFFERING LETTER (OPSIONAL)</label>
-                            <input type="file" name="lampiran[offering_letter]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[offering_letter]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                         <div class="flex flex-col gap-1.5 sm:col-span-2">
                             <label class="text-xs font-bold text-slate-500">LAINNYA / SK (OPSIONAL)</label>
-                            <input type="file" name="lampiran[lainnya]" accept=".pdf,.jpg,.jpeg,.png" class="{{ $formControl }}">
+                            <input type="file" name="lampiran[lainnya]" accept=".pdf,.jpg,.jpeg,.png"
+                                class="{{ $formControl }}">
                         </div>
                     </div>
                 </section>
@@ -424,7 +488,11 @@
         form.elements['alamat'].value = button.dataset.alamat || '';
         form.elements['no_telepon'].value = button.dataset.telepon || '';
         form.elements['jabatan'].value = button.dataset.jabatan || '';
-        form.elements['status_aktif'].value = button.dataset.status || 'Aktif';//kemungkinan di hapus
+        const statusSelect = form.elements['status_aktif'];
+        const sudahKeluar = Boolean(button.dataset.tanggalKeluar);
+        statusSelect.value = sudahKeluar ? 'Tidak Aktif' : (button.dataset.status || 'Aktif');
+        statusSelect.disabled = sudahKeluar;
+        document.getElementById('statusEditKaryawanHint').classList.toggle('hidden', !sudahKeluar);
         form.elements['divisi_id_divisi'].value = button.dataset.divisi || '';
         form.elements['username'].value = button.dataset.username || '';
         form.elements['password'].value = '';
@@ -563,6 +631,24 @@
             window.location.reload();
         } catch (error) {
             alert(error.message || 'Gagal menghapus karyawan.');
+        }
+    }
+
+    // Contoh logika di Javascript saat mengisi form edit karyawan:
+    if (karyawan.tanggal_keluar !== null || karyawan.aktif == false) {
+        // Jika karyawan sudah keluar, disable select status_aktif atau paksa agar opsi Aktif tidak bisa dipilih
+        const selectStatus = document.getElementById('edit_status_aktif');
+        // Cari opsi yang nilainya 'Aktif' lalu disable/hapus
+        for (let option of selectStatus.options) {
+            if (option.value === 'Aktif') {
+                option.disabled = true;
+            }
+        }
+    } else {
+        // Jika masih aktif, pastikan aktif kembali
+        const selectStatus = document.getElementById('edit_status_aktif');
+        for (let option of selectStatus.options) {
+            option.disabled = false;
         }
     }
 </script>

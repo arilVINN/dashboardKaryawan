@@ -147,6 +147,7 @@
                                         data-telepon="{{ $k->no_telepon }}"
                                         data-jabatan="{{ $k->jabatan }}"
                                         data-status="{{ $k->status_aktif }}"
+                                        data-tanggal-keluar="{{ $k->tanggal_keluar }}"
                                         data-divisi="{{ $k->divisi_id_divisi }}"
                                         data-username="{{ $k->user->username ?? '' }}"
                                         onclick="bukaEditKaryawan(this)"

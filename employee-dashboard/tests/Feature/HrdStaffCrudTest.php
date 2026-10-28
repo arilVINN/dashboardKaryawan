@@ -140,6 +140,27 @@ class HrdStaffCrudTest extends TestCase
         ]);
     }
 
+    public function test_hrd_cannot_reactivate_departed_employee_from_edit(): void
+    {
+        $tanggalKeluar = now()->subDay()->toDateString();
+
+        $this->actingAs($this->hrd)
+            ->patch('/hrd/detailKaryawan/KRY-1/keluar', ['tanggal_keluar' => $tanggalKeluar])
+            ->assertRedirect();
+
+        $this->actingAs($this->hrd)
+            ->putJson('/hrd/staff/KRY-1', ['status_aktif' => 'Aktif'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('status_aktif');
+
+        $this->assertDatabaseHas('karyawans', [
+            'id_karyawan' => 'KRY-1',
+            'status_aktif' => 'Tidak Aktif',
+            'aktif' => false,
+            'tanggal_keluar' => $tanggalKeluar,
+        ]);
+    }
+
     public function test_staff_detail_page_returns_404_for_unknown_id(): void
     {
         $this->actingAs($this->hrd)->get('/hrd/detailKaryawan/NOPE')->assertNotFound();

@@ -9,6 +9,7 @@ use App\Models\Divisi;
 use App\Models\Tugas;
 use App\Models\Pesan;
 use App\Models\SuratIzin;
+use Illuminate\Validation\Rule;
 
 class HrdDashboardController extends Controller
 {
@@ -21,8 +22,8 @@ class HrdDashboardController extends Controller
         $totalStaff  = Karyawan::count();
         $totalDivisi = Divisi::count();
 
-        $totalTugas      = Tugas::count();
-        $tugasSelesai    = Tugas::statusEfektif(Tugas::STATUS_SUDAH_ACC)->count();
+        $totalTugas       = Tugas::count();
+        $tugasSelesai     = Tugas::statusEfektif(Tugas::STATUS_SUDAH_ACC)->count();
         $persentaseTugas = $totalTugas > 0 ? round(($tugasSelesai / $totalTugas) * 100, 2) : 0;
 
         $totalPesanPerusahaan = Pesan::count();
@@ -38,6 +39,12 @@ class HrdDashboardController extends Controller
             ->take(5)
             ->get();
 
+        // Menghitung total karyawan nonaktif (berdasarkan kolom aktif false atau tanggal_keluar terisi)
+        $totalKaryawanTidakAktif = Karyawan::where(function ($query) {
+            $query->where('aktif', false)
+                ->orWhereNotNull('tanggal_keluar');
+        })->count();
+
         // JSON (API), hanya kalau diminta lewat Accept: application/json
         if ($request->wantsJson()) {
             return response()->json([
@@ -46,6 +53,8 @@ class HrdDashboardController extends Controller
                     'metrics' => [
                         'total_staff'              => $totalStaff,
                         'total_divisi'             => $totalDivisi,
+                        'total_karyawan_aktif'     => $totalKaryawanAktif,
+                        'total_karyawan_nonaktif'  => $totalKaryawanTidakAktif,
                         'tugas_keseluruhan'        => $totalTugas,
                         'tugas_selesai'            => $tugasSelesai,
                         'persentase_tugas_selesai' => $persentaseTugas . '%',
@@ -108,6 +117,7 @@ class HrdDashboardController extends Controller
             'pesan',
             'divisiTerbesar',
             'totalKaryawanAktif',
+            'totalKaryawanTidakAktif',
             'totalKeluarTahunIni'
         ));
     }
@@ -144,6 +154,16 @@ class HrdDashboardController extends Controller
         $totalDivisi = Divisi::count();
         $totalKaryawanAktif = Karyawan::where('aktif', true)->count();
 
+        $totalKaryawanTidakAktif = Karyawan::where(function ($query) {
+            $query->where('aktif', false)
+                ->orWhereNotNull('tanggal_keluar');
+        })->count();
+
+        // Mengambil data divisi beserta relasi karyawannya yang aktif untuk diolah di tabel
+        $divisiList = Divisi::with(['karyawans' => function ($q) {
+            $q->where('aktif', true);
+        }])->get();
+
         $gender = Karyawan::where('aktif', true)
             ->selectRaw('jenis_kelamin, COUNT(*) as jumlah')
             ->groupBy('jenis_kelamin')
@@ -161,20 +181,19 @@ class HrdDashboardController extends Controller
 
         $statusKaryawan = Karyawan::where('aktif', true)
             ->selectRaw("
-                CASE
-                    WHEN tanggal_akhir_kontrak IS NULL THEN 'Tetap'
-                    ELSE 'Tidak Tetap'
-                END as status_karyawan,
-                COUNT(*) as jumlah
-            ")
+            CASE
+                WHEN tanggal_akhir_kontrak IS NULL THEN 'Tetap'
+                ELSE 'Tidak Tetap'
+            END as status_karyawan,
+            COUNT(*) as jumlah
+        ")
             ->groupByRaw("CASE WHEN tanggal_akhir_kontrak IS NULL THEN 'Tetap' ELSE 'Tidak Tetap' END")
             ->pluck('jumlah', 'status_karyawan');
-
-        $divisiList = Divisi::withCount(['karyawans' => fn($q) => $q->where('aktif', true)])->get();
 
         return view('hrd.analitikKaryawan', compact(
             'totalDivisi',
             'totalKaryawanAktif',
+            'totalKaryawanTidakAktif',
             'gender',
             'pendidikan',
             'jobLevel',
@@ -198,6 +217,7 @@ class HrdDashboardController extends Controller
         for ($i = 11; $i >= 0; $i--) {
             $bulan = now()->subMonths($i);
             $key = $bulan->format('Y-m');
+            // Diperbaiki agar tidak terpotong
             $turnoverLabel[] = $namaBulan[$bulan->month - 1] . ' ' . $bulan->format('y');
             $turnoverData[] = $turnoverRaw[$key] ?? 0;
         }
@@ -207,6 +227,12 @@ class HrdDashboardController extends Controller
             ->count();
 
         $totalKaryawanAktif = Karyawan::where('aktif', true)->count();
+
+        // Diperbaiki dari query 'tidak aktif' yang salah menjadi query nonaktif yang benar
+        $totalKaryawanTidakAktif = Karyawan::where(function ($query) {
+            $query->where('aktif', false)
+                ->orWhereNotNull('tanggal_keluar');
+        })->count();
 
         $daftarKeluar = Karyawan::whereNotNull('tanggal_keluar')
             ->with('divisi:id_divisi,nama_divisi')
@@ -219,6 +245,7 @@ class HrdDashboardController extends Controller
             'turnoverData',
             'totalKeluarTahunIni',
             'totalKaryawanAktif',
+            'totalKaryawanTidakAktif',
             'daftarKeluar'
         ));
     }

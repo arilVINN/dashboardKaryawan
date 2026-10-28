@@ -67,7 +67,7 @@ class HrdStaffController extends Controller
             'lampiran' => 'nullable|array',
             'lampiran.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ], [
-            'jabatan.in' => 'Jabatan harus salah satu dari: '.implode(', ', Karyawan::JABATAN_OPTIONS).'.',
+            'jabatan.in' => 'Jabatan harus salah satu dari: ' . implode(', ', Karyawan::JABATAN_OPTIONS) . '.',
             'lampiran.*.mimes' => 'Format file lampiran harus PDF, JPG, JPEG, atau PNG.',
             'lampiran.*.max' => 'Ukuran file lampiran maksimal 5 MB per file.',
         ]);
@@ -154,7 +154,6 @@ class HrdStaffController extends Controller
                     ]
                 ]
             ], 201);
-
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             report($e);
@@ -222,7 +221,10 @@ class HrdStaffController extends Controller
             'no_rekening' => 'sometimes|nullable|string|max:50',
             'no_telepon' => 'sometimes|nullable|string|max:20',
             'email' => [
-                'sometimes', 'nullable', 'email', 'max:100',
+                'sometimes',
+                'nullable',
+                'email',
+                'max:100',
                 Rule::unique('karyawans', 'email')->ignore($karyawan->id_karyawan, 'id_karyawan'),
             ],
             'alamat' => 'sometimes|nullable|string',
@@ -230,7 +232,10 @@ class HrdStaffController extends Controller
             'status_aktif' => ['sometimes', 'required', 'string', Rule::in(Karyawan::STATUS_OPTIONS)],
             'divisi_id_divisi' => 'sometimes|required|string|max:20|exists:divisis,id_divisi',
             'username' => [
-                'sometimes', 'required', 'string', 'max:50',
+                'sometimes',
+                'required',
+                'string',
+                'max:50',
                 Rule::unique('users2', 'username')->ignore($karyawan->user?->id_user, 'id_user'),
             ],
             'password' => 'sometimes|required|string|min:6',
@@ -239,10 +244,19 @@ class HrdStaffController extends Controller
             'lampiran' => 'sometimes|nullable|array',
             'lampiran.*' => 'sometimes|nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ], [
-            'jabatan.in' => 'Jabatan harus salah satu dari: '.implode(', ', Karyawan::JABATAN_OPTIONS).'.',
+            'jabatan.in' => 'Jabatan harus salah satu dari: ' . implode(', ', Karyawan::JABATAN_OPTIONS) . '.',
             'lampiran.*.mimes' => 'Format file lampiran harus PDF, JPG, JPEG, atau PNG.',
             'lampiran.*.max' => 'Ukuran file lampiran maksimal 5 MB per file.',
         ]);
+
+        if (($karyawan->tanggal_keluar !== null || $karyawan->aktif === false || $karyawan->aktif === 0) && ($validated['status_aktif'] ?? null) === 'Aktif') {
+            return response()->json([
+                'message' => 'Karyawan yang sudah ditandai keluar tidak dapat diaktifkan kembali.',
+                'errors' => [
+                    'status_aktif' => ['Karyawan yang sudah ditandai keluar tidak dapat diaktifkan kembali.'],
+                ],
+            ], 422);
+        }
 
         if (isset($validated['role_id_role'])) {
             $role = Role::where('id_role', $validated['role_id_role'])->first();
@@ -278,15 +292,30 @@ class HrdStaffController extends Controller
 
         DB::transaction(function () use ($karyawan, $validated, $request): void {
             $karyawanChanges = array_intersect_key($validated, array_flip([
-                'nama', 'jenis_kelamin', 'tanggal_lahir', 'tanggal_masuk', 'tanggal_rekrut',
-                'tanggal_akhir_kontrak', 'no_rekening',
-                'no_telepon', 'email', 'alamat', 'jabatan', 'status_aktif', 'divisi_id_divisi',
+                'nama',
+                'jenis_kelamin',
+                'tanggal_lahir',
+                'tanggal_masuk',
+                'tanggal_rekrut',
+                'tanggal_akhir_kontrak',
+                'no_rekening',
+                'no_telepon',
+                'email',
+                'alamat',
+                'jabatan',
+                'status_aktif',
+                'divisi_id_divisi',
             ]));
 
             if (isset($karyawanChanges['tanggal_rekrut']) && !isset($karyawanChanges['tanggal_masuk'])) {
                 $karyawanChanges['tanggal_masuk'] = $karyawanChanges['tanggal_rekrut'];
             }
             unset($karyawanChanges['tanggal_rekrut']);
+
+            if (array_key_exists('status_aktif', $karyawanChanges) && $karyawan->tanggal_keluar === null) {
+                $isActive = $karyawanChanges['status_aktif'] === 'Aktif';
+                $karyawanChanges['aktif'] = $isActive;
+            }
 
             if (!empty($karyawanChanges)) {
                 $karyawan->update($karyawanChanges);
@@ -309,7 +338,22 @@ class HrdStaffController extends Controller
             'message' => 'Staff berhasil diubah',
             'data' => $karyawan->fresh(['user.role', 'divisi']),
         ]);
+
+        if (! $karyawan->aktif && $request->has('aktif')) {
+            return back()->withErrors([
+                'aktif' => 'Karyawan ini sudah ditandai keluar dan tidak dapat diaktifkan kembali lewat form edit.',
+            ]);
+        }
+
+        if (! $karyawan->aktif) {
+            unset($data['aktif'], $data['tanggal_keluar']);
+        }
+
+        $karyawan->update($data);
+
+        return back()->with('success', 'Data karyawan berhasil diperbarui.');
     }
+
 
     public function updateFoto(Request $request, $id)
     {
@@ -327,7 +371,7 @@ class HrdStaffController extends Controller
 
         return response()->json([
             'message' => 'Foto karyawan berhasil diperbarui.',
-            'foto_url' => '/storage/'.$path,
+            'foto_url' => '/storage/' . $path,
         ]);
     }
 
