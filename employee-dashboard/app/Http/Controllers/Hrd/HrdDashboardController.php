@@ -189,9 +189,14 @@ class HrdDashboardController extends Controller
 
         $turnoverRaw = Karyawan::whereNotNull('tanggal_keluar')
             ->where('tanggal_keluar', '>=', now()->subMonths(11)->startOfMonth())
-            ->selectRaw("strftime('%Y-%m', tanggal_keluar) as periode, COUNT(*) as jumlah")
-            ->groupBy('periode')
-            ->pluck('jumlah', 'periode');
+            ->select('tanggal_keluar')
+            ->get()
+            ->reduce(function (array $carry, $karyawan) {
+                $key = \Carbon\Carbon::parse($karyawan->tanggal_keluar)->format('Y-m');
+                $carry[$key] = ($carry[$key] ?? 0) + 1;
+
+                return $carry;
+            }, []);
 
         $turnoverLabel = [];
         $turnoverData = [];

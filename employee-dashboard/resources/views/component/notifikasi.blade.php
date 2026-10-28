@@ -74,6 +74,22 @@
                 };
             }
 
+            // Pengingat (Catatan Kalender & Tenggat Tugas)
+            if (lower.includes('pengingat') || lower.includes('catatan') || lower.includes('kalender') || lower.includes('tenggat')) {
+                const isTugas = lower.includes('tugas');
+                return {
+                    badgeText: 'Pengingat',
+                    badgeClass: isTugas ? 'text-amber-700 bg-amber-100 border-amber-200' : 'text-violet-700 bg-violet-100 border-violet-200',
+                    borderClass: isTugas ? 'border-amber-200' : 'border-violet-200',
+                    iconBg: isTugas ? 'bg-amber-100 text-amber-600' : 'bg-violet-100 text-violet-600',
+                    linkUrl: isTugas ? '/tugas' : '/kalender',
+                    actionLabel: isTugas ? 'Lihat Tugas' : 'Buka Kalender',
+                    iconSvg: isTugas
+                        ? `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />`
+                        : `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />`
+                };
+            }
+
             if (lower.includes('tugas')) {
                 return {
                     badgeText: 'Tugas Baru',
