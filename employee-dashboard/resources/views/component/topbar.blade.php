@@ -33,7 +33,7 @@
                 <img id="topbar-foto" alt="Foto profil"
                     @if ($topbarFotoUrl) src="{{ $topbarFotoUrl }}" @endif
                     class="{{ $topbarFotoUrl ? '' : 'hidden ' }}w-8 h-8 rounded-full object-cover shrink-0">
-                <svg class="w-4 h-4 text-slate-500 transition-transform duration-200" id="dropdown-arrow" fill="none"
+                <svg class="w-4 h-4 text-slate-500 transition-transform duration-150" id="dropdown-arrow" fill="none"
                     stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>

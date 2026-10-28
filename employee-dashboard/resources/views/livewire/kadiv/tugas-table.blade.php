@@ -140,9 +140,9 @@
 
     {{-- MODAL BUAT TUGAS BARU --}}
     <div id="modalTugasBaru" wire:ignore.self
-        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(86,94,116,0.4)] backdrop-blur-sm transition-opacity duration-300 ease-in-out">
+        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(86,94,116,0.4)] backdrop-blur-sm transition-opacity duration-150 ease-in-out">
         <div data-modal-panel
-            class="bg-white rounded-xl w-full max-w-[460px] max-h-[90vh] flex flex-col shadow-[0_8px_16px_rgba(0,0,0,0.12)] scale-95 translate-y-2 transition-all duration-300 ease-in-out">
+            class="bg-white rounded-xl w-full max-w-[460px] max-h-[90vh] flex flex-col shadow-[0_8px_16px_rgba(0,0,0,0.12)] scale-95 translate-y-2 transition-all duration-150 ease-in-out">
 
             <div
                 class="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC] rounded-t-xl">

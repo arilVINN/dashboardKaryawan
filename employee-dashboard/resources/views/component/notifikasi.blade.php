@@ -104,7 +104,7 @@
 
             const config = getNotifConfig(notif.judul_notifikasi);
             const toast = document.createElement('div');
-            toast.className = `pointer-events-auto flex items-start gap-3 p-4 bg-white border ${config.borderClass} shadow-xl rounded-2xl w-80 md:w-96 transform transition-all duration-300 ease-out translate-y-[-20px] opacity-0`;
+            toast.className = `pointer-events-auto flex items-start gap-3 p-4 bg-white border ${config.borderClass} shadow-xl rounded-2xl w-80 md:w-96 transform transition-all duration-150 ease-out translate-y-[-20px] opacity-0`;
 
             toast.innerHTML = `
                 <div class="p-2.5 ${config.iconBg} rounded-xl shrink-0">
