@@ -231,6 +231,10 @@ class HrdStaffController extends Controller
             'jabatan' => ['sometimes', 'required', 'string', 'max:100', Rule::in(Karyawan::JABATAN_OPTIONS)],
             'status_aktif' => ['sometimes', 'required', 'string', Rule::in(Karyawan::STATUS_OPTIONS)],
             'divisi_id_divisi' => 'sometimes|required|string|max:20|exists:divisis,id_divisi',
+            'pendidikan' => 'sometimes|nullable|string|max:50',
+            'job_level' => 'sometimes|nullable|string|max:50',
+            'status_karyawan' => 'sometimes|nullable|string|max:20',
+
             'username' => [
                 'sometimes',
                 'required',
@@ -305,6 +309,9 @@ class HrdStaffController extends Controller
                 'jabatan',
                 'status_aktif',
                 'divisi_id_divisi',
+                'pendidikan',      // <-- Pastikan ini ada
+                'job_level',
+                'status_karyawan',       // <-- Pastikan ini ada
             ]));
 
             if (isset($karyawanChanges['tanggal_rekrut']) && !isset($karyawanChanges['tanggal_masuk'])) {

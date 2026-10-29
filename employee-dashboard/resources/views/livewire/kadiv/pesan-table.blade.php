@@ -176,7 +176,9 @@
         class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(86,94,116,0.4)] backdrop-blur-sm transition-opacity duration-150 ease-in-out">
         <form wire:submit="kirimSuratIzin" data-modal-panel
             class="relative flex max-h-[90vh] w-full max-w-[420px] flex-col overflow-hidden rounded-xl bg-white shadow-[0_8px_16px_rgba(0,0,0,0.12)] scale-95 translate-y-2 transition-all duration-150 ease-in-out">
-            <div class="flex items-center justify-between rounded-t-xl border-b border-[#E2E8F0] bg-[#F8FAFC] px-6 py-4">
+
+            <div
+                class="flex items-center justify-between rounded-t-xl border-b border-[#E2E8F0] bg-[#F8FAFC] px-6 py-4">
                 <div class="flex items-center gap-3">
                     <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#D9EEF5] text-[#146C94]">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
@@ -185,36 +187,67 @@
                                 d="M9 12h6m-6 4h6M9 8h1m5 12H7a2 2 0 01-2-2V6a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z" />
                         </svg>
                     </div>
-                    <h3 class="text-base font-bold text-black">Kirim Surat Izin</h3>
+                    <h3 class="text-base font-bold text-black">Kirim Surat Izin / Cuti</h3>
                 </div>
                 <button type="button" data-modal-close="modalSuratIzin"
                     class="cursor-pointer text-2xl leading-none text-[#565E74] hover:text-black">&times;</button>
             </div>
 
-            <div class="flex-1 space-y-5 overflow-y-auto px-6 py-5">
+            <div class="flex-1 space-y-4 overflow-y-auto px-6 py-5">
+
+                {{-- JENIS IZIN / CUTI --}}
                 <div>
-                    <label class="mb-2 block text-xs font-bold tracking-wide text-[#565E74]">JUDUL</label>
-                    <input type="text" wire:model="judulSurat" required placeholder="Contoh: Izin Sakit"
+                    <label class="mb-2 block text-xs font-bold tracking-wide text-[#565E74]">JENIS IZIN / CUTI</label>
+                    <select wire:model="jenisIzin" required
+                        class="h-10 w-full rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] bg-white outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
+                        <option value="" disabled selected>Pilih Jenis Izin / Cuti</option>
+                        <option value="Cuti Tahunan">Cuti Tahunan</option>
+                        <option value="Izin Sakit">Izin Sakit</option>
+                        <option value="Izin Keperluan Pribadi">Izin Keperluan Pribadi</option>
+                        <option value="Cuti Melahirkan">Cuti Melahirkan</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                    @error('jenisIzin')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="mb-2 block text-xs font-bold tracking-wide text-[#565E74]">JUDUL SURAT</label>
+                    <input type="text" wire:model="judulSurat" required
+                        placeholder="Contoh: Pengajuan Cuti Tahunan"
                         class="h-10 w-full rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] outline-none placeholder:text-[#94A3B8] focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
                     @error('judulSurat')
                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <div>
-                    <label class="mb-2 block text-xs font-bold tracking-wide text-[#565E74]">TANGGAL</label>
-                    <input type="date" wire:model="tanggalIzin" required
-                        class="h-10 w-full cursor-pointer rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
-                    @error('tanggalIzin')
-                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
+                {{-- TANGGAL MULAI & SELESAI --}}
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="mb-2 block text-xs font-bold tracking-wide text-[#565E74]">TGL MULAI</label>
+                        <input type="date" wire:model="tanggalMulai" required
+                            class="h-10 w-full cursor-pointer rounded-lg border border-[#CBD5E1] px-2 text-xs text-[#283044] outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
+                        @error('tanggalMulai')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-xs font-bold tracking-wide text-[#565E74]">TGL SELESAI</label>
+                        <input type="date" wire:model="tanggalSelesai" required
+                            class="h-10 w-full cursor-pointer rounded-lg border border-[#CBD5E1] px-2 text-xs text-[#283044] outline-none focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]">
+                        @error('tanggalSelesai')
+                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 <div class="rounded-lg bg-[#F1F5F9] p-4">
                     <label for="kadivFileSurat"
-                        class="flex h-[90px] cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-[#CBD5E1] bg-white text-center transition hover:border-[#19A7CE]">
+                        class="flex h-[80px] cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-[#CBD5E1] bg-white text-center transition hover:border-[#19A7CE]">
                         <span id="kadivNamaFileSurat"
-                            class="max-w-full truncate px-3 text-sm font-bold text-[#283044]">Pilih File (Bukti Surat)</span>
+                            class="max-w-full truncate px-3 text-sm font-bold text-[#283044]">Pilih File (Bukti
+                            Surat)</span>
                         <span class="text-xs text-[#94A3B8]">Maks 20 MB</span>
                     </label>
                     <input id="kadivFileSurat" type="file" wire:model="fileSurat" class="hidden">
@@ -226,8 +259,8 @@
 
                 <div>
                     <label class="mb-2 block text-xs font-bold tracking-wide text-[#565E74]">KETERANGAN</label>
-                    <textarea wire:model="keteranganSurat" rows="3" placeholder="Opsional"
-                        class="w-full resize-none rounded-lg border border-[#CBD5E1] px-3 py-2.5 text-sm text-[#283044] outline-none placeholder:text-[#94A3B8] focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]"></textarea>
+                    <textarea wire:model="keteranganSurat" rows="2" placeholder="Opsional"
+                        class="w-full resize-none rounded-lg border border-[#CBD5E1] px-3 py-2 text-sm text-[#283044] outline-none placeholder:text-[#94A3B8] focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]"></textarea>
                     @error('keteranganSurat')
                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                     @enderror
@@ -251,30 +284,21 @@
                 </button>
             </div>
         </form>
-    </div>
 
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.on('tutup-modal-pesan', () => {
-                if (window.setModal) {
-                    window.setModal('modalKirimPesan', false);
-                }
+        <script>
+            document.addEventListener('livewire:initialized', () => {
+                Livewire.on('tutup-modal-pesan', () => {
+                    if (window.setModal) window.setModal('modalKirimPesan', false);
+                });
+                Livewire.on('tutup-modal-surat', () => {
+                    if (window.setModal) window.setModal('modalSuratIzin', false);
+                });
             });
-        });
-
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.on('tutup-modal-pesan', () => {
-                if (window.setModal) window.setModal('modalKirimPesan', false);
-            });
-            Livewire.on('tutup-modal-surat', () => {
-                if (window.setModal) window.setModal('modalSuratIzin', false);
-            });
-        });
 
             const fileInput = document.getElementById('kadivFileSurat');
             const fileLabel = document.getElementById('kadivNamaFileSurat');
             fileInput?.addEventListener('change', () => {
                 fileLabel.textContent = fileInput.files?.[0]?.name || 'Pilih File (Bukti Surat)';
             });
-    </script>
-</div>
+        </script>
+    </div>

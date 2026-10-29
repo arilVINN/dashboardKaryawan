@@ -141,4 +141,13 @@ class Karyawan extends Model
     {
         return $this->hasRole('staff');
     }
+
+    public function suratIzins(): HasMany
+    {
+        return $this->hasMany(
+            SuratIzin::class,
+            'karyawan_id_karyawan',
+            'id_karyawan'
+        );
+    }
 }

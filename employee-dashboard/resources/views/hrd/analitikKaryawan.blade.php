@@ -194,10 +194,19 @@
                                                 'laki-laki' => 'bg-blue-500',
                                                 default => 'bg-[#0097B2]',
                                             },
-                                            'Pendidikan' => 'bg-blue-500',
+                                            'Pendidikan' => match(strtolower((string)$label)){
+                                                'sma/smk' => 'bg-slate-500',
+                                                'd3' => 'bg-green-500',
+                                                's1' => 'bg-blue-500',
+                                                's2' => 'bg-red-500',
+                                                default => 'bg-[#0097B2]',
+                                            },
                                             'JobLevel' => match (strtolower((string) $label)) {
-                                                'a' => 'bg-blue-500',
-                                                'b' => 'bg-blue-500',
+                                                'junior' => 'bg-green-500',
+                                                'magang' => 'bg-slate-500',
+                                                'manager' => 'bg-red-500',
+                                                'senior' => 'bg-violet-500',
+                                                'staff' => 'bg-blue-500',
                                                 default => 'bg-[#0097B2]',
                                             },
                                             'Status Karyawan' => match (strtolower((string) $label)) {

@@ -37,9 +37,11 @@ class PesanTable extends Component
     public string $recipientUserId = '';
     public string $isi = '';
 
-    // Properti untuk form Kirim Surat Izin
+    // Properti untuk form Kirim Surat Izin (Diperbarui)
+    public string $jenisIzin = '';
     public string $judulSurat = '';
-    public string $tanggalIzin = '';
+    public string $tanggalMulai = '';
+    public string $tanggalSelesai = '';
     public $fileSurat = null;
     public string $keteranganSurat = '';
 
@@ -138,9 +140,12 @@ class PesanTable extends Component
     {
         $kadiv = $this->kadiv();
 
+        // Validasi input disesuaikan dengan form baru
         $this->validate([
+            'jenisIzin' => 'required|string',
             'judulSurat' => 'required|string|max:100',
-            'tanggalIzin' => 'required|date',
+            'tanggalMulai' => 'required|date',
+            'tanggalSelesai' => 'required|date|after_or_equal:tanggalMulai',
             'fileSurat' => 'nullable|file|max:20480',
             'keteranganSurat' => 'nullable|string|max:1000',
         ]);
@@ -149,13 +154,17 @@ class PesanTable extends Component
             SuratIzin::create([
                 'id_surat' => $this->generateSuratId(),
                 'karyawan_id_karyawan' => $kadiv->karyawan->id_karyawan,
+                'jenis_izin' => $this->jenisIzin,
                 'judul_surat' => $this->judulSurat,
-                'tanggal_izin' => $this->tanggalIzin,
+                'tanggal_izin' => $this->tanggalMulai, // Mengisi kolom lama agar tidak error NOT NULL jika belum di-migrasi
+                'tanggal_mulai' => $this->tanggalMulai,
+                'tanggal_selesai' => $this->tanggalSelesai,
                 'keterangan' => $this->keteranganSurat,
                 'file' => $this->fileSurat ? $this->fileSurat->store('surat_izin', 'public') : null,
+                'status' => 'Pending',
             ]);
 
-            $this->reset(['judulSurat', 'tanggalIzin', 'fileSurat', 'keteranganSurat']);
+            $this->reset(['jenisIzin', 'judulSurat', 'tanggalMulai', 'tanggalSelesai', 'fileSurat', 'keteranganSurat']);
             session()->flash('pesan_success', 'Surat izin berhasil dikirim.');
             $this->dispatch('tutup-modal-surat');
         } catch (\Throwable $e) {
