@@ -34,8 +34,8 @@
                         <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
                             <tr>
                                 <th class="px-6 py-4 font-medium">Karyawan</th>
-                                <th class="px-6 py-4 font-medium">Judul</th>
-                                <th class="px-6 py-4 font-medium">Tanggal Izin</th>
+                                <th class="px-6 py-4 font-medium">Jenis & Judul</th>
+                                <th class="px-6 py-4 font-medium text-center">Tanggal Mulai s/d Selesai</th>
                                 <th class="px-6 py-4 font-medium">Keterangan</th>
                                 <th class="px-6 py-4 font-medium">File</th>
                                 <th class="px-6 py-4 font-medium">Status</th>
@@ -48,16 +48,21 @@
                                     <td class="px-6 py-4 font-medium text-slate-800 whitespace-nowrap">
                                         {{ $surat->karyawan?->nama ?? 'Karyawan tidak tersedia' }}
                                     </td>
-                                    <td class="px-6 py-4">{{ $surat->judul_surat }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $surat->tanggal_izin?->format('d M Y') ?? '-' }}
+                                    <td class="px-6 py-4">
+                                        <div class="font-semibold text-slate-800">{{ $surat->judul_surat }}</div>
+                                        <div class="text-xs text-[#19A7CE] font-medium">{{ $surat->jenis_izin ?? 'Izin / Cuti' }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center whitespace-nowrap text-xs">
+                                        {{ $surat->tanggal_mulai ? \Carbon\Carbon::parse($surat->tanggal_mulai)->format('d M Y') : '-' }}
+                                        <span class="text-slate-400 mx-1">s/d</span>
+                                        {{ $surat->tanggal_selesai ? \Carbon\Carbon::parse($surat->tanggal_selesai)->format('d M Y') : '-' }}
                                     </td>
                                     <td class="px-6 py-4">{{ $surat->keterangan ?: '-' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if ($surat->file)
                                             <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($surat->file) }}"
                                                 target="_blank" rel="noopener"
-                                                class="text-[#0097B2] hover:underline">Lihat file</a>
+                                                class="text-[#0097B2] hover:underline font-medium">Lihat file</a>
                                         @else
                                             -
                                         @endif
@@ -74,26 +79,26 @@
                                                 <form method="POST" action="{{ route('hrd.suratIzin.acc', $surat) }}">
                                                     @csrf
                                                     <button type="submit"
-                                                        class="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">
+                                                        class="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition">
                                                         ACC
                                                     </button>
                                                 </form>
                                                 <form method="POST" action="{{ route('hrd.suratIzin.tolak', $surat) }}">
                                                     @csrf
                                                     <button type="submit"
-                                                        class="rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700">
+                                                        class="rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition">
                                                         Tolak
                                                     </button>
                                                 </form>
                                             </div>
                                         @else
-                                            <span class="text-slate-400">Sudah diproses</span>
+                                            <span class="text-slate-400 text-xs italic">Sudah diproses</span>
                                         @endif
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-10 text-center text-slate-400">
+                                    <td colspan="7" class="px-6 py-10 text-center text-slate-400 italic">
                                         Belum ada surat izin masuk.
                                     </td>
                                 </tr>

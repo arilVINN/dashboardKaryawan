@@ -14,8 +14,10 @@ class SuratIzin extends Model
     protected $fillable = [
         'id_surat',
         'karyawan_id_karyawan',
+        'jenis_izin',       // <-- Tambahkan ini
         'judul_surat',
-        'tanggal_izin',
+        'tanggal_mulai',    // <-- Tambahkan ini
+        'tanggal_selesai',  // <-- Tambahkan ini
         'file',
         'keterangan',
         'status',
@@ -23,7 +25,14 @@ class SuratIzin extends Model
 
     protected $casts = [
         'tanggal_izin' => 'date',
+        'tanggal_mulai' => 'date',   // <-- Tambahkan ini
+        'tanggal_selesai' => 'date', // <-- Tambahkan ini
     ];
+
+    public function suratIzins()
+    {
+        return $this->hasMany(SuratIzin::class, 'karyawan_id_karyawan', 'id_karyawan');
+    }
 
     public function karyawan()
     {

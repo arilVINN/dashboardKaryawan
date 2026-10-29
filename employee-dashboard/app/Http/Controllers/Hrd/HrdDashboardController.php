@@ -149,6 +149,27 @@ class HrdDashboardController extends Controller
         return back()->with('success', 'Surat izin berhasil ditolak.');
     }
 
+    //untuk histori izin karyawan
+    public function getHistoriKaryawan($id)
+    {
+        // Mengambil data karyawan beserta surat izins, diurutkan dari yang terbaru
+        $karyawan = Karyawan::with(['suratIzins' => function ($query) {
+            $query->latest();
+        }])->where('id_karyawan', $id)->first();
+
+        if (!$karyawan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Karyawan tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $karyawan
+        ]);
+    }
+
     public function analitikKaryawan()
     {
         $totalDivisi = Divisi::count();
@@ -159,7 +180,7 @@ class HrdDashboardController extends Controller
                 ->orWhereNotNull('tanggal_keluar');
         })->count();
 
-        // Mengambil data divisi beserta relasi karyawannya yang aktif untuk diolah di tabel
+        // Mengambil data divisi beserta relasi karyawannya yang aktif
         $divisiList = Divisi::with(['karyawans' => function ($q) {
             $q->where('aktif', true);
         }])->get();
@@ -169,25 +190,22 @@ class HrdDashboardController extends Controller
             ->groupBy('jenis_kelamin')
             ->pluck('jumlah', 'jenis_kelamin');
 
+        // Mengambil data pendidikan langsung dari kolom baru
         $pendidikan = Karyawan::where('aktif', true)
             ->selectRaw('pendidikan, COUNT(*) as jumlah')
             ->groupBy('pendidikan')
             ->pluck('jumlah', 'pendidikan');
 
+        // Mengambil data job_level langsung dari kolom baru
         $jobLevel = Karyawan::where('aktif', true)
             ->selectRaw('job_level, COUNT(*) as jumlah')
             ->groupBy('job_level')
             ->pluck('jumlah', 'job_level');
 
+        // Mengambil data status_karyawan langsung dari kolom baru di migration
         $statusKaryawan = Karyawan::where('aktif', true)
-            ->selectRaw("
-            CASE
-                WHEN tanggal_akhir_kontrak IS NULL THEN 'Tetap'
-                ELSE 'Tidak Tetap'
-            END as status_karyawan,
-            COUNT(*) as jumlah
-        ")
-            ->groupByRaw("CASE WHEN tanggal_akhir_kontrak IS NULL THEN 'Tetap' ELSE 'Tidak Tetap' END")
+            ->selectRaw('status_karyawan, COUNT(*) as jumlah')
+            ->groupBy('status_karyawan')
             ->pluck('jumlah', 'status_karyawan');
 
         return view('hrd.analitikKaryawan', compact(
