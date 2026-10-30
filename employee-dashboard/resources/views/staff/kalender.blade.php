@@ -41,10 +41,29 @@
         .fc-daygrid-body {
             width: 100% !important;
         }
-        .fc-col-header-cell,
+        .fc-daygrid .fc-col-header-cell,
         .fc-daygrid-day {
             width: 14.2857% !important;
             max-width: 14.2857% !important;
+        }
+        /* TimeGrid week table & axis layout */
+        .fc-timegrid-axis {
+            width: 50px !important;
+            min-width: 50px !important;
+            max-width: 50px !important;
+            text-align: center !important;
+        }
+        .fc-timegrid-axis-frame {
+            justify-content: center !important;
+            padding: 0 4px !important;
+        }
+        .fc-timegrid-slot-label-cushion {
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            color: #64748B !important;
+        }
+        .fc-timegrid-col {
+            min-width: 0 !important;
         }
         .fc-scrollgrid-section-header,
         .fc-scrollgrid-section-header > th,
@@ -754,7 +773,12 @@
                 moreLinkText: function(n) {
                     return '+' + n + ' lainnya';
                 },
-                defaultTimedEventDuration: '00:00:01', // Cegah deadline 23:59 nyebrang ke hari berikutnya
+                defaultTimedEventDuration: '00:45:00',
+                slotMinTime: '07:00:00',
+                slotMaxTime: '21:00:00',
+                slotDuration: '00:30:00',
+                slotEventOverlap: false, // Event di jam yang sama TIDAK saling tumpang tindih
+                eventMinHeight: 48, // Card tidak gepeng di week view
                 nextDayThreshold: '24:00:00',
                 eventDisplay: 'block',
                 displayEventTime: true,

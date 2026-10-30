@@ -41,10 +41,29 @@
         .fc-daygrid-body {
             width: 100% !important;
         }
-        .fc-col-header-cell,
+        .fc-daygrid .fc-col-header-cell,
         .fc-daygrid-day {
             width: 14.2857% !important;
             max-width: 14.2857% !important;
+        }
+        /* TimeGrid week table & axis layout */
+        .fc-timegrid-axis {
+            width: 50px !important;
+            min-width: 50px !important;
+            max-width: 50px !important;
+            text-align: center !important;
+        }
+        .fc-timegrid-axis-frame {
+            justify-content: center !important;
+            padding: 0 4px !important;
+        }
+        .fc-timegrid-slot-label-cushion {
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            color: #64748B !important;
+        }
+        .fc-timegrid-col {
+            min-width: 0 !important;
         }
         .fc-scrollgrid-section-header,
         .fc-scrollgrid-section-header > th,
@@ -155,8 +174,7 @@
         .fc-day-today {
             background-color: #F0F9FF !important;
         }
-        /* Semua event tampil sebagai FULL KOTAK / blok berwarna */
-        .fc-event,
+        /* Event kotak di DayGrid (Bulan) */
         .fc-daygrid-event,
         .fc-daygrid-block-event {
             display: block !important;
@@ -167,6 +185,31 @@
             border-style: solid !important;
             cursor: pointer;
             transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        /* Event kotak di TimeGrid (Minggu) - tanpa margin rusak dan dengan overflow hidden ketat */
+        .fc-timegrid-event {
+            margin: 0 !important;
+            border-radius: 6px !important;
+            border-width: 1px !important;
+            border-style: solid !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+            cursor: pointer;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08) !important;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .fc-timegrid-event .fc-event-main {
+            padding: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+        }
+        .fc-timegrid-event-harness {
+            overflow: visible !important;
+        }
+        .fc-timegrid .fc-event {
+            margin: 0 !important;
         }
         .fc-event:hover {
             transform: translateY(-1px);
@@ -410,20 +453,20 @@
 
             <!-- Body Modal -->
             <div class="p-5 space-y-3.5">
-                <!-- Info Alur Penugasan: Dari Kadiv ➔ Kepada Staff -->
-                <div class="bg-gradient-to-r from-sky-50 via-slate-50 to-emerald-50 border border-slate-200 rounded-xl p-3.5">
+                <!-- Info Alur Penugasan: Dari Kadiv -> Kepada Staff -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
                     <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-2">Alur Penugasan Tugas:</span>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 items-center">
                         <!-- Pemberi Tugas (Kadiv) -->
-                        <div class="bg-white/80 p-2.5 rounded-lg border border-sky-200">
-                            <span class="text-[10px] font-bold text-sky-800 uppercase tracking-wider block">Dari (Pemberi Tugas):</span>
+                        <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                            <span class="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">Dari (Pemberi Tugas):</span>
                             <span id="modal-pengirim-name" class="font-bold text-slate-900 text-sm leading-tight block mt-0.5">Nama Kadiv</span>
                             <span id="modal-pengirim-sub" class="text-[11px] text-slate-500 block mt-0.5">Kepala Divisi</span>
                         </div>
 
                         <!-- Penerima Tugas (Staff) -->
-                        <div class="bg-white/80 p-2.5 rounded-lg border border-emerald-200">
-                            <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Kepada (Penerima):</span>
+                        <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                            <span class="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">Kepada (Penerima):</span>
                             <span id="modal-staff-name" class="font-bold text-slate-900 text-sm leading-tight block mt-0.5">Nama Staff</span>
                             <span id="modal-staff-sub" class="text-[11px] text-slate-500 block mt-0.5">Staff • ID</span>
                         </div>
@@ -879,7 +922,12 @@
                 moreLinkText: function(n) {
                     return '+' + n + ' lainnya';
                 },
-                defaultTimedEventDuration: '00:00:01', // Cegah deadline 23:59 nyebrang ke hari berikutnya
+                defaultTimedEventDuration: '00:45:00',
+                slotMinTime: '07:00:00',
+                slotMaxTime: '21:00:00',
+                slotDuration: '00:30:00',
+                slotEventOverlap: false, // Event di jam yang sama TIDAK saling tumpang tindih
+                eventMinHeight: 48, // Card tidak gepeng di week view
                 nextDayThreshold: '24:00:00',
                 eventDisplay: 'block',
                 displayEventTime: true,
@@ -937,6 +985,7 @@
                 eventContent: function(arg) {
                     const props = arg.event.extendedProps || {};
                     const isList = arg.view.type.startsWith('list');
+                    const isTimeGrid = arg.view.type.startsWith('timeGrid');
                     const el = document.createElement('div');
 
                     // Tampilan Khusus Note Pribadi
@@ -969,8 +1018,8 @@
                     const dotColor = props.dot_color || '#004A65';
 
                     if (isList) {
-                        // List view: badge divisi + alur penugasan (Dari ➔ Kepada) + judul
-                        el.className = 'flex items-center gap-2 py-0.5 w-full flex-wrap md:flex-nowrap';
+                        // List view: badge divisi + alur penugasan (Dari -> Kepada) + judul
+                        el.className = 'flex items-center gap-2 py-0.5 w-full flex-wrap md:flex-nowrap min-w-0';
                         el.innerHTML = `
                             <span class="w-5 h-5 rounded-full text-white flex items-center justify-center text-[9px] font-extrabold shrink-0"
                                   style="background-color: ${escapeHtml(dotColor)};">
@@ -980,33 +1029,58 @@
                                 ${escapeHtml(divisiNama)}
                             </span>
                             <span class="font-bold text-[11.5px] text-slate-800 shrink-0">${escapeHtml(pengirimNama)}</span>
-                            <span class="text-blue-500 font-bold shrink-0">➔</span>
+                            <span class="text-blue-500 font-bold shrink-0 mx-0.5">→</span>
                             <span class="font-bold text-[11.5px] text-[#004A65] shrink-0">${escapeHtml(staffName)}</span>
-                            <span class="text-slate-300 shrink-0 hidden md:inline">—</span>
-                            <span class="text-[12px] text-slate-700 font-medium" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
+                            <span class="text-slate-300 shrink-0 hidden md:inline">•</span>
+                            <span class="text-[12px] text-slate-700 font-medium truncate min-w-0" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
                         `;
-                    } else {
-                        // Month view: compact block dengan tag divisi, alur dari ➔ ke, dan judul
-                        el.className = 'w-full px-1.5 py-1 leading-snug flex flex-col gap-0.5 overflow-hidden';
+                    } else if (isTimeGrid) {
+                        // Week view (timeGrid): layout aman dan responsif saat kolom menyempit
+                        el.className = 'w-full h-full px-1.5 py-1 leading-snug flex flex-col justify-start gap-0.5 overflow-hidden min-w-0';
                         el.innerHTML = `
-                            <div class="flex items-center justify-between gap-1 overflow-hidden">
-                                <span class="inline-flex items-center gap-1 font-bold text-[10px] truncate max-w-[80%] text-slate-800">
+                            <div class="flex items-center justify-between gap-1 min-w-0 overflow-hidden">
+                                <span class="inline-flex items-center gap-1 font-bold text-[10px] min-w-0 overflow-hidden text-slate-800">
                                     <span class="w-3.5 h-3.5 rounded-full text-white flex items-center justify-center text-[8px] font-extrabold shrink-0"
                                           style="background-color: ${escapeHtml(dotColor)};">
                                         ${escapeHtml(staffInitial)}
                                     </span>
-                                    <span class="text-[9px] font-bold text-slate-600 bg-white/60 px-1 rounded truncate shrink-0">
+                                    <span class="text-[9px] font-bold text-slate-700 bg-white/70 px-1 rounded truncate min-w-0" title="${escapeHtml(divisiNama)}">
                                         ${escapeHtml(divisiNama)}
                                     </span>
                                 </span>
-                                ${time ? `<span class="text-[9px] font-bold opacity-75 shrink-0">${time}</span>` : ''}
+                                ${time ? `<span class="text-[9px] font-bold text-slate-600 opacity-90 shrink-0 ml-auto whitespace-nowrap">${time}</span>` : ''}
                             </div>
-                            <div class="text-[10px] text-slate-700 font-semibold truncate leading-tight">
+                            <div class="text-[10px] text-slate-700 font-semibold truncate min-w-0 leading-tight" title="${escapeHtml(pengirimNama)} → ${escapeHtml(staffName)}">
                                 <span class="text-slate-600 font-bold">${escapeHtml(pengirimNama)}</span>
-                                <span class="text-blue-600">➔</span>
+                                <span class="text-blue-600 font-bold mx-0.5">→</span>
+                                <span class="font-bold text-slate-900">${escapeHtml(staffName)}</span>
+                            </div>
+                            <div class="font-medium text-[11px] truncate min-w-0 leading-tight text-slate-900" title="${escapeHtml(title)}">
+                                ${escapeHtml(title)}
+                            </div>
+                        `;
+                    } else {
+                        // Month view: compact block dengan tag divisi, alur dari -> ke, dan judul
+                        el.className = 'w-full px-1.5 py-1 leading-snug flex flex-col gap-0.5 overflow-hidden min-w-0';
+                        el.innerHTML = `
+                            <div class="flex items-center justify-between gap-1 overflow-hidden min-w-0">
+                                <span class="inline-flex items-center gap-1 font-bold text-[10px] truncate max-w-[80%] text-slate-800 min-w-0">
+                                    <span class="w-3.5 h-3.5 rounded-full text-white flex items-center justify-center text-[8px] font-extrabold shrink-0"
+                                          style="background-color: ${escapeHtml(dotColor)};">
+                                        ${escapeHtml(staffInitial)}
+                                    </span>
+                                    <span class="text-[9px] font-bold text-slate-600 bg-white/60 px-1 rounded truncate min-w-0" title="${escapeHtml(divisiNama)}">
+                                        ${escapeHtml(divisiNama)}
+                                    </span>
+                                </span>
+                                ${time ? `<span class="text-[9px] font-bold opacity-75 shrink-0 ml-auto">${time}</span>` : ''}
+                            </div>
+                            <div class="text-[10px] text-slate-700 font-semibold truncate leading-tight min-w-0" title="${escapeHtml(pengirimNama)} → ${escapeHtml(staffName)}">
+                                <span class="text-slate-600 font-bold">${escapeHtml(pengirimNama)}</span>
+                                <span class="text-blue-600 mx-0.5">→</span>
                                 <span class="font-bold text-slate-800">${escapeHtml(staffName)}</span>
                             </div>
-                            <div class="font-medium text-[11px] truncate leading-tight text-slate-900" title="${escapeHtml(title)}">
+                            <div class="font-medium text-[11px] truncate leading-tight text-slate-900 min-w-0" title="${escapeHtml(title)}">
                                 ${escapeHtml(title)}
                             </div>
                         `;

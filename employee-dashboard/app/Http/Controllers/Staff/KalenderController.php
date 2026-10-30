@@ -130,13 +130,18 @@ class KalenderController extends Controller
             }
 
             $carbonDate = Carbon::parse($startDate);
+            $isAllDay = empty($tugas->deadline) || $carbonDate->format('H:i:s') === '00:00:00';
+            $endDate = $isAllDay ? $carbonDate : $carbonDate->copy()->addMinutes(45);
+            if (!$isAllDay && $endDate->day !== $carbonDate->day) {
+                $endDate = $carbonDate->copy()->endOfDay();
+            }
 
             $events[] = [
                 'id'              => $tugas->id_tugas,
                 'title'           => $tugas->judul_tugas,
                 'start'           => $carbonDate->toIso8601String(),
-                'end'             => $carbonDate->toIso8601String(),
-                'allDay'          => empty($tugas->deadline) || $carbonDate->format('H:i:s') === '00:00:00',
+                'end'             => $endDate->toIso8601String(),
+                'allDay'          => $isAllDay,
                 'backgroundColor' => $style['backgroundColor'],
                 'borderColor'     => $style['borderColor'],
                 'textColor'       => $style['textColor'],
@@ -216,14 +221,19 @@ class KalenderController extends Controller
             }
 
             $carbonDate = Carbon::parse($startDate);
+            $isAllDay = empty($tugas->deadline) || $carbonDate->format('H:i:s') === '00:00:00';
+            $endDate = $isAllDay ? $carbonDate : $carbonDate->copy()->addMinutes(45);
+            if (!$isAllDay && $endDate->day !== $carbonDate->day) {
+                $endDate = $carbonDate->copy()->endOfDay();
+            }
             $namaStaff = $tugas->karyawan?->nama ?? 'Staff';
 
             $events[] = [
                 'id'              => $tugas->id_tugas,
                 'title'           => '[' . $namaStaff . '] ' . $tugas->judul_tugas,
                 'start'           => $carbonDate->toIso8601String(),
-                'end'             => $carbonDate->toIso8601String(),
-                'allDay'          => empty($tugas->deadline) || $carbonDate->format('H:i:s') === '00:00:00',
+                'end'             => $endDate->toIso8601String(),
+                'allDay'          => $isAllDay,
                 'backgroundColor' => $style['backgroundColor'],
                 'borderColor'     => $style['borderColor'],
                 'textColor'       => $style['textColor'],
@@ -322,6 +332,11 @@ class KalenderController extends Controller
             }
 
             $carbonDate = Carbon::parse($startDate);
+            $isAllDay = empty($tugas->deadline) || $carbonDate->format('H:i:s') === '00:00:00';
+            $endDate = $isAllDay ? $carbonDate : $carbonDate->copy()->addMinutes(45);
+            if (!$isAllDay && $endDate->day !== $carbonDate->day) {
+                $endDate = $carbonDate->copy()->endOfDay();
+            }
             $karyawan = $tugas->karyawan;
             $penerimaNama = $karyawan?->nama ?? 'Staff';
             $penerimaJabatan = $karyawan?->jabatan ?? 'Staff';
@@ -338,8 +353,8 @@ class KalenderController extends Controller
                 'id'              => $tugas->id_tugas,
                 'title'           => '[' . $divisiNama . '] ' . $pengirimNama . ' ➔ ' . $penerimaNama . ': ' . $tugas->judul_tugas,
                 'start'           => $carbonDate->toIso8601String(),
-                'end'             => $carbonDate->toIso8601String(),
-                'allDay'          => empty($tugas->deadline) || $carbonDate->format('H:i:s') === '00:00:00',
+                'end'             => $endDate->toIso8601String(),
+                'allDay'          => $isAllDay,
                 'backgroundColor' => $style['backgroundColor'],
                 'borderColor'     => $style['borderColor'],
                 'textColor'       => $style['textColor'],

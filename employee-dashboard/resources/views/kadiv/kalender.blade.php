@@ -41,10 +41,29 @@
         .fc-daygrid-body {
             width: 100% !important;
         }
-        .fc-col-header-cell,
+        .fc-daygrid .fc-col-header-cell,
         .fc-daygrid-day {
             width: 14.2857% !important;
             max-width: 14.2857% !important;
+        }
+        /* TimeGrid week table & axis layout */
+        .fc-timegrid-axis {
+            width: 50px !important;
+            min-width: 50px !important;
+            max-width: 50px !important;
+            text-align: center !important;
+        }
+        .fc-timegrid-axis-frame {
+            justify-content: center !important;
+            padding: 0 4px !important;
+        }
+        .fc-timegrid-slot-label-cushion {
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            color: #64748B !important;
+        }
+        .fc-timegrid-col {
+            min-width: 0 !important;
         }
         .fc-scrollgrid-section-header,
         .fc-scrollgrid-section-header > th,
@@ -155,8 +174,7 @@
         .fc-day-today {
             background-color: #F0F9FF !important;
         }
-        /* Semua event tampil sebagai FULL KOTAK / blok berwarna */
-        .fc-event,
+        /* Event kotak di DayGrid (Bulan) */
         .fc-daygrid-event,
         .fc-daygrid-block-event {
             display: block !important;
@@ -167,6 +185,31 @@
             border-style: solid !important;
             cursor: pointer;
             transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        /* Event kotak di TimeGrid (Minggu) - tanpa margin rusak dan dengan overflow hidden ketat */
+        .fc-timegrid-event {
+            margin: 0 !important;
+            border-radius: 6px !important;
+            border-width: 1px !important;
+            border-style: solid !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+            cursor: pointer;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08) !important;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .fc-timegrid-event .fc-event-main {
+            padding: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+        }
+        .fc-timegrid-event-harness {
+            overflow: visible !important;
+        }
+        .fc-timegrid .fc-event {
+            margin: 0 !important;
         }
         .fc-event:hover {
             transform: translateY(-1px);
@@ -392,8 +435,8 @@
             <!-- Body Modal -->
             <div class="p-6 space-y-4">
                 <!-- Info Karyawan Penerima Tugas (Nama saja tanpa avatar/PP) -->
-                <div class="bg-sky-50 border border-sky-200 rounded-xl p-3.5">
-                    <span class="text-[10px] font-bold text-sky-800 uppercase tracking-wider block">Ditugaskan Kepada:</span>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+                    <span class="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">Ditugaskan Kepada:</span>
                     <span id="modal-staff-name" class="font-bold text-slate-900 text-base leading-tight block mt-0.5">Nama Karyawan</span>
                     <span id="modal-staff-sub" class="text-xs text-slate-500 block mt-0.5">Jabatan Staff</span>
                 </div>
@@ -854,7 +897,12 @@
                 moreLinkText: function(n) {
                     return '+' + n + ' lainnya';
                 },
-                defaultTimedEventDuration: '00:00:01', // Cegah deadline 23:59 nyebrang ke hari berikutnya
+                defaultTimedEventDuration: '00:45:00',
+                slotMinTime: '07:00:00',
+                slotMaxTime: '21:00:00',
+                slotDuration: '00:30:00',
+                slotEventOverlap: false, // Event di jam yang sama TIDAK saling tumpang tindih
+                eventMinHeight: 48, // Card tidak gepeng di week view
                 nextDayThreshold: '24:00:00',
                 eventDisplay: 'block',
                 displayEventTime: true,
@@ -910,6 +958,7 @@
                 eventContent: function(arg) {
                     const props = arg.event.extendedProps || {};
                     const isList = arg.view.type.startsWith('list');
+                    const isTimeGrid = arg.view.type.startsWith('timeGrid');
                     const el = document.createElement('div');
 
                     // Tampilan Khusus Note Pribadi
@@ -941,31 +990,49 @@
 
                     if (isList) {
                         // List view: nama penuh tanpa truncate, layout horizontal
-                        el.className = 'flex items-center gap-2 py-0.5 w-full';
+                        el.className = 'flex items-center gap-2 py-0.5 w-full min-w-0';
                         el.innerHTML = `
                             <span class="w-5 h-5 rounded-full text-white flex items-center justify-center text-[9px] font-extrabold shrink-0"
                                   style="background-color: ${escapeHtml(dotColor)};">
                                 ${escapeHtml(staffInitial)}
                             </span>
                             <span class="font-bold text-[12px] text-slate-800 shrink-0">${escapeHtml(staffName)}</span>
-                            <span class="text-slate-400 shrink-0">—</span>
-                            <span class="text-[12px] text-slate-700 font-medium" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
+                            <span class="text-slate-400 shrink-0">•</span>
+                            <span class="text-[12px] text-slate-700 font-medium truncate min-w-0" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
                         `;
-                    } else {
-                        // Month view: layout compact dengan truncate
-                        el.className = 'w-full px-1.5 py-1 leading-snug flex flex-col gap-0.5 overflow-hidden';
+                    } else if (isTimeGrid) {
+                        // Week view: layout compact & truncate aman
+                        el.className = 'w-full h-full px-1.5 py-1 leading-snug flex flex-col justify-start gap-0.5 overflow-hidden min-w-0';
                         el.innerHTML = `
-                            <div class="flex items-center justify-between gap-1 overflow-hidden">
-                                <span class="inline-flex items-center gap-1.5 font-bold text-[10.5px] truncate max-w-[85%] text-slate-800">
+                            <div class="flex items-center justify-between gap-1 min-w-0 overflow-hidden">
+                                <span class="inline-flex items-center gap-1 font-bold text-[10.5px] truncate min-w-0 text-slate-800">
                                     <span class="w-3.5 h-3.5 rounded-full text-white flex items-center justify-center text-[8px] font-extrabold shrink-0"
                                           style="background-color: ${escapeHtml(dotColor)};">
                                         ${escapeHtml(staffInitial)}
                                     </span>
-                                    <span class="truncate font-bold">${escapeHtml(staffName)}</span>
+                                    <span class="truncate font-bold min-w-0">${escapeHtml(staffName)}</span>
                                 </span>
-                                ${time ? `<span class="text-[9.5px] font-bold opacity-75 shrink-0">${time}</span>` : ''}
+                                ${time ? `<span class="text-[9.5px] font-bold text-slate-600 opacity-90 shrink-0 ml-auto whitespace-nowrap">${time}</span>` : ''}
                             </div>
-                            <div class="font-medium text-[11px] truncate leading-tight text-slate-900" title="${escapeHtml(title)}">
+                            <div class="font-medium text-[11px] truncate min-w-0 leading-tight text-slate-900" title="${escapeHtml(title)}">
+                                ${escapeHtml(title)}
+                            </div>
+                        `;
+                    } else {
+                        // Month view: layout compact dengan truncate
+                        el.className = 'w-full px-1.5 py-1 leading-snug flex flex-col gap-0.5 overflow-hidden min-w-0';
+                        el.innerHTML = `
+                            <div class="flex items-center justify-between gap-1 overflow-hidden min-w-0">
+                                <span class="inline-flex items-center gap-1.5 font-bold text-[10.5px] truncate max-w-[85%] text-slate-800 min-w-0">
+                                    <span class="w-3.5 h-3.5 rounded-full text-white flex items-center justify-center text-[8px] font-extrabold shrink-0"
+                                          style="background-color: ${escapeHtml(dotColor)};">
+                                        ${escapeHtml(staffInitial)}
+                                    </span>
+                                    <span class="truncate font-bold min-w-0">${escapeHtml(staffName)}</span>
+                                </span>
+                                ${time ? `<span class="text-[9.5px] font-bold opacity-75 shrink-0 ml-auto">${time}</span>` : ''}
+                            </div>
+                            <div class="font-medium text-[11px] truncate leading-tight text-slate-900 min-w-0" title="${escapeHtml(title)}">
                                 ${escapeHtml(title)}
                             </div>
                         `;
