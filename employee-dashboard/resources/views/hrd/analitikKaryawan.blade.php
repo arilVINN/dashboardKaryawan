@@ -211,7 +211,7 @@
                                             },
                                             'Status Karyawan' => match (strtolower((string) $label)) {
                                                 'tetap' => 'bg-blue-500',
-                                                'tidak tetap' => 'bg-red-500',
+                                                'kontrak' => 'bg-red-500',
                                                 default => 'bg-[#0097B2]',
                                             },
                                             default => 'bg-[#0097B2]',

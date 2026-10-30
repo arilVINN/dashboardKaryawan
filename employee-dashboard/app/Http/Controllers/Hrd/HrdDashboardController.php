@@ -202,11 +202,19 @@ class HrdDashboardController extends Controller
             ->groupBy('job_level')
             ->pluck('jumlah', 'job_level');
 
-        // Mengambil data status_karyawan langsung dari kolom baru di migration
+        // Mengambil data status_karyawan: jika ada tanggal_akhir_kontrak maka 'Kontrak', jika null/kosong maka 'Tetap'
+        // (Atau gunakan kolom status_karyawan jika diisi, jika tidak maka fallback ke tanggal_akhir_kontrak)
         $statusKaryawan = Karyawan::where('aktif', true)
-            ->selectRaw('status_karyawan, COUNT(*) as jumlah')
-            ->groupBy('status_karyawan')
-            ->pluck('jumlah', 'status_karyawan');
+            ->selectRaw("
+                CASE 
+                    WHEN tanggal_akhir_kontrak IS NOT NULL THEN 'Kontrak'
+                    WHEN LOWER(status_karyawan) = 'kontrak' THEN 'Kontrak'
+                    ELSE 'Tetap'
+                END as status_hitung,
+                COUNT(*) as jumlah
+            ")
+            ->groupBy('status_hitung')
+            ->pluck('jumlah', 'status_hitung');
 
         return view('hrd.analitikKaryawan', compact(
             'totalDivisi',
