@@ -253,7 +253,9 @@ class HrdStaffController extends Controller
             'lampiran.*.max' => 'Ukuran file lampiran maksimal 5 MB per file.',
         ]);
 
-        if (($karyawan->tanggal_keluar !== null || $karyawan->aktif === false || $karyawan->aktif === 0) && ($validated['status_aktif'] ?? null) === 'Aktif') {
+        // Hanya karyawan yang sudah ditandai keluar (ada tanggal_keluar) yang tidak bisa diaktifkan kembali.
+        // Karyawan yang Tidak Aktif karena diset manual tetap bisa diubah kembali menjadi Aktif.
+        if ($karyawan->tanggal_keluar !== null && ($validated['status_aktif'] ?? null) === 'Aktif') {
             return response()->json([
                 'message' => 'Karyawan yang sudah ditandai keluar tidak dapat diaktifkan kembali.',
                 'errors' => [

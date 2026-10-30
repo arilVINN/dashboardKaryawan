@@ -133,27 +133,37 @@
                                         class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
                                         Detail
                                     </a>
-                                    <button type="button" data-staff-edit
-                                        data-id="{{ $k->id_karyawan }}"
-                                        data-nama="{{ $k->nama }}"
-                                        data-gender="{{ $k->jenis_kelamin }}"
-                                        data-lahir="{{ $k->tanggal_lahir }}"
-                                        data-masuk="{{ $k->tanggal_masuk ?? $k->tanggal_rekrut }}"
-                                        data-rekrut="{{ $k->tanggal_masuk ?? $k->tanggal_rekrut }}"
-                                        data-rekening="{{ $k->no_rekening }}"
-                                        data-akhir-kontrak="{{ $k->tanggal_akhir_kontrak }}"
-                                        data-email="{{ $k->email }}"
-                                        data-alamat="{{ $k->alamat }}"
-                                        data-telepon="{{ $k->no_telepon }}"
-                                        data-jabatan="{{ $k->jabatan }}"
-                                        data-status="{{ $k->status_aktif }}"
-                                        data-tanggal-keluar="{{ $k->tanggal_keluar }}"
-                                        data-divisi="{{ $k->divisi_id_divisi }}"
-                                        data-username="{{ $k->user->username ?? '' }}"
-                                        onclick="bukaEditKaryawan(this)"
-                                        class="text-amber-600 hover:text-amber-800 font-medium hover:underline">
-                                        Edit
-                                    </button>
+                                    @if ($k->tanggal_keluar)
+                                        <button type="button" disabled
+                                            title="Karyawan yang sudah keluar tidak dapat diedit"
+                                            class="text-slate-300 cursor-not-allowed font-medium">
+                                            Edit
+                                        </button>
+                                    @else
+                                        <button type="button" data-staff-edit
+                                            data-id="{{ $k->id_karyawan }}"
+                                            data-nama="{{ $k->nama }}"
+                                            data-gender="{{ $k->jenis_kelamin }}"
+                                            data-lahir="{{ $k->tanggal_lahir ? \Carbon\Carbon::parse($k->tanggal_lahir)->format('Y-m-d') : '' }}"
+                                            data-masuk="{{ ($k->tanggal_masuk ?? $k->tanggal_rekrut) ? \Carbon\Carbon::parse($k->tanggal_masuk ?? $k->tanggal_rekrut)->format('Y-m-d') : '' }}"
+                                            data-rekrut="{{ ($k->tanggal_masuk ?? $k->tanggal_rekrut) ? \Carbon\Carbon::parse($k->tanggal_masuk ?? $k->tanggal_rekrut)->format('Y-m-d') : '' }}"
+                                            data-rekening="{{ $k->no_rekening }}"
+                                            data-akhir-kontrak="{{ $k->tanggal_akhir_kontrak ? \Carbon\Carbon::parse($k->tanggal_akhir_kontrak)->format('Y-m-d') : '' }}"
+                                            data-email="{{ $k->email }}"
+                                            data-alamat="{{ $k->alamat }}"
+                                            data-telepon="{{ $k->no_telepon }}"
+                                            data-jabatan="{{ $k->jabatan }}"
+                                            data-status="{{ $k->status_aktif }}"
+                                            data-tanggal-keluar="{{ $k->tanggal_keluar ? \Carbon\Carbon::parse($k->tanggal_keluar)->format('Y-m-d') : '' }}"
+                                            data-divisi="{{ $k->divisi_id_divisi }}"
+                                            data-pendidikan="{{ $k->pendidikan }}"
+                                            data-job-level="{{ $k->job_level }}"
+                                            data-username="{{ $k->user->username ?? '' }}"
+                                            onclick="bukaEditKaryawan(this)"
+                                            class="text-amber-600 hover:text-amber-800 font-medium hover:underline">
+                                            Edit
+                                        </button>
+                                    @endif
                                     <button type="button" data-staff-delete
                                         data-id="{{ $k->id_karyawan }}"
                                         data-nama="{{ $k->nama }}"

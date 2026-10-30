@@ -30,15 +30,18 @@ class HrdKaryawanController extends Controller
 
         $totalTugas = $karyawan->tugas->count();
         $tugasSelesai = $karyawan->tugas->where('status', Tugas::STATUS_SUDAH_ACC)->count();
+        $daftarDivisi = Divisi::orderBy('nama_divisi')->get();
 
-        return view('hrd.detailKaryawan', compact('karyawan', 'totalTugas', 'tugasSelesai'));
+        return view('hrd.detailKaryawan', compact('karyawan', 'totalTugas', 'tugasSelesai', 'daftarDivisi'));
     }
 
     public function tandaiKeluar(Request $request, string $id)
     {
         $validated = $request->validate([
-            'tanggal_keluar' => ['required', 'date', 'before_or_equal:today'],
+            'tanggal_keluar' => ['nullable', 'date', 'before_or_equal:today'],
         ]);
+
+        $tanggalKeluar = $validated['tanggal_keluar'] ?? now()->toDateString();
 
         $karyawan = Karyawan::where('id_karyawan', $id)->firstOrFail();
 
@@ -47,7 +50,7 @@ class HrdKaryawanController extends Controller
         }
 
         $karyawan->update([
-            'tanggal_keluar' => $validated['tanggal_keluar'],
+            'tanggal_keluar' => $tanggalKeluar,
             'status_aktif' => 'Tidak Aktif',
             'aktif' => false,
         ]);

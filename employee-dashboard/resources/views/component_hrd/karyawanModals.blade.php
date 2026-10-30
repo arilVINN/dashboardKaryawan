@@ -139,7 +139,6 @@
                                 <option value="">Pilih job level</option>
                                 <option value="Magang">Magang</option>
                                 <option value="Junior">Junior</option>
-                                <option value="Staff">Staff</option>
                                 <option value="Senior">Senior</option>
                                 <option value="Manager">Manager</option>
                             </select>
@@ -352,7 +351,6 @@
                                 <option value="">Pilih job level</option>
                                 <option value="Magang">Magang</option>
                                 <option value="Junior">Junior</option>
-                                <option value="Staff">Staff</option>
                                 <option value="Senior">Senior</option>
                                 <option value="Manager">Manager</option>
                             </select>
@@ -365,6 +363,9 @@
                                     <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
                             </select>
+                            <p id="statusEditKaryawanHintModal" class="hidden text-xs text-red-600">
+                                Karyawan yang sudah ditandai keluar tidak dapat diaktifkan kembali.
+                            </p>
                         </div>
                     </div>
                 </section>
@@ -470,32 +471,94 @@
     }
 
     function bukaEditKaryawan(button) {
+        if (!button) return;
+
         const form = document.getElementById('formEditKaryawan');
-        form.elements['id_karyawan'].value = button.dataset.id || '';
-        form.elements['nama'].value = button.dataset.nama || '';
-        form.elements['jenis_kelamin'].value = button.dataset.gender || 'Laki-laki';
-        form.elements['tanggal_lahir'].value = button.dataset.lahir || '';
+        if (!form) return;
+
+        // Cegah pengeditan jika karyawan sudah keluar
+        const sudahKeluar = Boolean(button.dataset.tanggalKeluar && button.dataset.tanggalKeluar !== 'null');
+        if (sudahKeluar) {
+            alert('Karyawan yang sudah keluar tidak dapat diedit kembali.');
+            return;
+        }
+
+        // Normalisasi format tanggal YYYY-MM-DD untuk input[type="date"]
+        const formatTgl = (val) => {
+            if (!val || val === 'null' || val === 'undefined') return '';
+            const match = String(val).match(/^\d{4}-\d{2}-\d{2}/);
+            return match ? match[0] : '';
+        };
+
+        if (form.elements['id_karyawan']) {
+            form.elements['id_karyawan'].value = button.dataset.id || '';
+        }
+        if (form.elements['nama']) {
+            form.elements['nama'].value = button.dataset.nama || '';
+        }
+        if (form.elements['jenis_kelamin']) {
+            form.elements['jenis_kelamin'].value = button.dataset.gender || 'Laki-laki';
+        }
+        if (form.elements['tanggal_lahir']) {
+            form.elements['tanggal_lahir'].value = formatTgl(button.dataset.lahir);
+        }
         if (form.elements['tanggal_masuk']) {
-            form.elements['tanggal_masuk'].value = button.dataset.masuk || button.dataset.rekrut || '';
+            form.elements['tanggal_masuk'].value = formatTgl(button.dataset.masuk || button.dataset.rekrut);
         }
         if (form.elements['tanggal_akhir_kontrak']) {
-            form.elements['tanggal_akhir_kontrak'].value = button.dataset.akhirKontrak || '';
+            form.elements['tanggal_akhir_kontrak'].value = formatTgl(button.dataset.akhirKontrak);
         }
         if (form.elements['no_rekening']) {
             form.elements['no_rekening'].value = button.dataset.rekening || '';
         }
-        form.elements['email'].value = button.dataset.email || '';
-        form.elements['alamat'].value = button.dataset.alamat || '';
-        form.elements['no_telepon'].value = button.dataset.telepon || '';
-        form.elements['jabatan'].value = button.dataset.jabatan || '';
+        if (form.elements['email']) {
+            form.elements['email'].value = button.dataset.email || '';
+        }
+        if (form.elements['alamat']) {
+            form.elements['alamat'].value = button.dataset.alamat || '';
+        }
+        if (form.elements['no_telepon']) {
+            form.elements['no_telepon'].value = button.dataset.telepon || '';
+        }
+        if (form.elements['jabatan']) {
+            form.elements['jabatan'].value = button.dataset.jabatan || '';
+        }
+        if (form.elements['divisi_id_divisi']) {
+            form.elements['divisi_id_divisi'].value = button.dataset.divisi || '';
+        }
+        if (form.elements['pendidikan']) {
+            form.elements['pendidikan'].value = button.dataset.pendidikan || '';
+        }
+        if (form.elements['job_level']) {
+            form.elements['job_level'].value = button.dataset.jobLevel || '';
+        }
+
         const statusSelect = form.elements['status_aktif'];
-        const sudahKeluar = Boolean(button.dataset.tanggalKeluar);
-        statusSelect.value = sudahKeluar ? 'Tidak Aktif' : (button.dataset.status || 'Aktif');
-        statusSelect.disabled = sudahKeluar;
-        document.getElementById('statusEditKaryawanHint').classList.toggle('hidden', !sudahKeluar);
-        form.elements['divisi_id_divisi'].value = button.dataset.divisi || '';
-        form.elements['username'].value = button.dataset.username || '';
-        form.elements['password'].value = '';
+        if (statusSelect) {
+            statusSelect.value = sudahKeluar ? 'Tidak Aktif' : (button.dataset.status || 'Aktif');
+            statusSelect.disabled = sudahKeluar;
+            for (let option of statusSelect.options) {
+                if (option.value === 'Aktif') {
+                    option.disabled = sudahKeluar;
+                }
+            }
+        }
+
+        const hintTambah = document.getElementById('statusEditKaryawanHint');
+        if (hintTambah) hintTambah.classList.toggle('hidden', !sudahKeluar);
+        const hintEdit = document.getElementById('statusEditKaryawanHintModal');
+        if (hintEdit) hintEdit.classList.toggle('hidden', !sudahKeluar);
+
+        if (form.elements['username']) {
+            form.elements['username'].value = button.dataset.username || '';
+        }
+        if (form.elements['password']) {
+            form.elements['password'].value = '';
+        }
+
+        const inputFoto = document.getElementById('input-foto-edit-karyawan');
+        if (inputFoto) inputFoto.value = '';
+
         showKaryawanModal(modalEditKaryawan, modalBoxEditKaryawan);
     }
 
@@ -586,9 +649,26 @@
         const button = document.getElementById('btnSimpanEditKaryawan');
         const formData = new FormData(form);
         const id = formData.get('id_karyawan');
+        if (!id) {
+            alert('ID Karyawan tidak ditemukan.');
+            return;
+        }
+
+        // Jika status_aktif disabled, browser tidak menyertakannya dalam FormData, tambahkan manual
+        const statusSelect = form.elements['status_aktif'];
+        if (statusSelect && statusSelect.disabled && !formData.has('status_aktif')) {
+            formData.append('status_aktif', statusSelect.value);
+        }
+
         if (!formData.get('password')) {
             formData.delete('password');
         }
+
+        // Jika username kosong / tidak diubah, hapus agar tidak memicu validasi error jika karyawan belum punya user
+        if (!formData.get('username') || formData.get('username').trim() === '') {
+            formData.delete('username');
+        }
+
         formData.append('_method', 'PUT');
         button.disabled = true;
         try {
@@ -625,30 +705,12 @@
                 '{{ url('/hrd/staff') }}/' + encodeURIComponent(id),
                 'DELETE',
                 null,
-                document.getElementById('formTambahKaryawan')
+                document.getElementById('formTambahKaryawan') || form
             );
             alert(result.message || 'Karyawan berhasil dihapus.');
             window.location.reload();
         } catch (error) {
             alert(error.message || 'Gagal menghapus karyawan.');
-        }
-    }
-
-    // Contoh logika di Javascript saat mengisi form edit karyawan:
-    if (karyawan.tanggal_keluar !== null || karyawan.aktif == false) {
-        // Jika karyawan sudah keluar, disable select status_aktif atau paksa agar opsi Aktif tidak bisa dipilih
-        const selectStatus = document.getElementById('edit_status_aktif');
-        // Cari opsi yang nilainya 'Aktif' lalu disable/hapus
-        for (let option of selectStatus.options) {
-            if (option.value === 'Aktif') {
-                option.disabled = true;
-            }
-        }
-    } else {
-        // Jika masih aktif, pastikan aktif kembali
-        const selectStatus = document.getElementById('edit_status_aktif');
-        for (let option of selectStatus.options) {
-            option.disabled = false;
         }
     }
 </script>

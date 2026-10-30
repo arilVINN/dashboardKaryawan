@@ -45,35 +45,65 @@
                     </div>
                 </div>
 
-                <!--ini untuk tadnai karyawan yg resign, atau dipecat-->
-                @if ($karyawan->tanggal_keluar)
-                    <p class="text-sm text-slate-600">
-                        Tanggal keluar:
-                        <span class="font-semibold">{{ $karyawan->tanggal_keluar->format('d M Y') }}</span>
-                    </p>
-                @else
-                    <form method="POST" action="{{ route('hrd.karyawan.keluar', $karyawan->id_karyawan) }}"
-                        onsubmit="return confirm('Tandai {{ $karyawan->nama }} sebagai karyawan keluar? Akun akan dinonaktifkan dan riwayat tugas tetap tersimpan.');"
-                        class="flex flex-col sm:flex-row sm:items-end gap-3">
-                        @csrf
-                        @method('PATCH')
-                        <div>
-                            <label for="tanggal_keluar" class="block text-xs font-semibold text-slate-600 mb-1">Tanggal
-                                Keluar</label>
-                            <input id="tanggal_keluar" name="tanggal_keluar" type="date"
-                                value="{{ old('tanggal_keluar', now()->toDateString()) }}"
-                                max="{{ now()->toDateString() }}" required
-                                class="rounded-md border-slate-300 text-sm focus:border-[#0097B2] focus:ring-[#0097B2]">
-                            @error('tanggal_keluar')
-                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <button type="submit"
-                            class="px-2 py-2 bg-red-600 hover:bg-red-900 text-white text-sm font-semibold rounded-md transition">
-                            Tandai Staff Keluar
+                <div class="flex items-center gap-3">
+                    @if ($karyawan->tanggal_keluar)
+                        <button type="button" disabled
+                            title="Karyawan yang sudah keluar tidak dapat diedit"
+                            class="px-4 py-2 bg-slate-200 text-slate-400 cursor-not-allowed text-sm font-semibold rounded-md flex items-center gap-1.5 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                            </svg>
+                            <span>Edit Karyawan</span>
                         </button>
-                    </form>
-                @endif
+
+                        <div class="text-sm text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-md">
+                            Tanggal keluar:
+                            <span class="font-semibold text-slate-900">{{ $karyawan->tanggal_keluar->format('d M Y') }}</span>
+                        </div>
+                    @else
+                        <button type="button" onclick="bukaEditKaryawan(this)" data-id="{{ $karyawan->id_karyawan }}"
+                            data-nama="{{ $karyawan->nama }}" data-gender="{{ $karyawan->jenis_kelamin }}"
+                            data-lahir="{{ $karyawan->tanggal_lahir ? \Carbon\Carbon::parse($karyawan->tanggal_lahir)->format('Y-m-d') : '' }}"
+                            data-masuk="{{ $karyawan->tanggal_masuk ?? $karyawan->tanggal_rekrut ? \Carbon\Carbon::parse($karyawan->tanggal_masuk ?? $karyawan->tanggal_rekrut)->format('Y-m-d') : '' }}"
+                            data-rekrut="{{ $karyawan->tanggal_masuk ?? $karyawan->tanggal_rekrut ? \Carbon\Carbon::parse($karyawan->tanggal_masuk ?? $karyawan->tanggal_rekrut)->format('Y-m-d') : '' }}"
+                            data-rekening="{{ $karyawan->no_rekening }}"
+                            data-akhir-kontrak="{{ $karyawan->tanggal_akhir_kontrak ? \Carbon\Carbon::parse($karyawan->tanggal_akhir_kontrak)->format('Y-m-d') : '' }}"
+                            data-email="{{ $karyawan->email }}" data-alamat="{{ $karyawan->alamat }}"
+                            data-telepon="{{ $karyawan->no_telepon }}" data-jabatan="{{ $karyawan->jabatan }}"
+                            data-status="{{ $karyawan->status_aktif }}"
+                            data-tanggal-keluar="{{ $karyawan->tanggal_keluar ? \Carbon\Carbon::parse($karyawan->tanggal_keluar)->format('Y-m-d') : '' }}"
+                            data-divisi="{{ $karyawan->divisi_id_divisi }}" data-pendidikan="{{ $karyawan->pendidikan }}"
+                            data-job-level="{{ $karyawan->job_level }}"
+                            data-username="{{ $karyawan->user->username ?? '' }}"
+                            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-md transition flex items-center gap-1.5 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                                stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                            </svg>
+                            <span>Edit Karyawan</span>
+                        </button>
+
+                        <form method="POST" action="{{ route('hrd.karyawan.keluar', $karyawan->id_karyawan) }}"
+                            onsubmit="return confirm('Tandai {{ $karyawan->nama }} sebagai karyawan keluar? Akun akan dinonaktifkan dan tanggal keluar otomatis diset hari ini.');"
+                            class="inline-block m-0">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="tanggal_keluar" value="{{ now()->toDateString() }}">
+                            <button type="submit"
+                                class="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-md transition shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.8" stroke="currentColor" class="w-4 h-4 shrink-0">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M22 10.5h-6m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM4 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 10.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+                                </svg>
+                                <span>Tandai Staff Keluar</span>
+                            </button>
+                        </form>
+                    @endif
+                </div>
             </div>
 
             @if (session('success'))
@@ -334,3 +364,9 @@
                 </div>
             </div>
         </main>
+
+        @include('component_hrd.karyawanModals', ['daftarDivisi' => $daftarDivisi])
+    </div>
+</body>
+
+</html>
