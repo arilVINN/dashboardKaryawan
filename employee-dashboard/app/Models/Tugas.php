@@ -101,6 +101,14 @@ class Tugas extends Model
     }
 
     /**
+     * Backward-compatible alias used by older controller/tests.
+     */
+    public function isTelat(): bool
+    {
+        return $this->isTerlambat();
+    }
+
+    /**
      * Status yang ditampilkan: "terlambat" bila deadline lewat, selain itu status tersimpan.
      * Jika status masih "baru" tetapi sudah lebih dari 1 hari sejak dibuat, otomatis dianggap "berjalan".
      */
