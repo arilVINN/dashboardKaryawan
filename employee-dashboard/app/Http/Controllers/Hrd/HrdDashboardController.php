@@ -196,8 +196,11 @@ class HrdDashboardController extends Controller
             ->groupBy('pendidikan')
             ->pluck('jumlah', 'pendidikan');
 
-        // Mengambil data job_level langsung dari kolom baru
+        // Mengambil data job_level - hanya nilai valid (Magang, Junior, Senior, Manager).
+        // "Staff" dikecualikan karena itu adalah jabatan, bukan job level.
+        $validJobLevels = ['Magang', 'Junior', 'Senior', 'Manager'];
         $jobLevel = Karyawan::where('aktif', true)
+            ->whereIn('job_level', $validJobLevels)
             ->selectRaw('job_level, COUNT(*) as jumlah')
             ->groupBy('job_level')
             ->pluck('jumlah', 'job_level');

@@ -1,44 +1,63 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
-    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
-        <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Tugas Berjalan</span>
-            <span id="stat-berjalan" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
+    {{-- Tugas Berjalan --}}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
+        <div class="flex items-start justify-between">
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Berjalan</span>
+            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-green-100">
+                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                    </path>
+                </svg>
+            </span>
         </div>
-        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-            </path>
-        </svg>
+        <div>
+            <p id="stat-berjalan" class="text-3md font-bold text-slate-900 leading-none">0/0 Tugas</p>
+            <p class="text-xs text-slate-400 mt-1">Sedang dikerjakan</p>
+        </div>
     </div>
 
-    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
-        <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Tugas Pending</span>
-            <span id="stat-pending" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
+    {{-- Tugas Pending --}}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
+        <div class="flex items-start justify-between">
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Pending</span>
+            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-yellow-100">
+                <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6"></path>
+                </svg>
+            </span>
         </div>
-        <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6"></path>
-        </svg>
+        <div>
+            <p id="stat-pending" class="text-3md font-bold text-slate-900 leading-none">0/0 Tugas</p>
+            <p class="text-xs text-slate-400 mt-1">Menunggu ACC</p>
+        </div>
     </div>
 
-    <div class="rounded-md drop-shadow-xs bg-white p-4 flex items-center justify-between">
-        <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Tugas Telat</span>
-            <span id="stat-telat" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
+    {{-- Tugas Telat --}}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
+        <div class="flex items-start justify-between">
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Telat</span>
+            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100">
+                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01"></path>
+                </svg>
+            </span>
         </div>
-        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01"></path>
-        </svg>
+        <div>
+            <p id="stat-telat" class="text-3md font-bold text-slate-900 leading-none">0/0 Tugas</p>
+            <p class="text-xs text-slate-400 mt-1">Melewati tenggat</p>
+        </div>
     </div>
 
-    <div class="rounded-md drop-shadow-xs bg-white p-4 flex flex-col justify-center">
-        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">Presentase</span>
+    {{-- Presentase --}}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
+        <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Presentase</span>
         <div class="flex items-center gap-3">
-            <div class="relative w-14 h-14 shrink-0">
-                <svg class="block h-14 w-14 -rotate-90" viewBox="0 0 56 56" role="img" aria-label="Grafik persentase tugas">
+            <div class="relative w-12 h-12 shrink-0">
+                <svg class="block h-12 w-12 -rotate-90" viewBox="0 0 56 56" role="img" aria-label="Grafik persentase tugas">
                     <circle cx="28" cy="28" r="22" fill="none" stroke="#e2e8f0" stroke-width="8"></circle>
                     <circle id="ring-berjalan" cx="28" cy="28" r="22" fill="none" stroke="#22c55e" stroke-width="8"></circle>
                     <circle id="ring-pending" cx="28" cy="28" r="22" fill="none" stroke="#eab308" stroke-width="8"></circle>

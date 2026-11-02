@@ -275,6 +275,9 @@ class TugasTable extends Component
     private function projectKaryawanQuery(): Builder
     {
         return Karyawan::query()
+            ->where('aktif', true)
+            ->whereNull('tanggal_keluar')
+            ->where('status_aktif', 'Aktif')
             ->whereDoesntHave('user.role', fn ($query) => $query
                 ->whereRaw('LOWER(nama_role) IN (?, ?)', ['hrd', 'kadiv']));
     }
@@ -291,7 +294,7 @@ class TugasTable extends Component
                 'staff' => $this->staff,
                 'q' => $this->search,
             ])
-            ->paginate(10);
+            ->paginate(6);
 
         $staffOptions = KadivStaffQuery::forDivision($divisionId)->apply([])->get();
         $projectKaryawanOptions = $this->projectKaryawanQuery()
