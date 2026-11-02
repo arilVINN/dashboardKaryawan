@@ -31,18 +31,12 @@
 
         kadivStaffLoading = true;
         try {
-            const response = await fetch('/api/kadiv/dashboard', {
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Accept': 'application/json'
-                }
-            });
-            const result = await response.json();
-            if (!response.ok) {
-                throw new Error(result.message || 'Gagal mengambil daftar staff.');
+            const dashboardData = await window.fetchKadivDashboardData?.();
+            if (!dashboardData) {
+                throw new Error('Gagal mengambil data dashboard Kadiv.');
             }
 
-            const staff = result.data.staff || [];
+            const staff = dashboardData.staff || [];
             rows.replaceChildren();
             if (staff.length === 0) {
                 rows.innerHTML = '<tr><td colspan="4" class="h-28 px-4 text-center text-slate-500">Belum ada staff di divisi ini.</td></tr>';

@@ -209,17 +209,10 @@
         // Fungsi polling data notifikasi ke backend
         async function fetchNotifikasi() {
             try {
-                const response = await fetch('/api/staff/dashboard', {
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Accept': 'application/json'
-                    }
-                });
+                const dashboardData = await window.fetchStaffDashboardData?.();
+                if (!dashboardData) return;
 
-                if (!response.ok) return;
-
-                const json = await response.json();
-                const notifikasiList = json.data?.notifikasi_terbaru || [];
+                const notifikasiList = dashboardData.notifikasi_terbaru || [];
 
                 if (isInitialLoad) {
                     // Simpan daftar ID notifikasi yang sudah ada saat pertama buka web

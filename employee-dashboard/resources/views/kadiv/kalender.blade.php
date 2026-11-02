@@ -354,8 +354,8 @@
                     <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 font-medium">
                         <span class="w-2 h-2 rounded-full bg-amber-500"></span> Menunggu di-acc
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#CCF4DB] text-emerald-700 font-medium">
-                        <span class="w-2 h-2 rounded-full bg-[#059669]"></span> Sudah di-acc
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-700 text-white font-medium">
+                        <span class="w-2 h-2 rounded-full bg-white"></span> Sudah di-acc
                     </span>
                     <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-100 text-red-700 font-medium">
                         <span class="w-2 h-2 rounded-full bg-red-500"></span> Terlambat
@@ -935,16 +935,13 @@
                     const params = new URLSearchParams();
                     if (staff) params.set('staff', staff);
                     if (status) params.set('status', status);
+                    params.set('start', fetchInfo.start.toISOString());
+                    params.set('end', fetchInfo.end.toISOString());
 
-                    const query = params.toString();
-
-                    Promise.all([
-                        fetch('/kadiv/kalender/events' + (query ? '?' + query : ''), { headers }).then(r => r.ok ? r.json() : { data: [] }),
-                        fetch('/kadiv/kalender/notes', { headers }).then(r => r.ok ? r.json() : { data: [] })
-                    ])
-                    .then(([eventsRes, notesRes]) => {
-                        const allItems = [...(eventsRes.data || []), ...(notesRes.data || [])];
-                        successCallback(allItems);
+                    fetch('/kadiv/kalender/data?' + params.toString(), { headers })
+                    .then(r => r.ok ? r.json() : { data: [] })
+                    .then(result => {
+                        successCallback(result.data || []);
                     })
                     .catch(err => {
                         console.error('Error load events kadiv:', err);

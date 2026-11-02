@@ -80,10 +80,57 @@
 </div>
 
 <script>
+    window.staffOverviewData = window.staffOverviewData || null;
+    window.staffOverviewRequest = window.staffOverviewRequest || null;
+
     const staffTugasSearch = document.getElementById('staffTugasSearch');
     const staffTugasStatus = document.getElementById('staffTugasStatus');
     let staffTugasSort = null;
     let staffTugasDir = 'asc';
+    let staffTugasRequestId = 0;
+    let staffTugasAbortController = null;
+
+    async function fetchStaffOverview(params = {}) {
+        const token = localStorage.getItem('staff_token') || sessionStorage.getItem('staff_token');
+        if (!token) return { tasks: [], projects: [] };
+
+        if (Object.keys(params).length === 0) {
+            if (window.staffOverviewData) {
+                return window.staffOverviewData;
+            }
+
+            if (window.staffOverviewRequest) {
+                return window.staffOverviewRequest;
+            }
+        }
+
+        const qs = new URLSearchParams(params).toString();
+        const request = fetch('/api/staff/overview' + (qs ? '?' + qs : ''), {
+            headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+        }).then(async (res) => {
+            const json = await res.json();
+            if (!res.ok) {
+                throw new Error(json.message || 'Gagal memuat data halaman tugas.');
+            }
+            return json.data || { tasks: [], projects: [] };
+        });
+
+        if (Object.keys(params).length === 0) {
+            window.staffOverviewRequest = request;
+        }
+
+        try {
+            const data = await request;
+            if (Object.keys(params).length === 0) {
+                window.staffOverviewData = data;
+            }
+            return data;
+        } finally {
+            if (Object.keys(params).length === 0) {
+                window.staffOverviewRequest = null;
+            }
+        }
+    }
 
     const STATUS_CLASS = {
         'baru':            'bg-[#C0E7FF] text-blue-700',
@@ -91,9 +138,9 @@
         'menunggu acc':    'bg-amber-100 text-amber-700',
         'menunggu_acc':    'bg-amber-100 text-amber-700',
         'menunggu di-acc': 'bg-amber-100 text-amber-700',
-        'sudah acc':       'bg-[#CCF4DB] text-emerald-700',
-        'sudah_acc':       'bg-[#CCF4DB] text-emerald-700',
-        'sudah di-acc':    'bg-[#CCF4DB] text-emerald-700',
+        'sudah acc':       'bg-emerald-700 text-white',
+        'sudah_acc':       'bg-emerald-700 text-white',
+        'sudah di-acc':    'bg-emerald-700 text-white',
         'telat':           'bg-red-100 text-red-700',
         'terlambat':       'bg-red-100 text-red-700',
     };
@@ -111,35 +158,41 @@
 
         const isCompact = {{ $isCompact ? 'true' : 'false' }};
 
+        if (staffTugasAbortController) {
+            staffTugasAbortController.abort();
+        }
+
+        staffTugasAbortController = new AbortController();
+        const requestId = ++staffTugasRequestId;
+
         try {
-            const params = new URLSearchParams();
+            const params = {};
             if (staffTugasSort) {
-                params.set('sort', staffTugasSort);
-                params.set('dir', staffTugasDir);
+                params.sort = staffTugasSort;
+                params.dir = staffTugasDir;
             }
-            if (staffTugasSearch && staffTugasSearch.value) params.set('q', staffTugasSearch.value);
-            if (staffTugasStatus && staffTugasStatus.value) params.set('status', staffTugasStatus.value);
-            const query = params.toString();
+            if (staffTugasSearch && staffTugasSearch.value) params.q = staffTugasSearch.value;
+            if (staffTugasStatus && staffTugasStatus.value) params.status = staffTugasStatus.value;
 
-            const res = await fetch('/api/staff/tugas' + (query ? '?' + query : ''), {
-                headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-            });
-            const json = await res.json();
-            let tugas = json.data;
+            const overview = await fetchStaffOverview(params);
+            let tugas = overview.tasks || [];
 
-            tbody.innerHTML = ''; // Hapus tulisan loading
+            if (requestId !== staffTugasRequestId) {
+                return;
+            }
+
+            tbody.innerHTML = '';
 
             if (!tugas || tugas.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="${isCompact ? 4 : 5}" class="text-center py-6 text-slate-400">Belum ada tugas yang ditugaskan kepada Anda.</td></tr>`;
                 return;
             }
 
-            // Server sudah mengurutkan; hanya batasi 4 baris untuk tampilan dashboard.
             if (isCompact) {
                 tugas = tugas.slice(0, 4);
             }
 
-            tugas.forEach(t => {
+            const rows = tugas.map(t => {
                 const effectiveStatus = (t.status_efektif || t.status || 'baru').toLowerCase();
                 const sc = STATUS_CLASS[effectiveStatus] || 'bg-slate-100 text-slate-700';
 
@@ -149,7 +202,7 @@
                         .toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
                 }
 
-                const rowHtml = `
+                return `
                     <tr class="hover:bg-slate-50 transition">
                         <td class="{{ $cellPadding }} font-medium text-slate-800 whitespace-nowrap">
                             ${t.judul_tugas}
@@ -168,14 +221,18 @@
                             </a>
                         </td>
                     </tr>`;
+            }).join('');
 
-                tbody.innerHTML += rowHtml;
-            });
-
+            tbody.innerHTML = rows;
             updateStaffTugasSortIndicators();
         } catch (error) {
+            if (error.name === 'AbortError') {
+                return;
+            }
             console.error('Gagal meload tugas', error);
-            tbody.innerHTML = `<tr><td colspan="${isCompact ? 4 : 5}" class="text-center py-6 text-red-500">Gagal mengambil data tugas</td></tr>`;
+            if (requestId === staffTugasRequestId) {
+                tbody.innerHTML = `<tr><td colspan="${isCompact ? 4 : 5}" class="text-center py-6 text-red-500">Gagal mengambil data tugas</td></tr>`;
+            }
         }
     }
 
