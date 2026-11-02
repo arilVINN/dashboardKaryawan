@@ -83,9 +83,9 @@ class KadivTaskController extends Controller
             return response()->json(['message' => 'Karyawan tidak valid atau beda divisi'], 403);
         }
 
-        // Generate ID tugas unik (maksimal 5 karakter untuk TGxxx)
-        $lastTugas = Tugas::orderBy('id_tugas', 'desc')->first();
-        $newId = $lastTugas ? 'TG' . str_pad(intval(substr($lastTugas->id_tugas, 2)) + 1, 3, '0', STR_PAD_LEFT) : 'TG001';
+        // Generate ID tugas unik (TG001, TG002, ...). Handles legacy
+        // "TGS-*" identifiers and locks the table to avoid collisions.
+        $newId = Tugas::nextId();
 
         $filePath = null;
         if ($request->hasFile('file_pendukung')) {

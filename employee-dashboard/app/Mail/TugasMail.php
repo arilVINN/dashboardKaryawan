@@ -10,10 +10,23 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
-class TugasMail extends Mailable
+class TugasMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
+
+    /**
+     * Retry transient SMTP failures a couple of times before giving up.
+     */
+    public int $tries = 3;
+
+    /**
+     * Seconds to wait between attempts.
+     *
+     * @var array<int, int>
+     */
+    public array $backoff = [30, 120];
 
     /**
      * Create a new message instance.
@@ -28,7 +41,7 @@ class TugasMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Notifikasi Tugas Baru: ' . $this->tugas->judul_tugas,
+            subject: 'Notifikasi Tugas Baru: '.$this->tugas->judul_tugas,
         );
     }
 
@@ -50,5 +63,17 @@ class TugasMail extends Mailable
     public function attachments(): array
     {
         return [];
+    }
+
+    /**
+     * Log a failed delivery with enough context to investigate it later.
+     */
+    public function failed(?\Throwable $exception = null): void
+    {
+        Log::error('Gagal mengirim email notifikasi tugas.', [
+            'id_tugas' => $this->tugas->id_tugas ?? null,
+            'penerima' => $this->tugas->karyawan?->email,
+            'error' => $exception?->getMessage(),
+        ]);
     }
 }
