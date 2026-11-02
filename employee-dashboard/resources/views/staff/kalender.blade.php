@@ -41,10 +41,29 @@
         .fc-daygrid-body {
             width: 100% !important;
         }
-        .fc-col-header-cell,
+        .fc-daygrid .fc-col-header-cell,
         .fc-daygrid-day {
             width: 14.2857% !important;
             max-width: 14.2857% !important;
+        }
+        /* TimeGrid week table & axis layout */
+        .fc-timegrid-axis {
+            width: 50px !important;
+            min-width: 50px !important;
+            max-width: 50px !important;
+            text-align: center !important;
+        }
+        .fc-timegrid-axis-frame {
+            justify-content: center !important;
+            padding: 0 4px !important;
+        }
+        .fc-timegrid-slot-label-cushion {
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            color: #64748B !important;
+        }
+        .fc-timegrid-col {
+            min-width: 0 !important;
         }
         .fc-scrollgrid-section-header,
         .fc-scrollgrid-section-header > th,
@@ -260,8 +279,8 @@
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-100 text-amber-700 font-medium">
                         <span class="w-2 h-2 rounded-full bg-amber-500"></span> Menunggu di-acc
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#CCF4DB] text-emerald-700 font-medium">
-                        <span class="w-2 h-2 rounded-full bg-[#059669]"></span> Sudah di-acc
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-700 text-white font-medium">
+                        <span class="w-2 h-2 rounded-full bg-white"></span> Sudah di-acc
                     </span>
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-100 text-red-700 font-medium">
                         <span class="w-2 h-2 rounded-full bg-red-500"></span> Terlambat
@@ -754,7 +773,12 @@
                 moreLinkText: function(n) {
                     return '+' + n + ' lainnya';
                 },
-                defaultTimedEventDuration: '00:00:01', // Cegah deadline 23:59 nyebrang ke hari berikutnya
+                defaultTimedEventDuration: '00:45:00',
+                slotMinTime: '07:00:00',
+                slotMaxTime: '21:00:00',
+                slotDuration: '00:30:00',
+                slotEventOverlap: false, // Event di jam yang sama TIDAK saling tumpang tindih
+                eventMinHeight: 48, // Card tidak gepeng di week view
                 nextDayThreshold: '24:00:00',
                 eventDisplay: 'block',
                 displayEventTime: true,
@@ -781,14 +805,15 @@
                         headers['Authorization'] = 'Bearer ' + token;
                     }
 
-                    // Ambil event dan catatan pribadi secara paralel
-                    Promise.all([
-                        fetch('/kalender/events', { headers }).then(r => r.ok ? r.json() : { data: [] }),
-                        fetch('/kalender/notes', { headers }).then(r => r.ok ? r.json() : { data: [] })
-                    ])
-                    .then(([eventsRes, notesRes]) => {
-                        const allItems = [...(eventsRes.data || []), ...(notesRes.data || [])];
-                        successCallback(allItems);
+                    const params = new URLSearchParams({
+                        start: fetchInfo.start.toISOString(),
+                        end: fetchInfo.end.toISOString()
+                    });
+
+                    fetch('/kalender/data?' + params.toString(), { headers })
+                    .then(r => r.ok ? r.json() : { data: [] })
+                    .then(result => {
+                        successCallback(result.data || []);
                     })
                     .catch(err => {
                         console.error('Error load events staff:', err);

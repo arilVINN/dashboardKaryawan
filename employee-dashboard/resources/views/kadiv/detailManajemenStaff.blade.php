@@ -115,7 +115,7 @@
                 } else if (st === 'menunggu di-acc' || st === 'menunggu acc' || st === 'menunggu di acc') {
                     badgeClass = 'bg-amber-100 text-amber-700';
                 } else if (st === 'sudah di-acc' || st === 'sudah acc' || st === 'sudah di acc') {
-                    badgeClass = 'bg-[#CCF4DB] text-emerald-700';
+                    badgeClass = 'bg-emerald-700 text-white';
                 } else if (st === 'terlambat' || st === 'telat') {
                     badgeClass = 'bg-red-100 text-red-700';
                 }

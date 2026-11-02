@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\ProjectModel;
 use App\Models\ProjectTask;
+use App\Queries\StaffTugasQuery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -19,9 +20,32 @@ class ProjectController extends Controller
             ->whereHas('tasks', fn ($q) => $q->where('karyawan_id_karyawan', $karyawanId))
             ->latest()
             ->get()
-            ->map(fn ($project) => $this->formatProject($project, $karyawanId));
+            ->map(fn ($project) => self::formatProject($project, $karyawanId));
 
         return response()->json(['data' => $projects]);
+    }
+
+    public function overview(Request $request)
+    {
+        $user = $request->user();
+        $karyawanId = $user->karyawan_id_karyawan;
+
+        $tasks = StaffTugasQuery::forStaff($user)
+            ->apply($request->only(['sort', 'dir', 'status', 'q']))
+            ->get();
+
+        $projects = ProjectModel::with(['tasks.karyawan'])
+            ->whereHas('tasks', fn ($q) => $q->where('karyawan_id_karyawan', $karyawanId))
+            ->latest()
+            ->get()
+            ->map(fn ($project) => self::formatProject($project, $karyawanId));
+
+        return response()->json([
+            'data' => [
+                'tasks' => $tasks,
+                'projects' => $projects,
+            ],
+        ]);
     }
 
     public function show(Request $request, string $id)
@@ -32,10 +56,10 @@ class ProjectController extends Controller
             ->whereHas('tasks', fn ($query) => $query->where('karyawan_id_karyawan', $karyawanId))
             ->firstOrFail();
 
-        return response()->json(['data' => $this->formatProject($project, $karyawanId)]);
+        return response()->json(['data' => self::formatProject($project, $karyawanId)]);
     }
 
-    private function formatProject(ProjectModel $project, string $karyawanId): array
+    public static function formatProject(ProjectModel $project, string $karyawanId): array
     {
         return [
             'id_project' => $project->id_project,

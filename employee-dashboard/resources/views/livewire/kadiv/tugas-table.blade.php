@@ -97,7 +97,7 @@
                                             $task->is_terlambat &&
                                                 in_array($task->status, [\App\Models\Tugas::STATUS_MENUNGGU_ACC, \App\Models\Tugas::STATUS_SUDAH_ACC], true))
                                             <span
-                                                class="px-2.5 py-1 rounded-full text-xs font-bold {{ $task->status === \App\Models\Tugas::STATUS_SUDAH_ACC ? 'bg-[#CCF4DB] text-emerald-700' : 'bg-amber-100 text-amber-700' }}">{{ $task->status }}</span>
+                                                class="px-2.5 py-1 rounded-full text-xs font-bold {{ $task->status === \App\Models\Tugas::STATUS_SUDAH_ACC ? 'bg-emerald-700 text-white' : 'bg-amber-100 text-amber-700' }}">{{ $task->status }}</span>
                                             <span
                                                 class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Terlambat</span>
                                         @else
@@ -105,7 +105,7 @@
                                                 $badgeBg = match ($status) {
                                                     'berjalan' => 'bg-emerald-100 text-emerald-700',
                                                     'menunggu di-acc' => 'bg-amber-100 text-amber-700',
-                                                    'sudah di-acc' => 'bg-[#CCF4DB] text-emerald-700',
+                                                    'sudah di-acc' => 'bg-emerald-700 text-white',
                                                     \App\Models\Tugas::STATUS_TERLAMBAT => 'bg-red-100 text-red-700',
                                                     default => 'bg-[#C0E7FF] text-blue-700', // baru
                                                 };

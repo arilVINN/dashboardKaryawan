@@ -57,6 +57,7 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
 
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'index'])->name('kalender');
     Route::get('/kalender/events', [\App\Http\Controllers\Staff\KalenderController::class, 'events'])->name('kalender.events');
+    Route::get('/kalender/data', [\App\Http\Controllers\Staff\KalenderController::class, 'data'])->name('kalender.data');
 
     // Kalender Note (staff)
     Route::get('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'index'])->name('kalender.notes.index');
@@ -152,6 +153,7 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     // Kalender
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexKadiv'])->name('kadiv.kalender');
     Route::get('/kalender/events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsKadiv'])->name('kadiv.kalender.events');
+    Route::get('/kalender/data', [\App\Http\Controllers\Staff\KalenderController::class, 'dataKadiv'])->name('kadiv.kalender.data');
 
     // Kalender Note (kadiv)
     Route::get('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'index'])->name('kadiv.kalender.notes.index');
@@ -208,6 +210,8 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     // Kalender
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexHrd'])->name('hrd.kalender');
     Route::get('/kalender/events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsHrd'])->name('hrd.kalender.events');
+
+    Route::get('/kalender/data', [\App\Http\Controllers\Staff\KalenderController::class, 'dataHrd'])->name('hrd.kalender.data');
 
     // Kalender Note (hrd)
     Route::get('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'index'])->name('hrd.kalender.notes.index');

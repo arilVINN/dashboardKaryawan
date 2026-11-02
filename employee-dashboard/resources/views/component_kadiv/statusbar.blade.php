@@ -89,27 +89,43 @@
 </div>
 
 <script>
+    window.fetchKadivDashboardData = window.fetchKadivDashboardData || (async function fetchKadivDashboardData() {
+        const token = localStorage.getItem('staff_token') || sessionStorage.getItem('staff_token');
+        if (!token) return null;
+
+        if (window.__kadivDashboardRequest) {
+            return window.__kadivDashboardRequest;
+        }
+
+        window.__kadivDashboardRequest = fetch('/api/kadiv/dashboard', {
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Accept': 'application/json'
+            }
+        }).then(async response => {
+            const json = await response.json();
+            if (!response.ok) {
+                throw new Error(json.message || 'Gagal mengambil statistik tugas Kadiv.');
+            }
+            return json.data || {};
+        }).finally(() => {
+            window.__kadivDashboardRequest = null;
+        });
+
+        return window.__kadivDashboardRequest;
+    });
+
     async function loadKadivStatusbar() {
-        const token = sessionStorage.getItem('staff_token');
+        const token = localStorage.getItem('staff_token') || sessionStorage.getItem('staff_token');
         if (!token) {
             window.location.href = '/login';
             return;
         }
 
         try {
-            const response = await fetch('/api/kadiv/dashboard', {
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Accept': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Gagal mengambil statistik tugas Kadiv: ' + response.status);
-            }
-
-            const json = await response.json();
-            const metrics = json.data.metrics;
+            const dashboardData = await window.fetchKadivDashboardData();
+            if (!dashboardData) return;
+            const metrics = dashboardData.metrics || {};
             const belum = (Number(metrics.tugas_baru) || 0)
                 + (Number(metrics.tugas_berjalan) || 0)
                 + (Number(metrics.tugas_telat) || 0)

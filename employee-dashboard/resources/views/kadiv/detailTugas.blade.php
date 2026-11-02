@@ -396,7 +396,6 @@
                     }
                     editPenerima.value = recipientId;
                     editTaskButton.disabled = task.status === 'sudah di-acc';
-                    setText('detail-task-id', 'Tugas ' + task.id_tugas);
                     setText('detail-task-title', task.judul_tugas);
                     setText('detail-task-deadline', 'tenggat : ' + formatDate(task.deadline));
                     const taskStatus = task.is_terlambat && ['menunggu di-acc', 'sudah di-acc'].includes(task.status)

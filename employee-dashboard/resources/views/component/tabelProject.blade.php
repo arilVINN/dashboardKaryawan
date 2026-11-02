@@ -23,6 +23,9 @@
 </div>
 
 <script>
+    let staffProjectRequestId = 0;
+    let staffProjectAbortController = null;
+
     async function loadStaffProjects() {
         const token = localStorage.getItem('staff_token') || sessionStorage.getItem('staff_token');
         const container = document.getElementById('projectList');
@@ -32,17 +35,40 @@
             return;
         }
 
+        if (staffProjectAbortController) {
+            staffProjectAbortController.abort();
+        }
+
+        staffProjectAbortController = new AbortController();
+        const requestId = ++staffProjectRequestId;
+
         try {
-            const res = await fetch('/api/staff/projects', {
-                headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-            });
-            const json = await res.json();
-            if (!res.ok) throw new Error(json.message || 'Gagal memuat project.');
-            if (!Array.isArray(json.data)) throw new Error('Format data project tidak valid.');
-            renderStaffProjects(json.data);
+            const overview = await (window.fetchStaffOverview ? window.fetchStaffOverview() : fetch('/api/staff/overview', {
+                headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+                signal: staffProjectAbortController.signal,
+            }).then(async res => {
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.message || 'Gagal memuat project.');
+                return json.data || { tasks: [], projects: [] };
+            }));
+
+            if (requestId !== staffProjectRequestId) {
+                return;
+            }
+
+            if (!overview || !Array.isArray(overview.projects)) {
+                throw new Error('Format data project tidak valid.');
+            }
+
+            renderStaffProjects(overview.projects);
         } catch (e) {
+            if (e.name === 'AbortError') {
+                return;
+            }
             console.error(e);
-            container.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-red-500">${escapeProjectHtml(e.message || 'Gagal memuat project.')}</td></tr>`;
+            if (requestId === staffProjectRequestId) {
+                container.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-red-500">${escapeProjectHtml(e.message || 'Gagal memuat project.')}</td></tr>`;
+            }
         }
     }
 

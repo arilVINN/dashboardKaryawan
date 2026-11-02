@@ -90,24 +90,43 @@
 
 <!-- Script grafik & Ambil Data API -->
 <script>
+    window.fetchStaffDashboardData = window.fetchStaffDashboardData || (async function fetchStaffDashboardData() {
+        const token = localStorage.getItem('staff_token') || sessionStorage.getItem('staff_token');
+        if (!token) return null;
+
+        if (window.__staffDashboardRequest) {
+            return window.__staffDashboardRequest;
+        }
+
+        window.__staffDashboardRequest = fetch('/api/staff/dashboard', {
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Accept': 'application/json'
+            }
+        }).then(async response => {
+            const json = await response.json();
+            if (!response.ok) {
+                throw new Error(json.message || 'Gagal memuat statistik dashboard staff.');
+            }
+            return json.data || {};
+        }).finally(() => {
+            window.__staffDashboardRequest = null;
+        });
+
+        return window.__staffDashboardRequest;
+    });
+
     document.addEventListener('DOMContentLoaded', async function() {
-        const token = sessionStorage.getItem('staff_token');
+        const token = localStorage.getItem('staff_token') || sessionStorage.getItem('staff_token');
         if (!token) {
-            // Jika token tidak ada, tendang kembali ke login
             window.location.href = '/login';
             return;
         }
 
         try {
-            // Panggil API
-            const response = await fetch('/api/staff/dashboard', {
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Accept': 'application/json'
-                }
-            });
-            const json = await response.json();
-            const s = json.data.statistik;
+            const dashboardData = await window.fetchStaffDashboardData();
+            if (!dashboardData) return;
+            const s = dashboardData.statistik || {};
 
             // Total tugas tetap mencakup tugas yang sudah di-ACC.
             const totalTugas = Number(s.total_tugas) || 0;

@@ -5,7 +5,7 @@
         'baru' => 'bg-[#C0E7FF] text-blue-700',
         'berjalan' => 'bg-[#DFE4EA] text-slate-700',
         'menunggu di-acc' => 'bg-[#FFF7ED] text-[#C2410C]',
-        'sudah di-acc' => 'bg-[#CCF4DB] text-emerald-700',
+        'sudah di-acc' => 'bg-emerald-700 text-white',
         'terlambat' => 'bg-red-100 text-red-700',
     ];
 @endphp
