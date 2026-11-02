@@ -206,7 +206,6 @@
                                                 'magang' => 'bg-slate-500',
                                                 'manager' => 'bg-red-500',
                                                 'senior' => 'bg-violet-500',
-                                                'staff' => 'bg-blue-500',
                                                 default => 'bg-[#0097B2]',
                                             },
                                             'Status Karyawan' => match (strtolower((string) $label)) {

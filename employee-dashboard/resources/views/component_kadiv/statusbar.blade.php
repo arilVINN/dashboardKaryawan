@@ -1,44 +1,62 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-150 hover:scale-105">
-        <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Tugas Yang Belum</span>
-            <span id="stat-berjalan" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
+    {{-- Tugas Yang Belum --}}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
+        <div class="flex items-start justify-between">
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Yang Belum</span>
+            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-green-100">
+                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                    </path>
+                </svg>
+            </span>
         </div>
-
-        <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-            </path>
-        </svg>
+        <div>
+            <p id="stat-berjalan" class="text-3md font-bold text-slate-900 leading-none">0/0 Tugas</p>
+            <p class="text-xs text-slate-400 mt-1">Belum dikerjakan</p>
+        </div>
     </div>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-150 hover:scale-105">
-        <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Tugas Belum Di-acc</span>
-            <span id="stat-pending" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
+    {{-- Tugas Belum Di-acc --}}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
+        <div class="flex items-start justify-between">
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Belum Di-acc</span>
+            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-yellow-100">
+                <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6"></path>
+                </svg>
+            </span>
         </div>
-        <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6"></path>
-        </svg>
+        <div>
+            <p id="stat-pending" class="text-3md font-bold text-slate-900 leading-none">0/0 Tugas</p>
+            <p class="text-xs text-slate-400 mt-1">Menunggu persetujuan</p>
+        </div>
     </div>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex items-center justify-between transition-transform duration-150 hover:scale-105">
-        <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-500">Tugas Selesai</span>
-            <span id="stat-selesai" class="text-xl font-bold text-slate-800 mt-1">0/0 Tugas</span>
+    {{-- Tugas Selesai --}}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
+        <div class="flex items-start justify-between">
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Selesai</span>
+            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </span>
         </div>
-        <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
+        <div>
+            <p id="stat-selesai" class="text-3md font-bold text-slate-900 leading-none">0/0 Tugas</p>
+            <p class="text-xs text-slate-400 mt-1">Sudah disetujui</p>
+        </div>
     </div>
 
-    <div class="rounded-md drop-shadow-md bg-white p-4 flex flex-col justify-center">
-        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5">Presentase</span>
+    {{-- Presentase --}}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
+        <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Presentase</span>
         <div class="flex items-center gap-3">
-            <div class="relative w-14 h-14 shrink-0">
-                <svg class="block h-14 w-14 -rotate-90" viewBox="0 0 56 56" role="img" aria-label="Grafik persentase tugas">
+            <div class="relative w-12 h-12 shrink-0">
+                <svg class="block h-12 w-12 -rotate-90" viewBox="0 0 56 56" role="img" aria-label="Grafik persentase tugas">
                     <circle cx="28" cy="28" r="22" fill="none" stroke="#e2e8f0" stroke-width="8"></circle>
                     <circle id="ring-berjalan" cx="28" cy="28" r="22" fill="none" stroke="#22c55e" stroke-width="8"></circle>
                     <circle id="ring-pending" cx="28" cy="28" r="22" fill="none" stroke="#eab308" stroke-width="8"></circle>

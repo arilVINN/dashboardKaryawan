@@ -102,6 +102,10 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
         return view('kadiv.tugas');
     })->name('kadiv.tugas');
 
+    Route::get('/project/{id}', function ($id) {
+        return view('kadiv.detailProject', ['id' => $id]);
+    })->name('kadiv.project.show');
+
     Route::get('/detailTugas/{id}', function ($id) {
         return view('kadiv.detailTugas', ['id' => $id]);
     })->name('kadiv.detailTugas.show');

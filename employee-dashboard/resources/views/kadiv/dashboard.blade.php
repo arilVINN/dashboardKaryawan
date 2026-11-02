@@ -15,13 +15,14 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         @include('component.topbar')
-        <main class="flex-1 overflow-y-auto p-8">
-            <h1 class="text-2xl font-bold text-slate-800">Status Tugas Divisi</h1>
-            @include('component_kadiv.statusbar')
 
-            <h1 class="text-2xl font-bold text-slate-800 pt-8">
+        <div class="px-8">
+            @include('component_kadiv.statusbar')
+        </div>
+        <main class="flex-1 overflow-y-auto p-8">
+            <h4 class="text-2xl font-bold text-slate-800 pt-2">
                 Manajemen Staff
-            </h1>
+            </h4>
             @include('component_kadiv.tabelstaff')
 
             @include('component_kadiv.tabelpdant')
