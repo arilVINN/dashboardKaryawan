@@ -165,14 +165,9 @@ class TugasTable extends Component
             $deadline = \Illuminate\Support\Carbon::parse($this->tenggat)->format('Y-m-d H:i:s');
 
             foreach ($recipients as $karyawanId) {
-                // Generate ID aman dari race condition
-                $newId = \Illuminate\Support\Facades\DB::transaction(function () {
-                    $last = Tugas::lockForUpdate()->orderByRaw("CAST(SUBSTRING(id_tugas, 3) AS INTEGER) DESC NULLS LAST")->first();
-                    if ($last && preg_match('/^TG(\d+)$/', $last->id_tugas, $m)) {
-                        return 'TG' . str_pad((int)$m[1] + 1, 3, '0', STR_PAD_LEFT);
-                    }
-                    return 'TG' . str_pad((Tugas::count() + 1), 3, '0', STR_PAD_LEFT);
-                });
+                // Shared, portable generator: skips legacy "TGS-*" IDs and
+                // locks rows so concurrent creates cannot collide.
+                $newId = Tugas::nextId();
 
                 Tugas::create([
                     'id_tugas'            => $newId,

@@ -31,14 +31,30 @@ class BuatNotifikasiTugas
             'user_id_user' => $penerima->id_user,
         ]);
 
-        // 2. Kirim email notifikasi ke karyawan
+        // 2. Kirim email notifikasi ke karyawan. Default-nya dikirim langsung
+        //    (sendNow) supaya tetap sampai tanpa queue worker; set
+        //    MAIL_QUEUE_NOTIFICATIONS=true bila worker sudah berjalan.
         $emailTujuan = $penerima->karyawan?->email;
         if (! empty($emailTujuan)) {
+            $mailable = new TugasMail($event->tugas);
+
             try {
-                Mail::to($emailTujuan)->send(new TugasMail($event->tugas));
+                if (config('mail.queue_notifications', false)) {
+                    Mail::to($emailTujuan)->queue($mailable);
+                } else {
+                    Mail::to($emailTujuan)->sendNow($mailable);
+                }
             } catch (\Throwable $e) {
-                Log::warning('Gagal mengirim email notifikasi tugas: ' . $e->getMessage());
+                Log::error('Gagal mengirim email notifikasi tugas: '.$e->getMessage(), [
+                    'id_tugas' => $event->tugas->id_tugas ?? null,
+                    'penerima' => $emailTujuan,
+                ]);
             }
+        } else {
+            Log::info('Email notifikasi tugas dilewati: karyawan tidak memiliki email.', [
+                'id_tugas' => $event->tugas->id_tugas ?? null,
+                'karyawan_id_karyawan' => $event->tugas->karyawan_id_karyawan,
+            ]);
         }
     }
 

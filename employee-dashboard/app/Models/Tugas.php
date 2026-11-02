@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Events\TugasDitugaskan;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Tugas extends Model
 {
@@ -59,6 +60,7 @@ class Tugas extends Model
         'file_pendukung',
         'link_pendukung',
         'deadline',
+        'deadline_reminder_sent_at',
         'progress',
         'status',
         'checklist_selesai',
@@ -68,12 +70,44 @@ class Tugas extends Model
 
     protected $casts = [
         'checklist_selesai' => 'boolean',
+        'deadline_reminder_sent_at' => 'datetime',
     ];
 
     protected static function booted(): void
     {
         static::created(function (Tugas $tugas): void {
             TugasDitugaskan::dispatch($tugas);
+        });
+
+        // Deadline baru berarti pengingat harus dikirim ulang.
+        static::updated(function (Tugas $tugas): void {
+            if ($tugas->wasChanged('deadline')) {
+                $tugas->forceFill(['deadline_reminder_sent_at' => null])->saveQuietly();
+            }
+        });
+    }
+
+    /**
+     * Generate the next human-readable task ID (TG001, TG002, ...).
+     *
+     * Legacy rows use opaque IDs such as "TGS-XXXXXXXX", so we can no longer
+     * rely on the highest string ID being numeric (the old "sort descending
+     * and increment" approach produced "TG001" again and hit the primary key).
+     * Rows are locked while scanning so two concurrent creates cannot pick
+     * the same number.
+     */
+    public static function nextId(): string
+    {
+        return DB::transaction(function (): string {
+            $max = 0;
+
+            foreach (static::query()->lockForUpdate()->pluck('id_tugas') as $id) {
+                if (preg_match('/^TG(\d+)$/', (string) $id, $matches)) {
+                    $max = max($max, (int) $matches[1]);
+                }
+            }
+
+            return 'TG'.str_pad((string) ($max + 1), 3, '0', STR_PAD_LEFT);
         });
     }
 
