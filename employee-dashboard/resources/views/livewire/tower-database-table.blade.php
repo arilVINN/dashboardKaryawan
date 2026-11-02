@@ -264,7 +264,7 @@
         {{-- Pagination --}}
         @if ($items->hasPages())
             <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
-                {{ $items->links() }}
+                {{ $items->links('vendor.pagination.custom') }}
             </div>
         @endif
     </div>
