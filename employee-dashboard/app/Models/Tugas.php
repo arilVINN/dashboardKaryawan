@@ -60,6 +60,7 @@ class Tugas extends Model
         'file_pendukung',
         'link_pendukung',
         'deadline',
+        'deadline_reminder_sent_at',
         'progress',
         'status',
         'checklist_selesai',
@@ -69,12 +70,20 @@ class Tugas extends Model
 
     protected $casts = [
         'checklist_selesai' => 'boolean',
+        'deadline_reminder_sent_at' => 'datetime',
     ];
 
     protected static function booted(): void
     {
         static::created(function (Tugas $tugas): void {
             TugasDitugaskan::dispatch($tugas);
+        });
+
+        // Deadline baru berarti pengingat harus dikirim ulang.
+        static::updated(function (Tugas $tugas): void {
+            if ($tugas->wasChanged('deadline')) {
+                $tugas->forceFill(['deadline_reminder_sent_at' => null])->saveQuietly();
+            }
         });
     }
 
