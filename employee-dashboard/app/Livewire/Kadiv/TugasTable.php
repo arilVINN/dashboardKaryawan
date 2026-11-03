@@ -46,6 +46,7 @@ class TugasTable extends Component
 
     public string $namaProject = '';
     public string $deskripsiProject = '';
+    public string $tenggatProject = '';
     public $projectFile = null;
     public array $taskLabels = [''];
     public array $taskKaryawan = [''];
@@ -201,6 +202,7 @@ class TugasTable extends Component
         $this->validate([
             'namaProject' => 'required|string|max:150',
             'deskripsiProject' => 'nullable|string|max:5000',
+            'tenggatProject' => 'required|date|after:now',
             'projectFile' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
             'taskLabels' => 'required|array|min:1',
             'taskLabels.*' => 'required|string|max:200',
@@ -234,6 +236,7 @@ class TugasTable extends Component
                     'id_project' => 'PRJ' . strtoupper(substr(uniqid('', true), -10)),
                     'nama_project' => $this->namaProject,
                     'deskripsi' => $this->deskripsiProject ?: null,
+                    'tenggat' => \Illuminate\Support\Carbon::parse($this->tenggatProject),   // + baru
                     'file_path' => $filePath,
                     'file_name' => $this->projectFile?->getClientOriginalName(),
                     'dibuat_oleh_id_user' => auth()->user()->id_user,
@@ -250,7 +253,7 @@ class TugasTable extends Component
                 }
             });
 
-            $this->reset(['namaProject', 'deskripsiProject', 'projectFile', 'taskLabels', 'taskKaryawan']);
+            $this->reset(['namaProject', 'deskripsiProject', 'tenggatProject', 'projectFile', 'taskLabels', 'taskKaryawan']);   // + tenggatProject
             $this->taskLabels = [''];
             $this->taskKaryawan = [''];
 
@@ -273,7 +276,7 @@ class TugasTable extends Component
             ->where('aktif', true)
             ->whereNull('tanggal_keluar')
             ->where('status_aktif', 'Aktif')
-            ->whereDoesntHave('user.role', fn ($query) => $query
+            ->whereDoesntHave('user.role', fn($query) => $query
                 ->whereRaw('LOWER(nama_role) IN (?, ?)', ['hrd', 'kadiv']));
     }
 

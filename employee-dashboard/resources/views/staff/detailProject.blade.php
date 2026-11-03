@@ -72,6 +72,18 @@
             const total = project.tasks.length;
             const done = project.tasks.filter(task => task.selesai).length;
             const percent = total ? Math.round((done / total) * 100) : 0;
+            const statusClasses = {
+                'berjalan': 'bg-emerald-100 text-emerald-700',
+                'menunggu di-acc': 'bg-amber-100 text-amber-700',
+                'sudah di-acc': 'bg-emerald-700 text-white',
+                'terlambat': 'bg-red-100 text-red-700',
+                'baru': 'bg-[#C0E7FF] text-blue-700'
+            };
+            const statusBadge = `<span class="inline-flex rounded-full px-3 py-1.5 text-xs font-bold ${statusClasses[project.status] || statusClasses.baru}">${escapeProjectDetail(project.status || 'baru')}</span>`;
+            const deadline = project.tenggat ? new Date(project.tenggat).toLocaleString('id-ID') : '-';
+            const deadlineClass = project.tenggat && new Date(project.tenggat) < new Date()
+                ? 'font-bold text-red-600'
+                : 'text-slate-500';
             const file = project.file_url
                 ? `<a href="${escapeProjectDetail(project.file_url)}" target="_blank" rel="noopener noreferrer" class="inline-block mt-3 text-sm font-medium text-[#146C94] hover:underline">${escapeProjectDetail(project.file_name || 'Lihat file project')}</a>`
                 : '';
@@ -126,6 +138,8 @@
                     <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5">
                         <div class="min-w-0">
                             <h1 class="text-2xl font-bold text-slate-800">${escapeProjectDetail(project.nama_project)}</h1>
+                            <div class="mt-3">${statusBadge}</div>
+                            <p class="mt-2 text-xs ${deadlineClass}">Tenggat: ${escapeProjectDetail(deadline)}</p>
                             <p class="text-sm text-slate-500 mt-2 whitespace-pre-line">${escapeProjectDetail(project.deskripsi || 'Tidak ada deskripsi project.')}</p>
                             ${file}
                         </div>
