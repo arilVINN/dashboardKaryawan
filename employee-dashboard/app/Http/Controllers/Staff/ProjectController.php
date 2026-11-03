@@ -65,6 +65,8 @@ class ProjectController extends Controller
             'id_project' => $project->id_project,
             'nama_project' => $project->nama_project,
             'deskripsi' => $project->deskripsi,
+            'status' => $project->status_efektif,
+            'tenggat' => $project->tenggat?->toIso8601String(),
             'file_url' => $project->file_path
                 ? Storage::disk('public')->url($project->file_path)
                 : null,

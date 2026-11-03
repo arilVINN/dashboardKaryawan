@@ -8,13 +8,15 @@
                     <tr>
                         <th class="px-6 py-4 font-medium whitespace-nowrap">Nama Project</th>
                         <th class="px-6 py-4 font-medium">Deskripsi</th>
+                        <th class="px-6 py-4 font-medium text-center whitespace-nowrap">Status</th>
+                        <th class="px-6 py-4 font-medium text-center whitespace-nowrap">Tenggat</th>
                         <th class="px-6 py-4 font-medium text-center whitespace-nowrap">Progress</th>
                         <th class="px-6 py-4 font-medium text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody id="projectList" class="divide-y divide-slate-200">
                     <tr>
-                        <td colspan="4" class="text-center py-6 text-slate-400">Memuat data project...</td>
+                        <td colspan="6" class="text-center py-6 text-slate-400">Memuat data project...</td>
                     </tr>
                 </tbody>
             </table>
@@ -31,7 +33,7 @@
         const container = document.getElementById('projectList');
         if (!container) return;
         if (!token) {
-            container.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-red-500">Sesi login tidak ditemukan. Silakan login kembali.</td></tr>';
+            container.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-red-500">Sesi login tidak ditemukan. Silakan login kembali.</td></tr>';
             return;
         }
 
@@ -67,7 +69,7 @@
             }
             console.error(e);
             if (requestId === staffProjectRequestId) {
-                container.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-red-500">${escapeProjectHtml(e.message || 'Gagal memuat project.')}</td></tr>`;
+                container.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500">${escapeProjectHtml(e.message || 'Gagal memuat project.')}</td></tr>`;
             }
         }
     }
@@ -75,7 +77,7 @@
     function renderStaffProjects(projects) {
         const container = document.getElementById('projectList');
         if (projects.length === 0) {
-            container.innerHTML = '<tr><td colspan="4" class="text-center py-10 text-slate-400">Belum ada project.</td></tr>';
+            container.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-slate-400">Belum ada project.</td></tr>';
             return;
         }
 
@@ -87,10 +89,25 @@
             const description = project.deskripsi
                 ? escapeProjectHtml(project.deskripsi)
                 : '<span class="text-slate-400">-</span>';
+            const statusClasses = {
+                'berjalan': 'bg-emerald-100 text-emerald-700',
+                'menunggu di-acc': 'bg-amber-100 text-amber-700',
+                'sudah di-acc': 'bg-emerald-700 text-white',
+                'terlambat': 'bg-red-100 text-red-700',
+                'baru': 'bg-[#C0E7FF] text-blue-700'
+            };
+            const status = escapeProjectHtml(project.status || 'baru');
+            const statusBadge = `<span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${statusClasses[project.status] || statusClasses.baru}">${status}</span>`;
+            const deadline = project.tenggat ? new Date(project.tenggat).toLocaleString('id-ID') : '-';
+            const deadlineClass = project.tenggat && new Date(project.tenggat) < new Date()
+                ? 'font-bold text-red-600'
+                : 'text-slate-500';
 
             return `<tr class="hover:bg-slate-50 transition">
                 <td class="px-6 py-4 font-semibold text-slate-800">${escapeProjectHtml(project.nama_project)}</td>
                 <td class="px-6 py-4 text-slate-500 max-w-md truncate" title="${description}">${description}</td>
+                <td class="px-6 py-4 text-center whitespace-nowrap">${statusBadge}</td>
+                <td class="px-6 py-4 text-center whitespace-nowrap text-xs ${deadlineClass}">${escapeProjectHtml(deadline)}</td>
                 <td class="px-6 py-4 text-center whitespace-nowrap">${selesai} / ${total} task <span class="text-slate-400">(${pct}%)</span></td>
                 <td class="px-6 py-4 text-center whitespace-nowrap">
                     <a href="/project/detail/${encodeURIComponent(project.id_project)}"

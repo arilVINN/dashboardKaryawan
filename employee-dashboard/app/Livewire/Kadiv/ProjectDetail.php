@@ -5,6 +5,7 @@ namespace App\Livewire\Kadiv;
 use App\Models\ProjectModel;
 use App\Models\ProjectTask;
 use App\Models\User2;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class ProjectDetail extends Component
@@ -48,6 +49,43 @@ class ProjectDetail extends Component
         abort_unless($task instanceof ProjectTask, 404);
 
         $task->update(['selesai' => ! $task->selesai]);
+    }
+
+    public function approveProject(): void
+    {
+        $user = auth()->user();
+        $this->divisionId();
+
+        DB::transaction(function () use ($user): void {
+            $project = ProjectModel::query()
+                ->whereKey($this->projectId)
+                ->where('dibuat_oleh_id_user', $user->id_user)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($project->approved_at) {
+                return;
+            }
+
+            $hasIncompleteTask = $project->tasks()
+                ->whereNull('file_hasil_path')
+                ->exists();
+
+            if ($hasIncompleteTask) {
+                $this->addError('approval', 'Project belum dapat di-acc karena masih ada task yang belum dikumpulkan.');
+                return;
+            }
+
+            if (! $project->tasks()->exists()) {
+                $this->addError('approval', 'Project belum memiliki task.');
+                return;
+            }
+
+            $project->forceFill([
+                'approved_at' => now(),
+                'approved_by_id_user' => $user->id_user,
+            ])->save();
+        });
     }
 
     public function render()
