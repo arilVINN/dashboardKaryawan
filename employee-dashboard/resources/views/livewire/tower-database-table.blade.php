@@ -1,25 +1,49 @@
 @php
     $indicator = fn(string $col) => $sort === $col ? ($dir === 'asc' ? '▲' : '▼') : '↕';
-    $cellPadding = 'px-6 py-4';
+    $cellPadding = 'px-6 py-3';
+    $headPadding = 'px-6 py-3';
+    $primaryActionClass = 'inline-flex h-9 w-[104px] items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 transition';
 @endphp
 
-<div class="flex flex-col gap-4 w-full">
-    {{-- Header Judul & Tombol Tambah --}}
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-            <h2 class="text-xl font-bold text-slate-800">Direktori Arsip & Data</h2>
-            
-        </div>
+<div class="flex flex-col gap-4 w-full"
+     x-data="{ confirmOpen: false, confirmId: null, confirmName: '' }"
+     @confirm-delete.window="confirmId = $event.detail.id; confirmName = $event.detail.name; confirmOpen = true">
+    <style>
+        [x-cloak] { display: none !important; }
 
-        @if ($canManage)
-            <button type="button" wire:click="bukaModalTambah"
-                class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center justify-center gap-1.5 shrink-0 shadow-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+        @keyframes arsip-modal-fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes arsip-modal-panel-in {
+            from { opacity: 0; transform: translateY(16px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .arsip-modal-backdrop {
+            animation: arsip-modal-fade-in 0.18s ease-out both;
+        }
+        .arsip-modal-panel {
+            animation: arsip-modal-panel-in 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .arsip-modal-backdrop,
+            .arsip-modal-panel {
+                animation: none;
+            }
+        }
+    </style>
+
+    {{-- Header Judul --}}
+    <div class="flex items-center justify-between gap-3">
+        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5">
+            <span class="p-2 rounded-lg bg-blue-100 text-[#004A65]">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
                 </svg>
-                <span>Tambah Data</span>
-            </button>
-        @endif
+            </span>
+            <span>Direktori Arsip & Data</span>
+        </h2>
     </div>
 
     {{-- Flash Notifications --}}
@@ -43,39 +67,61 @@
         </div>
     @endif
 
-    {{-- Filter Card (Konsisten dengan KaryawanTable & TugasTable) --}}
-    <div class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+    {{-- Filter Ringkas: Pencarian + Toggle Jenis + Reset --}}
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
         {{-- Search Input --}}
-        <div class="flex flex-1 min-w-[12rem] flex-col gap-1.5">
-            <label for="towerSearch" class="text-xs font-bold text-slate-500 flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-                <span>Pencarian</span>
-            </label>
+        <div class="relative w-full sm:w-80 shrink-0">
+            <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
             <input id="towerSearch" type="text" wire:model.live.debounce.300ms="search"
                 placeholder="Cari nama dokumen, mitra, nomor, atau tautan..."
-                class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                class="h-10 w-full pl-9 pr-3 border border-slate-300 rounded-lg text-sm outline-none focus:border-[#146C94]">
         </div>
 
-        {{-- Dropdown Jenis --}}
-        <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-            <label for="towerJenis" class="text-xs font-bold text-slate-500">Jenis</label>
-            <select id="towerJenis" wire:model.live="jenis"
-                class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65] bg-white cursor-pointer">
-                <option value="">Semua Jenis ({{ $counts['total'] }})</option>
-                <option value="file">File & Template ({{ $counts['file'] }})</option>
-                <option value="nomor">Kontak & Mitra ({{ $counts['nomor'] }})</option>
-                <option value="link">Tautan Link ({{ $counts['link'] }})</option>
-            </select>
+        {{-- Toggle Group Jenis (segmented, seperti switcher di halaman kalender) --}}
+        @php
+            $jenisTabs = [
+                ''      => ['label' => 'Semua',  'count' => $counts['total']],
+                'nomor' => ['label' => 'Kontak', 'count' => $counts['nomor']],
+                'file'  => ['label' => 'File',   'count' => $counts['file']],
+                'link'  => ['label' => 'Tautan', 'count' => $counts['link']],
+            ];
+        @endphp
+        <div class="inline-flex items-center" role="group" aria-label="Filter jenis">
+            @foreach ($jenisTabs as $value => $tab)
+                <button type="button" wire:click="$set('jenis', @js($value))"
+                    class="inline-flex h-10 items-center gap-1.5 border border-slate-300 px-3.5 text-[13px] font-medium transition
+                        {{ $loop->first ? 'rounded-l-lg' : '' }}
+                        {{ $loop->last ? 'rounded-r-lg' : '' }}
+                        {{ ! $loop->first ? '-ml-px' : '' }}
+                        {{ $jenis === $value
+                            ? 'relative z-10 border-[#146C94] bg-[#146C94] text-white'
+                            : 'bg-white text-slate-700 hover:bg-slate-50' }}">
+                    <span>{{ $tab['label'] }}</span>
+                    <span class="text-xs {{ $jenis === $value ? 'text-white/80' : 'text-slate-400' }}">{{ $tab['count'] }}</span>
+                </button>
+            @endforeach
         </div>
 
-        {{-- Tombol Reset --}}
-        <div class="flex shrink-0 gap-2 sm:ml-auto">
-            <button type="button" wire:click="resetFilters"
-                class="h-10 inline-flex items-center px-4 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">
-                Reset
-            </button>
+        {{-- Aksi kanan: Reset (saat filter aktif) + Tambah arsip --}}
+        <div class="ml-auto flex items-center gap-3">
+            @if ($search !== '' || $jenis !== '')
+                <button type="button" wire:click="resetFilters"
+                    class="text-sm font-medium text-[#146C94] hover:underline">
+                    Reset
+                </button>
+            @endif
+
+            @if ($canManage)
+                <button type="button" wire:click="bukaModalTambah"
+                    class="inline-flex h-10 items-center justify-center gap-1.5 shrink-0 rounded-lg bg-[#0097B2] px-4 text-sm font-medium text-white shadow-sm transition hover:bg-[#008199]">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                    </svg>
+                    <span>Tambah arsip</span>
+                </button>
+            @endif
         </div>
     </div>
 
@@ -83,52 +129,52 @@
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
+                <thead class="bg-slate-100">
                     <tr>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap min-w-[16rem]">
+                        <th class="{{ $headPadding }} text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap min-w-[16rem]">
                             <button type="button" wire:click="sortBy('nama')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Nama <span class="{{ $sort === 'nama' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('nama') }}</span>
                             </button>
                         </th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center w-36">
+                        <th class="{{ $headPadding }} text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap w-36">
                             <button type="button" wire:click="sortBy('jenis')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Jenis <span class="{{ $sort === 'jenis' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('jenis') }}</span>
                             </button>
                         </th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap min-w-[16rem]">
+                        <th class="{{ $headPadding }} text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap min-w-[16rem]">
                             Detail / Nilai
                         </th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center w-48">
+                        <th class="{{ $headPadding }} text-right text-[13px] font-semibold text-slate-500 whitespace-nowrap w-48">
                             Aksi
                         </th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody class="divide-y divide-[#EEF2F5]">
                     @forelse ($items as $item)
-                        <tr class="hover:bg-slate-50/80 transition" wire:key="tower-item-{{ $item->id }}">
+                        <tr class="h-16 cursor-pointer hover:bg-[#F5FAFC] transition" wire:key="tower-item-{{ $item->id }}">
                             {{-- Kolom 1: Nama --}}
                             <td class="{{ $cellPadding }}">
-                                <span class="font-bold text-slate-900 text-sm leading-snug">{{ $item->nama }}</span>
+                                <span class="block max-w-[22rem] truncate font-bold text-slate-900 text-sm leading-snug" title="{{ $item->nama }}">{{ $item->nama }}</span>
                             </td>
 
-                            {{-- Kolom 2: Jenis (Badge) --}}
-                            <td class="{{ $cellPadding }} text-center">
+                            {{-- Kolom 2: Jenis (Badge netral) --}}
+                            <td class="{{ $cellPadding }}">
                                 @if ($item->jenis === 'file')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                                         <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                         </svg>
                                         <span>File</span>
                                     </span>
                                 @elseif ($item->jenis === 'nomor')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                         <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                                         </svg>
                                         <span>Kontak</span>
                                     </span>
                                 @elseif ($item->jenis === 'link')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
                                         <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
                                         </svg>
@@ -141,106 +187,106 @@
                             <td class="{{ $cellPadding }}">
                                 @if ($item->jenis === 'file')
                                     <div class="flex flex-col">
-                                        <span class="font-medium text-slate-800 text-xs truncate max-w-xs">{{ $item->file_name ?: 'Dokumen File' }}</span>
+                                        <span class="text-[13px] font-medium text-[#334155] truncate max-w-[22rem]" title="{{ $item->file_name ?: 'Dokumen File' }}">{{ $item->file_name ?: 'Dokumen File' }}</span>
                                         @if ($item->file_size)
-                                            <span class="text-[11px] text-slate-400 mt-0.5">{{ $item->file_size }}</span>
+                                            <span class="text-[13px] text-[#4B5563]">{{ $item->file_size }}</span>
                                         @endif
                                     </div>
                                 @elseif ($item->jenis === 'nomor')
-                                    <div class="flex flex-col gap-0.5">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="font-mono font-bold text-slate-800 text-xs select-all">{{ $item->nilai_kontak }}</span>
-                                        </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-mono font-bold text-slate-800 text-[13px] select-all">{{ $item->nilai_kontak }}</span>
                                         @if ($item->email_kontak)
-                                            <span class="text-[11px] text-slate-400 truncate max-w-xs">{{ $item->email_kontak }}</span>
+                                            <span class="text-[13px] text-[#4B5563] truncate max-w-[22rem]" title="{{ $item->email_kontak }}">{{ $item->email_kontak }}</span>
                                         @endif
                                     </div>
                                 @elseif ($item->jenis === 'link')
-                                    <div class="flex items-center gap-1.5">
-                                        <a href="{{ $item->url_link }}" target="_blank" rel="noopener noreferrer"
-                                           class="text-xs text-blue-600 hover:text-blue-800 hover:underline truncate max-w-xs font-mono"
-                                           title="{{ $item->url_link }}">
-                                            {{ $item->url_link }}
-                                        </a>
-                                    </div>
+                                    @php
+                                        $linkHost = parse_url($item->url_link ?? '', PHP_URL_HOST);
+                                        $linkHost = $linkHost ? preg_replace('/^www\./i', '', $linkHost) : ($item->url_link ?? '');
+                                    @endphp
+                                    <a href="{{ $item->url_link }}" target="_blank" rel="noopener noreferrer"
+                                       class="block max-w-[22rem] truncate text-[13px] font-medium text-[#146C94] hover:underline"
+                                       title="{{ $item->url_link }}">
+                                        {{ $linkHost }}
+                                    </a>
                                 @endif
                             </td>
 
-                            {{-- Kolom 4: Aksi Langsung --}}
+                            {{-- Kolom 4: Aksi --}}
                             <td class="{{ $cellPadding }}">
-                                <div class="flex items-center justify-center gap-1.5">
-                                    {{-- Aksi Utama Berdasarkan Jenis --}}
+                                <div class="flex items-center justify-end gap-2">
+                                    {{-- Slot 1: Aksi Utama Berdasarkan Jenis --}}
                                     @if ($item->jenis === 'file')
                                         @if ($item->file_path)
                                             <button type="button" wire:click="downloadFile({{ $item->id }})"
-                                                class="inline-flex items-center gap-1 px-3 py-1.5 bg-[#004A65] text-white text-xs font-medium rounded-lg hover:bg-[#003347] transition shadow-sm"
-                                                title="Unduh File">
+                                                class="{{ $primaryActionClass }}" title="Unduh File">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                                 </svg>
                                                 <span>Unduh</span>
                                             </button>
                                         @else
-                                            <span class="text-xs text-slate-400 italic">File Kosong</span>
+                                            <button type="button" disabled
+                                                class="{{ $primaryActionClass }} opacity-50 cursor-not-allowed" title="File kosong">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                                </svg>
+                                                <span>Unduh</span>
+                                            </button>
                                         @endif
                                     @elseif ($item->jenis === 'nomor')
-                                        {{-- Tombol Salin Nomor --}}
                                         <button type="button"
-                                            onclick="salinNomor('{{ $item->nilai_kontak }}', this)"
-                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-200 border border-slate-300 transition"
-                                            title="Salin Nomor">
+                                            onclick="salinNomor(@js($item->nilai_kontak), this)"
+                                            class="{{ $primaryActionClass }}" title="Salin Nomor">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                             </svg>
                                             <span>Salin</span>
                                         </button>
-
-                                        {{-- Tombol Buka WhatsApp --}}
-                                        @php
-                                            $waClean = preg_replace('/[^0-9]/', '', $item->nilai_kontak ?? '');
-                                            if (str_starts_with($waClean, '0')) {
-                                                $waClean = '62' . substr($waClean, 1);
-                                            }
-                                        @endphp
-                                        @if ($waClean)
-                                            <a href="https://wa.me/{{ $waClean }}" target="_blank" rel="noopener noreferrer"
-                                               class="inline-flex items-center gap-1 px-3 py-1.5 bg-[#004A65] text-white text-xs font-medium rounded-lg hover:bg-[#003347] transition shadow-sm"
-                                               title="Buka Chat WhatsApp">
-                                                <span>Buka</span>
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                                </svg>
-                                            </a>
-                                        @endif
                                     @elseif ($item->jenis === 'link')
                                         <a href="{{ $item->url_link }}" target="_blank" rel="noopener noreferrer"
-                                           class="inline-flex items-center gap-1 px-3 py-1.5 bg-[#004A65] text-white text-xs font-medium rounded-lg hover:bg-[#003347] transition shadow-sm"
-                                           title="Buka Tautan di Tab Baru">
-                                            <span>Buka</span>
+                                           class="{{ $primaryActionClass }}" title="Buka Tautan di Tab Baru">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                                             </svg>
+                                            <span>Buka</span>
                                         </a>
                                     @endif
 
-                                    {{-- Aksi Edit & Hapus (Hanya Kadiv / HRD / Admin) --}}
+                                    {{-- Slot 2: Menu Aksi (Edit / Hapus) --}}
                                     @if ($canManage)
-                                        <button type="button" wire:click="bukaModalEdit({{ $item->id }})"
-                                            class="inline-flex items-center justify-center p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition"
-                                            title="Edit Data">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                            </svg>
-                                        </button>
-                                        <button type="button"
-                                            wire:click="hapus({{ $item->id }})"
-                                            wire:confirm="Yakin ingin menghapus data '{{ $item->nama }}'?"
-                                            class="inline-flex items-center justify-center p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                                            title="Hapus Data">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                            </svg>
-                                        </button>
+                                        <div class="relative" x-data="{ open: false, top: 0, right: 0 }" @click.outside="open = false">
+                                            <button type="button"
+                                                @click="
+                                                    open = !open;
+                                                    if (open) {
+                                                        const r = $el.getBoundingClientRect();
+                                                        top = r.bottom + 6;
+                                                        right = Math.max(8, window.innerWidth - r.right);
+                                                    }"
+                                                class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition"
+                                                aria-label="Aksi lainnya" title="Aksi lainnya">
+                                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                                </svg>
+                                            </button>
+
+                                            <div x-show="open" x-cloak
+                                                 :style="`position: fixed; top: ${top}px; right: ${right}px;`"
+                                                 class="z-50 w-36 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                                                <button type="button" wire:click="bukaModalEdit({{ $item->id }})"
+                                                    @click="open = false"
+                                                    class="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
+                                                    Edit
+                                                </button>
+                                                <div class="my-1 border-t border-slate-100"></div>
+                                                <button type="button"
+                                                    @click="open = false; $dispatch('confirm-delete', { id: {{ $item->id }}, name: @js($item->nama) })"
+                                                    class="block w-full px-4 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50">
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </div>
                                     @endif
                                 </div>
                             </td>
@@ -261,18 +307,36 @@
             </table>
         </div>
 
-        {{-- Pagination --}}
-        @if ($items->hasPages())
-            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
-                {{ $items->links() }}
+        {{-- Footer: Ringkasan & Baris per Halaman --}}
+        <div class="border-t border-slate-100 px-6 pt-4 pb-4">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-[13px] text-[#4B5563]">
+                    Menampilkan {{ $items->firstItem() ?? 0 }}-{{ $items->lastItem() ?? 0 }} dari {{ $items->total() }} data
+                </p>
+                <label class="flex items-center gap-2 text-[13px] text-[#4B5563]">
+                    <span>Baris per halaman</span>
+                    <select wire:model.live="perPage"
+                        class="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm text-[#334155] outline-none focus:border-[#146C94]">
+                        @foreach ([5, 10, 25, 50] as $size)
+                            <option value="{{ $size }}">{{ $size }}</option>
+                        @endforeach
+                    </select>
+                </label>
             </div>
-        @endif
+        </div>
     </div>
+
+    {{-- Pagination di luar kartu tabel, rata tengah --}}
+    @if ($items->hasPages())
+        <div class="flex justify-center pb-8">
+            {{ $items->links('vendor.pagination.custom') }}
+        </div>
+    @endif
 
     {{-- Modal Tambah / Edit Data (Konsisten dengan Modal Tugas) --}}
     @if ($showModal)
-        <div class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all my-8"
+        <div class="arsip-modal-backdrop fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+            <div class="arsip-modal-panel bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all my-8"
                  onclick="event.stopPropagation()">
                 {{-- Header Modal --}}
                 <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
@@ -398,20 +462,70 @@
             </div>
         </div>
     @endif
-</div>
 
-{{-- Script Kecil untuk Fitur Salin Nomor ke Clipboard --}}
-<script>
-    function salinNomor(teks, btn) {
-        if (!teks) return;
-        navigator.clipboard.writeText(teks).then(() => {
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = `<span class="text-emerald-600 font-bold">✓ Tersalin</span>`;
-            setTimeout(() => {
-                btn.innerHTML = originalHtml;
-            }, 1800);
-        }).catch(err => {
-            console.error('Gagal menyalin nomor:', err);
-        });
-    }
-</script>
+    {{-- Dialog Konfirmasi Hapus --}}
+    <div x-show="confirmOpen" x-cloak
+         class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm"
+         @click.self="confirmOpen = false"
+         @keydown.escape.window="confirmOpen = false">
+        <div class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl"
+             role="dialog" aria-modal="true" aria-labelledby="hapus-arsip-title">
+            <h3 id="hapus-arsip-title" class="text-lg font-semibold text-slate-800">Hapus arsip?</h3>
+            <p class="mt-2 text-sm leading-relaxed text-[#4B5563]">
+                Data <span class="font-semibold text-slate-800" x-text="confirmName"></span> akan dihapus permanen.
+                Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div class="mt-6 flex items-center justify-end gap-3">
+                <button type="button" @click="confirmOpen = false"
+                    class="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-50">
+                    Batal
+                </button>
+                <button type="button"
+                    @click="confirmOpen = false; $wire.hapus(confirmId)"
+                    class="h-10 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700">
+                    Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Script Kecil untuk Fitur Salin Nomor ke Clipboard --}}
+    <script>
+        function salinNomor(teks, btn) {
+            if (!teks || btn.dataset.copied === '1') return;
+
+            const showCopied = () => {
+                btn.dataset.copied = '1';
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Tersalin</span>`;
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.dataset.copied = '0';
+                }, 2000);
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(teks).then(showCopied).catch(err => {
+                    console.error('Gagal menyalin nomor:', err);
+                });
+                return;
+            }
+
+            // Fallback untuk konteks non-secure (http)
+            const textarea = document.createElement('textarea');
+            textarea.value = teks;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showCopied();
+            } catch (err) {
+                console.error('Gagal menyalin nomor:', err);
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+    </script>
+</div>

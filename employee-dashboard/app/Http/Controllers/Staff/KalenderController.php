@@ -265,6 +265,12 @@ class KalenderController extends Controller
         }
 
         $tugasList = $query->get();
+
+        $kadivList = \App\Models\Karyawan::whereHas('user.role', fn ($q) => $q->whereRaw('LOWER(nama_role) = ?', ['kadiv']))
+            ->orWhereRaw('LOWER(jabatan) LIKE ?', ['%kepala divisi%'])
+            ->get()
+            ->keyBy('divisi_id_divisi');
+
         $events = [];
 
         foreach ($tugasList as $tugas) {
@@ -283,6 +289,13 @@ class KalenderController extends Controller
                 $endDate = $carbonDate->copy()->endOfDay();
             }
 
+            $karyawan = $tugas->karyawan;
+            $namaStaff = $karyawan?->nama ?? 'Staff';
+            $divisiNama = $karyawan?->divisi?->nama_divisi ?? 'Tanpa Divisi';
+            $kadiv = $karyawan?->divisi_id_divisi ? ($kadivList[$karyawan->divisi_id_divisi] ?? null) : null;
+            $pengirimNama = $kadiv ? $kadiv->nama : ('Kadiv ' . $divisiNama);
+            $pengirimJabatan = $kadiv ? ($kadiv->jabatan ?: 'Kepala Divisi') : 'Kepala Divisi';
+
             $events[] = [
                 'id'              => $tugas->id_tugas,
                 'title'           => $tugas->judul_tugas,
@@ -293,24 +306,41 @@ class KalenderController extends Controller
                 'borderColor'     => $style['borderColor'],
                 'textColor'       => $style['textColor'],
                 'extendedProps'   => [
-                    'type'           => 'tugas',
-                    'id_tugas'       => $tugas->id_tugas,
-                    'status'         => $effectiveStatus,
-                    'status_label'   => $style['label'],
-                    'badge_class'    => $style['badgeClass'],
-                    'deskripsi'      => $tugas->deskripsi ?? 'Tidak ada deskripsi',
-                    'deadline_label' => $tugas->deadline
+                    'type'             => 'tugas',
+                    'id_tugas'         => $tugas->id_tugas,
+                    'judul_murni'      => $tugas->judul_tugas,
+                    'divisi_nama'      => $divisiNama,
+                    'pengirim_nama'    => $pengirimNama,
+                    'pengirim_jabatan' => $pengirimJabatan,
+                    'staff_nama'       => $namaStaff,
+                    'staff_jabatan'    => $karyawan?->jabatan ?? 'Staff',
+                    'staff_initial'    => strtoupper(substr($namaStaff, 0, 1)),
+                    'status'           => $effectiveStatus,
+                    'status_label'     => $style['label'],
+                    'badge_class'      => $style['badgeClass'],
+                    'dot_color'        => $style['dotColor'],
+                    'deskripsi'        => $tugas->deskripsi ?? 'Tidak ada deskripsi',
+                    'deadline_label'   => $tugas->deadline
                         ? Carbon::parse($tugas->deadline)->locale('id')->isoFormat('dddd, D MMMM Y, HH:mm')
                         : 'Tidak ditentukan',
-                    'tanggal_dibuat' => $tugas->tanggal_dibuat
+                    'tanggal_dibuat'   => $tugas->tanggal_dibuat
                         ? Carbon::parse($tugas->tanggal_dibuat)->locale('id')->isoFormat('D MMMM Y')
                         : '-',
-                    'detail_url'     => url('/tugas/detail/' . $tugas->id_tugas),
+                    'has_submission'   => $tugas->latestSubmitTugas !== null,
+                    'submission_date'  => $tugas->latestSubmitTugas?->created_at
+                        ? Carbon::parse($tugas->latestSubmitTugas->created_at)->locale('id')->isoFormat('D MMMM Y, HH:mm')
+                        : null,
+                    'detail_url'       => url('/tugas/detail/' . $tugas->id_tugas),
                 ],
             ];
         }
 
         if ($user->karyawan_id_karyawan) {
+            $staffKaryawan = $user->karyawan;
+            $staffNama = $staffKaryawan?->nama ?? 'Staff';
+            $staffDivisi = $staffKaryawan?->divisi?->nama_divisi ?? 'Tanpa Divisi';
+            $staffInitial = strtoupper(substr($staffNama, 0, 1));
+
             $suratList = SuratIzin::where('karyawan_id_karyawan', $user->karyawan_id_karyawan)
                 ->when($start, fn ($query) => $query->whereDate('tanggal_izin', '>=', Carbon::parse($start)->toDateString()))
                 ->when($end, fn ($query) => $query->whereDate('tanggal_izin', '<=', Carbon::parse($end)->toDateString()))
@@ -326,14 +356,24 @@ class KalenderController extends Controller
                     'borderColor'     => '#8B5CF6',
                     'textColor'       => '#6D28D9',
                     'extendedProps'   => [
-                        'type'           => 'izin',
-                        'id_surat'       => $izin->id_surat,
-                        'status'         => $izin->status,
-                        'status_label'   => 'Izin (' . $izin->status . ')',
-                        'badge_class'    => 'bg-purple-100 text-purple-700 border border-purple-200',
-                        'deskripsi'      => $izin->keterangan ?? '-',
-                        'deadline_label' => Carbon::parse($izin->tanggal_izin)->locale('id')->isoFormat('dddd, D MMMM Y'),
-                        'detail_url'     => null,
+                        'type'             => 'izin',
+                        'id_surat'         => $izin->id_surat,
+                        'judul_murni'      => $izin->judul_surat,
+                        'divisi_nama'      => $staffDivisi,
+                        'pengirim_nama'    => 'Pengajuan',
+                        'pengirim_jabatan' => '',
+                        'staff_nama'       => $staffNama,
+                        'staff_jabatan'    => $staffKaryawan?->jabatan ?? 'Staff',
+                        'staff_initial'    => $staffInitial,
+                        'status'           => $izin->status,
+                        'status_label'     => 'Izin (' . $izin->status . ')',
+                        'badge_class'      => 'bg-purple-100 text-purple-700 border border-purple-200',
+                        'dot_color'        => '#8B5CF6',
+                        'deskripsi'        => $izin->keterangan ?? '-',
+                        'deadline_label'   => Carbon::parse($izin->tanggal_izin)->locale('id')->isoFormat('dddd, D MMMM Y'),
+                        'has_submission'   => false,
+                        'submission_date'  => null,
+                        'detail_url'       => null,
                     ],
                 ];
             }
@@ -539,6 +579,11 @@ class KalenderController extends Controller
             }
 
             $namaStaff = $tugas->karyawan?->nama ?? 'Staff';
+            $divisiNama = $tugas->karyawan?->divisi?->nama_divisi ?? 'Tanpa Divisi';
+            $kadiv = $tugas->karyawan?->divisi_id_divisi ? ($kadivList[$tugas->karyawan->divisi_id_divisi] ?? null) : null;
+            $pengirimNama = $kadiv ? $kadiv->nama : ('Kadiv ' . $divisiNama);
+            $pengirimJabatan = $kadiv ? ($kadiv->jabatan ?: 'Kepala Divisi') : 'Kepala Divisi';
+
             $events[] = [
                 'id'              => $tugas->id_tugas,
                 'title'           => '[' . $namaStaff . '] ' . $tugas->judul_tugas,
@@ -552,6 +597,9 @@ class KalenderController extends Controller
                     'type'            => 'tugas',
                     'id_tugas'        => $tugas->id_tugas,
                     'judul_murni'     => $tugas->judul_tugas,
+                    'divisi_nama'     => $divisiNama,
+                    'pengirim_nama'   => $pengirimNama,
+                    'pengirim_jabatan' => $pengirimJabatan,
                     'staff_id'        => $tugas->karyawan_id_karyawan,
                     'staff_nama'      => $namaStaff,
                     'staff_jabatan'   => $tugas->karyawan?->jabatan ?? 'Staff',

@@ -7,7 +7,6 @@ use App\Events\PesanDikirim;
 use App\Models\Pesan;
 use App\Models\SuratIzin;
 use App\Models\User2;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -17,10 +16,8 @@ class HrdPesanController extends Controller
     public function page(Request $request)
     {
         $user = $request->user();
-        $pesans = $this->messageQuery()->paginate(5)->withQueryString();
 
         return view('hrd.pesan', [
-            'pesans' => $pesans,
             'totalPesan' => Pesan::count(),
             'pesanMasuk' => Pesan::where('penerima_id_user', $user->id_user)->count(),
             'suratIzinMasuk' => SuratIzin::count(),
@@ -29,16 +26,7 @@ class HrdPesanController extends Controller
 
     public function daftarPage(Request $request)
     {
-        $pesans = $this->messageQuery()->paginate(5)->withQueryString();
-
-        return view('hrd.daftarPesan', compact('pesans'));
-    }
-
-    private function messageQuery(): Builder
-    {
-        return Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
-            ->orderByDesc('created_at')
-            ->orderByDesc('id_pesan');
+        return view('hrd.daftarPesan');
     }
 
     public function detailPage(Request $request, string $id_pesan)

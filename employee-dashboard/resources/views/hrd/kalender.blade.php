@@ -14,9 +14,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.15/locales/id.global.min.js"></script>
 
     <style>
+        /* Fokus ring jelas untuk aksesibilitas (input, select, textarea, tombol, link) */
+        button:focus-visible,
+        a:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible {
+            outline: 2px solid #146C94;
+            outline-offset: 2px;
+        }
         /* Custom styling for FullCalendar to match Tailwind dashboard */
         :root {
-            --fc-border-color: #CBD5E1;
+            --fc-border-color: #EEF2F5;
         }
         .fc {
             font-family: inherit;
@@ -30,7 +39,7 @@
         /* Tabel FullCalendar kotak tegas 90 derajat & selalu 100% fit container (7 kolom sama rata) */
         .fc-scrollgrid,
         .fc-theme-standard .fc-scrollgrid {
-            border: 1px solid #CBD5E1 !important;
+            border: 1px solid #EEF2F5 !important;
             border-radius: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
@@ -72,12 +81,12 @@
             padding: 0 !important;
             margin: 0 !important;
         }
-        /* Semua sel dan garis menggunakan #CBD5E1 dan selalu rata ATAS */
+        /* Semua sel dan garis menggunakan #EEF2F5 dan selalu rata ATAS */
         .fc-theme-standard th,
         .fc-theme-standard td,
         .fc-scrollgrid-sync-table td,
         .fc-daygrid-day {
-            border-color: #CBD5E1 !important;
+            border-color: #EEF2F5 !important;
             vertical-align: top !important;
         }
         .fc-daygrid-day-frame {
@@ -103,8 +112,8 @@
             line-height: 1 !important;
         }
         .fc-day-other .fc-daygrid-day-number {
-            color: #94A3B8 !important;
-            opacity: 0.6;
+            color: #334155 !important;
+            opacity: 0.4;
         }
         .fc-daygrid-day-events {
             margin-top: 2px !important;
@@ -112,20 +121,20 @@
         }
         /* Header hari menyambung sempurna ke garis atas dan bawah */
         .fc-col-header-cell {
-            background-color: #F8FAFC !important;
-            border-color: #CBD5E1 !important;
+            background-color: #EAF4F8 !important;
+            border-color: #EEF2F5 !important;
             border-top: none !important;
             padding: 0 !important;
             text-transform: capitalize;
         }
         .fc-scrollgrid-section-header th,
         .fc-scrollgrid-section-header td {
-            border-bottom: 1px solid #CBD5E1 !important;
+            border-bottom: 1px solid #EEF2F5 !important;
         }
         .fc-col-header-cell-cushion {
             display: inline-block !important;
             padding: 8px 4px !important;
-            color: #334155 !important;
+            color: #475569 !important;
             font-weight: 600 !important;
             font-size: 0.8125rem !important;
             line-height: 1.25rem !important;
@@ -136,7 +145,7 @@
             font-weight: 700;
             color: #1E293B;
         }
-        /* Hilangkan semua shadow/ring bawaan tombol FullCalendar */
+        /* Tombol calendar: putih sekunder dengan border tipis */
         .fc .fc-button,
         .fc .fc-button-primary,
         .fc .fc-button-primary:hover,
@@ -150,8 +159,9 @@
             outline: none !important;
         }
         .fc .fc-button-primary {
-            background-color: #004A65;
-            border-color: #004A65;
+            background-color: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            color: #334155;
             border-radius: 0.5rem;
             padding: 0.4rem 0.85rem;
             font-size: 0.8125rem;
@@ -161,18 +171,73 @@
             transition: all 0.1s ease-out;
         }
         .fc .fc-button-primary:hover:not(:disabled) {
-            background-color: #003347;
-            border-color: #003347;
-            box-shadow: none !important;
+            background-color: #F8FAFC;
+            border-color: #94A3B8;
+            color: #1E293B;
         }
+        /* Segmen aktif (pandangan aktif) */
         .fc .fc-button-primary:not(:disabled).fc-button-active,
         .fc .fc-button-primary:not(:disabled):active {
-            background-color: #002230;
-            border-color: #002230;
-            box-shadow: none !important;
+            background-color: #146C94;
+            border-color: #146C94;
+            color: #FFFFFF;
         }
+        /* Grup tombol menyatu: < > dan pemilih pandangan */
+        .fc .fc-button-group {
+            display: inline-flex;
+        }
+        .fc .fc-button-group > .fc-button {
+            margin-left: -1px;
+        }
+        .fc .fc-button-group > .fc-button:first-child {
+            margin-left: 0;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        .fc .fc-button-group > .fc-button:not(:first-child):not(:last-child) {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        .fc .fc-button-group > .fc-button:last-child {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        /* Tombol Hari Ini selalu tampil putih sekunder */
+        .fc .fc-today-button:not(:disabled).fc-button-active,
+        .fc .fc-today-button:not(:disabled):active {
+            background-color: #FFFFFF;
+            border-color: #CBD5E1;
+            color: #334155;
+        }
+        .fc .fc-today-button {
+            margin-left: 0.5rem !important;
+        }
+        /* Panah navigasi (< >) berwarna #146C94 */
+        .fc .fc-prev-button,
+        .fc .fc-next-button {
+            color: #146C94;
+        }
+        .fc .fc-prev-button:hover:not(:disabled),
+        .fc .fc-next-button:hover:not(:disabled) {
+            color: #0F4F6D;
+        }
+        /* Hari ini: lingkaran teal penuh di belakang angka tanggal (tanpa blok kolom biru) */
         .fc-day-today {
-            background-color: #F0F9FF !important;
+            background-color: transparent !important;
+        }
+        .fc-day-today .fc-daygrid-day-number {
+            background-color: #146C94 !important;
+            color: #FFFFFF !important;
+            border-radius: 9999px;
+            width: 24px;
+            height: 24px;
+            padding: 0 !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
         }
         /* Event kotak di DayGrid (Bulan) */
         .fc-daygrid-event,
@@ -211,10 +276,23 @@
         .fc-timegrid .fc-event {
             margin: 0 !important;
         }
-        .fc-event:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.12);
+        /* Kartu tugas: isi pucat + 1px border tipis; aksen status via --tugas-accent */
+        .tugas-card {
+            border-width: 1px !important;
+            border-style: solid !important;
         }
+        .tugas-status-baru      { background-color: #DCEEFE !important; border-color: #93C5FD !important; --tugas-accent: #2563EB; }
+        .tugas-status-berjalan  { background-color: #D9F5E5 !important; border-color: #86D9AE !important; --tugas-accent: #059669; }
+        .tugas-status-menunggu  { background-color: #FEF0C3 !important; border-color: #F5C85C !important; --tugas-accent: #D97706; }
+        .tugas-status-disetujui { background-color: #D5F3F0 !important; border-color: #7DD3C8 !important; --tugas-accent: #0D9488; }
+        .tugas-status-terlambat { background-color: #FDE0E0 !important; border-color: #F5A3A3 !important; --tugas-accent: #DC2626; }
+
+        /* Hover: isi sedikit lebih gelap (~4%), border tetap */
+        .tugas-status-baru:hover      { background-color: #D3E4F4 !important; }
+        .tugas-status-berjalan:hover  { background-color: #D0EBDC !important; }
+        .tugas-status-menunggu:hover  { background-color: #F4E6BB !important; }
+        .tugas-status-disetujui:hover { background-color: #CCE9E6 !important; }
+        .tugas-status-terlambat:hover { background-color: #F3D7D7 !important; }
         /* Sembunyikan dot/bullet bawaan FullCalendar */
         .fc-daygrid-event-dot {
             display: none !important;
@@ -222,19 +300,18 @@
 
         /* Popover dan link "+X lainnya" */
         .fc-more-link {
-            font-size: 0.72rem !important;
-            font-weight: 700 !important;
-            color: #004A65 !important;
-            background-color: #E0F2FE !important;
-            padding: 2px 6px !important;
-            border-radius: 4px !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            color: #146C94 !important;
+            background: none !important;
+            padding: 0 !important;
+            margin: 2px 0 1px 4px !important;
             text-decoration: none !important;
             display: inline-block !important;
-            margin: 2px 0 0 2px !important;
         }
         .fc-more-link:hover {
-            background-color: #BAE6FD !important;
-            text-decoration: none !important;
+            color: #105A78 !important;
+            text-decoration: underline !important;
         }
         .fc-popover {
             border: 1px solid #CBD5E1 !important;
@@ -309,6 +386,72 @@
         .fc-list-event-title {
             width: 100% !important;
         }
+
+        /* ===== Layout halaman: hanya baris minggu yang scroll ===== */
+        /* Halaman = tinggi viewport - topbar (h-16 = 4rem) */
+        .calendar-page {
+            height: calc(100vh - 4rem);
+            height: calc(100dvh - 4rem);
+            min-height: 0;
+            overflow: hidden;
+        }
+        /* Breadcrumb statis: 16px atas, 8px bawah (scoped ke halaman kalender) */
+        .calendar-breadcrumb {
+            position: static !important;
+            flex: none;
+        }
+        .calendar-breadcrumb > div {
+            padding-top: 16px !important;
+            padding-bottom: 8px !important;
+        }
+        /* Kartu kalender mengisi sisa tinggi */
+        .calendar-card {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+        #calendar {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden;
+        }
+        /* Toolbar (judul bulan, navigasi, view switcher) di luar area scroll */
+        #calendar .fc-toolbar {
+            flex: 0 0 auto;
+            background-color: #FFFFFF;
+        }
+        /* Area view mengisi sisa tinggi kartu */
+        #calendar .fc-view-harness {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden;
+        }
+        /* Header hari (Sen, Sel, ...) tetap di luar scroller & latar opak */
+        #calendar .fc-scrollgrid-section-header,
+        #calendar .fc-scrollgrid-section-header > th {
+            background-color: #EAF4F8;
+        }
+        #calendar .fc-scrollgrid-section-header .fc-scroller {
+            overflow: hidden !important;
+            scrollbar-gutter: stable;
+            background-color: #EAF4F8;
+        }
+        /* Hanya baris minggu yang bisa di-scroll */
+        #calendar .fc-scrollgrid-section-body .fc-scroller {
+            min-height: 0;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            scrollbar-gutter: stable;
+            padding-top: 0 !important;
+        }
+        /* Target scroll minggu "Hari ini" */
+        #calendar .fc-daygrid-body tr,
+        #calendar .fc-day-today {
+            scroll-margin-top: 8px;
+        }
     </style>
 </head>
 
@@ -319,16 +462,21 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         @include('component.topbar')
-        @include('component.breadcrumbs', [
-            'parentText' => 'Dashboard',
-            'parentUrl' => url('/hrd/dashboard'),
-            'currentPage' => 'Kalender',
-        ])
 
-        <main class="flex-1 overflow-y-auto p-8 pt-4 pb-12">
+        <div class="calendar-page flex-1 min-h-0 flex flex-col overflow-hidden">
+
+            <div class="calendar-breadcrumb flex-none">
+                @include('component.breadcrumbs', [
+                    'parentText' => 'Dashboard',
+                    'parentUrl' => url('/hrd/dashboard'),
+                    'currentPage' => 'Kalender',
+                ])
+            </div>
+
+            <main class="flex-1 min-h-0 flex flex-col overflow-hidden p-8 pt-0 pb-8">
 
             <!-- Page Title -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+            <div class="flex-none flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5">
                         <span class="p-2 rounded-lg bg-blue-100 text-[#004A65]">
@@ -344,35 +492,32 @@
                 <!-- Legend Status -->
                 <div class="flex flex-wrap items-center gap-2 bg-white px-4 py-2.5 rounded-xl border border-slate-200 shadow-sm text-xs">
                     <span class="font-bold text-slate-600 mr-1">Status:</span>
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#C0E7FF] text-blue-700 font-medium">
-                        <span class="w-2 h-2 rounded-full bg-blue-600"></span> Baru
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#93C5FD] bg-[#DCEEFE] text-[#172B36] font-medium">
+                        <span class="w-2 h-2 rounded-full bg-[#2563EB]"></span> Baru
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 font-medium">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Berjalan
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#86D9AE] bg-[#D9F5E5] text-[#172B36] font-medium">
+                        <span class="w-2 h-2 rounded-full bg-[#059669]"></span> Berjalan
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 font-medium">
-                        <span class="w-2 h-2 rounded-full bg-amber-500"></span> Menunggu di-acc
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#F5C85C] bg-[#FEF0C3] text-[#172B36] font-medium">
+                        <span class="w-2 h-2 rounded-full bg-[#D97706]"></span> Menunggu persetujuan
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-700 text-white font-medium">
-                        <span class="w-2 h-2 rounded-full bg-white"></span> Sudah di-acc
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#7DD3C8] bg-[#D5F3F0] text-[#172B36] font-medium">
+                        <span class="w-2 h-2 rounded-full bg-[#0D9488]"></span> Disetujui
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-100 text-red-700 font-medium">
-                        <span class="w-2 h-2 rounded-full bg-red-500"></span> Terlambat
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#F5A3A3] bg-[#FDE0E0] text-[#172B36] font-medium">
+                        <span class="w-2 h-2 rounded-full bg-[#DC2626]"></span> Terlambat
                     </span>
                 </div>
             </div>
 
             <!-- Toolbar Filter Khusus HRD: Divisi + Penerima + Status -->
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-5 flex flex-wrap items-center gap-3">
+            <div class="flex-none bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-5 flex flex-wrap items-center gap-3">
                 <!-- Filter Divisi -->
                 <div class="flex items-center gap-2">
-                    <label for="hrdDivisiFilter" class="text-xs font-bold text-slate-600 flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                        </svg>
+                    <label for="hrdDivisiFilter" class="text-[13px] font-medium text-[#4B5563]">
                         <span>Divisi:</span>
                     </label>
-                    <select id="hrdDivisiFilter" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-medium text-slate-700 outline-none focus:border-[#004A65]">
+                    <select id="hrdDivisiFilter" class="h-10 text-[13px] bg-white border border-slate-300 rounded-lg px-3 font-medium text-slate-700 outline-none focus:border-[#146C94]">
                         <option value="">Semua Divisi</option>
                         @isset($divisiList)
                             @foreach($divisiList as $divisi)
@@ -384,13 +529,10 @@
 
                 <!-- Filter Penerima (Staff) -->
                 <div class="flex items-center gap-2">
-                    <label for="hrdStaffFilter" class="text-xs font-bold text-slate-600 flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                        </svg>
+                    <label for="hrdStaffFilter" class="text-[13px] font-medium text-[#4B5563]">
                         <span>Penerima:</span>
                     </label>
-                    <select id="hrdStaffFilter" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-medium text-slate-700 outline-none focus:border-[#004A65]">
+                    <select id="hrdStaffFilter" class="h-10 text-[13px] bg-white border border-slate-300 rounded-lg px-3 font-medium text-slate-700 outline-none focus:border-[#146C94]">
                         <option value="">Semua Karyawan</option>
                         @isset($staffList)
                             @foreach($staffList as $staff)
@@ -404,47 +546,54 @@
 
                 <!-- Filter Status -->
                 <div class="flex items-center gap-2">
-                    <label for="hrdStatusFilter" class="text-xs font-bold text-slate-600">Status:</label>
-                    <select id="hrdStatusFilter" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 font-medium text-slate-700 outline-none focus:border-[#004A65]">
+                    <label for="hrdStatusFilter" class="text-[13px] font-medium text-[#4B5563]"><span>Status:</span></label>
+                    <select id="hrdStatusFilter" class="h-10 text-[13px] bg-white border border-slate-300 rounded-lg px-3 font-medium text-slate-700 outline-none focus:border-[#146C94]">
                         <option value="">Semua Status</option>
                         <option value="baru">Baru</option>
                         <option value="berjalan">Berjalan</option>
-                        <option value="menunggu di-acc">Menunggu di-acc</option>
-                        <option value="sudah di-acc">Sudah di-acc</option>
+                        <option value="menunggu di-acc">Menunggu persetujuan</option>
+                        <option value="sudah di-acc">Disetujui</option>
                         <option value="terlambat">Terlambat</option>
                     </select>
                 </div>
             </div>
 
             <!-- Calendar Card -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <div class="calendar-card flex-1 min-h-0 flex flex-col overflow-hidden bg-white p-6 pb-8 rounded-2xl shadow-sm border border-slate-200">
                 <!-- Tombol tambah note -->
-                <div class="flex items-center justify-end mb-3">
+                <div class="flex-none flex items-center justify-end mb-3">
                     <button type="button" onclick="openModalNote()"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#004A65] hover:bg-[#003347] text-white text-xs font-bold rounded-lg transition shadow-sm">
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0097B2] hover:bg-[#008199] text-white text-xs font-bold rounded-lg transition shadow-sm">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
-                        Tambah Note
+                        Tambah catatan
                     </button>
                 </div>
-                <div id="calendar"></div>
+                <div id="calendar" class="flex-1 min-h-0 flex flex-col overflow-hidden"></div>
             </div>
 
         </main>
 
+        </div>
+
     </div>
 
-    <!-- Modal Detail Event / Tugas Khusus HRD -->
+    <!-- Modal Detail Tugas (HRD) -->
     <div id="modal-event" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" style="display:none; pointer-events:none;">
-        <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all duration-150" onclick="event.stopPropagation()">
+        <div data-modal-panel
+             class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-[520px] overflow-hidden flex flex-col max-h-[90vh]"
+             onclick="event.stopPropagation()">
             <!-- Header Modal -->
-            <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <span id="modal-badge" class="px-2.5 py-1 rounded-md text-xs font-semibold">Status</span>
-                    <span id="modal-divisi-badge" class="text-xs bg-slate-200/80 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-300">Divisi</span>
+            <div class="shrink-0 px-6 py-4 border-b border-slate-200 flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <h2 id="modal-title" class="text-xl font-semibold text-[#172B36] leading-snug break-words">Judul Tugas</h2>
+                    <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                        <span id="modal-badge" class="px-2.5 py-0.5 rounded-md text-xs font-semibold">Status</span>
+                        <span id="modal-divisi" class="text-xs text-[#4B5563]"></span>
+                    </div>
                 </div>
-                <button type="button" onclick="closeModalEvent()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-200/60">
+                <button type="button" onclick="closeModalEvent()" class="shrink-0 text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-200/60" aria-label="Tutup">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -452,76 +601,114 @@
             </div>
 
             <!-- Body Modal -->
-            <div class="p-5 space-y-3.5">
-                <!-- Info Alur Penugasan: Dari Kadiv -> Kepada Staff -->
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-2">Alur Penugasan Tugas:</span>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 items-center">
-                        <!-- Pemberi Tugas (Kadiv) -->
-                        <div class="bg-white p-2.5 rounded-lg border border-slate-200">
-                            <span class="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">Dari (Pemberi Tugas):</span>
-                            <span id="modal-pengirim-name" class="font-bold text-slate-900 text-sm leading-tight block mt-0.5">Nama Kadiv</span>
-                            <span id="modal-pengirim-sub" class="text-[11px] text-slate-500 block mt-0.5">Kepala Divisi</span>
-                        </div>
-
-                        <!-- Penerima Tugas (Staff) -->
-                        <div class="bg-white p-2.5 rounded-lg border border-slate-200">
-                            <span class="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">Kepada (Penerima):</span>
-                            <span id="modal-staff-name" class="font-bold text-slate-900 text-sm leading-tight block mt-0.5">Nama Staff</span>
-                            <span id="modal-staff-sub" class="text-[11px] text-slate-500 block mt-0.5">Staff • ID</span>
-                        </div>
-                    </div>
+            <div class="flex-1 overflow-y-auto p-6 space-y-4">
+                <div>
+                    <div class="text-[13px] font-medium text-[#4B5563]">Dari</div>
+                    <div id="modal-pengirim" class="text-sm text-[#172B36]">-</div>
                 </div>
 
                 <div>
-                    <span class="text-xs text-slate-500 font-medium block mb-0.5">Judul Tugas:</span>
-                    <h3 id="modal-title" class="text-base font-bold text-slate-800 leading-snug">Judul Tugas</h3>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2.5">
-                    <div class="bg-slate-50 rounded-lg p-2.5 border border-slate-200 space-y-1 text-sm">
-                        <span class="text-xs text-slate-500 font-medium block">Tenggat Waktu:</span>
-                        <span id="modal-deadline" class="font-semibold text-slate-800 block text-xs">-</span>
-                    </div>
-
-                    <div class="bg-slate-50 rounded-lg p-2.5 border border-slate-200 space-y-1 text-sm">
-                        <span class="text-xs text-slate-500 font-medium block">Pengumpulan Tugas:</span>
-                        <span id="modal-submission-status" class="inline-block px-2 py-0.5 rounded text-xs font-bold">-</span>
-                    </div>
+                    <div class="text-[13px] font-medium text-[#4B5563]">Kepada</div>
+                    <div id="modal-staff" class="text-sm text-[#172B36]">-</div>
                 </div>
 
                 <div>
-                    <span class="text-xs text-slate-500 font-medium block mb-1">Deskripsi Tugas:</span>
-                    <div id="modal-deskripsi" class="text-sm text-slate-600 bg-white border border-slate-200 rounded-lg p-3 max-h-32 overflow-y-auto whitespace-pre-line leading-relaxed">
-                        -
-                    </div>
+                    <div class="text-[13px] font-medium text-[#4B5563]">Tenggat</div>
+                    <div id="modal-deadline" class="text-sm text-[#172B36]">-</div>
+                </div>
+
+                <div>
+                    <div class="text-[13px] font-medium text-[#4B5563]">Pengumpulan</div>
+                    <span id="modal-submission-status" class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-[#4B5563]">-</span>
+                </div>
+
+                <div>
+                    <div class="text-[13px] font-medium text-[#4B5563]">Deskripsi</div>
+                    <div id="modal-deskripsi" class="text-sm text-[#172B36] whitespace-pre-line leading-relaxed max-h-40 overflow-y-auto">-</div>
                 </div>
             </div>
 
             <!-- Footer Modal -->
-            <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+            <div class="shrink-0 px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-3">
                 <button type="button" onclick="closeModalEvent()"
                         class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition">
                     Tutup
                 </button>
+                <a id="modal-detail-btn" href="#"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#146C94] rounded-lg hover:bg-[#105A78] transition">
+                    <span>Lihat detail</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Modal Input Form Tambah Note -->
+    <!-- Animasi Modal Calendar -->
+    <style>
+        @keyframes modal-backdrop-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modal-backdrop-out {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes modal-panel-in {
+            from { opacity: 0; transform: translateY(16px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes modal-panel-out {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(12px) scale(0.96); }
+        }
+
+        #modal-event.modal-fade-in,
+        #modal-tambah-note.modal-fade-in,
+        #modal-detail-note.modal-fade-in { animation: modal-backdrop-in 0.2s ease-out both; }
+
+        #modal-event.modal-fade-out,
+        #modal-tambah-note.modal-fade-out,
+        #modal-detail-note.modal-fade-out { animation: modal-backdrop-out 0.18s ease-in both; }
+
+        #modal-event [data-modal-panel].modal-pop-in,
+        #modal-tambah-note [data-modal-panel].modal-pop-in,
+        #modal-detail-note [data-modal-panel].modal-pop-in { animation: modal-panel-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+        #modal-event [data-modal-panel].modal-pop-out,
+        #modal-tambah-note [data-modal-panel].modal-pop-out,
+        #modal-detail-note [data-modal-panel].modal-pop-out { animation: modal-panel-out 0.18s ease-in both; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .modal-fade-in,
+            .modal-fade-out,
+            [data-modal-panel].modal-pop-in,
+            [data-modal-panel].modal-pop-out {
+                animation-duration: 0.01ms;
+            }
+        }
+    </style>
+
+    <!-- Modal Tambah Catatan -->
     <div id="modal-tambah-note" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" style="display:none; pointer-events:none;">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden transform transition-all duration-150" onclick="event.stopPropagation()">
+        <div data-modal-panel
+             class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-[520px] overflow-hidden flex flex-col max-h-[90vh]"
+             onclick="event.stopPropagation()">
             <!-- Header Modal -->
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div class="shrink-0 px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <span class="p-1.5 rounded-lg bg-blue-100 text-[#004A65]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                         </svg>
                     </span>
-                    <h3 class="text-base font-bold text-slate-800">Tambah Catatan / Note</h3>
+                    <h3 class="text-xl font-semibold text-[#172B36]">Tambah catatan</h3>
                 </div>
-                <button type="button" onclick="closeModalNote()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-200/60">
+                <button type="button" onclick="closeModalNote()" class="shrink-0 text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-200/60" aria-label="Tutup">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -529,78 +716,67 @@
             </div>
 
             <!-- Form Body -->
-            <form id="form-tambah-note" onsubmit="submitTambahNote(event)" class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-bold tracking-wide text-slate-600 mb-1.5">TANGGAL <span class="text-red-500">*</span></label>
-                    <input type="date" id="note-input-tanggal" required
-                        class="w-full h-10 rounded-lg border border-slate-300 px-3 text-sm text-slate-800 outline-none focus:border-[#004A65] focus:ring-1 focus:ring-[#004A65]">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold tracking-wide text-slate-600 mb-1.5">JUDUL NOTE <span class="text-red-500">*</span></label>
-                    <input type="text" id="note-input-judul" required placeholder="Contoh: Reminder evaluasi mingguan, follow up berkas..."
-                        class="w-full h-10 rounded-lg border border-slate-300 px-3 text-sm text-slate-800 outline-none focus:border-[#004A65] focus:ring-1 focus:ring-[#004A65]">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold tracking-wide text-slate-600 mb-1.5">KETERANGAN / DETAIL (OPSIONAL)</label>
-                    <textarea id="note-input-detail" rows="3" placeholder="Catatan detail tambahan..."
-                        class="w-full resize-none rounded-lg border border-slate-300 p-3 text-sm text-slate-800 outline-none focus:border-[#004A65] focus:ring-1 focus:ring-[#004A65]"></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold tracking-wide text-slate-600 mb-1.5">LABEL WARNA</label>
-                    <div class="grid grid-cols-6 gap-2" id="note-color-picker">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="note-warna" value="slate" class="peer sr-only" checked>
-                            <div class="h-8 rounded-lg border-2 border-slate-300 bg-slate-100 flex items-center justify-center peer-checked:border-[#004A65] peer-checked:ring-2 peer-checked:ring-[#004A65]/30">
-                                <span class="w-3 h-3 rounded-full bg-slate-500"></span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="note-warna" value="blue" class="peer sr-only">
-                            <div class="h-8 rounded-lg border-2 border-slate-300 bg-blue-50 flex items-center justify-center peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-400">
-                                <span class="w-3 h-3 rounded-full bg-blue-600"></span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="note-warna" value="green" class="peer sr-only">
-                            <div class="h-8 rounded-lg border-2 border-slate-300 bg-emerald-50 flex items-center justify-center peer-checked:border-emerald-600 peer-checked:ring-2 peer-checked:ring-emerald-400">
-                                <span class="w-3 h-3 rounded-full bg-emerald-600"></span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="note-warna" value="amber" class="peer sr-only">
-                            <div class="h-8 rounded-lg border-2 border-slate-300 bg-amber-50 flex items-center justify-center peer-checked:border-amber-600 peer-checked:ring-2 peer-checked:ring-amber-400">
-                                <span class="w-3 h-3 rounded-full bg-amber-500"></span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="note-warna" value="red" class="peer sr-only">
-                            <div class="h-8 rounded-lg border-2 border-slate-300 bg-red-50 flex items-center justify-center peer-checked:border-red-600 peer-checked:ring-2 peer-checked:ring-red-400">
-                                <span class="w-3 h-3 rounded-full bg-red-500"></span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="note-warna" value="purple" class="peer sr-only">
-                            <div class="h-8 rounded-lg border-2 border-slate-300 bg-purple-50 flex items-center justify-center peer-checked:border-purple-600 peer-checked:ring-2 peer-checked:ring-purple-400">
-                                <span class="w-3 h-3 rounded-full bg-purple-500"></span>
-                            </div>
-                        </label>
+            <form id="form-tambah-note" onsubmit="submitTambahNote(event)" class="flex flex-col flex-1 min-h-0">
+                <div class="flex-1 overflow-y-auto p-6 space-y-4">
+                    <div>
+                        <label for="note-input-tanggal" class="block text-[13px] font-medium text-[#4B5563] mb-1.5">Tanggal <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <input type="date" id="note-input-tanggal" required onchange="updateTanggalLengkap()"
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <div id="note-input-tanggal-display" class="w-full h-10 rounded-lg border border-slate-300 px-3 text-sm text-[#172B36] flex items-center bg-white pointer-events-none">-</div>
+                        </div>
                     </div>
-                </div>
 
-                <div id="note-error-message" class="text-xs text-red-600 hidden"></div>
+                    <div>
+                        <label for="note-input-judul" class="block text-[13px] font-medium text-[#4B5563] mb-1.5">Judul catatan <span class="text-red-500">*</span></label>
+                        <input type="text" id="note-input-judul" required placeholder="Contoh: Evaluasi mingguan"
+                            class="w-full h-10 rounded-lg border border-slate-300 px-3 text-sm text-[#172B36] outline-none focus:border-[#146C94]">
+                    </div>
+
+                    <div>
+                        <label for="note-input-detail" class="block text-[13px] font-medium text-[#4B5563] mb-1.5">Keterangan (opsional)</label>
+                        <textarea id="note-input-detail" rows="3" placeholder="Catatan detail tambahan..."
+                            class="w-full resize-none rounded-lg border border-slate-300 p-3 text-sm text-[#172B36] outline-none focus:border-[#146C94]"></textarea>
+                    </div>
+
+                    <div>
+                        <span class="block text-[13px] font-medium text-[#4B5563] mb-2">Warna</span>
+                        <div class="flex items-center gap-3" id="note-color-picker">
+                            <label class="cursor-pointer" title="Abu-abu">
+                                <input type="radio" name="note-warna" value="slate" class="peer sr-only" checked aria-label="Abu-abu">
+                                <span class="block w-6 h-6 rounded-full bg-[#94A3B8] peer-checked:ring-2 peer-checked:ring-[#146C94]"></span>
+                            </label>
+                            <label class="cursor-pointer" title="Biru">
+                                <input type="radio" name="note-warna" value="blue" class="peer sr-only" aria-label="Biru">
+                                <span class="block w-6 h-6 rounded-full bg-[#3B82F6] peer-checked:ring-2 peer-checked:ring-[#146C94]"></span>
+                            </label>
+                            <label class="cursor-pointer" title="Hijau">
+                                <input type="radio" name="note-warna" value="green" class="peer sr-only" aria-label="Hijau">
+                                <span class="block w-6 h-6 rounded-full bg-[#10B981] peer-checked:ring-2 peer-checked:ring-[#146C94]"></span>
+                            </label>
+                            <label class="cursor-pointer" title="Kuning">
+                                <input type="radio" name="note-warna" value="amber" class="peer sr-only" aria-label="Kuning">
+                                <span class="block w-6 h-6 rounded-full bg-[#F59E0B] peer-checked:ring-2 peer-checked:ring-[#146C94]"></span>
+                            </label>
+                            <label class="cursor-pointer" title="Merah">
+                                <input type="radio" name="note-warna" value="red" class="peer sr-only" aria-label="Merah">
+                                <span class="block w-6 h-6 rounded-full bg-[#EF4444] peer-checked:ring-2 peer-checked:ring-[#146C94]"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="note-error-message" class="text-xs text-red-600 hidden"></div>
+                </div>
 
                 <!-- Footer Modal -->
-                <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+                <div class="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200">
                     <button type="button" onclick="closeModalNote()"
-                        class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+                        class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition">
                         Batal
                     </button>
                     <button type="submit" id="btn-submit-note"
-                        class="inline-flex items-center gap-1.5 px-5 py-2 bg-[#004A65] hover:bg-[#003347] text-white text-sm font-bold rounded-lg transition shadow-sm">
-                        <span>Simpan Note</span>
+                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#146C94] hover:bg-[#105A78] text-white text-sm font-medium rounded-lg transition shadow-sm">
+                        <span>Simpan catatan</span>
                     </button>
                 </div>
             </form>
@@ -609,9 +785,11 @@
 
     <!-- Modal Detail Note -->
     <div id="modal-detail-note" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" style="display:none; pointer-events:none;">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden transform transition-all duration-150" onclick="event.stopPropagation()">
+        <div data-modal-panel
+             class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden flex flex-col max-h-[calc(100vh-2rem)]"
+             onclick="event.stopPropagation()">
             <!-- Header Modal -->
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div class="shrink-0 px-5 py-3.5 sm:px-6 sm:py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-sky-100 text-sky-800">Catatan Pribadi</span>
                     <span id="detail-note-date" class="text-xs text-slate-500 font-medium"></span>
@@ -624,7 +802,7 @@
             </div>
 
             <!-- Body Modal -->
-            <div class="p-6 space-y-4">
+            <div class="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4">
                 <div>
                     <h3 id="detail-note-title" class="text-lg font-bold text-slate-800 leading-snug">Judul Note</h3>
                 </div>
@@ -638,7 +816,7 @@
             </div>
 
             <!-- Footer Modal -->
-            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+            <div class="shrink-0 px-5 py-3.5 sm:px-6 sm:py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
                 <button type="button" id="btn-delete-note" onclick="hapusCurrentNote()"
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -672,6 +850,46 @@
                 .replace(/'/g, '&#039;');
         }
 
+        // Label status berbahasa rapi + kelas kartu kalender sesuai status
+        const STATUS_LABELS = {
+            'baru': 'Baru',
+            'berjalan': 'Berjalan',
+            'menunggu di-acc': 'Menunggu persetujuan',
+            'sudah di-acc': 'Disetujui',
+            'terlambat': 'Terlambat',
+        };
+
+        function tugasStatusLabel(status) {
+            if (!status) return 'Event';
+            const raw = String(status);
+            return STATUS_LABELS[raw.toLowerCase()] || (raw.charAt(0).toUpperCase() + raw.slice(1));
+        }
+
+        function tugasStatusClass(status) {
+            switch (String(status || '').toLowerCase()) {
+                case 'berjalan': return 'tugas-status-berjalan';
+                case 'menunggu di-acc': return 'tugas-status-menunggu';
+                case 'sudah di-acc': return 'tugas-status-disetujui';
+                case 'terlambat': return 'tugas-status-terlambat';
+                default: return 'tugas-status-baru';
+            }
+        }
+
+        function formatTanggalIndonesia(iso) {
+            if (!iso) return '-';
+            const parts = String(iso).split('-');
+            if (parts.length !== 3) return iso;
+            const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+            if (isNaN(d.getTime())) return iso;
+            return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+        }
+
+        function updateTanggalLengkap() {
+            const raw = document.getElementById('note-input-tanggal')?.value || '';
+            const target = document.getElementById('note-input-tanggal-display');
+            if (target) target.textContent = raw ? formatTanggalIndonesia(raw) : '-';
+        }
+
         // --- MODAL NOTE PRIBADI ---
         function openModalNote(defaultDate = null) {
             const modal = document.getElementById('modal-tambah-note');
@@ -698,17 +916,18 @@
                 dateInput.value = `${yyyy}-${mm}-${dd}`;
             }
 
+            updateTanggalLengkap();
+
             modal.style.display = 'flex';
             modal.style.pointerEvents = '';
+            animateModalIn(modal);
             setTimeout(() => judulInput.focus(), 100);
         }
 
         function closeModalNote() {
             const modal = document.getElementById('modal-tambah-note');
-            if (modal) {
-                modal.style.display = 'none';
-                modal.style.pointerEvents = 'none';
-            }
+            if (!modal || modal.style.display === 'none') return;
+            animateModalOut(modal);
         }
 
         function submitTambahNote(e) {
@@ -761,7 +980,7 @@
             })
             .finally(() => {
                 btn.disabled = false;
-                btn.innerHTML = '<span>Simpan Note</span>';
+                btn.innerHTML = '<span>Simpan catatan</span>';
             });
         }
 
@@ -780,15 +999,16 @@
 
             modal.style.display = 'flex';
             modal.style.pointerEvents = '';
+            animateModalIn(modal);
         }
 
         function closeModalDetailNote() {
             const modal = document.getElementById('modal-detail-note');
-            if (modal) {
-                modal.style.display = 'none';
-                modal.style.pointerEvents = 'none';
+            if (!modal || modal.style.display === 'none') {
+                currentSelectedNoteId = null;
+                return;
             }
-            currentSelectedNoteId = null;
+            animateModalOut(modal, () => { currentSelectedNoteId = null; });
         }
 
         function hapusCurrentNote() {
@@ -842,58 +1062,99 @@
             }
         });
 
+        function animateModalIn(modal) {
+            const panel = modal.querySelector('[data-modal-panel]');
+
+            modal.classList.remove('modal-fade-out');
+            void modal.offsetWidth;
+            modal.classList.add('modal-fade-in');
+
+            panel.classList.remove('modal-pop-out');
+            void panel.offsetWidth;
+            panel.classList.add('modal-pop-in');
+        }
+
+        function animateModalOut(modal, onHidden) {
+            const panel = modal.querySelector('[data-modal-panel]');
+
+            modal.classList.remove('modal-fade-in');
+            void modal.offsetWidth;
+            modal.classList.add('modal-fade-out');
+
+            panel.classList.remove('modal-pop-in');
+            void panel.offsetWidth;
+            panel.classList.add('modal-pop-out');
+
+            setTimeout(() => {
+                if (!panel.classList.contains('modal-pop-out')) return;
+                modal.style.display = 'none';
+                modal.style.pointerEvents = 'none';
+                modal.classList.remove('modal-fade-out');
+                panel.classList.remove('modal-pop-out');
+                if (onHidden) onHidden();
+            }, 180);
+        }
+
         function openModalEvent(event) {
             const props = event.extendedProps || {};
             const modal = document.getElementById('modal-event');
             const titleEl = document.getElementById('modal-title');
             const badgeEl = document.getElementById('modal-badge');
-            const divisiBadgeEl = document.getElementById('modal-divisi-badge');
-            const pengirimNameEl = document.getElementById('modal-pengirim-name');
-            const pengirimSubEl = document.getElementById('modal-pengirim-sub');
-            const staffNameEl = document.getElementById('modal-staff-name');
-            const staffSubEl = document.getElementById('modal-staff-sub');
+            const divisiEl = document.getElementById('modal-divisi');
+            const pengirimEl = document.getElementById('modal-pengirim');
+            const staffEl = document.getElementById('modal-staff');
             const deadlineEl = document.getElementById('modal-deadline');
             const submissionStatusEl = document.getElementById('modal-submission-status');
             const deskripsiEl = document.getElementById('modal-deskripsi');
+            const detailBtn = document.getElementById('modal-detail-btn');
 
             titleEl.textContent = props.judul_murni || event.title;
-            badgeEl.className = 'px-2.5 py-1 rounded-md text-xs font-semibold ' + (props.badge_class || 'bg-slate-100 text-slate-700');
-            badgeEl.textContent = props.status_label || props.status || 'Event';
+            badgeEl.className = 'px-2.5 py-0.5 rounded-md text-xs font-semibold ' + (props.badge_class || 'bg-slate-100 text-slate-700');
+            badgeEl.textContent = props.status ? tugasStatusLabel(props.status) : (props.status_label || 'Event');
+            divisiEl.textContent = props.divisi_nama || '';
 
-            divisiBadgeEl.textContent = props.divisi_nama || 'Divisi';
+            const pengirimParts = [props.pengirim_nama, props.pengirim_jabatan].filter(Boolean);
+            pengirimEl.textContent = pengirimParts.length ? pengirimParts.join(', ') : '-';
 
-            pengirimNameEl.textContent = props.pengirim_nama || 'Kepala Divisi';
-            pengirimSubEl.textContent = props.pengirim_jabatan || 'Kepala Divisi';
-
-            staffNameEl.textContent = props.staff_nama || 'Staff';
-            staffSubEl.textContent = (props.staff_jabatan || 'Staff') + (props.staff_id ? ' • ' + props.staff_id : '');
+            const staffParts = [props.staff_nama, props.staff_jabatan, props.staff_id].filter(Boolean);
+            staffEl.textContent = staffParts.length ? staffParts.join(', ') : '-';
 
             deadlineEl.textContent = props.deadline_label || '-';
 
             if (props.has_submission) {
-                submissionStatusEl.className = 'inline-block px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-700';
-                submissionStatusEl.textContent = 'Sudah Dikumpulkan' + (props.submission_date ? ` (${props.submission_date})` : '');
+                submissionStatusEl.className = 'inline-block px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-700';
+                submissionStatusEl.textContent = 'Sudah dikumpulkan' + (props.submission_date ? ` (${props.submission_date})` : '');
             } else {
-                submissionStatusEl.className = 'inline-block px-2.5 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200';
-                submissionStatusEl.textContent = 'Belum Mengumpulkan';
+                submissionStatusEl.className = 'inline-block px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-[#4B5563]';
+                submissionStatusEl.textContent = 'Belum dikumpulkan';
             }
 
             deskripsiEl.textContent = props.deskripsi || 'Tidak ada deskripsi.';
 
+            if (props.detail_url) {
+                detailBtn.href = props.detail_url;
+                detailBtn.style.display = 'inline-flex';
+            } else {
+                detailBtn.style.display = 'none';
+            }
+
             modal.style.display = 'flex';
             modal.style.pointerEvents = '';
+            animateModalIn(modal);
         }
 
         function closeModalEvent() {
             const modal = document.getElementById('modal-event');
-            if (modal) {
-                modal.style.display = 'none';
-                modal.style.pointerEvents = 'none';
-            }
+            if (!modal || modal.style.display === 'none') return;
+            animateModalOut(modal);
         }
 
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeModalEvent();
+            if (e.key === 'Escape') {
+                closeModalEvent();
+                closeModalNote();
+                closeModalDetailNote();
+            }
         });
 
         document.getElementById('modal-event')?.addEventListener('click', function(e) {
@@ -909,6 +1170,24 @@
             }
         }
 
+        // Scroll minggu berjalan ke dalam area scroll kalender (dipakai tombol "Hari Ini")
+        let pendingTodayScroll = false;
+
+        function scrollToTodayWeek() {
+            const scroller = document.querySelector('#calendar .fc-scrollgrid-section-body .fc-scroller');
+            const todayCell = document.querySelector('#calendar .fc-day-today');
+            const weekRow = todayCell ? todayCell.closest('tr') : null;
+            if (!scroller || !weekRow) return;
+
+            const scrollerRect = scroller.getBoundingClientRect();
+            const rowRect = weekRow.getBoundingClientRect();
+            const offset = 8; // scroll-margin-top
+
+            if (rowRect.top < scrollerRect.top + offset || rowRect.bottom > scrollerRect.bottom) {
+                scroller.scrollTop += (rowRect.top - scrollerRect.top) - offset;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const calendarEl = document.getElementById('calendar');
             const token = localStorage.getItem('staff_token') || sessionStorage.getItem('staff_token');
@@ -917,7 +1196,8 @@
                 initialView: 'dayGridMonth',
                 locale: 'id',
                 firstDay: 1, // Senin
-                height: 'auto',
+                height: '100%',
+                expandRows: true,
                 dayMaxEvents: 3, // Maksimal 3 event tampil per hari
                 moreLinkText: function(n) {
                     return '+' + n + ' lainnya';
@@ -941,6 +1221,14 @@
                     left: 'prev,next today',
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,listMonth'
+                },
+                datesSet: function() {
+                    if (pendingTodayScroll) {
+                        pendingTodayScroll = false;
+                        requestAnimationFrame(function() {
+                            requestAnimationFrame(scrollToTodayWeek);
+                        });
+                    }
                 },
                 buttonText: {
                     today: 'Hari Ini',
@@ -1011,8 +1299,22 @@
                     const staffName = props.staff_nama || 'Staff';
                     const staffInitial = props.staff_initial || staffName.charAt(0).toUpperCase();
                     const title = props.judul_murni || arg.event.title;
-                    const time = arg.timeText;
                     const dotColor = props.dot_color || '#004A65';
+
+                    // Alur penugasan: pemberi tugas -> penerima tugas
+                    const flowText = `${pengirimNama} → ${staffName}`;
+
+                    // Tampilkan jam mulai (HH:MM) kecuali 17:00
+                    const startAt = arg.event.start;
+                    let time = '';
+                    if (startAt && !arg.event.allDay) {
+                        const pad = (n) => String(n).padStart(2, '0');
+                        const hh = pad(startAt.getHours());
+                        const mm = pad(startAt.getMinutes());
+                        if (!(hh === '17' && mm === '00')) {
+                            time = `${hh}:${mm}`;
+                        }
+                    }
 
                     if (isList) {
                         // List view: badge divisi + alur penugasan (Dari -> Kepada) + judul
@@ -1022,7 +1324,7 @@
                                   style="background-color: ${escapeHtml(dotColor)};">
                                 ${escapeHtml(staffInitial)}
                             </span>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold text-slate-700 shrink-0">
                                 ${escapeHtml(divisiNama)}
                             </span>
                             <span class="font-bold text-[11.5px] text-slate-800 shrink-0">${escapeHtml(pengirimNama)}</span>
@@ -1032,52 +1334,48 @@
                             <span class="text-[12px] text-slate-700 font-medium truncate min-w-0" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
                         `;
                     } else if (isTimeGrid) {
-                        // Week view (timeGrid): layout aman dan responsif saat kolom menyempit
+                        // Minggu view: avatar + divisi + jam, alur penugasan, lalu judul
                         el.className = 'w-full h-full px-1.5 py-1 leading-snug flex flex-col justify-start gap-0.5 overflow-hidden min-w-0';
                         el.innerHTML = `
                             <div class="flex items-center justify-between gap-1 min-w-0 overflow-hidden">
-                                <span class="inline-flex items-center gap-1 font-bold text-[10px] min-w-0 overflow-hidden text-slate-800">
+                                <span class="inline-flex items-center gap-1 font-bold text-[10px] min-w-0 overflow-hidden text-[#172B36]">
                                     <span class="w-3.5 h-3.5 rounded-full text-white flex items-center justify-center text-[8px] font-extrabold shrink-0"
-                                          style="background-color: ${escapeHtml(dotColor)};">
+                                          style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});">
                                         ${escapeHtml(staffInitial)}
                                     </span>
-                                    <span class="text-[9px] font-bold text-slate-700 bg-white/70 px-1 rounded truncate min-w-0" title="${escapeHtml(divisiNama)}">
+                                    <span class="text-[9px] font-bold text-[#4B5563] px-1 rounded truncate min-w-0" title="${escapeHtml(divisiNama)}">
                                         ${escapeHtml(divisiNama)}
                                     </span>
                                 </span>
-                                ${time ? `<span class="text-[9px] font-bold text-slate-600 opacity-90 shrink-0 ml-auto whitespace-nowrap">${time}</span>` : ''}
+                                ${time ? `<span class="text-[9px] font-bold text-[#4B5563] shrink-0 ml-auto whitespace-nowrap">${escapeHtml(time)}</span>` : ''}
                             </div>
-                            <div class="text-[10px] text-slate-700 font-semibold truncate min-w-0 leading-tight" title="${escapeHtml(pengirimNama)} → ${escapeHtml(staffName)}">
-                                <span class="text-slate-600 font-bold">${escapeHtml(pengirimNama)}</span>
-                                <span class="text-blue-600 font-bold mx-0.5">→</span>
-                                <span class="font-bold text-slate-900">${escapeHtml(staffName)}</span>
+                            <div class="text-[10px] text-[#4B5563] font-semibold truncate min-w-0 leading-tight">
+                                ${escapeHtml(flowText)}
                             </div>
-                            <div class="font-medium text-[11px] truncate min-w-0 leading-tight text-slate-900" title="${escapeHtml(title)}">
+                            <div class="font-medium text-[11px] truncate min-w-0 leading-tight text-[#172B36]">
                                 ${escapeHtml(title)}
                             </div>
                         `;
                     } else {
-                        // Month view: compact block dengan tag divisi, alur dari -> ke, dan judul
+                        // Bulan view: avatar + divisi + jam, alur penugasan, lalu judul
                         el.className = 'w-full px-1.5 py-1 leading-snug flex flex-col gap-0.5 overflow-hidden min-w-0';
                         el.innerHTML = `
                             <div class="flex items-center justify-between gap-1 overflow-hidden min-w-0">
-                                <span class="inline-flex items-center gap-1 font-bold text-[10px] truncate max-w-[80%] text-slate-800 min-w-0">
+                                <span class="inline-flex items-center gap-1 font-bold text-[10px] truncate max-w-[80%] text-[#172B36] min-w-0">
                                     <span class="w-3.5 h-3.5 rounded-full text-white flex items-center justify-center text-[8px] font-extrabold shrink-0"
-                                          style="background-color: ${escapeHtml(dotColor)};">
+                                          style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});">
                                         ${escapeHtml(staffInitial)}
                                     </span>
-                                    <span class="text-[9px] font-bold text-slate-600 bg-white/60 px-1 rounded truncate min-w-0" title="${escapeHtml(divisiNama)}">
+                                    <span class="text-[9px] font-bold text-[#4B5563] px-1 rounded truncate min-w-0" title="${escapeHtml(divisiNama)}">
                                         ${escapeHtml(divisiNama)}
                                     </span>
                                 </span>
-                                ${time ? `<span class="text-[9px] font-bold opacity-75 shrink-0 ml-auto">${time}</span>` : ''}
+                                ${time ? `<span class="text-[9px] font-bold text-[#4B5563] shrink-0 ml-auto">${escapeHtml(time)}</span>` : ''}
                             </div>
-                            <div class="text-[10px] text-slate-700 font-semibold truncate leading-tight min-w-0" title="${escapeHtml(pengirimNama)} → ${escapeHtml(staffName)}">
-                                <span class="text-slate-600 font-bold">${escapeHtml(pengirimNama)}</span>
-                                <span class="text-blue-600 mx-0.5">→</span>
-                                <span class="font-bold text-slate-800">${escapeHtml(staffName)}</span>
+                            <div class="text-[10px] text-[#4B5563] font-semibold truncate leading-tight min-w-0">
+                                ${escapeHtml(flowText)}
                             </div>
-                            <div class="font-medium text-[11px] truncate leading-tight text-slate-900 min-w-0" title="${escapeHtml(title)}">
+                            <div class="font-medium text-[11px] truncate leading-tight text-[#172B36] min-w-0">
                                 ${escapeHtml(title)}
                             </div>
                         `;
@@ -1094,19 +1392,44 @@
                     }
                 },
                 eventDidMount: function(info) {
-                    if (info.event.extendedProps?.type === 'note') {
+                    const props = info.event.extendedProps || {};
+                    const isList = info.view.type.startsWith('list');
+
+                    if (props.type === 'note') {
                         info.el.setAttribute('title', `Catatan: ${info.event.title}`);
-                    } else {
-                        const props = info.event.extendedProps || {};
-                        const div = props.divisi_nama || '';
-                        const from = props.pengirim_nama || '';
-                        const to = props.staff_nama || '';
-                        info.el.setAttribute('title', `[${div}] Dari ${from} ke ${to}: ${props.judul_murni || info.event.title}`);
+                        return;
+                    }
+
+                    // Tooltip: judul lengkap + divisi
+                    const judulTooltip = props.judul_murni || info.event.title;
+                    const divisiTooltip = props.divisi_nama || '';
+                    info.el.setAttribute('title', divisiTooltip ? `${judulTooltip} — ${divisiTooltip}` : judulTooltip);
+
+                    // Kartu status di grid (bulan & minggu); list view tetap polos
+                    if (!isList) {
+                        info.el.style.backgroundColor = '';
+                        info.el.style.borderColor = '';
+                        info.el.style.color = '';
+                        info.el.classList.add('tugas-card', tugasStatusClass(props.status));
                     }
                 }
             });
 
             calendarInstance.render();
+
+            // Tombol "Hari Ini": scroll minggu berjalan ke dalam area scroll kalender
+            calendarEl.addEventListener('click', function(event) {
+                if (!event.target.closest('.fc-today-button')) return;
+
+                pendingTodayScroll = true;
+                scrollToTodayWeek();
+                setTimeout(scrollToTodayWeek, 50);
+                setTimeout(scrollToTodayWeek, 150);
+                setTimeout(function() {
+                    pendingTodayScroll = false;
+                    scrollToTodayWeek();
+                }, 350);
+            });
 
             // ResizeObserver & listener agar saat sidebar dibuka/ditutup (w-64 vs w-20),
             // ukuran 7 kolom kalender langsung otomatis menyesuaikan secara proporsional
