@@ -25,7 +25,7 @@
         }
         /* Custom styling for FullCalendar to match Tailwind dashboard */
         :root {
-            --fc-border-color: #EEF2F5;
+            --fc-border-color: #E2E8EC;
         }
         .fc {
             font-family: inherit;
@@ -34,12 +34,12 @@
         /* Toolbar navigasi di luar tabel */
         .fc .fc-toolbar {
             border: none !important;
-            margin-bottom: 1.25rem !important;
+            margin-bottom: 0.5rem !important;
         }
         /* Tabel FullCalendar kotak tegas 90 derajat & selalu 100% fit container (7 kolom sama rata) */
         .fc-scrollgrid,
         .fc-theme-standard .fc-scrollgrid {
-            border: 1px solid #EEF2F5 !important;
+            border: 1px solid #E2E8EC !important;
             border-radius: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
@@ -81,12 +81,12 @@
             padding: 0 !important;
             margin: 0 !important;
         }
-        /* Semua sel dan garis menggunakan #EEF2F5 dan selalu rata ATAS */
+        /* Semua sel dan garis menggunakan #E2E8EC dan selalu rata ATAS */
         .fc-theme-standard th,
         .fc-theme-standard td,
         .fc-scrollgrid-sync-table td,
         .fc-daygrid-day {
-            border-color: #EEF2F5 !important;
+            border-color: #E2E8EC !important;
             vertical-align: top !important;
         }
         .fc-daygrid-day-frame {
@@ -94,20 +94,20 @@
             display: flex !important;
             flex-direction: column !important;
             justify-content: flex-start !important;
-            min-height: 90px !important;
+            min-height: 44px !important;
         }
         .fc-daygrid-day-top {
             display: flex !important;
             flex-direction: row-reverse !important;
             justify-content: flex-start !important;
             align-items: center !important;
-            padding: 4px 6px 2px !important;
+            padding: 1px 4px 0 !important;
         }
         .fc-daygrid-day-number {
             color: #334155 !important;
             font-weight: 600 !important;
             font-size: 0.8125rem !important;
-            padding: 2px 4px !important;
+            padding: 1px 4px !important;
             text-decoration: none !important;
             line-height: 1 !important;
         }
@@ -116,33 +116,86 @@
             opacity: 0.4;
         }
         .fc-daygrid-day-events {
-            margin-top: 2px !important;
-            padding: 0 2px !important;
+            margin-top: 0 !important;
+            padding: 0 2px 2px !important;
         }
         /* Header hari menyambung sempurna ke garis atas dan bawah */
         .fc-col-header-cell {
             background-color: #EAF4F8 !important;
-            border-color: #EEF2F5 !important;
+            border-color: #E2E8EC !important;
             border-top: none !important;
             padding: 0 !important;
             text-transform: capitalize;
         }
         .fc-scrollgrid-section-header th,
         .fc-scrollgrid-section-header td {
-            border-bottom: 1px solid #EEF2F5 !important;
+            border-bottom: 1px solid #E2E8EC !important;
         }
         .fc-col-header-cell-cushion {
-            display: inline-block !important;
-            padding: 8px 4px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            height: 32px !important;
+            padding: 0 4px !important;
             color: #475569 !important;
             font-weight: 600 !important;
             font-size: 0.8125rem !important;
             line-height: 1.25rem !important;
             text-decoration: none !important;
         }
+        /* ===== WEEK VIEW HEADER ===== */
+        #calendar .fc-timegrid .fc-col-header-cell {
+            height: 56px !important;
+            background-color: #EAF4F8 !important;
+        }
+        #calendar .fc-timegrid .fc-col-header-cell-cushion {
+            height: 56px !important;
+            padding: 0 !important;
+        }
+        .cal-week-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            line-height: 1;
+        }
+        .cal-week-header-weekday {
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.2;
+            color: #4B5563;
+        }
+        .cal-week-header-weekday.is-today {
+            color: #146C94;
+        }
+        .cal-week-header-day {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 9999px;
+            line-height: 1;
+        }
+        .cal-week-header-day.is-today {
+            background-color: #146C94;
+        }
+        .cal-week-header-daynum {
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1;
+            color: #172B36;
+        }
+        .cal-week-header-day.is-today .cal-week-header-daynum {
+            color: #FFFFFF;
+        }
+        #calendar .fc-timegrid .fc-scroller {
+            scrollbar-gutter: stable;
+        }
         .fc .fc-toolbar-title {
             font-size: 1.25rem;
-            font-weight: 700;
+            font-weight: 600;
             color: #1E293B;
         }
         /* Tombol calendar: putih sekunder dengan border tipis */
@@ -244,8 +297,8 @@
         .fc-daygrid-block-event {
             display: block !important;
             border-radius: 6px !important;
-            padding: 2px 4px !important;
-            margin: 2px 2px !important;
+            padding: 0 3px !important;
+            margin: 1px 2px !important;
             border-width: 1px !important;
             border-style: solid !important;
             cursor: pointer;
@@ -298,14 +351,15 @@
             display: none !important;
         }
 
-        /* Popover dan link "+X lainnya" */
+        /* Popover "+X lainnya": header tetap, hanya daftar yang scroll */
         .fc-more-link {
-            font-size: 12px !important;
+            font-size: 11px !important;
+            line-height: 1.2 !important;
             font-weight: 500 !important;
             color: #146C94 !important;
             background: none !important;
             padding: 0 !important;
-            margin: 2px 0 1px 4px !important;
+            margin: 0 0 0 4px !important;
             text-decoration: none !important;
             display: inline-block !important;
         }
@@ -313,25 +367,463 @@
             color: #105A78 !important;
             text-decoration: underline !important;
         }
-        .fc-popover {
-            border: 1px solid #CBD5E1 !important;
+        .fc .fc-popover {
+            display: flex;
+            flex-direction: column;
+            width: 360px !important;
+            max-width: calc(100vw - 16px) !important;
+            max-height: calc(100vh - 16px) !important;
+            background-color: #FFFFFF !important;
+            border: 1px solid #E2E8EC !important;
             border-radius: 12px !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-            overflow: hidden !important;
-            z-index: 100 !important;
+            box-shadow: 0 12px 28px -8px rgba(15, 23, 42, 0.18), 0 4px 10px -6px rgba(15, 23, 42, 0.12) !important;
+            overflow: visible !important;
+            z-index: 10000 !important;
         }
-        .fc-popover-header {
-            background-color: #F8FAFC !important;
-            padding: 8px 12px !important;
-            border-bottom: 1px solid #E2E8F0 !important;
-            font-weight: 700 !important;
-            color: #1E293B !important;
-            font-size: 0.8125rem !important;
+        .fc .fc-popover-header {
+            flex: 0 0 auto;
+            position: relative;
+            z-index: 2;
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) auto;
+            grid-template-rows: auto auto;
+            column-gap: 8px;
+            row-gap: 2px;
+            align-items: center;
+            background-color: #FFFFFF !important;
+            border-bottom: 1px solid #E2E8EC !important;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            padding: 12px 16px !important;
+            color: #172B36 !important;
         }
-        .fc-popover-body {
-            padding: 8px !important;
-            max-height: 280px !important;
+        .fc .fc-popover-title {
+            grid-column: 1;
+            grid-row: 1;
+            margin: 0 !important;
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            color: #172B36 !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+        .fc .fc-popover-count {
+            grid-column: 1;
+            grid-row: 2;
+            font-size: 12px !important;
+            font-weight: 400 !important;
+            color: #4B5563 !important;
+            white-space: nowrap;
+        }
+        .fc .fc-popover-close {
+            grid-column: 2;
+            grid-row: 1 / span 2;
+            align-self: start;
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            color: #64748B;
+            font-size: 18px !important;
+            line-height: 1;
+            opacity: 1 !important;
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+        .fc .fc-popover-close:hover {
+            background-color: #F1F5F9;
+            color: #172B36;
+        }
+        .fc .fc-popover-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            max-height: 340px !important;
             overflow-y: auto !important;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 10px !important;
+            background-color: #FFFFFF;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        .fc .fc-popover-body .fc-daygrid-event-harness,
+        .fc .fc-popover-body .fc-timegrid-event-harness {
+            width: 100% !important;
+            margin: 0 !important;
+            flex: 0 0 auto;
+        }
+        .fc .fc-popover-body .fc-daygrid-event,
+        .fc .fc-popover-body .fc-timegrid-event {
+            width: 100% !important;
+            margin: 0 !important;
+            min-height: 44px;
+            box-sizing: border-box;
+            padding: 6px 10px !important;
+            border-radius: 8px !important;
+            cursor: pointer;
+            display: flex !important;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .popover-event-row {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+        .popover-event-main {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+        .popover-event-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 9999px;
+            flex: 0 0 auto;
+        }
+        .popover-event-title {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.25;
+            color: #172B36;
+        }
+        .popover-event-time {
+            flex: 0 0 auto;
+            margin-left: auto;
+            font-size: 12px;
+            line-height: 1.25;
+            color: #4B5563;
+        }
+        .popover-event-flow {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 12px;
+            line-height: 1.25;
+            color: #4B5563;
+        }
+        .fc .fc-popover-body .fc-event-main {
+            padding: 0 !important;
+        }
+        .fc .fc-popover-body .fc-daygrid-event:not(.tugas-card):hover,
+        .fc .fc-popover-body .fc-timegrid-event:not(.tugas-card):hover {
+            filter: brightness(0.96);
+        }
+        /* Panah popover menunjuk ke tanggal */
+        .fc .fc-popover::before,
+        .fc .fc-popover::after {
+            content: "";
+            position: absolute;
+            border-style: solid;
+            border-width: 7px;
+            border-color: transparent;
+            z-index: 3;
+            pointer-events: none;
+        }
+        /* Animasi masuk/keluar popover "+N lainnya" */
+        .fc .fc-popover.popover-side-right {
+            animation: fc-popover-in-right 0.16s ease-out both;
+        }
+        .fc .fc-popover.popover-side-left {
+            animation: fc-popover-in-left 0.16s ease-out both;
+        }
+        .fc .fc-popover.popover-closing {
+            z-index: 40 !important;
+            pointer-events: none !important;
+        }
+        .fc .fc-popover.popover-closing.popover-side-right {
+            animation: fc-popover-out-right 0.13s ease-in both;
+        }
+        .fc .fc-popover.popover-closing.popover-side-left {
+            animation: fc-popover-out-left 0.13s ease-in both;
+        }
+        @keyframes fc-popover-in-right {
+            from { opacity: 0; transform: translateX(-6px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fc-popover-in-left {
+            from { opacity: 0; transform: translateX(6px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fc-popover-out-right {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-6px); }
+        }
+        @keyframes fc-popover-out-left {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(6px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .fc .fc-popover.popover-side-right,
+            .fc .fc-popover.popover-side-left,
+            .fc .fc-popover.popover-closing.popover-side-right,
+            .fc .fc-popover.popover-closing.popover-side-left {
+                animation: none;
+            }
+        }
+        .fc .fc-popover.popover-side-right::before {
+            left: -7px;
+            top: calc(var(--popover-arrow-top, 20px) - 7px);
+            border-right-color: #E2E8EC;
+        }
+        .fc .fc-popover.popover-side-right::after {
+            left: -6px;
+            top: calc(var(--popover-arrow-top, 20px) - 7px);
+            border-right-color: #FFFFFF;
+        }
+        .fc .fc-popover.popover-side-left::before {
+            right: -7px;
+            top: calc(var(--popover-arrow-top, 20px) - 7px);
+            border-left-color: #E2E8EC;
+        }
+        .fc .fc-popover.popover-side-left::after {
+            right: -6px;
+            top: calc(var(--popover-arrow-top, 20px) - 7px);
+            border-left-color: #FFFFFF;
+        }
+        /* Modal detail event */
+        #modal-event [data-modal-panel] {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            background: #FFFFFF;
+            border: 1px solid #E2E8EC;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .event-modal-header {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 20px 24px;
+            border-bottom: 1px solid #E2E8EC;
+        }
+        .event-modal-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 1.35;
+            color: #172B36;
+            overflow-wrap: anywhere;
+        }
+        .event-modal-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .event-modal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 8px;
+            border: 1px solid #E2E8EC;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            line-height: 1.5;
+            white-space: nowrap;
+        }
+        .event-modal-badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 9999px;
+            background: #94A3B8;
+            flex: 0 0 auto;
+        }
+        .event-modal-divisi {
+            font-size: 13px;
+            color: #4B5563;
+        }
+        .event-modal-close {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            color: #94A3B8;
+            transition: all 0.15s ease-out;
+        }
+        .event-modal-close:hover {
+            background: #F1F5F9;
+            color: #475569;
+        }
+        .event-modal-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 20px 24px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .event-modal-people {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            gap: 12px;
+        }
+        .event-modal-person {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            min-width: 0;
+        }
+        .event-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 9999px;
+            background: #AFD3E2;
+            color: #0B4A66;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            flex: 0 0 auto;
+        }
+        .event-person-label {
+            font-size: 12px;
+            color: #4B5563;
+            margin-bottom: 2px;
+        }
+        .event-person-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #172B36;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .event-person-sub {
+            font-size: 12px;
+            color: #4B5563;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .event-people-arrow {
+            color: #94A3B8;
+            font-size: 16px;
+            line-height: 1;
+        }
+        .event-modal-section {
+            border-top: 1px solid #EEF2F5;
+            padding-top: 16px;
+        }
+        .event-modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .event-field-label {
+            font-size: 12px;
+            color: #4B5563;
+            margin-bottom: 6px;
+        }
+        .event-field-date {
+            font-size: 14px;
+            color: #172B36;
+            line-height: 1.45;
+        }
+        .event-field-time {
+            font-size: 14px;
+            color: #172B36;
+            line-height: 1.45;
+            margin-top: 2px;
+        }
+        .event-overdue {
+            color: #B91C1C;
+        }
+        .event-submission {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: #F1F5F9;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+        .event-submission.is-submitted {
+            background: #D9F5E5;
+            color: #047857;
+        }
+        .event-description {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #172B36;
+            white-space: pre-line;
+            overflow-wrap: anywhere;
+        }
+        .event-modal-footer {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 24px;
+            border-top: 1px solid #E2E8EC;
+        }
+        .event-modal-btn {
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1;
+            transition: all 0.15s ease-out;
+        }
+        .event-modal-btn-close {
+            background: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            color: #475569;
+        }
+        .event-modal-btn-close:hover {
+            background: #F8FAFC;
+        }
+        .event-modal-btn-detail {
+            background: #146C94;
+            border: 1px solid #146C94;
+            color: #FFFFFF;
+        }
+        .event-modal-btn-detail:hover {
+            background: #105A78;
+            border-color: #105A78;
+        }
+        /* Ring 2px pada tanggal yang dipilih */
+        .fc-daygrid-day.fc-day-popover-selected .fc-daygrid-day-number {
+            box-shadow: 0 0 0 2px #146C94 !important;
+            border-radius: 9999px;
         }
 
         /* ========== LIST VIEW STYLING ========== */
@@ -387,13 +879,11 @@
             width: 100% !important;
         }
 
-        /* ===== Layout halaman: hanya baris minggu yang scroll ===== */
-        /* Halaman = tinggi viewport - topbar (h-16 = 4rem) */
+        /* ===== Layout halaman: hanya area grid kalender yang menggulir ===== */
         .calendar-page {
-            height: calc(100vh - 4rem);
-            height: calc(100dvh - 4rem);
             min-height: 0;
             overflow: hidden;
+            scrollbar-gutter: stable;
         }
         /* Breadcrumb statis: 16px atas, 8px bawah (scoped ke halaman kalender) */
         .calendar-breadcrumb {
@@ -404,53 +894,181 @@
             padding-top: 16px !important;
             padding-bottom: 8px !important;
         }
-        /* Kartu kalender mengisi sisa tinggi */
-        .calendar-card {
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            overflow: hidden;
-        }
-        #calendar {
-            display: flex;
-            flex-direction: column;
-            flex: 1 1 auto;
-            min-height: 0;
-            overflow: hidden;
-        }
-        /* Toolbar (judul bulan, navigasi, view switcher) di luar area scroll */
-        #calendar .fc-toolbar {
-            flex: 0 0 auto;
+        /* Toolbar kustom kalender: navigasi, filter, dan view switcher */
+        .cal-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 30px;
+            padding: 0 0.75rem;
+            border: 1px solid #CBD5E1;
+            border-radius: 0.5rem;
             background-color: #FFFFFF;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1;
+            text-transform: capitalize;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.1s ease-out;
         }
-        /* Area view mengisi sisa tinggi kartu */
-        #calendar .fc-view-harness {
-            flex: 1 1 auto;
-            min-height: 0;
-            overflow: hidden;
+        .cal-btn:hover {
+            background-color: #F8FAFC;
+            border-color: #94A3B8;
+            color: #1E293B;
         }
-        /* Header hari (Sen, Sel, ...) tetap di luar scroller & latar opak */
+        .cal-btn.cal-nav {
+            color: #146C94;
+            padding-left: 0.6rem;
+            padding-right: 0.6rem;
+        }
+        .cal-btn.cal-nav:hover {
+            color: #0F4F6D;
+        }
+        .cal-btn.is-active {
+            background-color: #146C94;
+            border-color: #146C94;
+            color: #FFFFFF;
+        }
+        .cal-btn.is-today {
+            background-color: #798592;
+            border-color: #798592;
+            color: #FFFFFF;
+        }
+        .cal-btn-group {
+            display: inline-flex;
+            align-items: center;
+        }
+        .cal-btn-group .cal-btn {
+            border-radius: 0;
+        }
+        .cal-btn-group .cal-btn + .cal-btn {
+            margin-left: -1px;
+        }
+        .cal-btn-group .cal-btn:first-child {
+            border-top-left-radius: 0.5rem;
+            border-bottom-left-radius: 0.5rem;
+        }
+        .cal-btn-group .cal-btn:last-child {
+            border-top-right-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+        }
+        .cal-btn-group .cal-btn.is-active {
+            position: relative;
+            z-index: 1;
+        }
+        .cal-title-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .cal-toolbar-right {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            width: auto;
+            margin-left: auto;
+        }
+        .cal-select {
+            height: 30px;
+            max-width: 160px;
+            font-size: 13px;
+            border-radius: 0.5rem;
+        }
+        .cal-select-wide {
+            max-width: 210px;
+        }
+        /* Header hari (Sen, Sel, ...) tetap terlihat dan opaque saat grid digulir */
         #calendar .fc-scrollgrid-section-header,
         #calendar .fc-scrollgrid-section-header > th {
             background-color: #EAF4F8;
         }
-        #calendar .fc-scrollgrid-section-header .fc-scroller {
-            overflow: hidden !important;
-            scrollbar-gutter: stable;
-            background-color: #EAF4F8;
+        #calendar .fc-scrollgrid-section-header > th {
+            position: sticky;
+            top: 0;
+            z-index: 8;
         }
-        /* Hanya baris minggu yang bisa di-scroll */
+        /* Hanya area grid kalender yang menggulir */
         #calendar .fc-scrollgrid-section-body .fc-scroller {
-            min-height: 0;
-            overflow-x: hidden !important;
-            overflow-y: auto !important;
-            scrollbar-gutter: stable;
+            overflow: auto !important;
             padding-top: 0 !important;
         }
         /* Target scroll minggu "Hari ini" */
         #calendar .fc-daygrid-body tr,
         #calendar .fc-day-today {
             scroll-margin-top: 8px;
+        }
+
+        /* ===== WEEK VIEW ===== */
+        /* Baris "Sehari penuh" */
+        .fc-timegrid .fc-timegrid-axis {
+            width: 84px !important;
+            min-width: 84px !important;
+            max-width: 84px !important;
+        }
+        .fc-timegrid .fc-timegrid-axis-cushion {
+            max-width: none !important;
+            white-space: nowrap;
+            font-size: 12px !important;
+            color: #4B5563 !important;
+        }
+        .fc-timegrid .fc-daygrid-day-frame {
+            min-height: 32px !important;
+        }
+        /* Garis jam dan label */
+        .fc-timegrid .fc-scrollgrid,
+        .fc-timegrid .fc-timegrid-col,
+        .fc-timegrid .fc-timegrid-axis {
+            border-color: #E2E8EC !important;
+        }
+        .fc-timegrid .fc-timegrid-slot {
+            border-top: 1px solid #CBD5E1 !important;
+        }
+        .fc-timegrid .fc-timegrid-slot-minor {
+            border-top: 1px solid #E2E8EC !important;
+            border-top-style: solid !important;
+        }
+        .fc-timegrid .fc-timegrid-divider td {
+            border-color: #E2E8EC !important;
+        }
+        .fc-timegrid .fc-timegrid-slot-label-cushion {
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            color: #4B5563 !important;
+            font-variant-numeric: tabular-nums;
+        }
+        /* Kartu event ringkas di time grid */
+        .fc-timegrid-event {
+            min-height: 44px !important;
+            border-radius: 6px !important;
+            cursor: pointer;
+        }
+        .fc-timegrid-event .fc-event-main {
+            padding: 0 !important;
+        }
+        .fc-timegrid-more-link {
+            background-color: #F1F5F9 !important;
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 6px !important;
+            color: #146C94 !important;
+            font-size: 11px !important;
+            cursor: pointer;
+        }
+        .fc-timegrid-more-link-inner {
+            font-weight: 600 !important;
+        }
+        /* Garis waktu sekarang */
+        .fc-timegrid-now-indicator-line {
+            border-color: #EF4444 !important;
+            border-top-width: 1px !important;
+        }
+        .fc-timegrid-now-indicator-arrow {
+            border-color: #EF4444 !important;
+            color: #EF4444 !important;
         }
     </style>
 </head>
@@ -463,97 +1081,114 @@
 
         @include('component.topbar')
 
-        <div class="calendar-page flex-1 min-h-0 flex flex-col overflow-hidden">
+        <div class="calendar-page flex-1 min-h-0 flex flex-col overflow-y-auto">
 
             <div class="calendar-breadcrumb flex-none">
                 @include('component.breadcrumbs', [
                     'parentText' => 'Dashboard',
                     'parentUrl' => url('/kadiv/dashboard'),
-                    'currentPage' => 'Kalender Divisi',
+                    'currentPage' => 'Kalender Tugas Divisi',
                 ])
             </div>
 
-            <main class="flex-1 min-h-0 flex flex-col overflow-hidden p-8 pt-0 pb-8">
+            <main class="flex-1 min-h-0 flex flex-col p-8 pt-0 pb-8">
 
             <!-- Page Title -->
-            <div class="flex-none flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5">
-                        <span class="p-2 rounded-lg bg-blue-100 text-[#004A65]">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                        </span>
-                        <span>Kalender Tugas Divisi</span>
-                    </h1>
-                </div>
-
-                <!-- Legend Status -->
-                <div class="flex flex-wrap items-center gap-2 bg-white px-4 py-2.5 rounded-xl border border-slate-200 shadow-sm text-xs">
-                    <span class="font-bold text-slate-600 mr-1">Status:</span>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#93C5FD] bg-[#DCEEFE] text-[#172B36] font-medium">
-                        <span class="w-2 h-2 rounded-full bg-[#2563EB]"></span> Baru
+            <div class="flex-none mb-4">
+                <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5">
+                    <span class="p-2 rounded-lg bg-blue-100 text-[#004A65]">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#86D9AE] bg-[#D9F5E5] text-[#172B36] font-medium">
-                        <span class="w-2 h-2 rounded-full bg-[#059669]"></span> Berjalan
-                    </span>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#F5C85C] bg-[#FEF0C3] text-[#172B36] font-medium">
-                        <span class="w-2 h-2 rounded-full bg-[#D97706]"></span> Menunggu persetujuan
-                    </span>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#7DD3C8] bg-[#D5F3F0] text-[#172B36] font-medium">
-                        <span class="w-2 h-2 rounded-full bg-[#0D9488]"></span> Disetujui
-                    </span>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#F5A3A3] bg-[#FDE0E0] text-[#172B36] font-medium">
-                        <span class="w-2 h-2 rounded-full bg-[#DC2626]"></span> Terlambat
-                    </span>
-                </div>
-            </div>
-
-            <!-- Toolbar Filter Khusus Kadiv: Penerima + Status -->
-            <div class="flex-none bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-5 flex flex-wrap items-center gap-3">
-                <!-- Filter Penerima (Staff) -->
-                <div class="flex items-center gap-2">
-                    <label for="kadivStaffFilter" class="text-[13px] font-medium text-[#4B5563]">
-                        <span>Penerima:</span>
-                    </label>
-                    <select id="kadivStaffFilter" class="h-10 text-[13px] bg-white border border-slate-300 rounded-lg px-3 font-medium text-slate-700 outline-none focus:border-[#146C94]">
-                        <option value="">Semua Karyawan (Divisi)</option>
-                        @isset($staffList)
-                            @foreach($staffList as $staff)
-                                <option value="{{ $staff->id_karyawan }}">{{ $staff->nama }} ({{ $staff->jabatan ?? 'Staff' }})</option>
-                            @endforeach
-                        @endisset
-                    </select>
-                </div>
-
-                <!-- Filter Status -->
-                <div class="flex items-center gap-2">
-                    <label for="kadivStatusFilter" class="text-[13px] font-medium text-[#4B5563]"><span>Status:</span></label>
-                    <select id="kadivStatusFilter" class="h-10 text-[13px] bg-white border border-slate-300 rounded-lg px-3 font-medium text-slate-700 outline-none focus:border-[#146C94]">
-                        <option value="">Semua Status</option>
-                        <option value="baru">Baru</option>
-                        <option value="berjalan">Berjalan</option>
-                        <option value="menunggu di-acc">Menunggu persetujuan</option>
-                        <option value="sudah di-acc">Disetujui</option>
-                        <option value="terlambat">Terlambat</option>
-                    </select>
-                </div>
+                    <span>Kalender Tugas Divisi</span>
+                </h1>
             </div>
 
             <!-- Calendar Card -->
-            <div class="calendar-card flex-1 min-h-0 flex flex-col overflow-hidden bg-white p-6 pb-8 rounded-2xl shadow-sm border border-slate-200">
-                <!-- Tombol tambah note -->
-                <div class="flex-none flex items-center justify-end mb-3">
-                    <button type="button" onclick="openModalNote()"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0097B2] hover:bg-[#008199] text-white text-xs font-bold rounded-lg transition shadow-sm">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        Tambah catatan
-                    </button>
+            <div class="calendar-card bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex-1 min-h-0 flex flex-col">
+                <!-- Judul bulan + tombol tambah catatan di atas segmented control -->
+                <div class="cal-title-row flex-none mb-4">
+                    <div></div>
+                    <h2 id="calendar-title" class="text-center text-xl font-semibold text-[#1E293B]"></h2>
+                    <div class="flex justify-end">
+                        <button type="button" onclick="openModalNote()"
+                            class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0097B2] hover:bg-[#008199] text-white text-xs font-bold rounded-lg transition shadow-sm">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Tambah catatan
+                        </button>
+                    </div>
                 </div>
-                <div id="calendar" class="flex-1 min-h-0 flex flex-col overflow-hidden"></div>
+
+                <!-- Toolbar kalender -->
+                <div class="flex-none flex flex-wrap items-center gap-2 mb-4">
+                    <div class="cal-nav-group cal-btn-group flex items-center">
+                        <button type="button" id="calendar-prev" class="cal-btn cal-nav" aria-label="Sebelumnya">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <button type="button" id="calendar-next" class="cal-btn cal-nav" aria-label="Berikutnya">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                        <button type="button" id="calendar-today" class="cal-btn">Hari ini</button>
+                    </div>
+
+                    <div class="cal-toolbar-right">
+                        <!-- Filter Penerima (Staff) -->
+                        <select id="kadivStaffFilter" class="cal-select cal-select-wide h-[30px] max-w-full text-[13px] bg-white border border-slate-300 rounded-lg px-2.5 font-medium text-slate-700 outline-none focus:border-[#146C94]">
+                            <option value="">Semua karyawan</option>
+                            @isset($staffList)
+                                @foreach($staffList as $staff)
+                                    <option value="{{ $staff->id_karyawan }}">{{ $staff->nama }} ({{ $staff->jabatan ?? 'Staff' }})</option>
+                                @endforeach
+                            @endisset
+                        </select>
+
+                        <!-- Filter Status -->
+                        <select id="kadivStatusFilter" class="cal-select h-[30px] max-w-full text-[13px] bg-white border border-slate-300 rounded-lg px-2.5 font-medium text-slate-700 outline-none focus:border-[#146C94]">
+                            <option value="">Semua status</option>
+                            <option value="baru">Baru</option>
+                            <option value="berjalan">Berjalan</option>
+                            <option value="menunggu di-acc">Menunggu persetujuan</option>
+                            <option value="sudah di-acc">Disetujui</option>
+                            <option value="terlambat">Terlambat</option>
+                        </select>
+
+                        <div class="cal-btn-group inline-flex items-center">
+                            <button type="button" class="cal-btn cal-view-btn is-active" data-view="dayGridMonth" aria-pressed="true">Bulan</button>
+                            <button type="button" class="cal-btn cal-view-btn" data-view="timeGridWeek" aria-pressed="false">Minggu</button>
+                            <button type="button" class="cal-btn cal-view-btn" data-view="listMonth" aria-pressed="false">Daftar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="calendar" class="flex-1 min-h-0"></div>
+
+                <!-- Legend Status -->
+                <div class="flex-none mt-2 flex flex-nowrap items-center gap-1.5 overflow-x-auto text-[11px] leading-none">
+                    <span class="font-semibold text-slate-600 mr-1 whitespace-nowrap">Status:</span>
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#93C5FD] bg-[#DCEEFE] text-[#172B36] font-medium whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#2563EB]"></span> Baru
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#86D9AE] bg-[#D9F5E5] text-[#172B36] font-medium whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#059669]"></span> Berjalan
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#F5C85C] bg-[#FEF0C3] text-[#172B36] font-medium whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span> Menunggu persetujuan
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#7DD3C8] bg-[#D5F3F0] text-[#172B36] font-medium whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span> Disetujui
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#F5A3A3] bg-[#FDE0E0] text-[#172B36] font-medium whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#DC2626]"></span> Terlambat
+                    </span>
+                </div>
             </div>
 
         </main>
@@ -565,18 +1200,21 @@
     <!-- Modal Detail Tugas (Kadiv) -->
     <div id="modal-event" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" style="display:none; pointer-events:none;">
         <div data-modal-panel
-             class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-[520px] overflow-hidden flex flex-col max-h-[90vh]"
+             class="bg-white w-full flex flex-col overflow-hidden"
              onclick="event.stopPropagation()">
             <!-- Header Modal -->
-            <div class="shrink-0 px-6 py-4 border-b border-slate-200 flex items-start justify-between gap-3">
+            <div class="event-modal-header">
                 <div class="min-w-0">
-                    <h2 id="modal-title" class="text-xl font-semibold text-[#172B36] leading-snug break-words">Judul Tugas</h2>
-                    <div class="flex flex-wrap items-center gap-2 mt-1.5">
-                        <span id="modal-badge" class="px-2.5 py-0.5 rounded-md text-xs font-semibold">Status</span>
-                        <span id="modal-divisi" class="text-xs text-[#4B5563]"></span>
+                    <h2 id="modal-title" class="event-modal-title">Judul Tugas</h2>
+                    <div class="event-modal-meta">
+                        <span id="modal-badge" class="event-modal-badge bg-slate-100 text-slate-700">
+                            <span id="modal-badge-dot" class="event-modal-badge-dot"></span>
+                            <span id="modal-badge-text">Status</span>
+                        </span>
+                        <span id="modal-divisi" class="event-modal-divisi"></span>
                     </div>
                 </div>
-                <button type="button" onclick="closeModalEvent()" class="shrink-0 text-slate-400 hover:text-slate-600 transition p-1 rounded-lg hover:bg-slate-200/60" aria-label="Tutup">
+                <button type="button" onclick="closeModalEvent()" class="event-modal-close" aria-label="Tutup">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -584,41 +1222,54 @@
             </div>
 
             <!-- Body Modal -->
-            <div class="flex-1 overflow-y-auto p-6 space-y-4">
-                <div>
-                    <div class="text-[13px] font-medium text-[#4B5563]">Dari</div>
-                    <div id="modal-pengirim" class="text-sm text-[#172B36]">-</div>
+            <div class="event-modal-body">
+                <!-- Dari & Kepada -->
+                <div class="event-modal-people">
+                    <div class="event-modal-person">
+                        <span id="modal-pengirim-avatar" class="event-avatar">?</span>
+                        <div class="min-w-0">
+                            <div class="event-person-label">Dari</div>
+                            <div id="modal-pengirim-nama" class="event-person-name">-</div>
+                            <div id="modal-pengirim-peran" class="event-person-sub">-</div>
+                        </div>
+                    </div>
+                    <div class="event-people-arrow" aria-hidden="true">→</div>
+                    <div class="event-modal-person">
+                        <span id="modal-staff-avatar" class="event-avatar">?</span>
+                        <div class="min-w-0">
+                            <div class="event-person-label">Kepada</div>
+                            <div id="modal-staff-nama" class="event-person-name">-</div>
+                            <div id="modal-staff-peran" class="event-person-sub">-</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    <div class="text-[13px] font-medium text-[#4B5563]">Kepada</div>
-                    <div id="modal-staff" class="text-sm text-[#172B36]">-</div>
+                <!-- Tenggat & Pengumpulan -->
+                <div class="event-modal-section event-modal-grid">
+                    <div>
+                        <div class="event-field-label">Tenggat</div>
+                        <div id="modal-deadline-date" class="event-field-date">-</div>
+                        <div class="event-field-time">
+                            <span id="modal-deadline-time">-</span><span id="modal-deadline-overdue" class="event-overdue" style="display:none;"> · Terlambat</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="event-field-label">Pengumpulan</div>
+                        <span id="modal-submission-status" class="event-submission">-</span>
+                    </div>
                 </div>
 
-                <div>
-                    <div class="text-[13px] font-medium text-[#4B5563]">Tenggat</div>
-                    <div id="modal-deadline" class="text-sm text-[#172B36]">-</div>
-                </div>
-
-                <div>
-                    <div class="text-[13px] font-medium text-[#4B5563]">Pengumpulan</div>
-                    <span id="modal-submission-status" class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-[#4B5563]">-</span>
-                </div>
-
-                <div>
-                    <div class="text-[13px] font-medium text-[#4B5563]">Deskripsi</div>
-                    <div id="modal-deskripsi" class="text-sm text-[#172B36] whitespace-pre-line leading-relaxed max-h-40 overflow-y-auto">-</div>
+                <!-- Deskripsi -->
+                <div class="event-modal-section">
+                    <div class="event-field-label">Deskripsi</div>
+                    <div id="modal-deskripsi" class="event-description">-</div>
                 </div>
             </div>
 
             <!-- Footer Modal -->
-            <div class="shrink-0 px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-3">
-                <button type="button" onclick="closeModalEvent()"
-                        class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition">
-                    Tutup
-                </button>
-                <a id="modal-detail-btn" href="#"
-                   class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#146C94] rounded-lg hover:bg-[#105A78] transition">
+            <div class="event-modal-footer">
+                <button type="button" onclick="closeModalEvent()" class="event-modal-btn event-modal-btn-close">Tutup</button>
+                <a id="modal-detail-btn" href="#" class="event-modal-btn event-modal-btn-detail">
                     <span>Lihat detail</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -1084,31 +1735,51 @@
             const titleEl = document.getElementById('modal-title');
             const badgeEl = document.getElementById('modal-badge');
             const divisiEl = document.getElementById('modal-divisi');
-            const pengirimEl = document.getElementById('modal-pengirim');
-            const staffEl = document.getElementById('modal-staff');
-            const deadlineEl = document.getElementById('modal-deadline');
+            const badgeTextEl = document.getElementById('modal-badge-text');
+            const badgeDotEl = document.getElementById('modal-badge-dot');
+            const pengirimAvatarEl = document.getElementById('modal-pengirim-avatar');
+            const pengirimNamaEl = document.getElementById('modal-pengirim-nama');
+            const pengirimPeranEl = document.getElementById('modal-pengirim-peran');
+            const staffAvatarEl = document.getElementById('modal-staff-avatar');
+            const staffNamaEl = document.getElementById('modal-staff-nama');
+            const staffPeranEl = document.getElementById('modal-staff-peran');
+            const deadlineDateEl = document.getElementById('modal-deadline-date');
+            const deadlineTimeEl = document.getElementById('modal-deadline-time');
+            const deadlineOverdueEl = document.getElementById('modal-deadline-overdue');
             const submissionStatusEl = document.getElementById('modal-submission-status');
             const deskripsiEl = document.getElementById('modal-deskripsi');
             const detailBtn = document.getElementById('modal-detail-btn');
 
             titleEl.textContent = props.judul_murni || event.title;
-            badgeEl.className = 'px-2.5 py-0.5 rounded-md text-xs font-semibold ' + (props.badge_class || 'bg-slate-100 text-slate-700');
-            badgeEl.textContent = props.status ? tugasStatusLabel(props.status) : (props.status_label || 'Event');
+            badgeEl.className = 'event-modal-badge ' + (props.badge_class || 'bg-slate-100 text-slate-700');
+            badgeTextEl.textContent = props.status ? tugasStatusLabel(props.status) : (props.status_label || 'Event');
+            badgeDotEl.style.backgroundColor = props.dot_color || '#94A3B8';
             divisiEl.textContent = props.divisi_nama || '';
 
-            const pengirimParts = [props.pengirim_nama, props.pengirim_jabatan].filter(Boolean);
-            pengirimEl.textContent = pengirimParts.length ? pengirimParts.join(', ') : '-';
+            const pengirimNama = props.pengirim_nama || '-';
+            const pengirimPeran = props.pengirim_jabatan || '';
+            pengirimNamaEl.textContent = pengirimNama;
+            pengirimPeranEl.textContent = pengirimPeran || '-';
+            pengirimAvatarEl.textContent = getInitials(pengirimNama);
 
-            const staffParts = [props.staff_nama, props.staff_jabatan, props.staff_id].filter(Boolean);
-            staffEl.textContent = staffParts.length ? staffParts.join(', ') : '-';
+            const staffNama = props.staff_nama || '-';
+            const staffPeran = props.staff_jabatan || props.staff_id || '';
+            staffNamaEl.textContent = staffNama;
+            staffPeranEl.textContent = staffPeran || '-';
+            staffAvatarEl.textContent = getInitials(staffNama);
 
-            deadlineEl.textContent = props.deadline_label || '-';
+            const deadlineParts = splitDeadlineLabel(props.deadline_label);
+            deadlineDateEl.textContent = deadlineParts.date || '-';
+            deadlineTimeEl.textContent = deadlineParts.time || '';
+            const isOverdue = String(props.status || '').toLowerCase() === 'terlambat'
+                || String(props.status_label || '').toLowerCase().includes('terlambat');
+            deadlineOverdueEl.style.display = isOverdue ? 'inline' : 'none';
 
             if (props.has_submission) {
-                submissionStatusEl.className = 'inline-block px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-700';
-                submissionStatusEl.textContent = 'Sudah dikumpulkan' + (props.submission_date ? ` (${props.submission_date})` : '');
+                submissionStatusEl.className = 'event-submission is-submitted';
+                submissionStatusEl.textContent = 'Sudah dikumpulkan';
             } else {
-                submissionStatusEl.className = 'inline-block px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-[#4B5563]';
+                submissionStatusEl.className = 'event-submission';
                 submissionStatusEl.textContent = 'Belum dikumpulkan';
             }
 
@@ -1129,7 +1800,19 @@
         function closeModalEvent() {
             const modal = document.getElementById('modal-event');
             if (!modal || modal.style.display === 'none') return;
-            animateModalOut(modal);
+            animateModalOut(modal, restoreEventFocus);
+        }
+
+        function restoreEventFocus() {
+            let target = lastEventTrigger;
+            if (!target || !document.contains(target)) {
+                target = (lastMoreLink && document.contains(lastMoreLink)) ? lastMoreLink : null;
+            }
+            if (target) {
+                if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+                target.focus({ preventScroll: true });
+            }
+            lastEventTrigger = null;
         }
 
         document.addEventListener('keydown', function(e) {
@@ -1156,8 +1839,16 @@
         // Scroll minggu berjalan ke dalam area scroll kalender (dipakai tombol "Hari Ini")
         let pendingTodayScroll = false;
 
+        function getCalendarScrollContainer() {
+            const candidates = document.querySelectorAll('#calendar .fc-scroller');
+            for (const el of candidates) {
+                if (el.scrollHeight > el.clientHeight + 1) return el;
+            }
+            return document.querySelector('#calendar .fc-scroller') || null;
+        }
+
         function scrollToTodayWeek() {
-            const scroller = document.querySelector('#calendar .fc-scrollgrid-section-body .fc-scroller');
+            const scroller = getCalendarScrollContainer();
             const todayCell = document.querySelector('#calendar .fc-day-today');
             const weekRow = todayCell ? todayCell.closest('tr') : null;
             if (!scroller || !weekRow) return;
@@ -1171,6 +1862,215 @@
             }
         }
 
+        let appliedAllDaySlot = true;
+
+        function syncAllDaySlot() {
+            if (!calendarInstance || calendarInstance.view.type !== 'timeGridWeek') return;
+            const view = calendarInstance.view;
+            const hasAllDay = calendarInstance.getEvents().some(function(ev) {
+                return ev.allDay && ev.start && ev.start < view.activeEnd && (!ev.end || ev.end > view.activeStart);
+            });
+            if (appliedAllDaySlot !== hasAllDay) {
+                appliedAllDaySlot = hasAllDay;
+                calendarInstance.setOption('allDaySlot', hasAllDay);
+            }
+        }
+
+        let lastMoreLink = null;
+        let lastMoreCell = null;
+        let lastEventTrigger = null;
+
+        // Tutup popover "+N lainnya" dan kembalikan fokus ke tanggal
+        function closeDayPopover(options = {}) {
+            const popover = document.querySelector('.fc-popover');
+
+            function finalize() {
+                document.querySelectorAll('.fc-day-popover-selected').forEach(function(el) {
+                    el.classList.remove('fc-day-popover-selected');
+                });
+                if (options.focus !== false) {
+                    setTimeout(function() {
+                        const focusEl = lastMoreCell
+                            ? lastMoreCell.querySelector('.fc-daygrid-day-number')
+                            : lastMoreLink;
+                        if (!focusEl) return;
+                        if (!focusEl.hasAttribute('tabindex')) focusEl.setAttribute('tabindex', '-1');
+                        focusEl.focus({ preventScroll: true });
+                    }, 0);
+                }
+            }
+
+            if (!popover) {
+                finalize();
+                return;
+            }
+
+            if (popover.classList.contains('popover-closing')) return;
+
+            popover.classList.add('popover-closing');
+
+            setTimeout(function() {
+                const closeBtn = popover.querySelector('.fc-popover-close');
+                if (closeBtn) closeBtn.click();
+                else popover.remove();
+                finalize();
+            }, 130);
+        }
+
+        // Posisikan popover di samping sel tanggal, tetap di dalam viewport
+        function positionDayPopover(popover) {
+            const anchor = lastMoreCell || lastMoreLink;
+            if (!anchor) return;
+            const parent = popover.offsetParent || popover.parentElement;
+            if (!parent) return;
+
+            const parentRect = parent.getBoundingClientRect();
+            const cellRect = anchor.getBoundingClientRect();
+            const popRect = popover.getBoundingClientRect();
+            const gap = 10;
+            const margin = 8;
+
+            let side = 'right';
+            let left = cellRect.right + gap;
+            if (left + popRect.width > window.innerWidth - margin) {
+                side = 'left';
+                left = cellRect.left - gap - popRect.width;
+            }
+            left = Math.max(margin, Math.min(left, window.innerWidth - margin - popRect.width));
+
+            let top = cellRect.top;
+            top = Math.max(margin, Math.min(top, window.innerHeight - margin - popRect.height));
+
+            popover.style.left = (left - parentRect.left) + 'px';
+            popover.style.top = (top - parentRect.top) + 'px';
+            const sideClass = 'popover-side-' + side;
+            if (!popover.classList.contains(sideClass)) {
+                popover.classList.remove('popover-side-left', 'popover-side-right');
+                popover.classList.add(sideClass);
+            }
+
+            const dayNumber = lastMoreCell ? lastMoreCell.querySelector('.fc-daygrid-day-number') : null;
+            let arrowTop = 24;
+            if (dayNumber) {
+                const numRect = dayNumber.getBoundingClientRect();
+                arrowTop = (numRect.top + numRect.height / 2) - top;
+            } else {
+                arrowTop = (cellRect.top + cellRect.height / 2) - top;
+            }
+            arrowTop = Math.max(14, Math.min(arrowTop, popRect.height - 14));
+            popover.style.setProperty('--popover-arrow-top', arrowTop + 'px');
+        }
+
+        // Lengkapi header popover (jumlah tugas + ring tanggal)
+        function decorateDayPopover() {
+            const popover = document.querySelector('.fc-popover');
+            if (!popover || (!lastMoreCell && !lastMoreLink)) return;
+            const header = popover.querySelector('.fc-popover-header');
+            const body = popover.querySelector('.fc-popover-body');
+            if (!header || !body) return;
+
+            const items = body.querySelectorAll('.fc-daygrid-event, .fc-timegrid-event');
+            let countEl = header.querySelector('.fc-popover-count');
+            if (!countEl) {
+                countEl = document.createElement('span');
+                countEl.className = 'fc-popover-count';
+                const closeBtn = header.querySelector('.fc-popover-close');
+                if (closeBtn) header.insertBefore(countEl, closeBtn);
+                else header.appendChild(countEl);
+            }
+            countEl.textContent = items.length + ' tugas';
+
+            document.querySelectorAll('.fc-day-popover-selected').forEach(function(el) {
+                el.classList.remove('fc-day-popover-selected');
+            });
+            if (lastMoreCell) {
+                lastMoreCell.classList.add('fc-day-popover-selected');
+                const dayNumber = lastMoreCell.querySelector('.fc-daygrid-day-number');
+                if (dayNumber) dayNumber.setAttribute('tabindex', '-1');
+            }
+
+            requestAnimationFrame(function() {
+                positionDayPopover(popover);
+            });
+        }
+
+        function getInitials(name) {
+            if (!name) return '?';
+            const parts = String(name).trim().split(/\s+/).filter(Boolean);
+            if (!parts.length) return '?';
+            if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+            return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+        }
+
+        function splitDeadlineLabel(label) {
+            const raw = String(label || '').trim();
+            if (!raw || raw.toLowerCase() === 'tidak ditentukan') {
+                return { date: raw || '-', time: '' };
+            }
+            const idx = raw.lastIndexOf(',');
+            if (idx === -1) return { date: raw, time: '' };
+            return { date: raw.slice(0, idx).trim(), time: raw.slice(idx + 1).trim() };
+        }
+
+        function formatTime12(date) {
+            if (!date) return '';
+            let hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const suffix = hours >= 12 ? 'pm' : 'am';
+            hours = hours % 12 || 12;
+            return `${hours}:${minutes} ${suffix}`;
+        }
+
+        // Ubah HH:MM di dalam label tanggal backend menjadi format AM/PM
+        function formatLabelTime12(label) {
+            if (!label) return '-';
+            return String(label).replace(/(\d{1,2}):(\d{2})(?![\d:])/g, function(_, h, m) {
+                let hours = Number(h);
+                const suffix = hours >= 12 ? 'pm' : 'am';
+                hours = hours % 12 || 12;
+                return `${hours}:${m} ${suffix}`;
+            });
+        }
+
+        // Kartu event versi popover (lebih lengkap dari kartu bulan)
+        function buildDayPopoverEventHtml(props, event) {
+            const staffName = props.staff_nama || 'Staff';
+            const title = props.judul_murni || event.title;
+            const pengirimNama = props.pengirim_nama || 'Kadiv';
+            const flowText = `${pengirimNama} → ${staffName}`;
+            const dotColor = props.dot_color || '#004A65';
+            const time = event.start && !event.allDay
+                ? String(event.start.getHours()).padStart(2, '0') + ':' + String(event.start.getMinutes()).padStart(2, '0')
+                : '';
+
+            return `
+                <div class="popover-event-row">
+                    <div class="popover-event-main">
+                        <span class="popover-event-dot" style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});"></span>
+                        <span class="popover-event-title" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
+                        ${time ? `<span class="popover-event-time">${escapeHtml(time)}</span>` : ''}
+                    </div>
+                    <div class="popover-event-flow">${escapeHtml(flowText)}</div>
+                </div>
+            `;
+        }
+
+        function buildDayPopoverNoteHtml(event) {
+            return `
+                <div class="flex items-center gap-2 min-w-0">
+                    <svg class="w-4 h-4 shrink-0 opacity-80" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"/>
+                        <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="font-semibold text-[14px] leading-tight text-[#172B36] truncate min-w-0">
+                        ${escapeHtml(event.title)}
+                    </span>
+                </div>
+            `;
+        }
+
+        let dayPopoverObserver = null;
+
         document.addEventListener('DOMContentLoaded', function() {
             const calendarEl = document.getElementById('calendar');
             const token = localStorage.getItem('staff_token') || sessionStorage.getItem('staff_token');
@@ -1179,39 +2079,112 @@
                 initialView: 'dayGridMonth',
                 locale: 'id',
                 firstDay: 1, // Senin
+                allDayText: 'Sehari penuh',
+                dayHeaderFormat: { weekday: 'short' },
+                dayHeaderContent: function(arg) {
+                    if (arg.view.type !== 'timeGridWeek') return arg.text || '';
+
+                    const wrap = document.createElement('div');
+                    wrap.className = 'cal-week-header';
+
+                    const weekday = document.createElement('span');
+                    weekday.className = 'cal-week-header-weekday' + (arg.isToday ? ' is-today' : '');
+                    weekday.textContent = arg.text || '';
+
+                    const day = document.createElement('span');
+                    day.className = 'cal-week-header-day' + (arg.isToday ? ' is-today' : '');
+
+                    const dayNumber = document.createElement('span');
+                    dayNumber.className = 'cal-week-header-daynum';
+                    dayNumber.textContent = arg.date.getDate();
+
+                    day.appendChild(dayNumber);
+                    wrap.appendChild(weekday);
+                    wrap.appendChild(day);
+
+                    return { domNodes: [wrap] };
+                },
                 height: '100%',
-                expandRows: true,
-                dayMaxEvents: 3, // Maksimal 3 event tampil per hari
+                stickyHeaderDates: true,
+                dayMaxEvents: 2, // Maksimal 2 event ringkas tampil per hari
+                dayPopoverFormat: { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },
                 moreLinkText: function(n) {
                     return '+' + n + ' lainnya';
+                },
+                moreLinkClick: function(arg) {
+                    const clickedLink = arg.jsEvent?.currentTarget || arg.jsEvent?.target;
+                    lastMoreLink = clickedLink?.closest?.('.fc-more-link, .fc-timegrid-more-link') || clickedLink || null;
+                    lastMoreCell = lastMoreLink ? lastMoreLink.closest('.fc-daygrid-day') : null;
+                    setTimeout(decorateDayPopover, 30);
+                    return 'popover';
+                },
+                moreLinkContent: function(arg) {
+                    return '+' + arg.num + ' lainnya';
                 },
                 defaultTimedEventDuration: '00:45:00',
                 slotMinTime: '07:00:00',
                 slotMaxTime: '21:00:00',
                 slotDuration: '00:30:00',
+                slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+                slotLabelContent: function(arg) {
+                    if (arg.view.type !== 'timeGridWeek') return undefined;
+                    const d = arg.date;
+                    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+                },
                 slotEventOverlap: false, // Event di jam yang sama TIDAK saling tumpang tindih
-                eventMinHeight: 48, // Card tidak gepeng di week view
+                eventMinHeight: 44, // Tinggi minimum kartu week view
+                eventMaxStack: 2, // Maksimal 2 kartu bertumpuk; sisanya +N lainnya
                 nextDayThreshold: '24:00:00',
                 eventDisplay: 'block',
                 displayEventTime: true,
                 eventTimeFormat: {
-                    hour: '2-digit',
+                    hour: 'numeric',
                     minute: '2-digit',
-                    meridiem: false,
-                    hour12: false
+                    hour12: true,
+                    meridiem: 'short'
                 },
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,listMonth'
-                },
-                datesSet: function() {
+                headerToolbar: false,
+                datesSet: function(arg) {
+                    const titleEl = document.getElementById('calendar-title');
+                    if (titleEl) titleEl.textContent = arg.view.title;
+
+                    document.querySelectorAll('.cal-view-btn').forEach(function(btn) {
+                        const isActive = btn.getAttribute('data-view') === arg.view.type;
+                        btn.classList.toggle('is-active', isActive);
+                        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                    });
+
+                    const todayBtn = document.getElementById('calendar-today');
+                    if (todayBtn) {
+                        const now = new Date();
+                        const isViewingToday = now >= arg.view.currentStart && now < arg.view.currentEnd;
+                        todayBtn.classList.toggle('is-today', isViewingToday);
+                    }
+
                     if (pendingTodayScroll) {
                         pendingTodayScroll = false;
                         requestAnimationFrame(function() {
                             requestAnimationFrame(scrollToTodayWeek);
                         });
                     }
+
+                    if (calendarInstance && calendarInstance.view.type === 'timeGridWeek') {
+                        setTimeout(syncAllDaySlot, 60);
+                    }
+                },
+                viewDidMount: function(arg) {
+                    if (arg.view.type === 'timeGridWeek') {
+                        const resetScroll = function() {
+                            const page = getCalendarScrollContainer();
+                            if (page) page.scrollTop = 0;
+                        };
+                        resetScroll();
+                        setTimeout(resetScroll, 120);
+                        setTimeout(syncAllDaySlot, 60);
+                    }
+                },
+                eventsSet: function() {
+                    syncAllDaySlot();
                 },
                 buttonText: {
                     today: 'Hari Ini',
@@ -1315,49 +2288,44 @@
                             <span class="text-[12px] text-slate-700 font-medium truncate min-w-0" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
                         `;
                     } else if (isTimeGrid) {
-                        // Minggu view: avatar + divisi + jam, alur penugasan, lalu judul
-                        el.className = 'w-full h-full px-1.5 py-1 leading-snug flex flex-col justify-start gap-0.5 overflow-hidden min-w-0';
-                        el.innerHTML = `
-                            <div class="flex items-center justify-between gap-1 min-w-0 overflow-hidden">
-                                <span class="inline-flex items-center gap-1 font-bold text-[10px] min-w-0 overflow-hidden text-[#172B36]">
-                                    <span class="w-3.5 h-3.5 rounded-full text-white flex items-center justify-center text-[8px] font-extrabold shrink-0"
-                                          style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});">
-                                        ${escapeHtml(staffInitial)}
-                                    </span>
-                                    <span class="text-[9px] font-bold text-[#4B5563] px-1 rounded truncate min-w-0" title="${escapeHtml(divisiNama)}">
-                                        ${escapeHtml(divisiNama)}
-                                    </span>
+                        // Minggu view: kartu ringkas — judul + alur penugasan
+                        if (arg.event.allDay) {
+                            el.className = 'w-full px-1 py-0 leading-tight flex items-center gap-1 overflow-hidden min-w-0';
+                            el.innerHTML = `
+                                <span class="w-1.5 h-1.5 rounded-full shrink-0"
+                                      style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});"></span>
+                                <span class="font-semibold text-[10px] truncate leading-tight text-[#172B36] min-w-0">
+                                    ${escapeHtml(title)}
                                 </span>
-                                ${time ? `<span class="text-[9px] font-bold text-[#4B5563] shrink-0 ml-auto whitespace-nowrap">${escapeHtml(time)}</span>` : ''}
-                            </div>
-                            <div class="text-[10px] text-[#4B5563] font-semibold truncate min-w-0 leading-tight">
-                                ${escapeHtml(flowText)}
-                            </div>
-                            <div class="font-medium text-[11px] truncate min-w-0 leading-tight text-[#172B36]">
-                                ${escapeHtml(title)}
-                            </div>
-                        `;
+                            `;
+                        } else {
+                            el.className = 'w-full h-full px-1 py-0.5 leading-tight flex flex-col justify-center gap-0 overflow-hidden min-w-0';
+                            el.innerHTML = `
+                                <div class="flex items-center gap-1 min-w-0 overflow-hidden">
+                                    <span class="w-1.5 h-1.5 rounded-full shrink-0"
+                                          style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});"></span>
+                                    <span class="font-semibold text-[11px] truncate leading-tight text-[#172B36] min-w-0">
+                                        ${escapeHtml(title)}
+                                    </span>
+                                </div>
+                                <div class="text-[9.5px] text-[#4B5563] font-medium truncate leading-tight min-w-0">
+                                    ${escapeHtml(flowText)}
+                                </div>
+                            `;
+                        }
                     } else {
-                        // Bulan view: avatar + divisi + jam, alur penugasan, lalu judul
-                        el.className = 'w-full px-1.5 py-1 leading-snug flex flex-col gap-0.5 overflow-hidden min-w-0';
+                        // Bulan view: ringkas — judul + alur penugasan (divisi/jam tidak ditampilkan)
+                        el.className = 'w-full px-0.5 py-0 leading-tight flex flex-col gap-0 overflow-hidden min-w-0';
                         el.innerHTML = `
-                            <div class="flex items-center justify-between gap-1 overflow-hidden min-w-0">
-                                <span class="inline-flex items-center gap-1 font-bold text-[10px] truncate max-w-[80%] text-[#172B36] min-w-0">
-                                    <span class="w-3.5 h-3.5 rounded-full text-white flex items-center justify-center text-[8px] font-extrabold shrink-0"
-                                          style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});">
-                                        ${escapeHtml(staffInitial)}
-                                    </span>
-                                    <span class="text-[9px] font-bold text-[#4B5563] px-1 rounded truncate min-w-0" title="${escapeHtml(divisiNama)}">
-                                        ${escapeHtml(divisiNama)}
-                                    </span>
+                            <div class="flex items-center gap-1 min-w-0 overflow-hidden">
+                                <span class="w-1.5 h-1.5 rounded-full shrink-0"
+                                      style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});"></span>
+                                <span class="font-semibold text-[11px] truncate leading-tight text-[#172B36] min-w-0">
+                                    ${escapeHtml(title)}
                                 </span>
-                                ${time ? `<span class="text-[9px] font-bold text-[#4B5563] shrink-0 ml-auto">${escapeHtml(time)}</span>` : ''}
                             </div>
-                            <div class="text-[10px] text-[#4B5563] font-semibold truncate leading-tight min-w-0">
+                            <div class="text-[10px] text-[#4B5563] font-medium truncate leading-tight min-w-0">
                                 ${escapeHtml(flowText)}
-                            </div>
-                            <div class="font-medium text-[11px] truncate leading-tight text-[#172B36] min-w-0">
-                                ${escapeHtml(title)}
                             </div>
                         `;
                     }
@@ -1366,9 +2334,13 @@
                 },
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
+                    if (info.el.closest('.fc-popover')) {
+                        closeDayPopover({ focus: false });
+                    }
                     if (info.event.extendedProps?.type === 'note') {
                         openModalDetailNote(info.event);
                     } else {
+                        lastEventTrigger = info.el;
                         openModalEvent(info.event);
                     }
                 },
@@ -1378,13 +2350,25 @@
 
                     if (props.type === 'note') {
                         info.el.setAttribute('title', `Catatan: ${info.event.title}`);
+                        if (info.el.closest('.fc-popover-body')) {
+                            const main = info.el.querySelector('.fc-event-main') || info.el;
+                            main.innerHTML = buildDayPopoverNoteHtml(info.event);
+                            setTimeout(decorateDayPopover, 0);
+                        }
                         return;
                     }
 
-                    // Tooltip: judul lengkap + divisi
+                    // Tooltip: judul lengkap + divisi (+ alur & jam di week view)
                     const judulTooltip = props.judul_murni || info.event.title;
                     const divisiTooltip = props.divisi_nama || '';
-                    info.el.setAttribute('title', divisiTooltip ? `${judulTooltip} — ${divisiTooltip}` : judulTooltip);
+                    let tooltip = divisiTooltip ? `${judulTooltip} — ${divisiTooltip}` : judulTooltip;
+
+                    if (info.view.type === 'timeGridWeek') {
+                        const flowTooltip = [props.pengirim_nama, props.staff_nama].filter(Boolean).join(' → ');
+                        const timeTooltip = info.event.start && !info.event.allDay ? formatTime12(info.event.start) : '';
+                        tooltip = [judulTooltip, flowTooltip, timeTooltip, divisiTooltip].filter(Boolean).join(' • ');
+                    }
+                    info.el.setAttribute('title', tooltip);
 
                     // Kartu status di grid (bulan & minggu); list view tetap polos
                     if (!isList) {
@@ -1393,10 +2377,90 @@
                         info.el.style.color = '';
                         info.el.classList.add('tugas-card', tugasStatusClass(props.status));
                     }
+
+                    if (info.el.closest('.fc-popover-body')) {
+                        const main = info.el.querySelector('.fc-event-main') || info.el;
+                        main.innerHTML = buildDayPopoverEventHtml(props, info.event);
+                        setTimeout(decorateDayPopover, 0);
+                    }
                 }
             });
 
             calendarInstance.render();
+
+            // Kontrol toolbar kustom
+            document.getElementById('calendar-prev')?.addEventListener('click', function() {
+                calendarInstance.prev();
+            });
+            document.getElementById('calendar-next')?.addEventListener('click', function() {
+                calendarInstance.next();
+            });
+            document.getElementById('calendar-today')?.addEventListener('click', function() {
+                pendingTodayScroll = true;
+                calendarInstance.today();
+                scrollToTodayWeek();
+                setTimeout(scrollToTodayWeek, 50);
+                setTimeout(scrollToTodayWeek, 150);
+                setTimeout(function() {
+                    pendingTodayScroll = false;
+                    scrollToTodayWeek();
+                }, 350);
+            });
+            document.querySelectorAll('.cal-view-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const view = btn.getAttribute('data-view');
+                    if (view && calendarInstance.view.type !== view) {
+                        calendarInstance.changeView(view);
+                    }
+                });
+            });
+
+            // Observer: bersihkan ring tanggal saat popover ditutup oleh FullCalendar
+            if (window.MutationObserver) {
+                dayPopoverObserver = new MutationObserver(function() {
+                    if (!document.querySelector('.fc-popover')) {
+                        document.querySelectorAll('.fc-day-popover-selected').forEach(function(el) {
+                            el.classList.remove('fc-day-popover-selected');
+                        });
+                    }
+                });
+                dayPopoverObserver.observe(calendarEl, { childList: true, subtree: true });
+            }
+
+            // Esc menutup popover + fokus kembali ke tanggal
+            document.addEventListener('keydown', function(event) {
+                if (event.key !== 'Escape') return;
+                if (!document.querySelector('.fc-popover')) return;
+                event.preventDefault();
+                closeDayPopover();
+            }, true);
+
+            // Klik di luar popover menutup popover + fokus kembali ke tanggal
+            document.addEventListener('mousedown', function(event) {
+                const popover = document.querySelector('.fc-popover');
+                if (!popover || popover.contains(event.target)) return;
+                if (event.target.closest && event.target.closest('.fc-more-link')) return;
+                closeDayPopover();
+            }, true);
+
+            // Tombol close popover: mainkan animasi keluar sebelum ditutup
+            document.addEventListener('click', function(event) {
+                const closeBtn = event.target.closest && event.target.closest('.fc-popover-close');
+                if (!closeBtn) return;
+                const popover = closeBtn.closest('.fc-popover');
+                if (popover && popover.classList.contains('popover-closing')) return;
+                event.preventDefault();
+                event.stopPropagation();
+                closeDayPopover();
+            }, true);
+
+            // Reposisi popover saat viewport berubah
+            window.addEventListener('resize', function() {
+                setTimeout(function() {
+                    const popover = document.querySelector('.fc-popover');
+                    if (popover) positionDayPopover(popover);
+                }, 60);
+            });
 
             // Tombol "Hari Ini": scroll minggu berjalan ke dalam area scroll kalender
             calendarEl.addEventListener('click', function(event) {
