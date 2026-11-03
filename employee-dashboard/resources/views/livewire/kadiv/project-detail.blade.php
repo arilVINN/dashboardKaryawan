@@ -3,13 +3,40 @@
     $selesai = $project->tasks->where('selesai', true)->count();
     $terkumpul = $project->tasks->whereNotNull('file_hasil_path')->count();
     $pct = $total > 0 ? round(($selesai / $total) * 100) : 0;
+    $status = $project->status_efektif;
+    $badgeBg = match ($status) {
+        \App\Models\Tugas::STATUS_BERJALAN => 'bg-emerald-100 text-emerald-700',
+        \App\Models\Tugas::STATUS_MENUNGGU_ACC => 'bg-amber-100 text-amber-700',
+        \App\Models\Tugas::STATUS_SUDAH_ACC => 'bg-emerald-700 text-white',
+        \App\Models\Tugas::STATUS_TERLAMBAT => 'bg-red-100 text-red-700',
+        default => 'bg-[#C0E7FF] text-blue-700',
+    };
+    $semuaTerkumpul = $total > 0 && $terkumpul === $total;
 @endphp
 
 <div class="space-y-5">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <h1 class="mt-3 text-2xl font-bold text-slate-800">{{ $project->nama_project }}</h1>
-            <p class="mt-2 whitespace-pre-line text-sm text-slate-600">{{ $project->deskripsi ?: 'Tidak ada deskripsi project.' }}</p>
+            <p class="mt-2 whitespace-pre-line text-sm text-slate-600">
+                {{ $project->deskripsi ?: 'Tidak ada deskripsi project.' }}</p>
+            <p
+                class="mt-2 text-xs {{ $project->tenggat && $project->tenggat->isPast() ? 'font-bold text-red-600' : 'text-slate-500' }}">
+                Tenggat: {{ $project->tenggat?->format('d/m/Y H:i') ?? '-' }}
+            </p>
+            @if ($project->approved_at)
+                <span class="mt-3 inline-flex rounded-full px-3 py-1.5 text-xs font-bold {{ $badgeBg }}">{{ $status }}</span>
+            @elseif ($semuaTerkumpul)
+                <button type="button" wire:click="approveProject" wire:confirm="Yakin ingin meng-ACC seluruh project ini?"
+                    wire:loading.attr="disabled" wire:target="approveProject"
+                    class="mt-3 inline-flex items-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-800 disabled:cursor-wait disabled:opacity-60">
+                    <span wire:loading.remove wire:target="approveProject">ACC Project</span>
+                    <span wire:loading wire:target="approveProject">Memproses...</span>
+                </button>
+            @endif
+            @error('approval')
+                <p class="mt-2 text-xs font-semibold text-red-600">{{ $message }}</p>
+            @enderror
         </div>
         @if ($project->file_path)
             <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($project->file_path) }}"
@@ -30,11 +57,13 @@
         </div>
         <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <p class="text-xs uppercase tracking-wide text-slate-500">Task selesai</p>
-            <p class="mt-1 text-2xl font-bold text-slate-800">{{ $selesai }} <span class="text-base font-normal text-slate-400">/ {{ $total }}</span></p>
+            <p class="mt-1 text-2xl font-bold text-slate-800">{{ $selesai }} <span
+                    class="text-base font-normal text-slate-400">/ {{ $total }}</span></p>
         </div>
         <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <p class="text-xs uppercase tracking-wide text-slate-500">File terkumpul</p>
-            <p class="mt-1 text-2xl font-bold text-slate-800">{{ $terkumpul }} <span class="text-base font-normal text-slate-400">/ {{ $total }}</span></p>
+            <p class="mt-1 text-2xl font-bold text-slate-800">{{ $terkumpul }} <span
+                    class="text-base font-normal text-slate-400">/ {{ $total }}</span></p>
         </div>
     </div>
 
@@ -60,36 +89,48 @@
                                     <input type="checkbox" wire:click="toggleTask('{{ $task->id_task }}')"
                                         @checked($task->selesai)
                                         class="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#0E9DC3] focus:ring-[#0E9DC3] cursor-pointer">
-                                    <span class="{{ $task->selesai ? 'text-slate-400 line-through' : 'text-slate-700' }}">{{ $task->label }}</span>
+                                    <span
+                                        class="{{ $task->selesai ? 'text-slate-400 line-through' : 'text-slate-700' }}">{{ $task->label }}</span>
                                 </label>
                             </td>
                             <td class="px-5 py-4 align-top">
-                                <span class="inline-flex rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600">{{ $task->karyawan->nama ?? '-' }}</span>
+                                <span
+                                    class="inline-flex rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600">{{ $task->karyawan->nama ?? '-' }}</span>
                             </td>
                             <td class="px-5 py-4 align-top">
-                                <span class="inline-flex rounded-full px-3 py-1.5 text-xs font-medium {{ $task->selesai ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' }}">
+                                <span
+                                    class="inline-flex rounded-full px-3 py-1.5 text-xs font-medium {{ $task->selesai ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' }}">
                                     {{ $task->selesai ? 'Selesai' : 'Belum selesai' }}
                                 </span>
                             </td>
                             <td class="px-5 py-4 align-top">
                                 @if ($task->file_hasil_path)
                                     <div class="flex flex-col gap-1">
-                                        <span class="inline-flex w-fit rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">Sudah dikumpulkan</span>
+                                        <span
+                                            class="inline-flex w-fit rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">Sudah
+                                            dikumpulkan</span>
                                         <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($task->file_hasil_path) }}"
-                                            target="_blank" rel="noopener noreferrer" class="max-w-56 truncate text-xs text-[#146C94] hover:underline">
+                                            target="_blank" rel="noopener noreferrer"
+                                            class="max-w-56 truncate text-xs text-[#146C94] hover:underline">
                                             {{ $task->file_hasil_name ?: 'Lihat file hasil' }}
                                         </a>
                                         @if ($task->tanggal_submit)
-                                            <span class="text-xs text-slate-400">{{ $task->tanggal_submit->format('d/m/Y H:i') }}</span>
+                                            <span
+                                                class="text-xs text-slate-400">{{ $task->tanggal_submit->format('d/m/Y H:i') }}</span>
                                         @endif
                                     </div>
                                 @else
-                                    <span class="inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">Belum dikumpulkan</span>
+                                    <span
+                                        class="inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">Belum
+                                        dikumpulkan</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="px-5 py-8 text-center text-slate-400">Belum ada task pada project ini.</td></tr>
+                        <tr>
+                            <td colspan="4" class="px-5 py-8 text-center text-slate-400">Belum ada task pada project
+                                ini.</td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>

@@ -6,6 +6,7 @@ use App\Models\TowerDatabase;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
@@ -56,6 +57,26 @@ class TowerDatabaseTable extends Component
         }
 
         $this->resetPage();
+    }
+
+    public function updatedFormJenis(string $value): void
+    {
+        if ($value !== 'file') {
+            $this->clearTemporaryFile();
+        }
+    }
+
+    private function clearTemporaryFile(): void
+    {
+        if ($this->formFile instanceof TemporaryUploadedFile) {
+            try {
+                $this->formFile->delete();
+            } catch (\Throwable) {
+                // Ignore stale Livewire temp uploads.
+            }
+        }
+
+        $this->formFile = null;
     }
 
     public function resetFilters(): void
@@ -112,6 +133,7 @@ class TowerDatabaseTable extends Component
 
     public function tutupModal(): void
     {
+        $this->clearTemporaryFile();
         $this->showModal = false;
         $this->resetModalForm();
     }
@@ -129,6 +151,7 @@ class TowerDatabaseTable extends Component
             'formUrlLink',
         ]);
         $this->formJenis = 'file';
+        $this->formFile = null;
         $this->resetErrorBag();
     }
 
@@ -138,11 +161,21 @@ class TowerDatabaseTable extends Component
             return;
         }
 
-        $rules = [
-            'formNama'       => 'required|string|max:255',
-            'formKeterangan' => 'nullable|string',
-            'formJenis'      => 'required|in:file,nomor,link',
-        ];
+        try {
+            if ($this->formJenis === 'file' && $this->formFile instanceof TemporaryUploadedFile) {
+                $path = $this->formFile->getRealPath();
+                if (! is_string($path) || ! is_file($path)) {
+                    $this->clearTemporaryFile();
+                    $this->addError('formFile', 'File upload tidak valid atau sudah kedaluwarsa. Silakan pilih ulang file.');
+                    return;
+                }
+            }
+
+            $rules = [
+                'formNama'       => 'required|string|max:255',
+                'formKeterangan' => 'nullable|string',
+                'formJenis'      => 'required|in:file,nomor,link',
+            ];
 
         if ($this->formJenis === 'file') {
             if (!$this->editingId) {
@@ -157,79 +190,84 @@ class TowerDatabaseTable extends Component
             $rules['formUrlLink'] = 'required|url|max:500';
         }
 
-        $this->validate($rules, [
-            'formNama.required'        => 'Nama item wajib diisi.',
-            'formFile.required'        => 'Silakan pilih file yang akan diunggah.',
-            'formFile.max'             => 'Ukuran file maksimal 50 MB.',
-            'formNilaiKontak.required' => 'Nomor telepon / kontak wajib diisi.',
-            'formEmailKontak.email'    => 'Format email tidak valid.',
-            'formUrlLink.required'     => 'URL tautan wajib diisi.',
-            'formUrlLink.url'          => 'Format URL tidak valid (harus diawali http:// atau https://).',
-        ]);
+            $this->validate($rules, [
+                'formNama.required'        => 'Nama item wajib diisi.',
+                'formFile.required'        => 'Silakan pilih file yang akan diunggah.',
+                'formFile.max'             => 'Ukuran file maksimal 50 MB.',
+                'formNilaiKontak.required' => 'Nomor telepon / kontak wajib diisi.',
+                'formEmailKontak.email'    => 'Format email tidak valid.',
+                'formUrlLink.required'     => 'URL tautan wajib diisi.',
+                'formUrlLink.url'          => 'Format URL tidak valid (harus diawali http:// atau https://).',
+            ]);
 
-        $karyawanId = auth()->user()?->karyawan_id_karyawan;
+            $karyawanId = auth()->user()?->karyawan_id_karyawan;
 
-        if ($this->editingId) {
-            $item = TowerDatabase::findOrFail($this->editingId);
-            $item->nama = $this->formNama;
-            $item->keterangan = $this->formKeterangan ?: null;
-            $item->jenis = $this->formJenis;
+            if ($this->editingId) {
+                $item = TowerDatabase::findOrFail($this->editingId);
+                $item->nama = $this->formNama;
+                $item->keterangan = $this->formKeterangan ?: null;
+                $item->jenis = $this->formJenis;
 
-            if ($this->formJenis === 'file') {
-                if ($this->formFile) {
-                    if ($item->file_path && Storage::disk('public')->exists($item->file_path)) {
-                        Storage::disk('public')->delete($item->file_path);
+                if ($this->formJenis === 'file') {
+                    if ($this->formFile) {
+                        if ($item->file_path && Storage::disk('public')->exists($item->file_path)) {
+                            Storage::disk('public')->delete($item->file_path);
+                        }
+                        $storedPath = $this->formFile->store('tower_files', 'public');
+                        $item->file_path = $storedPath;
+                        $item->file_name = $this->formFile->getClientOriginalName();
+                        $item->file_ext  = strtolower($this->formFile->getClientOriginalExtension());
+                        $bytes = $this->formFile->getSize();
+                        $item->file_size = $this->formatBytes($bytes);
                     }
-                    $storedPath = $this->formFile->store('tower_files', 'public');
-                    $item->file_path = $storedPath;
-                    $item->file_name = $this->formFile->getClientOriginalName();
-                    $item->file_ext  = strtolower($this->formFile->getClientOriginalExtension());
-                    $bytes = $this->formFile->getSize();
-                    $item->file_size = $this->formatBytes($bytes);
+                    $item->nilai_kontak = null;
+                    $item->email_kontak = null;
+                    $item->url_link = null;
+                } elseif ($this->formJenis === 'nomor') {
+                    $item->nilai_kontak = $this->formNilaiKontak;
+                    $item->email_kontak = $this->formEmailKontak ?: null;
+                    $item->url_link = null;
+                } elseif ($this->formJenis === 'link') {
+                    $item->url_link = $this->formUrlLink;
+                    $item->nilai_kontak = null;
+                    $item->email_kontak = null;
                 }
-                $item->nilai_kontak = null;
-                $item->email_kontak = null;
-                $item->url_link = null;
-            } elseif ($this->formJenis === 'nomor') {
-                $item->nilai_kontak = $this->formNilaiKontak;
-                $item->email_kontak = $this->formEmailKontak ?: null;
-                $item->url_link = null;
-            } elseif ($this->formJenis === 'link') {
-                $item->url_link = $this->formUrlLink;
-                $item->nilai_kontak = null;
-                $item->email_kontak = null;
+
+                $item->save();
+                session()->flash('tower_success', 'Data berhasil diperbarui.');
+            } else {
+                $data = [
+                    'nama'                    => $this->formNama,
+                    'keterangan'              => $this->formKeterangan ?: null,
+                    'jenis'                   => $this->formJenis,
+                    'dibuat_oleh_id_karyawan' => $karyawanId,
+                ];
+
+                if ($this->formJenis === 'file' && $this->formFile) {
+                    $storedPath = $this->formFile->store('tower_files', 'public');
+                    $data['file_path'] = $storedPath;
+                    $data['file_name'] = $this->formFile->getClientOriginalName();
+                    $data['file_ext']  = strtolower($this->formFile->getClientOriginalExtension());
+                    $bytes = $this->formFile->getSize();
+                    $data['file_size'] = $this->formatBytes($bytes);
+                } elseif ($this->formJenis === 'nomor') {
+                    $data['nilai_kontak'] = $this->formNilaiKontak;
+                    $data['email_kontak'] = $this->formEmailKontak ?: null;
+                } elseif ($this->formJenis === 'link') {
+                    $data['url_link'] = $this->formUrlLink;
+                }
+
+                TowerDatabase::create($data);
+                session()->flash('tower_success', 'Data baru berhasil ditambahkan.');
             }
 
-            $item->save();
-            session()->flash('tower_success', 'Data berhasil diperbarui.');
-        } else {
-            $data = [
-                'nama'                    => $this->formNama,
-                'keterangan'              => $this->formKeterangan ?: null,
-                'jenis'                   => $this->formJenis,
-                'dibuat_oleh_id_karyawan' => $karyawanId,
-            ];
-
-            if ($this->formJenis === 'file' && $this->formFile) {
-                $storedPath = $this->formFile->store('tower_files', 'public');
-                $data['file_path'] = $storedPath;
-                $data['file_name'] = $this->formFile->getClientOriginalName();
-                $data['file_ext']  = strtolower($this->formFile->getClientOriginalExtension());
-                $bytes = $this->formFile->getSize();
-                $data['file_size'] = $this->formatBytes($bytes);
-            } elseif ($this->formJenis === 'nomor') {
-                $data['nilai_kontak'] = $this->formNilaiKontak;
-                $data['email_kontak'] = $this->formEmailKontak ?: null;
-            } elseif ($this->formJenis === 'link') {
-                $data['url_link'] = $this->formUrlLink;
-            }
-
-            TowerDatabase::create($data);
-            session()->flash('tower_success', 'Data baru berhasil ditambahkan.');
+            $this->tutupModal();
+            $this->resetPage();
+        } catch (\Throwable $e) {
+            $this->clearTemporaryFile();
+            $this->addError('formFile', 'File tidak valid atau gagal diproses. Pastikan file yang dipilih sesuai format dan ukuran yang diizinkan.');
+            session()->flash('tower_error', 'Data gagal dikirim. Periksa kembali file yang Anda pilih.');
         }
-
-        $this->tutupModal();
-        $this->resetPage();
     }
 
     public function hapus(int $id): void
