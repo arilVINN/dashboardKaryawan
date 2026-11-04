@@ -1,4 +1,3 @@
-<!-- Modal Tambah Divisi -->
 <div id="modalTambahDivisi"
     class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-150">
 
@@ -16,7 +15,7 @@
                         </path>
                     </svg>
                 </div>
-                <h3 class="text-base font-bold text-slate-900">Tambah Divisi</h3>
+                <h3 id="judulModalDivisi" class="text-base font-bold text-slate-900">Tambah Divisi</h3>
             </div>
 
             <button onclick="tutupModalDivisi()" class="text-slate-400 hover:text-red-500 transition">
@@ -53,7 +52,7 @@
 
                 <button type="submit" id="btnSubmitDivisi"
                     class="px-4 py-1.5 bg-[#004A65] text-white text-sm font-medium rounded-md hover:bg-[#003347] transition flex items-center gap-1">
-                    Tambah
+                    <span id="labelSubmitDivisi">Tambah</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -67,8 +66,26 @@
     const modalDivisi = document.getElementById('modalTambahDivisi');
     const modalBox = document.getElementById('modalBox');
     const formTambahDivisi = document.getElementById('formTambahDivisi');
+    const judulModalDivisi = document.getElementById('judulModalDivisi');
+    const labelSubmitDivisi = document.getElementById('labelSubmitDivisi');
+    let divisiYangDiedit = null;
 
     function bukaModalDivisi() {
+        divisiYangDiedit = null;
+        judulModalDivisi.textContent = 'Tambah Divisi';
+        labelSubmitDivisi.textContent = 'Tambah';
+        formTambahDivisi.reset();
+        modalDivisi.classList.remove('opacity-0', 'pointer-events-none');
+        modalBox.classList.remove('scale-95', 'translate-y-4');
+        modalBox.classList.add('scale-100', 'translate-y-0');
+    }
+
+    function bukaModalEditDivisi(button) {
+        divisiYangDiedit = button.dataset.id;
+        judulModalDivisi.textContent = 'Edit Divisi';
+        labelSubmitDivisi.textContent = 'Simpan';
+        document.getElementById('kode_divisi').value = button.dataset.kode;
+        document.getElementById('nama_divisi').value = button.dataset.nama;
         modalDivisi.classList.remove('opacity-0', 'pointer-events-none');
         modalBox.classList.remove('scale-95', 'translate-y-4');
         modalBox.classList.add('scale-100', 'translate-y-0');
@@ -79,6 +96,7 @@
         modalBox.classList.remove('scale-100', 'translate-y-0');
         modalBox.classList.add('scale-95', 'translate-y-4');
         formTambahDivisi.reset();
+        divisiYangDiedit = null;
     }
 
     async function submitFormDivisi(e) {
@@ -94,13 +112,15 @@
         const formData = {
             kode_divisi: document.getElementById('kode_divisi').value,
             nama_divisi: document.getElementById('nama_divisi').value,
-            status_aktif: 'Aktif'
         };
+        const isEdit = Boolean(divisiYangDiedit);
+        const url = isEdit
+            ? `/hrd/divisi/${encodeURIComponent(divisiYangDiedit)}`
+            : '/hrd/divisi';
 
         try {
-            // Pastikan URL sesuai dengan file route kamu (/hrd/divisi atau /api/hrd/divisi)
-            const response = await fetch('/hrd/divisi', {
-                method: 'POST',
+            const response = await fetch(url, {
+                method: isEdit ? 'PUT' : 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -112,7 +132,7 @@
             const result = await response.json();
 
             if (response.ok || response.status === 201) {
-                alert(result.message || 'Divisi berhasil ditambahkan!');
+                alert(result.message || (isEdit ? 'Divisi berhasil diubah!' : 'Divisi berhasil ditambahkan!'));
                 tutupModalDivisi();
                 window.location.reload();
             } else if (response.status === 422) {
