@@ -58,6 +58,7 @@ class KadivDashboardController extends Controller
             ->map(fn (Karyawan $employee) => [
                 'id_karyawan' => $employee->id_karyawan,
                 'nama' => $employee->nama,
+                'jabatan' => $employee->jabatan,
                 'jumlah_tugas_dikerjakan' => $employee->tugas_count,
                 'terakhir_login' => $employee->user?->last_login_at?->toISOString(),
             ]);

@@ -16,12 +16,10 @@
 
         @include('component.topbar')
 
-        <div class="px-8">
-            @include('component.statusbar')
-        </div>
         <main class="flex-1 overflow-y-auto p-8">
+            @include('component.statusbar')
 
-            <h4 class="text-2xl font-bold text-slate-800 pt-2">Notifikasi</h4>
+            <h4 class="text-2xl font-bold text-slate-800 mt-6">Notifikasi</h4>
             @include('component.notifikasi')
 
             <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 items-start mt-6">

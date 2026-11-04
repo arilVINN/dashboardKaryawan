@@ -50,6 +50,9 @@ class StaffApiTest extends TestCase
     {
         $this->createTask('TGS-0', $this->staff->karyawan_id_karyawan, Tugas::STATUS_BERJALAN);
         $this->createTask('TGS-1', $this->staff->karyawan_id_karyawan, Tugas::STATUS_BARU);
+        // Tugas "baru" yang lebih dari sehari otomatis menjadi "berjalan".
+        // Buat tanggal dibuatnya hari ini agar tetap masuk bucket "baru".
+        Tugas::whereKey('TGS-1')->update(['tanggal_dibuat' => now()->toDateString()]);
         $this->createTask('TGS-2', $this->staff->karyawan_id_karyawan, Tugas::STATUS_MENUNGGU_ACC);
         // Di-ACC meski deadline lewat: tetap "sudah di-acc", bukan "telat".
         $this->createTask(

@@ -43,6 +43,9 @@ class KadivApiTest extends TestCase
         $outsideStaff = $this->createAccount('ST-2', 'Staff HR', 'DIV-HR', 'ROLE-STAFF', 'staff.hr');
 
         $this->createTask('T-1', $staff->karyawan_id_karyawan, Tugas::STATUS_BARU);
+        // Tugas "baru" yang lebih dari sehari otomatis menjadi "berjalan".
+        // Buat tanggal dibuatnya hari ini agar tetap masuk bucket "baru".
+        Tugas::whereKey('T-1')->update(['tanggal_dibuat' => now()->toDateString()]);
         $this->createTask('T-2', $staff->karyawan_id_karyawan, Tugas::STATUS_MENUNGGU_ACC);
         $this->createTask('T-3', $staff->karyawan_id_karyawan, Tugas::STATUS_SUDAH_ACC);
         $this->createTask('T-4', $staff->karyawan_id_karyawan, Tugas::STATUS_BERJALAN);
@@ -66,6 +69,7 @@ class KadivApiTest extends TestCase
             ->assertJsonPath('data.metrics.persentase_penyelesaian', 20)
             ->assertJsonCount(1, 'data.staff')
             ->assertJsonPath('data.staff.0.nama', 'Staff IT')
+            ->assertJsonPath('data.staff.0.jabatan', 'Staff IT')
             ->assertJsonPath('data.staff.0.jumlah_tugas_dikerjakan', 5);
     }
 

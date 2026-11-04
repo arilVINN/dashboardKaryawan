@@ -16,13 +16,8 @@
 
         @include('component.topbar')
 
-        <div class="px-8">
+        <main class="flex-1 overflow-y-auto p-8 pb-6">
             @include('component_kadiv.statusbar')
-        </div>
-        <main class="flex-1 overflow-y-auto p-8">
-            <h4 class="text-2xl font-bold text-slate-800 pt-2">
-                Manajemen Staff
-            </h4>
             @include('component_kadiv.tabelstaff')
 
             @include('component_kadiv.tabelpdant')
