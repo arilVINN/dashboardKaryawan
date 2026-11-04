@@ -328,6 +328,22 @@ class StaffApiTest extends TestCase
         $this->assertNotNull($response->json('data.0.created_at'));
     }
 
+    public function test_notification_api_strips_legacy_prefixes(): void
+    {
+        Notifikasi::create([
+            'id_notifikasi' => 'NTF-LEGACY',
+            'judul_notifikasi' => 'Pesan Baru',
+            'isi_notif' => 'Anda menerima pesan: Rapat Mingguan',
+            'tanggal_notifikasi' => '2026-09-29',
+            'user_id_user' => $this->staff->id_user,
+        ]);
+
+        $this->actingAs($this->staff)
+            ->getJson('/staff/notifikasi')
+            ->assertOk()
+            ->assertJsonPath('data.0.isi_notif', 'Rapat Mingguan');
+    }
+
     public function test_staff_cannot_open_another_staff_task_thread(): void
     {
         $otherStaff = $this->createAccount('KRY-OTHER', 'Staff Lain', 'ROLE-STAFF', 'staff.other');

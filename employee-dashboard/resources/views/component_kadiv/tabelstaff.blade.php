@@ -1,4 +1,4 @@
-<div class="mt-6 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+<div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
     <div class="flex items-center justify-between border-b border-[#EEF2F5] px-4 py-3">
         <h2 class="text-sm font-medium text-[#172B36]">Manajemen staff</h2>
         <a href="/kadiv/manajemenStaff" class="text-xs text-[#146C94] hover:underline">Lihat semua &rsaquo;</a>

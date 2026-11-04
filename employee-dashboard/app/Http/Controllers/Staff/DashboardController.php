@@ -151,7 +151,7 @@ class DashboardController extends Controller
                         return [
                             'id_notifikasi'      => $notifikasi->id_notifikasi,
                             'judul_notifikasi'   => $notifikasi->judul_notifikasi,
-                            'isi_notif'          => $notifikasi->isi_notif,
+                            'isi_notif'          => $notifikasi->displayMessage(),
                             'tanggal_notifikasi' => $notifikasi->tanggal_notifikasi,
                             'created_at'         => $notifikasi->created_at,
                         ];

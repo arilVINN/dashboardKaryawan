@@ -30,4 +30,18 @@ class Notifikasi extends Model
             'id_user'
         );
     }
+
+    /**
+     * Notification body without legacy conversational prefixes.
+     */
+    public function displayMessage(): string
+    {
+        $message = preg_replace([
+            '/^Anda mendapat tugas baru:\s*/i',
+            '/^Anda menerima (?:pesan|surat):\s*/i',
+            '/^Ada pesan baru pada tugas:\s*/i',
+        ], '', (string) $this->isi_notif);
+
+        return trim((string) $message);
+    }
 }
