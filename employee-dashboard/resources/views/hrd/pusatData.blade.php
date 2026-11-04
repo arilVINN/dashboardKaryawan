@@ -19,7 +19,7 @@
         @include('component.breadcrumbs', [
             'parentText' => 'Dashboard',
             'parentUrl' => url('/hrd/dashboard'),
-            'currentPage' => 'Pusat Data & Arsip',
+            'currentPage' => 'Direktori Arsip & Data',
         ])
 
         <main class="flex-1 overflow-y-auto p-8 pt-4 pb-12">

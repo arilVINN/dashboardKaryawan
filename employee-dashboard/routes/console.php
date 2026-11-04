@@ -12,3 +12,8 @@ Artisan::command('inspire', function () {
 // Dijalankan tiap jam agar tugas yang baru masuk jendela 24 jam tetap terkirim
 // tepat satu kali (lihat kolom tugas.deadline_reminder_sent_at).
 Schedule::command('tugas:remind-deadline')->hourly()->withoutOverlapping();
+
+// Kirim email pengingat catatan kalender pada tanggal pengingat masing-masing.
+// Catatan yang dibuat setelah jam 08:00 dengan pengingat hari ini dikirim
+// langsung oleh CalendarNoteController::store.
+Schedule::command('catatan:remind-email')->dailyAt('08:00')->withoutOverlapping();

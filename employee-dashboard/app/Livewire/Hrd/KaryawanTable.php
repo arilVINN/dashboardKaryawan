@@ -34,6 +34,8 @@ class KaryawanTable extends Component
     #[Url]
     public string $dir = 'asc';
 
+    public int $perPage = 5;
+
     public function mount(): void
     {
         $this->hrd();
@@ -68,6 +70,15 @@ class KaryawanTable extends Component
 
     public function updatedStatus(): void
     {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage(): void
+    {
+        if (!in_array($this->perPage, [5, 10, 25, 50], true)) {
+            $this->perPage = 5;
+        }
+
         $this->resetPage();
     }
 
@@ -113,7 +124,7 @@ class KaryawanTable extends Component
             'q' => $this->search,
             'sort' => $this->sort,
             'dir' => $this->dir,
-        ])->paginate(5);
+        ])->paginate($this->perPage);
 
         $daftarDivisi = Divisi::orderBy('nama_divisi')->get();
         $daftarJabatan = Karyawan::query()

@@ -190,7 +190,30 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- Footer: Ringkasan & Baris per Halaman --}}
+        <div class="border-t border-slate-200 px-6 pt-4 pb-4">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-[13px] text-[#4B5563]">
+                    Menampilkan {{ $rows->firstItem() ?? 0 }}-{{ $rows->lastItem() ?? 0 }} dari {{ $rows->total() }} data
+                </p>
+                <label class="flex items-center gap-2 text-[13px] text-[#4B5563]">
+                    <span>Baris per halaman</span>
+                    <select wire:model.live="perPage"
+                        class="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm text-[#334155] outline-none focus:border-[#146C94]">
+                        @foreach ([5, 10, 25, 50] as $size)
+                            <option value="{{ $size }}">{{ $size }}</option>
+                        @endforeach
+                    </select>
+                </label>
+            </div>
+        </div>
     </div>
 
-    <div>{{ $rows->links('vendor.pagination.custom') }}</div>
+    {{-- Pagination di luar kartu tabel, rata tengah --}}
+    @if ($rows->hasPages())
+        <div class="mt-3 flex justify-center pb-8">
+            {{ $rows->links('vendor.pagination.custom') }}
+        </div>
+    @endif
 </div>

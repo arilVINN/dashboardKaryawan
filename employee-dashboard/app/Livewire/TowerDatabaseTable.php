@@ -26,6 +26,8 @@ class TowerDatabaseTable extends Component
     #[Url]
     public string $dir = 'desc';
 
+    public int $perPage = 5;
+
     // Modal Form States
     public bool $showModal = false;
     public ?int $editingId = null;
@@ -45,6 +47,15 @@ class TowerDatabaseTable extends Component
 
     public function updatedJenis(): void
     {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage(): void
+    {
+        if (!in_array($this->perPage, [5, 10, 25, 50], true)) {
+            $this->perPage = 5;
+        }
+
         $this->resetPage();
     }
 
@@ -319,7 +330,7 @@ class TowerDatabaseTable extends Component
         $sortDir = strtolower($this->dir) === 'asc' ? 'asc' : 'desc';
         $query->orderBy($sortCol, $sortDir);
 
-        $items = $query->paginate(10);
+        $items = $query->paginate($this->perPage);
 
         // Counter untuk badge filter jenis
         $counts = [
