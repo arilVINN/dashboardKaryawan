@@ -9,6 +9,7 @@ use App\Models\Divisi;
 use App\Models\Tugas;
 use App\Models\Pesan;
 use App\Models\SuratIzin;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class HrdDashboardController extends Controller
@@ -100,6 +101,24 @@ class HrdDashboardController extends Controller
         $divisis = Divisi::withCount('karyawans')
             ->orderBy('id_divisi')
             ->get();
+
+        // Hitung total dan tugas selesai per divisi dalam satu query.
+        $divisionTaskCounts = DB::table('tugas')
+            ->join('karyawans', 'tugas.karyawan_id_karyawan', '=', 'karyawans.id_karyawan')
+            ->selectRaw(
+                'karyawans.divisi_id_divisi as divisi_id, COUNT(*) as total_tugas, SUM(CASE WHEN tugas.status = ? THEN 1 ELSE 0 END) as tugas_selesai',
+                [Tugas::STATUS_SUDAH_ACC]
+            )
+            ->groupBy('karyawans.divisi_id_divisi')
+            ->get()
+            ->keyBy('divisi_id');
+
+        $divisis->each(function (Divisi $divisi) use ($divisionTaskCounts): void {
+            $counts = $divisionTaskCounts->get($divisi->id_divisi);
+
+            $divisi->tugas_total_count = (int) ($counts->total_tugas ?? 0);
+            $divisi->tugas_selesai_count = (int) ($counts->tugas_selesai ?? 0);
+        });
 
         $pesan = Pesan::orderBy('tanggal_pesan', 'desc')
             ->orderBy('id_pesan', 'desc')

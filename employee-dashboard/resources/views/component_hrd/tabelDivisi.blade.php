@@ -1,96 +1,79 @@
 @php
-    $isCompact = $compact ?? false;
-    $cellPadding = $isCompact ? 'px-4 py-3' : 'px-6 py-4';
-
-    $divisis = $divisis ?? [];
-    $sortable = $sortable ?? false;
+    $divisis = collect($divisis ?? []);
 @endphp
 
-<div class="flex flex-col gap-3 w-full mt-2">
-    <div class="flex justify-between items-center">
-        <h2 class="text-xl font-bold text-slate-800">Manajemen Divisi</h2>
-        <button onclick="bukaModalDivisi()"
-            class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition">
-            Tambah
-        </button>
+<div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+    <div class="flex items-center justify-between border-b border-[#EEF2F5] px-4 py-3">
+        <h2 class="text-sm font-medium text-[#172B36]">Manajemen divisi</h2>
+        <a href="{{ route('hrd.manajemenDivisi') }}" class="text-xs text-[#146C94] hover:underline">
+            Lihat semua &rsaquo;
+        </a>
     </div>
 
-    <!-- Tabel Divisi -->
-    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
-        <div class="{{ $isCompact ? 'overflow-hidden' : 'overflow-x-auto' }}">
-            <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
-                    <tr>
-                        @if ($sortable)
-                            <x-sort-th column="kode" label="Kode Divisi" :padding="$cellPadding" />
-                            <x-sort-th column="nama" label="Nama Divisi" :padding="$cellPadding" />
-                            <x-sort-th column="staff" label="Jumlah Staff" :padding="$cellPadding" />
-                        @else
-                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Kode Divisi</th>
-                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Nama Divisi</th>
-                        @endif
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Status</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Aksi</th>
+    <div class="overflow-x-auto">
+        <table class="w-full min-w-[640px] table-fixed text-left text-[13px] text-[#475569]">
+            <thead class="bg-[#EAF4F8]">
+                <tr class="h-8">
+                    <th class="w-[40%] px-4 text-left text-xs font-medium text-[#334155]">Divisi</th>
+                    <th class="w-[28%] px-4 text-left text-xs font-medium text-[#334155]">Tugas selesai</th>
+                    <th class="w-[20%] px-4 text-left text-xs font-medium text-[#334155]">Status</th>
+                    <th class="w-10 px-2"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-[#EEF2F5]">
+                @forelse ($divisis as $divisi)
+                    @php
+                        $total = (int) ($divisi->tugas_total_count ?? 0);
+                        $selesai = (int) ($divisi->tugas_selesai_count ?? 0);
+                        $percentage = $total > 0 ? (int) round(($selesai / $total) * 100) : 0;
+                        $detailUrl = url('/hrd/detailDivisi/' . $divisi->id_divisi);
+                    @endphp
+                    <tr class="h-[54px] cursor-pointer hover:bg-[#F5FAFC] focus:bg-[#F5FAFC] focus:outline-none"
+                        tabindex="0" role="link"
+                        onclick="window.location.href='{{ $detailUrl }}'"
+                        onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); window.location.href='{{ $detailUrl }}'; }">
+                        <td class="px-4 py-2">
+                            <div class="min-w-0">
+                                <p class="truncate text-[13px] font-medium text-[#172B36]">{{ $divisi->nama_divisi }}</p>
+                                <p class="mt-0.5 truncate font-mono text-[11px] text-[#4B5563]">{{ $divisi->kode_divisi }}</p>
+                            </div>
+                        </td>
+                        <td class="px-4 py-2">
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-[13px] font-medium text-[#172B36]">{{ $selesai }}/{{ $total }}</span>
+                                <span class="text-[11px] text-[#4B5563]">tugas</span>
+                            </div>
+                            <div class="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[#E2E8EC]"
+                                role="progressbar"
+                                aria-label="{{ $selesai }} dari {{ $total }} tugas selesai"
+                                aria-valuemin="0"
+                                aria-valuemax="{{ $total }}"
+                                aria-valuenow="{{ $selesai }}">
+                                <div class="h-full rounded-full bg-[#0D9488]" style="width: {{ $percentage }}%"></div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-2">
+                            <x-status-badge :status="$divisi->status_aktif ?? 'Aktif'" />
+                        </td>
+                        <td class="px-3 py-2 text-right">
+                            <svg class="ml-auto h-4 w-4 text-[#94A3B8]" fill="none" stroke="currentColor"
+                                stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </td>
                     </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200">
-                    @forelse ($divisis as $divisi)
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="{{ $cellPadding }} font-semibold text-slate-800 whitespace-nowrap">
-                                {{ $divisi->kode_divisi }}
-                            </td>
-                            <td class="{{ $cellPadding }} text-slate-700">
-                                {{ $divisi->nama_divisi }}
-                            </td>
-                            @if ($sortable)
-                                <td class="{{ $cellPadding }} text-slate-700">
-                                    {{ $divisi->karyawans_count ?? 0 }}
-                                </td>
-                            @endif
-                            <td class="{{ $cellPadding }} whitespace-nowrap">
-                                @if (($divisi->status_aktif ?? 'Aktif') === 'Aktif')
-                                    <span
-                                        class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                                        Aktif
-                                    </span>
-                                @else
-                                    <span
-                                        class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">
-                                        {{ $divisi->status_aktif }}
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="{{ $cellPadding }} whitespace-nowrap text-center text-xs">
-                                <div class="flex justify-center items-center gap-2">
-                                    <a href="{{ url('/hrd/detailDivisi/' . $divisi->id_divisi) }}"
-                                        class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
-                                        Detail
-                                    </a>
-                                    <button type="button" onclick="hapusDivisi(this)" data-id="{{ $divisi->id_divisi }}"
-                                        data-nama="{{ $divisi->nama_divisi }}"
-                                        class="text-red-600 hover:text-red-800 font-medium hover:underline">
-                                        Hapus
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="{{ $sortable ? 5 : 4 }}" class="p-4 text-center text-slate-500">
-                                @if (collect(request()->query())->except(['page', 'sort', 'dir'])->filter()->isNotEmpty())
-                                    <span>Tidak ada data yang cocok dengan filter.</span>
-                                    <a href="{{ url()->current() }}"
-                                        class="mt-1 inline-block text-sm text-[#0097B2] hover:underline">Reset filter</a>
-                                @else
-                                    Belum ada data divisi.
-                                @endif
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                @empty
+                    <tr>
+                        <td colspan="4" class="px-4 py-10 text-center text-[13px] text-[#4B5563]">
+                            Belum ada data divisi.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <div class="border-t border-[#EEF2F5] px-4 py-3 text-xs text-[#4B5563]">
+        Menampilkan {{ $divisis->count() }} dari {{ $divisis->count() }} divisi
     </div>
 </div>
-
-@include('component_hrd.divisiModal')

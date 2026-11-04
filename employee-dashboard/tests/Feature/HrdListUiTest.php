@@ -149,11 +149,18 @@ class HrdListUiTest extends TestCase
         // tabelDivisi is shared; the dashboard must not get the sortable markup.
         $response = $this->actingAs($this->hrd)->get('/hrd/dashboard')
             ->assertOk()
-            ->assertDontSee('data-sort=', false);
+            ->assertDontSee('data-sort=', false)
+            ->assertDontSee('wire:click="sortBy', false)
+            ->assertSee('Manajemen divisi')
+            ->assertSee('Tugas selesai')
+            ->assertSee('Lihat semua');
 
-        $this->assertStringContainsString('<td class="px-6 py-4 whitespace-nowrap text-center text-xs">', $response->getContent());
-        $this->assertStringContainsString('<div class="flex justify-center items-center gap-2">', $response->getContent());
-        $this->assertDoesNotMatchRegularExpression('/<td\b[^>]*\bflex\b/', $response->getContent());
+        $html = $response->getContent();
+
+        $this->assertStringContainsString('aria-label="', $html);
+        $this->assertStringContainsString('role="progressbar"', $html);
+        $this->assertStringNotContainsString('bukaModalDivisi', $html);
+        $this->assertStringNotContainsString('>Hapus<', $html);
     }
 
 

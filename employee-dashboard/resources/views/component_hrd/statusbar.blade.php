@@ -9,7 +9,7 @@
     ];
 @endphp
 
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
     {{-- Total Karyawan --}}
     <a href="{{ route('hrd.daftarKaryawan') }}"

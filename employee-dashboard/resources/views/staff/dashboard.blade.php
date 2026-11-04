@@ -16,15 +16,12 @@
 
         @include('component.topbar')
 
-        <main class="flex-1 overflow-y-auto p-8">
+        <main class="flex-1 overflow-y-auto p-8 pb-6">
             @include('component.statusbar')
 
-            <h4 class="text-2xl font-bold text-slate-800 mt-6">Notifikasi</h4>
-            @include('component.notifikasi')
-
-            <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 items-start mt-6">
+            <div class="mt-6 grid grid-cols-1 items-start gap-6 min-[900px]:grid-cols-[1.5fr_1fr]">
                 @include('component.tableTugas', ['compact' => true])
-
+                @include('component.notifikasi')
             </div>
         </main>
 

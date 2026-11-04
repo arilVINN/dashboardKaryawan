@@ -1,6 +1,12 @@
-<!-- Container Notifikasi di Dashboard -->
-<div id="notifikasi-container" class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-5">
-    <p class="text-sm text-slate-500 col-span-3">Memuat notifikasi...</p>
+<div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+    <div class="flex items-center justify-between border-b border-[#EEF2F5] px-4 py-3">
+        <h2 class="text-sm font-medium text-[#172B36]">Notifikasi</h2>
+        <a href="/tugas" class="text-xs text-[#146C94] hover:underline">Lihat semua &rsaquo;</a>
+    </div>
+
+    <div id="notifikasi-container" class="divide-y divide-[#EEF2F5]">
+        <p class="px-4 py-3 text-[13px] text-[#4B5563]">Memuat notifikasi...</p>
+    </div>
 </div>
 
 <script>
@@ -16,21 +22,47 @@
         // Menyimpan ID notifikasi yang sudah pernah diterima
         let knownNotifIds = new Set();
         let isInitialLoad = true;
+        let readNotifications = new Set();
 
-        // Format tanggal Indonesia
-        const formatNotificationDate = (value) => {
+        try {
+            readNotifications = new Set(JSON.parse(localStorage.getItem('staff_read_notifications') || '[]'));
+        } catch (error) {
+            readNotifications = new Set();
+        }
+
+        const escapeNotificationHtml = (value) => String(value || '').replace(/[&<>"']/g, (character) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        })[character]);
+
+        const notificationReadKey = (notification) => {
+            const date = String(notification.tanggal_notifikasi || notification.created_at || '').slice(0, 10);
+            return `${notification.id_notifikasi || ''}|${date}`;
+        };
+
+        // Format tanggal dan waktu Indonesia (24 jam dengan titik dua).
+        const formatNotificationTime = (value) => {
             if (!value) return '-';
-            const date = new Date(value);
+
+            const date = new Date(String(value).replace(' ', 'T'));
             if (Number.isNaN(date.getTime())) return value;
 
-            return new Intl.DateTimeFormat('id-ID', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
+            const options = { day: 'numeric', month: 'short' };
+            if (date.getFullYear() !== new Date().getFullYear()) {
+                options.year = 'numeric';
+            }
+
+            const day = date.toLocaleDateString('id-ID', options);
+            const time = date.toLocaleTimeString('id-ID', {
                 hour: '2-digit',
                 minute: '2-digit',
                 hourCycle: 'h23'
-            }).format(date);
+            }).replace(/\./g, ':');
+
+            return `${day}, ${time}`;
         };
 
         // Efek nada dering halus browser (Web Audio API)
@@ -98,7 +130,7 @@
                     iconBg: 'bg-blue-100 text-blue-600',
                     linkUrl: '/tugas',
                     actionLabel: 'Lihat Tugas',
-                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />`
+                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H9m2 0a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />`
                 };
             }
 
@@ -108,10 +140,58 @@
                 badgeClass: 'text-amber-700 bg-amber-100 border-amber-200',
                 borderClass: 'border-amber-200',
                 iconBg: 'bg-amber-100 text-amber-600',
-                linkUrl: '#',
+                linkUrl: '/tugas',
                 actionLabel: 'Lihat',
                 iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />`
             };
+        }
+
+        function getNotifListConfig(judul = '') {
+            const lower = judul.toLowerCase();
+
+            if (lower.includes('pesan') || lower.includes('chat')) {
+                return {
+                    title: 'Pesan baru',
+                    iconClass: 'bg-emerald-100 text-emerald-600',
+                    linkUrl: '/pesan',
+                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />`
+                };
+            }
+
+            if (lower.includes('pengingat') || lower.includes('tenggat') || lower.includes('catatan') || lower.includes('kalender')) {
+                return {
+                    title: 'Pengingat tenggat',
+                    iconClass: 'bg-[#FEF0C3] text-[#B45309]',
+                    linkUrl: lower.includes('kalender') || lower.includes('catatan') ? '/kalender' : '/tugas',
+                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />`
+                };
+            }
+
+            if (lower.includes('tugas')) {
+                return {
+                    title: 'Tugas baru',
+                    iconClass: 'bg-[#DCEEFE] text-[#2563EB]',
+                    linkUrl: '/tugas',
+                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m-7-7h14" />`
+                };
+            }
+
+            return {
+                title: 'Notifikasi',
+                iconClass: 'bg-[#FEF0C3] text-[#B45309]',
+                linkUrl: '/tugas',
+                iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />`
+            };
+        }
+
+        function saveReadNotifications() {
+            localStorage.setItem('staff_read_notifications', JSON.stringify([...readNotifications]));
+        }
+
+        function markNotificationRead(notification, row) {
+            readNotifications.add(notificationReadKey(notification));
+            saveReadNotifications();
+            row.querySelector('[data-unread-dot]')?.remove();
         }
 
         // Tampilkan pop-up Toast
@@ -139,9 +219,9 @@
                             </svg>
                         </button>
                     </div>
-                    <p class="text-sm font-bold text-slate-800 mt-1 truncate">${notif.judul_notifikasi || 'Pemberitahuan Baru'}</p>
-                    <p class="text-xs text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">${notif.isi_notif || ''}</p>
-                    
+                    <p class="text-sm font-bold text-slate-800 mt-1 truncate">${escapeNotificationHtml(notif.judul_notifikasi || 'Pemberitahuan Baru')}</p>
+                    <p class="text-xs text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">${escapeNotificationHtml(notif.isi_notif || '')}</p>
+
                     <div class="mt-2.5 flex items-center justify-between">
                         <span class="text-[10px] text-slate-400 font-medium">Baru saja</span>
                         <a href="${config.linkUrl}" class="text-xs font-semibold text-[#004A65] hover:underline inline-flex items-center gap-1">
@@ -171,38 +251,40 @@
             setTimeout(removeToast, 7000); // Otomatis hilang dalam 7 detik
         }
 
-        // Render 3 kartu notifikasi teratas di halaman dashboard
-        function renderCards(notifikasiList) {
-            container.innerHTML = '';
+        function renderList(notifikasiList) {
+            container.replaceChildren();
 
             if (!notifikasiList || notifikasiList.length === 0) {
-                container.innerHTML = '<p class="text-sm text-slate-500 col-span-3">Tidak ada notifikasi baru.</p>';
+                container.innerHTML = '<p class="px-4 py-3 text-[13px] text-[#4B5563]">Belum ada notifikasi</p>';
                 return;
             }
 
-            notifikasiList.slice(0, 3).forEach(n => {
-                const config = getNotifConfig(n.judul_notifikasi);
-                const item = `
-                <div class="rounded-xl border border-slate-100 shadow-sm bg-white p-5 flex flex-col w-full max-w-sm transition hover:shadow-md">
-                    <div class="flex justify-start">
-                        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${config.badgeClass}">
-                            ${config.badgeText}
+            notifikasiList.slice(0, 5).forEach((notification) => {
+                const config = getNotifListConfig(notification.judul_notifikasi);
+                const readKey = notificationReadKey(notification);
+                const isUnread = !readNotifications.has(readKey);
+                const row = document.createElement('a');
+                row.href = config.linkUrl;
+                row.className = 'flex items-start gap-3 px-4 py-3 transition hover:bg-[#F5FAFC] focus:bg-[#F5FAFC] focus:outline-none';
+                row.innerHTML = `
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${config.iconClass}">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            ${config.iconSvg}
+                        </svg>
+                    </span>
+                    <span class="min-w-0 flex-1">
+                        <span class="flex items-center gap-1.5">
+                            <span class="text-[13px] font-medium text-[#172B36]">${config.title}</span>
+                            ${isUnread ? '<span class="h-1.5 w-1.5 rounded-full bg-[#146C94]" data-unread-dot></span>' : ''}
                         </span>
-                    </div>
-                    <div class="mt-4 flex flex-col">
-                        <h3 class="text-lg font-bold text-slate-900">${n.judul_notifikasi}</h3>
-                        <p class="text-sm text-slate-600 mt-1.5 leading-relaxed">${n.isi_notif}</p>
-                    </div>
-                    <div class="flex justify-between items-center mt-8">
-                        <div class="flex items-center gap-2 text-slate-500">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            <span class="text-xs font-medium">${formatNotificationDate(n.created_at || n.tanggal_notifikasi)}</span>
-                        </div>
-                    </div>
-                </div>`;
-                container.innerHTML += item;
+                        <span class="mt-0.5 block text-xs leading-[1.45] text-[#4B5563]">${escapeNotificationHtml(notification.isi_notif || '')}</span>
+                        <span class="mt-1 block text-[11px] text-[#4B5563]">${formatNotificationTime(notification.created_at || notification.tanggal_notifikasi)}</span>
+                    </span>
+                `;
+                row.addEventListener('click', () => {
+                    markNotificationRead(notification, row);
+                });
+                container.appendChild(row);
             });
         }
 
@@ -217,7 +299,7 @@
                 if (isInitialLoad) {
                     // Simpan daftar ID notifikasi yang sudah ada saat pertama buka web
                     notifikasiList.forEach(n => knownNotifIds.add(n.id_notifikasi));
-                    renderCards(notifikasiList);
+                    renderList(notifikasiList);
                     isInitialLoad = false;
                 } else {
                     // Cari notifikasi yang baru masuk sejak load sebelumnya
@@ -235,7 +317,7 @@
                     if (hasNewNotification) {
                         playChime();
                         newItems.forEach(n => showNotificationToast(n));
-                        renderCards(notifikasiList);
+                        renderList(notifikasiList);
 
                         // Cek apakah ada notifikasi tugas baru atau pesan baru untuk refresh tabel otomatis
                         const hasNewTugas = newItems.some(n => (n.judul_notifikasi || '').toLowerCase().includes('tugas'));

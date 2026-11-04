@@ -45,6 +45,20 @@ class StatusPalette
             'border' => '#F5A3A3',
             'dot' => '#DC2626',
         ],
+        'aktif' => [
+            'label' => 'Aktif',
+            'short' => 'Aktif',
+            'bg' => '#D9F5E5',
+            'border' => '#86D9AE',
+            'dot' => '#059669',
+        ],
+        'tidak_aktif' => [
+            'label' => 'Tidak aktif',
+            'short' => 'Tidak aktif',
+            'bg' => '#F1F5F9',
+            'border' => '#CBD5E1',
+            'dot' => '#64748B',
+        ],
     ];
 
     public static function all(): array
@@ -60,6 +74,8 @@ class StatusPalette
         }
 
         return match (true) {
+            str_contains($status, 'tidak') && str_contains($status, 'aktif') => 'tidak_aktif',
+            $status === 'aktif' => 'aktif',
             $status === 'baru' => 'baru',
             $status === 'berjalan' => 'berjalan',
             str_contains($status, 'menunggu') => 'menunggu',

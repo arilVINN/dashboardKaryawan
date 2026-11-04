@@ -15,15 +15,14 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         
         @include('component.topbar')
-        
-        <div class="px-8">
+
+        <main class="flex-1 overflow-y-auto p-8 pt-6 pb-6">
             @include('component_hrd.statusbar')
-        </div>
-        
-        <main class="flex-1 overflow-y-auto p-8 pt-6">
-            @include('component_hrd.tabelDivisi')
-            <!-- Konten -->
-            
+
+            <div class="mt-6 grid grid-cols-1 items-start gap-6 min-[900px]:grid-cols-[1.5fr_1fr]">
+                @include('component_hrd.tabelDivisi')
+                @include('component_hrd.notifikasi', ['pesan' => $pesan])
+            </div>
         </main>
         
     </div>
