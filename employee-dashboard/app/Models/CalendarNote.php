@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -33,12 +34,25 @@ class CalendarNote extends Model
         'detail',
         'warna',
         'reminder_days_before',
+        'reminder_email_sent_at',
     ];
 
     protected $casts = [
         'tanggal' => 'date:Y-m-d',
         'reminder_days_before' => 'integer',
+        'reminder_email_sent_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        // Tanggal atau offset pengingat berubah berarti email harus bisa
+        // dikirim ulang untuk jadwal yang baru.
+        static::updated(function (CalendarNote $note): void {
+            if ($note->wasChanged(['tanggal', 'reminder_days_before'])) {
+                $note->forceFill(['reminder_email_sent_at' => null])->saveQuietly();
+            }
+        });
+    }
 
     /**
      * Warna yang tersedia untuk note.
@@ -127,6 +141,21 @@ class CalendarNote extends Model
             ->get()
             ->filter(fn (self $note) => $note->remindsOn($date))
             ->values();
+    }
+
+    /**
+     * Batasi query ke note yang tanggal pengingatnya mungkin jatuh pada
+     * tanggal acuan. Filter hari yang tepat tetap dilakukan lewat remindsOn()
+     * agar kompatibel dengan PostgreSQL (produksi) dan SQLite (testing).
+     */
+    public function scopeDueForEmailReminder(Builder $query, ?CarbonInterface $date = null): Builder
+    {
+        $date = $date ? Carbon::parse($date)->startOfDay() : now()->startOfDay();
+
+        return $query
+            ->whereNotNull('reminder_days_before')
+            ->whereDate('tanggal', '>=', $date->toDateString())
+            ->whereDate('tanggal', '<=', $date->copy()->addDays(self::REMINDER_MAX_DAYS)->toDateString());
     }
 
     public function user(): BelongsTo
