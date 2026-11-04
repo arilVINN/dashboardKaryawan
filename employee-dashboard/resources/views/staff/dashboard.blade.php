@@ -9,7 +9,7 @@
     @vite('resources/css/app.css')
 </head>
 
-<body class="bg-gray-100 flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
     @include('component.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">

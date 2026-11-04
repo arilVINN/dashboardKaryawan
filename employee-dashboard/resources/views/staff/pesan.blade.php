@@ -9,31 +9,58 @@
     @vite('resources/css/app.css')
 </head>
 
-<body class="bg-gray-100 flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
 
     @include('component.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         
         @include('component.topbar')
-        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/'), 'currentPage' => 'Daftar Pesan'])
 
-        <main class="flex-1 overflow-y-auto p-8 pt-6">
+        <main class="flex-1 overflow-y-auto p-8 pt-6 pb-6">
+            @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/'), 'currentPage' => 'Daftar Pesan', 'inline' => true])
             @if (session('success'))
                 <div class="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
                     {{ session('success') }}
                 </div>
             @endif
 
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5"><span class="p-2 rounded-lg bg-green-100 text-green-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"></path></svg></span><span>Daftar Pesan</span></h1>
-                    
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+                <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5">
+                    <span class="p-2 rounded-lg bg-[#E3F1F7] text-[#146C94]">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75">
+                            </path>
+                        </svg>
+                    </span>
+                    <span>Daftar Pesan</span>
+                </h1>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" onclick="Livewire.dispatch('open-compose-message')"
+                        class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-[#0097B2] px-4 text-sm font-medium text-white transition hover:bg-[#008199]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                        Buat Pesan
+                    </button>
+
+                    <button type="button" data-modal-open="modalSuratIzin"
+                        class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-[#146C94] px-4 text-sm font-medium text-white transition hover:bg-[#0f5878]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h6m-6 4h6M9 8h1m5 12H7a2 2 0 01-2-2V6a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z" />
+                        </svg>
+                        Kirim Surat Izin
+                    </button>
                 </div>
             </div>
 
             <div class="w-full">
-                @include('component.tablePesan')
+                <livewire:staff.pesan-table />
+                <livewire:staff.compose-message />
                 @include('components.modalSuratIzin', ['routeSurat' => 'staff.suratIzin.store'])
             </div>
         </main>

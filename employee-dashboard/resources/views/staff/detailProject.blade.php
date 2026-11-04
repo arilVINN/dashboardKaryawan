@@ -8,18 +8,19 @@
     @vite('resources/css/app.css')
 </head>
 
-<body class="bg-gray-100 flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
     @include('component.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs', [
-            'parentText' => 'Daftar Tugas',
-            'parentUrl' => url('/tugas'),
-            'currentPage' => 'Detail Project',
-        ])
 
         <main class="flex-1 overflow-y-auto p-8 pt-6">
+            @include('component.breadcrumbs', [
+                'parentText' => 'Daftar Tugas',
+                'parentUrl' => url('/tugas'),
+                'currentPage' => 'Detail Project',
+                'inline' => true,
+            ])
             <div id="projectDetail" data-project-id="{{ $id }}" class="space-y-5">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 text-center text-slate-400">
                     Memuat detail project...

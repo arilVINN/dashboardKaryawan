@@ -887,15 +887,6 @@
             overflow: hidden;
             scrollbar-gutter: stable;
         }
-        /* Breadcrumb statis: 16px atas, 8px bawah (scoped ke halaman kalender) */
-        .calendar-breadcrumb {
-            position: static !important;
-            flex: none;
-        }
-        .calendar-breadcrumb > div {
-            padding-top: 16px !important;
-            padding-bottom: 8px !important;
-        }
         /* Toolbar kustom kalender: navigasi, filter, dan view switcher */
         .cal-btn {
             display: inline-flex;
@@ -1075,7 +1066,7 @@
     </style>
 </head>
 
-<body class="bg-gray-100 flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
 
     @include('component.sidebar')
 
@@ -1085,18 +1076,16 @@
 
         <div class="calendar-page flex-1 min-h-0 flex flex-col overflow-y-auto">
 
-            <div class="calendar-breadcrumb flex-none">
-                @include('component.breadcrumbs', [
-                    'parentText' => 'Dashboard',
-                    'parentUrl' => url('/'),
-                    'currentPage' => 'Kalender Tugas Divisi',
-                ])
-            </div>
-
-            <main class="flex-1 min-h-0 flex flex-col p-8 pt-0 pb-8">
+            <main class="flex-1 min-h-0 flex flex-col p-8 pt-6 pb-6">
+            @include('component.breadcrumbs', [
+                'parentText' => 'Dashboard',
+                'parentUrl' => url('/'),
+                'currentPage' => 'Kalender Tugas Divisi',
+                'inline' => true,
+            ])
 
             <!-- Page Title -->
-            <div class="flex-none mb-4">
+            <div class="flex-none mb-6">
                 <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5">
                     <span class="p-2 rounded-lg bg-blue-100 text-[#004A65]">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -1109,7 +1098,7 @@
             </div>
 
             <!-- Calendar Card -->
-            <div class="calendar-card bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex-1 min-h-0 flex flex-col">
+            <div class="calendar-card bg-white p-4 rounded-xl shadow-sm border border-[#E2E8EC] flex-1 min-h-0 flex flex-col">
                 <!-- Judul bulan + tombol tambah catatan di atas segmented control -->
                 <div class="cal-title-row flex-none mb-4">
                     <div></div>

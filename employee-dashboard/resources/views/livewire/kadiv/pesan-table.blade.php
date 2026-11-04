@@ -3,126 +3,158 @@
 @endphp
 
 <div>
-    <div class="flex flex-col gap-3 w-full mt-2">
-        <div class="flex justify-between items-center">
-            <h2 class="text-xl font-bold text-slate-800">Daftar Pesan</h2>
-            <div class="flex gap-2">
-                <button type="button" data-modal-open="modalKirimPesan"
-                    class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M6 12L3.27 3.13a59.77 59.77 0 0118.45 8.87 59.77 59.77 0 01-18.45 8.87L6 12zm0 0h7.5">
-                        </path>
-                    </svg>
-                    Buat Pesan
-                </button>
-                <button type="button" data-modal-open="modalSuratIzin"
-                    class="text-sm px-4 py-2 bg-[#146C94] text-white rounded-lg font-medium hover:bg-[#0f5878] transition flex items-center gap-1.5">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M9 12h6m-6 4h6M9 8h1m5 12H7a2 2 0 01-2-2V6a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z" />
-                    </svg>
-                    Kirim Surat Izin
-                </button>
-            </div>
-        </div>
-
+    <div class="w-full">
         @if (session('pesan_success'))
-            <div class="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
+            <div class="mb-4 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
                 {{ session('pesan_success') }}
             </div>
         @endif
 
-        <div class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5">
-            <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-                <label for="kadivPesanSearch" class="text-xs font-bold text-slate-500">Cari</label>
+        {{-- Compact filters --}}
+        <div class="mb-4 flex flex-wrap items-center gap-3">
+            <div class="relative min-w-0 flex-1">
+                <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
                 <input id="kadivPesanSearch" type="text" wire:model.live.debounce.300ms="search"
-                    placeholder="Judul / isi pesan..."
-                    class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                    placeholder="Cari pengirim atau topik..."
+                    class="h-10 w-full rounded-lg border border-slate-300 pl-9 pr-3 text-sm text-[#172B36] outline-none focus:border-[#146C94]">
             </div>
-            <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-                <label for="kadivPesanTipe" class="text-xs font-bold text-slate-500">Tipe</label>
-                <select id="kadivPesanTipe" wire:model.live="tipe"
-                    class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
-                    <option value="">Semua</option>
-                    <option value="pesan">Pesan</option>
-                    <option value="surat">Surat</option>
-                </select>
-            </div>
-            <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-                <label for="kadivPesanArah" class="text-xs font-bold text-slate-500">Arah</label>
-                <select id="kadivPesanArah" wire:model.live="arah"
-                    class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
-                    <option value="">Semua</option>
-                    <option value="masuk">Masuk</option>
-                    <option value="keluar">Keluar</option>
-                </select>
-            </div>
-            <div class="flex shrink-0 gap-2 sm:ml-auto">
+
+            <select id="kadivPesanTipe" wire:model.live="tipe"
+                class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-[#172B36] outline-none focus:border-[#146C94] sm:w-40">
+                <option value="">Semua tipe</option>
+                <option value="pesan">Pesan</option>
+                <option value="surat">Surat</option>
+            </select>
+
+            <select id="kadivPesanArah" wire:model.live="arah"
+                class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-[#172B36] outline-none focus:border-[#146C94] sm:w-40">
+                <option value="">Semua arah</option>
+                <option value="masuk">Masuk</option>
+                <option value="keluar">Keluar</option>
+            </select>
+
+            @if ($search !== '' || $tipe !== '' || $arah !== '')
                 <button type="button" wire:click="resetFilters"
-                    class="h-10 inline-flex items-center px-4 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Reset</button>
-            </div>
+                    class="h-10 shrink-0 text-sm font-medium text-[#146C94] hover:underline">
+                    Reset
+                </button>
+            @endif
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
+        <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-slate-600">
-                    <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
+                <table class="w-full min-w-[760px] table-fixed text-left text-sm text-[#475569]">
+                    <thead class="bg-slate-100">
                         <tr>
-                            <th class="px-6 py-4 font-medium whitespace-nowrap">
+                            <th class="w-[42%] px-4 py-3 text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap">
                                 <button type="button" wire:click="sortBy('judul')"
                                     class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                    Isi Pesan <span
-                                        class="{{ $sort === 'judul' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('judul') }}</span>
+                                    Topik / judul
+                                    <span class="{{ $sort === 'judul' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('judul') }}</span>
                                 </button>
                             </th>
-                            <th class="px-6 py-4 font-medium whitespace-nowrap text-center">
+                            <th class="w-[28%] px-4 py-3 text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap">
                                 <button type="button" wire:click="sortBy('pengirim')"
                                     class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                    Pengirim <span
-                                        class="{{ $sort === 'pengirim' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('pengirim') }}</span>
+                                    Pengirim
+                                    <span class="{{ $sort === 'pengirim' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('pengirim') }}</span>
                                 </button>
                             </th>
-                            <th class="px-6 py-4 font-medium whitespace-nowrap text-center">
+                            <th class="w-[18%] px-4 py-3 text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap">
                                 <button type="button" wire:click="sortBy('tanggal')"
                                     class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                    Tanggal <span
-                                        class="{{ $sort === 'tanggal' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('tanggal') }}</span>
+                                    Tanggal
+                                    <span class="{{ $sort === 'tanggal' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('tanggal') }}</span>
                                 </button>
                             </th>
-                            <th class="px-6 py-4 font-medium whitespace-nowrap text-center">Aksi</th>
+                            <th class="w-20 px-4 py-3 text-right text-[13px] font-semibold text-slate-500 whitespace-nowrap">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200">
+                    <tbody class="divide-y divide-[#EEF2F5]">
                         @forelse ($messages as $message)
-                            <tr wire:key="pesan-{{ $message['id_pesan'] }}" class="hover:bg-slate-50 transition">
-                                <td class="px-6 py-4 font-semibold text-slate-800 truncate max-w-[200px]">
-                                    {{ $message['judul_pesan'] }}</td>
-                                <td class="px-6 py-4 text-slate-700 text-center whitespace-nowrap">
-                                    {{ $message['pengirim']['nama'] ?? ($message['pengirim']['username'] ?? '-') }}</td>
-                                <td class="px-6 py-4 text-slate-500 text-center whitespace-nowrap">
-                                    {{ $message['tanggal_pesan'] ?? '-' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs">
-                                    <a href="{{ url('/kadiv/detailPesan/' . $message['id_pesan']) }}"
-                                        class="text-[#0e9dc3] hover:text-[#06627b] font-medium">Lihat</a>
+                            @php
+                                $url = url('/kadiv/detailPesan/' . $message['id_pesan']);
+                                $date = !empty($message['tanggal_pesan'])
+                                    ? \Illuminate\Support\Carbon::parse($message['tanggal_pesan'])
+                                    : null;
+                                $dateLabel = $date
+                                    ? ($date->isToday()
+                                        ? 'Hari ini'
+                                        : ($date->isYesterday()
+                                            ? 'Kemarin'
+                                            : $date->locale('id')->translatedFormat('j M Y')))
+                                    : '-';
+                                $isOutgoing = ($message['arah'] ?? 'masuk') === 'keluar';
+                                $contact = $isOutgoing ? ($message['penerima'] ?? null) : ($message['pengirim'] ?? null);
+                                $contactName = $contact['nama'] ?? $contact['username'] ?? '-';
+                                $contactUsername = $contact['username'] ?? null;
+                            @endphp
+                            <tr wire:key="pesan-{{ $message['id_pesan'] }}"
+                                role="link" tabindex="0"
+                                onclick="window.location.href='{{ $url }}'"
+                                onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); window.location.href='{{ $url }}'; }"
+                                class="h-16 cursor-pointer hover:bg-[#F5FAFC] focus:bg-[#F5FAFC] focus:outline-none">
+                                <td class="px-4 py-2">
+                                    <span class="truncate text-sm font-medium text-[#172B36]">
+                                        {{ $message['judul_pesan'] ?: 'Pesan' }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2">
+                                    @if ($isOutgoing)
+                                        <div class="text-sm text-[#172B36]">Anda</div>
+                                        <div class="text-xs text-[#4B5563]">Ke: {{ $contactName }}</div>
+                                    @else
+                                        <div class="text-sm text-[#172B36]">{{ $contactName }}</div>
+                                        @if ($contactUsername)
+                                            <div class="text-xs text-[#4B5563]">{{ $contactUsername }}</div>
+                                        @endif
+                                    @endif
+                                </td>
+                                <td class="px-4 py-2 text-sm text-[#4B5563]">{{ $dateLabel }}</td>
+                                <td class="px-4 py-2 text-right">
+                                    <a href="{{ $url }}" onclick="event.stopPropagation()"
+                                        class="text-sm font-medium text-[#146C94] hover:underline">
+                                        Baca
+                                    </a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-10 text-center text-slate-400">Belum ada pesan.</td>
+                                <td colspan="4" class="px-4 py-12">
+                                    <div class="flex flex-col items-center justify-center gap-2 text-center">
+                                        <svg class="h-10 w-10 text-slate-300" fill="none" stroke="currentColor"
+                                            stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                        </svg>
+                                        <p class="text-sm font-medium text-[#4B5563]">Tidak ada pesan ditemukan</p>
+                                        <button type="button" wire:click="resetFilters"
+                                            class="text-sm font-medium text-[#146C94] hover:underline">
+                                            Reset filter
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            @if ($messages->hasPages())
-                <div class="border-t border-slate-100 px-6 py-4">
-                    <div class="flex justify-center">
-                        {{ $messages->links('vendor.pagination.custom') }}
-                    </div>
+            <div class="border-t border-[#EEF2F5] px-4 py-3">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-[13px] text-[#4B5563]">
+                        Menampilkan {{ $messages->firstItem() ?? 0 }}-{{ $messages->lastItem() ?? 0 }} dari {{ $messages->total() }} pesan
+                    </p>
+
+                    @if ($messages->hasPages())
+                        <div>{{ $messages->links('vendor.pagination.custom') }}</div>
+                    @endif
                 </div>
-            @endif
+            </div>
         </div>
     </div>
 

@@ -185,10 +185,13 @@ class PagePolishTest extends TestCase
 
     public function test_kadiv_pesan_page_polish(): void
     {
-        $this->assertRowHeading(
-            $this->getPage($this->kadiv, '/kadiv/pesan'),
-            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
-        );
+        $html = $this->getPage($this->kadiv, '/kadiv/pesan');
+
+        $this->assertStringContainsString('data-breadcrumb-parent="Dashboard"', $html);
+        $this->assertStringContainsString('data-breadcrumb-current="Daftar Pesan"', $html);
+        $this->assertStringContainsString('<title>Daftar Pesan - PT Silindo</title>', $html);
+        $this->assertStringContainsString('<h1 class="text-2xl', $html);
+        $this->assertStringContainsString('<span>Daftar Pesan</span>', $html);
     }
 
     public function test_kadiv_manajemen_staff_page_polish(): void

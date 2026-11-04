@@ -35,8 +35,8 @@
                     <option value="">Semua</option>
                     <option value="baru">Baru</option>
                     <option value="berjalan">Berjalan</option>
-                    <option value="menunggu di-acc">Menunggu di-acc</option>
-                    <option value="sudah di-acc">Sudah di-acc</option>
+                    <option value="menunggu di-acc">Menunggu persetujuan</option>
+                    <option value="sudah di-acc">Disetujui</option>
                     <option value="terlambat">Terlambat</option>
                 </select>
             </div>
@@ -92,28 +92,14 @@
                                 <td class="px-6 py-4 font-semibold text-slate-800 whitespace-nowrap">
                                     {{ $task->judul_tugas }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <div class="inline-flex gap-1">
+                                    <div class="inline-flex flex-wrap items-center justify-center gap-1">
                                         @if (
                                             $task->is_terlambat &&
                                                 in_array($task->status, [\App\Models\Tugas::STATUS_MENUNGGU_ACC, \App\Models\Tugas::STATUS_SUDAH_ACC], true))
-                                            <span
-                                                class="px-2.5 py-1 rounded-full text-xs font-bold {{ $task->status === \App\Models\Tugas::STATUS_SUDAH_ACC ? 'bg-emerald-700 text-white' : 'bg-amber-100 text-amber-700' }}">{{ $task->status }}</span>
-                                            <span
-                                                class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Terlambat</span>
+                                            <x-status-badge :status="$task->status" />
+                                            <x-status-badge status="terlambat" />
                                         @else
-                                            @php
-                                                $badgeBg = match ($status) {
-                                                    'berjalan' => 'bg-emerald-100 text-emerald-700',
-                                                    'menunggu di-acc' => 'bg-amber-100 text-amber-700',
-                                                    'sudah di-acc' => 'bg-emerald-700 text-white',
-                                                    \App\Models\Tugas::STATUS_TERLAMBAT => 'bg-red-100 text-red-700',
-                                                    default => 'bg-[#C0E7FF] text-blue-700', // baru
-                                                };
-                                            @endphp
-                                            <span
-                                                class="px-2.5 py-1 rounded-full text-xs font-bold {{ $badgeBg }}">
-                                                {{ $status }}
-                                            </span>
+                                            <x-status-badge :status="$status" />
                                         @endif
                                     </div>
                                 </td>

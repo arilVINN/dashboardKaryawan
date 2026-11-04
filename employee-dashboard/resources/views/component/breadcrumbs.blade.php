@@ -7,9 +7,10 @@
 @php
     // Prefer an explicit, relevant parent page over browser history.
     $backUrl = $parentUrl ?: url()->previous();
+    $inline = $inline ?? false;
 @endphp
 
-<div class="px-8 pt-4">
+<div class="{{ $inline ? 'mb-4' : 'px-8 pt-4' }}">
     <nav aria-label="Breadcrumb" role="navigation">
         <ul class="flex flex-wrap items-center gap-1 text-sm">
             <li class="inline-flex items-center">

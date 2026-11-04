@@ -23,7 +23,7 @@ class StaffPesanQuery
      * Unified staff message list: task threads merged with direct messages.
      *
      * @param  array{jenis?: string, q?: string, sort?: string, dir?: string}  $filters
-     * @return Collection<int, array{jenis: string, link_id: string, judul: string, pengirim: string, tanggal_raw: ?string, tanggal: string}>
+     * @return Collection<int, array{jenis: string, link_id: string, judul: string, pengirim: string, pengirim_username: ?string, arah: string, tanggal_raw: ?string, tanggal: string}>
      */
     public function unified(array $filters): Collection
     {
@@ -37,7 +37,7 @@ class StaffPesanQuery
      */
     private function threads(): Collection
     {
-        return Tugas::with('latestPesan.pengirim')
+        return Tugas::with('latestPesan.pengirim.karyawan')
             ->withCount('pesans')
             ->where('karyawan_id_karyawan', $this->staff->karyawan_id_karyawan)
             ->get()
@@ -46,7 +46,11 @@ class StaffPesanQuery
                 'jenis' => 'tugas',
                 'link_id' => $tugas->id_tugas,
                 'judul' => 'Tugas: '.$tugas->judul_tugas,
-                'pengirim' => $tugas->latestPesan->pengirim?->username ?? '-',
+                'pengirim' => $tugas->latestPesan->pengirim?->karyawan?->nama
+                    ?? $tugas->latestPesan->pengirim?->username
+                    ?? '-',
+                'pengirim_username' => $tugas->latestPesan->pengirim?->username,
+                'arah' => 'masuk',
                 'tanggal_raw' => $tugas->latestPesan->tanggal_pesan,
                 'tanggal' => $this->formatDate($tugas->latestPesan->tanggal_pesan),
             ])
@@ -58,18 +62,31 @@ class StaffPesanQuery
      */
     private function directMessages(): Collection
     {
-        return Pesan::with('pengirim.karyawan')
-            ->where('penerima_id_user', $this->staff->id_user)
+        return Pesan::with(['pengirim.karyawan', 'penerima.karyawan'])
             ->whereNull('tugas_id_tugas')
+            ->where(function ($query): void {
+                $query->where('penerima_id_user', $this->staff->id_user)
+                    ->orWhere('pengirim_id_user', $this->staff->id_user);
+            })
+            ->latest('created_at')
             ->get()
-            ->map(fn (Pesan $pesan): array => [
-                'jenis' => 'langsung',
-                'link_id' => $pesan->id_pesan,
-                'judul' => $pesan->judul_pesan ?: 'Pesan Langsung',
-                'pengirim' => $pesan->pengirim?->username ?? '-',
-                'tanggal_raw' => $pesan->tanggal_pesan,
-                'tanggal' => $this->formatDate($pesan->tanggal_pesan),
-            ])
+            ->map(function (Pesan $pesan): array {
+                $isOutgoing = $pesan->pengirim_id_user === $this->staff->id_user;
+                $other = $isOutgoing ? $pesan->penerima : $pesan->pengirim;
+
+                return [
+                    'jenis' => 'langsung',
+                    'link_id' => $pesan->id_pesan,
+                    'judul' => $pesan->judul_pesan ?: 'Pesan Langsung',
+                    'pengirim' => $other?->karyawan?->nama
+                        ?? $other?->username
+                        ?? '-',
+                    'pengirim_username' => $other?->username,
+                    'arah' => $isOutgoing ? 'keluar' : 'masuk',
+                    'tanggal_raw' => $pesan->tanggal_pesan,
+                    'tanggal' => $this->formatDate($pesan->tanggal_pesan),
+                ];
+            })
             ->values();
     }
 
@@ -87,7 +104,8 @@ class StaffPesanQuery
             $needle = mb_strtolower((string) $q);
             $items = $items->filter(function (array $item) use ($needle): bool {
                 return str_contains(mb_strtolower((string) $item['judul']), $needle)
-                    || str_contains(mb_strtolower((string) $item['pengirim']), $needle);
+                    || str_contains(mb_strtolower((string) $item['pengirim']), $needle)
+                    || str_contains(mb_strtolower((string) ($item['pengirim_username'] ?? '')), $needle);
             })->values();
         }
 

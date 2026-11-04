@@ -11,9 +11,9 @@
     
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/'), 'currentPage' => 'Profil Saya'])
         
         <main class="flex-1 overflow-y-auto p-8 lg:p-12">
+            @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/'), 'currentPage' => 'Profil Saya', 'inline' => true])
             <!-- Header Profil (Mirip Screenshot) -->
             <div class="flex items-center gap-6 mb-10">
                 <div id="prof-inisial" class="w-24 h-24 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-4xl font-bold shrink-0">

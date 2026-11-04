@@ -8,18 +8,19 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gray-100 flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
     @include('component_hrd.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs', [
-            'parentText' => 'Karyawan',
-            'parentUrl' => url('/hrd/daftarKaryawan'),
-            'currentPage' => 'Detail Karyawan',
-        ])
 
         <main class="flex-1 overflow-y-auto p-8 pt-6 bg-slate-50 space-y-6">
+            @include('component.breadcrumbs', [
+                'parentText' => 'Karyawan',
+                'parentUrl' => url('/hrd/daftarKaryawan'),
+                'currentPage' => 'Detail Karyawan',
+                'inline' => true,
+            ])
             <div
                 class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 flex flex-col lg:flex-row lg:items-center gap-5">
                 <div class="flex items-center gap-5 min-w-0 flex-1">

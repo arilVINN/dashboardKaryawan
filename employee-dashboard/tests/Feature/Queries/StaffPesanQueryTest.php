@@ -107,6 +107,8 @@ class StaffPesanQueryTest extends TestCase
                 'link_id' => 'T-1',
                 'judul' => 'Tugas: Desain Logo',
                 'pengirim' => 'abby',
+                'pengirim_username' => 'abby',
+                'arah' => 'masuk',
                 'tanggal_raw' => '2026-10-01',
                 'tanggal' => '1 Okt 2026',
             ],
@@ -120,11 +122,26 @@ class StaffPesanQueryTest extends TestCase
                 'link_id' => 'P-D1',
                 'judul' => 'Rapat Mingguan',
                 'pengirim' => 'zed',
+                'pengirim_username' => 'zed',
+                'arah' => 'masuk',
                 'tanggal_raw' => '2026-10-02',
                 'tanggal' => '2 Okt 2026',
             ],
             $langsung
         );
+    }
+
+    public function test_includes_messages_sent_by_staff(): void
+    {
+        $this->pesan('P-OUT', 'Pesan Keluar', $this->staff->id_user, 'USR-A', '2026-10-03', null);
+
+        $items = StaffPesanQuery::forStaff($this->staff)->unified([]);
+        $outgoing = $items->firstWhere('link_id', 'P-OUT');
+
+        $this->assertNotNull($outgoing);
+        $this->assertSame('keluar', $outgoing['arah']);
+        $this->assertSame('abby', $outgoing['pengirim']);
+        $this->assertSame('abby', $outgoing['pengirim_username']);
     }
 
     public function test_filters_by_jenis(): void
