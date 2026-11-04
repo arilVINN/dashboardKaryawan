@@ -9,7 +9,7 @@
 <body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800">
     @include('component.sidebar')
     
-    <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
+    <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden"> 
         @include('component.topbar')
         @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/'), 'currentPage' => 'Profil Saya'])
         
