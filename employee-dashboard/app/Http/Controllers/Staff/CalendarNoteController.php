@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Staff;
 
+use App\Actions\SendCalendarNoteReminder;
 use App\Http\Controllers\Controller;
 use App\Models\CalendarNote;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -110,6 +112,8 @@ class CalendarNoteController extends Controller
 
         $warna = CalendarNote::WARNA_OPTIONS[$note->warna] ?? CalendarNote::WARNA_OPTIONS['slate'];
 
+        $this->sendImmediateReminderIfDue($note);
+
         return response()->json([
             'message' => 'Note berhasil disimpan',
             'event'   => [
@@ -157,5 +161,30 @@ class CalendarNoteController extends Controller
         $note->delete();
 
         return response()->json(['message' => 'Note berhasil dihapus']);
+    }
+
+    /**
+     * Kirim email langsung bila pengingat catatan jatuh hari ini dan jadwal
+     * harian (08:00) sudah lewat. Kegagalan email tidak boleh menggagalkan
+     * penyimpanan catatan.
+     */
+    private function sendImmediateReminderIfDue(CalendarNote $note): void
+    {
+        if (! $note->remindsOn(now())) {
+            return;
+        }
+
+        if (now()->lt(now()->startOfDay()->addHours(8))) {
+            return;
+        }
+
+        try {
+            app(SendCalendarNoteReminder::class)->handle($note);
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim email pengingat catatan saat dibuat: '.$e->getMessage(), [
+                'id_catatan' => $note->id,
+                'id_user' => $note->user_id_user,
+            ]);
+        }
     }
 }
