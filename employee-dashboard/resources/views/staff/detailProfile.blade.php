@@ -14,7 +14,6 @@
         @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/'), 'currentPage' => 'Profil Saya'])
         
         <main class="flex-1 overflow-y-auto p-8 lg:p-12">
-            <!-- Header Profil (Mirip Screenshot) -->
             <div class="flex items-center gap-6 mb-10">
                 <div id="prof-inisial" class="w-24 h-24 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-4xl font-bold shrink-0">
 U
@@ -64,7 +63,6 @@ U
 
                 <!-- KANAN -->
                 <div class="space-y-6">
-                    <!-- Informasi Pribadi (Mode Baca) -->
                     <div id="view-info" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative">
                         <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
                             <h2 class="text-lg font-bold text-slate-900">Informasi Pribadi</h2>
