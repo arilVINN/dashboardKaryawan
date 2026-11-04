@@ -115,9 +115,15 @@
                     </tbody>
                 </table>
             </div>
-        </div>
 
-        <div>{{ $messages->links('vendor.pagination.custom') }}</div>
+            @if ($messages->hasPages())
+                <div class="border-t border-slate-100 px-6 py-4">
+                    <div class="flex justify-center">
+                        {{ $messages->links('vendor.pagination.custom') }}
+                    </div>
+                </div>
+            @endif
+        </div>
     </div>
 
     {{-- MODAL KIRIM PESAN --}}

@@ -54,13 +54,20 @@
             </table>
         </div>
 
-        {{-- Footer: Ringkasan & Baris per Halaman --}}
-        <div class="border-t border-slate-200 px-6 pt-4 pb-4">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-[13px] text-[#4B5563]">
+        {{-- Footer: Ringkasan, Pagination & Baris per Halaman --}}
+        <div class="border-t border-slate-200 px-6 py-4">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <p class="text-[13px] text-[#4B5563] lg:shrink-0">
                     Menampilkan {{ $pesans->firstItem() ?? 0 }}-{{ $pesans->lastItem() ?? 0 }} dari {{ $pesans->total() }} data
                 </p>
-                <label class="flex items-center gap-2 text-[13px] text-[#4B5563]">
+
+                @if ($pesans->hasPages())
+                    <div class="flex w-full justify-center lg:w-auto lg:flex-1">
+                        {{ $pesans->links('vendor.pagination.custom') }}
+                    </div>
+                @endif
+
+                <label class="flex items-center gap-2 text-[13px] text-[#4B5563] lg:shrink-0">
                     <span>Baris per halaman</span>
                     <select wire:model.live="perPage"
                         class="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm text-[#334155] outline-none focus:border-[#146C94]">
@@ -72,11 +79,4 @@
             </div>
         </div>
     </div>
-
-    {{-- Pagination di luar kartu tabel, rata tengah --}}
-    @if ($pesans->hasPages())
-        <div class="mt-3 flex justify-center pb-8">
-            {{ $pesans->links('vendor.pagination.custom') }}
-        </div>
-    @endif
 </div>

@@ -300,9 +300,25 @@ class PagePolishTest extends TestCase
 
         $this->assertStringContainsString('data-polish-pagination', $html);
         $this->assertStringContainsString('aria-label="Navigasi halaman"', $html);
-        $this->assertStringContainsString('?page=1', $html);
-        $this->assertStringContainsString('?page=3', $html);
+        $this->assertStringContainsString("wire:click=\"previousPage('page')\"", $html);
+        $this->assertStringContainsString("wire:click=\"nextPage('page')\"", $html);
+        $this->assertStringContainsString("wire:click=\"gotoPage(1, 'page')\"", $html);
+        $this->assertStringContainsString("wire:click=\"gotoPage(3, 'page')\"", $html);
         $this->assertStringContainsString('bg-[#004A65]', $html);
+    }
+
+    public function test_custom_pagination_shows_first_and_last_controls_for_long_pagination(): void
+    {
+        $paginator = new LengthAwarePaginator(
+            range(1, 100), 100, 10, 6, ['path' => 'http://localhost']
+        );
+
+        $html = (string) $paginator->links('vendor.pagination.custom');
+
+        $this->assertStringContainsString('aria-label="Halaman pertama"', $html);
+        $this->assertStringContainsString('aria-label="Halaman terakhir"', $html);
+        $this->assertStringContainsString("wire:click=\"gotoPage(1, 'page')\"", $html);
+        $this->assertStringContainsString("wire:click=\"gotoPage(10, 'page')\"", $html);
     }
 
     public function test_daftar_karyawan_pagination_uses_custom_view(): void
