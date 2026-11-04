@@ -76,21 +76,19 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Ambil catatan kalender yang jatuh besok (pengingat sehari sebelum)
+        // Ambil catatan kalender yang pengingatnya jatuh pada hari ini,
+        // sesuai jumlah hari yang dipilih user (H-0, H-1, H-3, dst.).
         $besok = Carbon::tomorrow()->toDateString();
         $tanggalLabel = Carbon::parse($besok)->locale('id')->isoFormat('dddd, D MMMM Y');
 
-        $notesBesok = CalendarNote::query()
-            ->where('user_id_user', $user->id_user)
-            ->whereDate('tanggal', $besok)
-            ->get();
+        $notesHariIni = CalendarNote::remindersFor($user->id_user);
 
-        // Buat objek virtual notifikasi pengingat dari note besok
-        $pengingatNote = $notesBesok->map(function (CalendarNote $note) use ($tanggalLabel) {
+        // Buat objek virtual notifikasi pengingat dari note hari ini
+        $pengingatNote = $notesHariIni->map(function (CalendarNote $note) {
             return [
                 'id_notifikasi'      => 'note-reminder-' . $note->id,
                 'judul_notifikasi'   => 'Pengingat Kalender',
-                'isi_notif'          => "Catatan \"{$note->judul}\" dijadwalkan besok, {$tanggalLabel}.",
+                'isi_notif'          => $note->reminderMessage(),
                 'tanggal_notifikasi' => now()->toDateString(),
                 'created_at'         => now()->toISOString(),
                 'is_note_reminder'   => true,

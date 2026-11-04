@@ -1384,6 +1384,58 @@
                         </div>
                     </div>
 
+                    <div id="note-reminder-section" class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <p id="note-reminder-label" class="text-[13px] font-medium text-[#4B5563]">Ingatkan saya</p>
+                                <p class="text-xs text-[#4B5563] mt-0.5">Notifikasi sebelum tanggal catatan</p>
+                            </div>
+                            <button type="button" id="note-reminder-toggle" role="switch" aria-checked="false" aria-label="Ingatkan saya"
+                                class="relative inline-flex shrink-0 cursor-pointer items-center w-[38px] h-[22px] rounded-full bg-[#CBD5E1] shadow-inner transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2"
+                                onclick="toggleNoteReminder()">
+                                <span id="note-reminder-knob" class="inline-block w-[18px] h-[18px] rounded-full bg-white shadow-[0_1px_2px_rgba(15,23,42,0.25)] transition-transform duration-200 ease-out translate-x-[2px]"></span>
+                            </button>
+                        </div>
+
+                        <div id="note-reminder-controls" class="hidden mt-3">
+                            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-2">
+                                <div class="inline-flex h-[38px] items-center rounded-lg border border-[#D5DEE3] bg-white transition focus-within:border-[#146C94] focus-within:ring-2 focus-within:ring-[#146C94]/15">
+                                    <input type="number" id="note-reminder-value" min="1" max="60" value="1"
+                                        inputmode="numeric" aria-label="Jumlah waktu pengingat"
+                                        class="h-full w-16 appearance-none rounded-l-lg bg-transparent px-2 text-center text-sm font-medium text-[#172B36] outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
+                                    <span class="h-5 w-px shrink-0 bg-[#D5DEE3]"></span>
+                                    <div class="relative h-full">
+                                        <select id="note-reminder-unit" aria-label="Satuan waktu pengingat"
+                                            class="h-full cursor-pointer appearance-none rounded-r-lg bg-transparent pl-3 pr-8 text-sm text-[#172B36] outline-none">
+                                            <option value="day">hari</option>
+                                            <option value="week">minggu</option>
+                                        </select>
+                                        <svg class="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-[#4B5563]">sebelum tanggal catatan</span>
+                            </div>
+
+                            <div class="mt-2.5 flex flex-wrap items-center gap-1.5">
+                                <button type="button" class="rounded-full border border-[#D5DEE3] bg-white px-2.5 py-1 text-[13px] text-[#146C94] transition hover:border-[#146C94]/40 hover:bg-[#146C94]/5" onclick="setNoteReminderPreset(1, 'day')">1 hari</button>
+                                <button type="button" class="rounded-full border border-[#D5DEE3] bg-white px-2.5 py-1 text-[13px] text-[#146C94] transition hover:border-[#146C94]/40 hover:bg-[#146C94]/5" onclick="setNoteReminderPreset(3, 'day')">3 hari</button>
+                                <button type="button" class="rounded-full border border-[#D5DEE3] bg-white px-2.5 py-1 text-[13px] text-[#146C94] transition hover:border-[#146C94]/40 hover:bg-[#146C94]/5" onclick="setNoteReminderPreset(1, 'week')">1 minggu</button>
+                            </div>
+
+                            <div id="note-reminder-hint" class="mt-2.5 flex items-start gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-[#4B5563]">
+                                <svg id="note-reminder-hint-bell" class="w-3.5 h-3.5 shrink-0 mt-px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                </svg>
+                                <svg id="note-reminder-hint-alert" class="hidden w-3.5 h-3.5 shrink-0 mt-px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                <span id="note-reminder-hint-text">Pengingat muncul pada 4 Nov 2026.</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="note-error-message" class="text-xs text-red-600 hidden"></div>
                 </div>
 
@@ -1509,6 +1561,155 @@
             if (target) target.textContent = raw ? formatTanggalIndonesia(raw) : '-';
         }
 
+        // --- PENGINGAT CATATAN ---
+        let noteReminderEnabled = false;
+
+        function setNoteReminderSwitchState(enabled) {
+            noteReminderEnabled = !!enabled;
+
+            const toggle = document.getElementById('note-reminder-toggle');
+            const knob = document.getElementById('note-reminder-knob');
+            const controls = document.getElementById('note-reminder-controls');
+
+            if (toggle) {
+                toggle.setAttribute('aria-checked', enabled ? 'true' : 'false');
+                toggle.classList.toggle('bg-[#146C94]', enabled);
+                toggle.classList.toggle('bg-[#CBD5E1]', !enabled);
+            }
+
+            if (knob) {
+                knob.classList.toggle('translate-x-[18px]', enabled);
+                knob.classList.toggle('translate-x-[2px]', !enabled);
+            }
+
+            if (controls) {
+                controls.classList.toggle('hidden', !enabled);
+            }
+
+            updateNoteReminderHint();
+        }
+
+        function toggleNoteReminder() {
+            setNoteReminderSwitchState(!noteReminderEnabled);
+        }
+
+        function setNoteReminderPreset(amount, unit) {
+            const valueInput = document.getElementById('note-reminder-value');
+            const unitSelect = document.getElementById('note-reminder-unit');
+
+            if (valueInput) valueInput.value = String(amount);
+            if (unitSelect) unitSelect.value = unit;
+
+            updateNoteReminderHint();
+        }
+
+        function getNoteReminderAmount() {
+            const input = document.getElementById('note-reminder-value');
+            let amount = parseInt(input?.value || '1', 10);
+
+            if (!Number.isFinite(amount) || amount < 1) amount = 1;
+            if (amount > 60) amount = 60;
+
+            return amount;
+        }
+
+        function normalizeNoteReminderValue() {
+            const input = document.getElementById('note-reminder-value');
+            if (input) input.value = String(getNoteReminderAmount());
+        }
+
+        function getNoteReminderDays() {
+            if (!noteReminderEnabled) return null;
+
+            const unit = document.getElementById('note-reminder-unit')?.value;
+            return getNoteReminderAmount() * (unit === 'week' ? 7 : 1);
+        }
+
+        function getNoteReminderDate() {
+            const rawDate = document.getElementById('note-input-tanggal')?.value || '';
+            const parts = rawDate.split('-');
+
+            if (parts.length !== 3) return null;
+
+            const noteDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+            const days = getNoteReminderDays();
+
+            if (isNaN(noteDate.getTime()) || days === null) return null;
+
+            noteDate.setDate(noteDate.getDate() - days);
+
+            return noteDate;
+        }
+
+        function toLocalIsoDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+
+            return `${year}-${month}-${day}`;
+        }
+
+        function updateNoteReminderHint() {
+            const controls = document.getElementById('note-reminder-controls');
+
+            if (!noteReminderEnabled) {
+                if (controls) controls.classList.add('hidden');
+                return true;
+            }
+
+            if (controls) controls.classList.remove('hidden');
+
+            const hint = document.getElementById('note-reminder-hint');
+            const hintText = document.getElementById('note-reminder-hint-text');
+            const bellIcon = document.getElementById('note-reminder-hint-bell');
+            const alertIcon = document.getElementById('note-reminder-hint-alert');
+            const reminderDate = getNoteReminderDate();
+
+            if (!reminderDate) {
+                if (hintText) hintText.textContent = 'Pilih tanggal catatan untuk melihat tanggal pengingat.';
+                if (hint) {
+                    hint.classList.remove('text-[#B91C1C]', 'border-red-200', 'bg-red-50');
+                    hint.classList.add('text-[#4B5563]', 'border-slate-200', 'bg-white');
+                }
+                if (bellIcon) bellIcon.classList.remove('hidden');
+                if (alertIcon) alertIcon.classList.add('hidden');
+                return false;
+            }
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const isPast = reminderDate.getTime() < today.getTime();
+            const label = formatTanggalIndonesia(toLocalIsoDate(reminderDate));
+
+            if (hintText) {
+                hintText.textContent = isPast
+                    ? `Tanggal pengingat (${label}) sudah lewat. Pilih waktu yang lebih singkat.`
+                    : `Pengingat muncul pada ${label}.`;
+            }
+
+            if (hint) {
+                hint.classList.toggle('text-[#B91C1C]', isPast);
+                hint.classList.toggle('text-[#4B5563]', !isPast);
+                hint.classList.toggle('border-red-200', isPast);
+                hint.classList.toggle('bg-red-50', isPast);
+                hint.classList.toggle('border-slate-200', !isPast);
+                hint.classList.toggle('bg-white', !isPast);
+            }
+            if (bellIcon) bellIcon.classList.toggle('hidden', isPast);
+            if (alertIcon) alertIcon.classList.toggle('hidden', !isPast);
+
+            return !isPast;
+        }
+
+        document.getElementById('note-input-tanggal')?.addEventListener('input', updateNoteReminderHint);
+        document.getElementById('note-input-tanggal')?.addEventListener('change', updateNoteReminderHint);
+        document.getElementById('note-reminder-value')?.addEventListener('input', updateNoteReminderHint);
+        document.getElementById('note-reminder-value')?.addEventListener('blur', () => {
+            normalizeNoteReminderValue();
+            updateNoteReminderHint();
+        });
+        document.getElementById('note-reminder-unit')?.addEventListener('change', updateNoteReminderHint);
+
         // --- MODAL NOTE PRIBADI ---
         function openModalNote(defaultDate = null) {
             const modal = document.getElementById('modal-tambah-note');
@@ -1525,6 +1726,11 @@
             judulInput.value = '';
             detailInput.value = '';
 
+            const reminderValue = document.getElementById('note-reminder-value');
+            const reminderUnit = document.getElementById('note-reminder-unit');
+            if (reminderValue) reminderValue.value = '1';
+            if (reminderUnit) reminderUnit.value = 'day';
+
             if (defaultDate) {
                 dateInput.value = defaultDate;
             } else {
@@ -1536,6 +1742,7 @@
             }
 
             updateTanggalLengkap();
+            setNoteReminderSwitchState(false);
 
             modal.style.display = 'flex';
             modal.style.pointerEvents = '';
@@ -1567,6 +1774,15 @@
                 return;
             }
 
+            if (noteReminderEnabled) {
+                normalizeNoteReminderValue();
+                if (!updateNoteReminderHint()) {
+                    return;
+                }
+            }
+
+            const reminderDaysBefore = getNoteReminderDays();
+
             btn.disabled = true;
             btn.innerHTML = '<span>Menyimpan...</span>';
 
@@ -1577,7 +1793,7 @@
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': getCsrfToken()
                 },
-                body: JSON.stringify({ tanggal, judul, detail, warna })
+                body: JSON.stringify({ tanggal, judul, detail, warna, reminder_days_before: reminderDaysBefore })
             })
             .then(res => {
                 if (!res.ok) {

@@ -403,6 +403,9 @@ class KalenderController extends Controller
                     'warna'         => $note->warna,
                     'dot_color'     => $warna['dot'],
                     'tanggal_label' => $note->tanggal->locale('id')->isoFormat('dddd, D MMMM Y'),
+                    'reminder_days_before' => $note->reminder_days_before,
+                    'reminder_label' => $note->reminderLabel(),
+                    'reminder_date'  => $note->reminderDate()?->toDateString(),
                 ],
             ];
         }
@@ -642,6 +645,9 @@ class KalenderController extends Controller
                     'warna'         => $note->warna,
                     'dot_color'     => $warna['dot'],
                     'tanggal_label' => $note->tanggal->locale('id')->isoFormat('dddd, D MMMM Y'),
+                    'reminder_days_before' => $note->reminder_days_before,
+                    'reminder_label' => $note->reminderLabel(),
+                    'reminder_date'  => $note->reminderDate()?->toDateString(),
                 ],
             ];
         }
@@ -951,6 +957,9 @@ class KalenderController extends Controller
                     'warna'         => $note->warna,
                     'dot_color'     => $warna['dot'],
                     'tanggal_label' => $note->tanggal->locale('id')->isoFormat('dddd, D MMMM Y'),
+                    'reminder_days_before' => $note->reminder_days_before,
+                    'reminder_label' => $note->reminderLabel(),
+                    'reminder_date'  => $note->reminderDate()?->toDateString(),
                 ],
             ];
         }
