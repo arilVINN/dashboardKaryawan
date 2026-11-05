@@ -9,7 +9,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-white flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
 
     {{-- SIDEBAR --}}
     @include('component_kadiv.sidebar')
@@ -19,11 +19,11 @@
 
         {{-- TOPBAR --}}
         @include('component.topbar')
-        @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/kadiv/tugas'), 'currentPage' => 'Detail Tugas'])
 
         {{-- CONTENT --}}
         <main class="flex-1 overflow-y-auto">
             <div class="px-9 pt-7 pb-16 max-w-[1134px]">
+                @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/kadiv/tugas'), 'currentPage' => 'Detail Tugas', 'inline' => true])
 
                 {{-- TUGAS 1 --}}
                 <section>

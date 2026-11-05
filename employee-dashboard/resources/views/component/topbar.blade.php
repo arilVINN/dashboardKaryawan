@@ -153,4 +153,69 @@
     });
 </script>
 <!-- Toast container tersedia di semua halaman staff via topbar -->
-<div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
+<div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-3 pointer-events-none"></div>
+
+@php
+    $bannerError = session('forbidden') ?? session('error') ?? session('warning');
+@endphp
+
+@if ($bannerError)
+<script>
+    (function () {
+        function escapeToastHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, function (m) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m];
+            });
+        }
+
+        function showBannerToast() {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = [
+                'pointer-events-auto flex items-center justify-between gap-4 px-6 py-3.5 rounded-none shadow-xl',
+                'bg-red-50 border border-red-200 text-red-800 text-sm font-medium',
+                'opacity-0 -translate-y-2 transition-all duration-300'
+            ].join(' ');
+
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center shrink-0 text-red-600">
+                        <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <span class="font-semibold text-slate-800">${escapeToastHtml(@json($bannerError))}</span>
+                </div>
+                <button type="button" class="text-slate-400 hover:text-slate-700 font-bold text-lg leading-none focus:outline-none ml-2 transition">&times;</button>
+            `;
+
+            const btnClose = toast.querySelector('button');
+            const closeToast = () => {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+            };
+            btnClose?.addEventListener('click', closeToast);
+
+            container.appendChild(toast);
+
+            // Animate in
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    toast.classList.remove('opacity-0', '-translate-y-2');
+                });
+            });
+
+            // Auto-dismiss after 6 seconds
+            setTimeout(closeToast, 6000);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', showBannerToast);
+        } else {
+            showBannerToast();
+        }
+    })();
+</script>
+@endif

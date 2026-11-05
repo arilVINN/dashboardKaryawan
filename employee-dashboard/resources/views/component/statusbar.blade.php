@@ -1,4 +1,4 @@
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
     {{-- Tugas Berjalan --}}
     <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">

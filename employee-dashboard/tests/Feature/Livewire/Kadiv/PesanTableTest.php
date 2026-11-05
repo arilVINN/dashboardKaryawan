@@ -79,6 +79,12 @@ class PesanTableTest extends TestCase
             'penerima_id_user' => $this->abby->id_user,
             'deskripsi' => 'Halo staff',
         ]);
+
+        $this->assertDatabaseHas('notifikasis', [
+            'user_id_user' => $this->abby->id_user,
+            'judul_notifikasi' => 'Pesan Baru',
+            'isi_notif' => 'Halo staff',
+        ]);
     }
 
     public function test_rejects_out_of_division_recipient(): void

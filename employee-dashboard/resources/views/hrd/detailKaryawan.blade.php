@@ -8,18 +8,19 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gray-100 flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
     @include('component_hrd.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs', [
-            'parentText' => 'Karyawan',
-            'parentUrl' => url('/hrd/daftarKaryawan'),
-            'currentPage' => 'Detail Karyawan',
-        ])
 
         <main class="flex-1 overflow-y-auto p-8 pt-6 bg-slate-50 space-y-6">
+            @include('component.breadcrumbs', [
+                'parentText' => 'Karyawan',
+                'parentUrl' => url('/hrd/daftarKaryawan'),
+                'currentPage' => 'Detail Karyawan',
+                'inline' => true,
+            ])
             <div
                 class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 flex flex-col lg:flex-row lg:items-center gap-5">
                 <div class="flex items-center gap-5 min-w-0 flex-1">
@@ -38,7 +39,7 @@
                                 {{ $karyawan->user?->role?->nama_role ?? 'Belum ada akun' }}
                             </span>
                             <span
-                                class="px-2.5 py-1 {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }} rounded-full text-xs font-bold">
+                                class="px-2.5 py-1 border {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'bg-red-100 text-red-700 border-red-500' : 'bg-emerald-100 text-emerald-700 border-emerald-500' }} rounded-full text-xs font-bold">
                                 {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'Tidak Aktif' : 'Aktif' }}
                             </span>
                         </div>
@@ -292,10 +293,7 @@
                                         {{ $t->deadline ? \Carbon\Carbon::parse($t->deadline)->format('d M Y') : '-' }}
                                     </td>
                                     <td class="px-6 py-3 text-center whitespace-nowrap">
-                                        <span
-                                            class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800">
-                                            {{ $t->status ?? '-' }}
-                                        </span>
+                                        <x-status-badge :status="$t->status" />
                                     </td>
                                 </tr>
                             @empty

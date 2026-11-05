@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Kadiv;
 
 use App\Http\Controllers\Controller;
 use App\Models\Karyawan;
+use App\Models\Notifikasi;
 use App\Models\Tugas;
 use App\Models\User2;
 use App\Queries\KadivStaffQuery;
@@ -58,9 +59,24 @@ class KadivDashboardController extends Controller
             ->map(fn (Karyawan $employee) => [
                 'id_karyawan' => $employee->id_karyawan,
                 'nama' => $employee->nama,
+                'jabatan' => $employee->jabatan,
                 'jumlah_tugas_dikerjakan' => $employee->tugas_count,
                 'terakhir_login' => $employee->user?->last_login_at?->toISOString(),
             ]);
+
+        $notifikasiTerbaru = Notifikasi::query()
+            ->where('user_id_user', $user->id_user)
+            ->latest('created_at')
+            ->limit(5)
+            ->get()
+            ->map(fn (Notifikasi $notification) => [
+                'id_notifikasi' => $notification->id_notifikasi,
+                'judul_notifikasi' => $notification->judul_notifikasi,
+                'isi_notif' => $notification->displayMessage(),
+                'tanggal_notifikasi' => $notification->tanggal_notifikasi,
+                'created_at' => $notification->created_at?->toISOString(),
+            ])
+            ->values();
 
         return response()->json([
             'data' => [
@@ -80,6 +96,7 @@ class KadivDashboardController extends Controller
                         : 0,
                 ],
                 'staff' => $staff,
+                'notifikasi_terbaru' => $notifikasiTerbaru,
             ],
         ]);
     }

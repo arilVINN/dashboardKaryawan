@@ -28,7 +28,7 @@ class BuatNotifikasiPesan
             Notifikasi::create([
                 'id_notifikasi' => $this->generateNotifikasiId(),
                 'judul_notifikasi' => ucfirst($pesan->tipe ?? 'pesan').' Baru',
-                'isi_notif' => 'Anda menerima '.($pesan->tipe ?? 'pesan').': '.$pesan->judul_pesan,
+                'isi_notif' => $pesan->judul_pesan,
                 'tanggal_notifikasi' => now()->toDateString(),
                 'user_id_user' => $pesan->penerima_id_user,
             ]);
@@ -57,7 +57,7 @@ class BuatNotifikasiPesan
         Notifikasi::create([
             'id_notifikasi' => $this->generateNotifikasiId(),
             'judul_notifikasi' => 'Pesan Baru',
-            'isi_notif' => 'Ada pesan baru pada tugas: '.$tugas->judul_tugas,
+            'isi_notif' => $tugas->judul_tugas,
             'tanggal_notifikasi' => now()->toDateString(),
             'user_id_user' => $penerima->id_user,
         ]);

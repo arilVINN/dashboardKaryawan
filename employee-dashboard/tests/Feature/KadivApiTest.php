@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Events\PesanDikirim;
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\Notifikasi;
 use App\Models\Pesan;
 use App\Models\Role;
 use App\Models\Tugas;
@@ -43,6 +44,9 @@ class KadivApiTest extends TestCase
         $outsideStaff = $this->createAccount('ST-2', 'Staff HR', 'DIV-HR', 'ROLE-STAFF', 'staff.hr');
 
         $this->createTask('T-1', $staff->karyawan_id_karyawan, Tugas::STATUS_BARU);
+        // Tugas "baru" yang lebih dari sehari otomatis menjadi "berjalan".
+        // Buat tanggal dibuatnya hari ini agar tetap masuk bucket "baru".
+        Tugas::whereKey('T-1')->update(['tanggal_dibuat' => now()->toDateString()]);
         $this->createTask('T-2', $staff->karyawan_id_karyawan, Tugas::STATUS_MENUNGGU_ACC);
         $this->createTask('T-3', $staff->karyawan_id_karyawan, Tugas::STATUS_SUDAH_ACC);
         $this->createTask('T-4', $staff->karyawan_id_karyawan, Tugas::STATUS_BERJALAN);
@@ -66,7 +70,26 @@ class KadivApiTest extends TestCase
             ->assertJsonPath('data.metrics.persentase_penyelesaian', 20)
             ->assertJsonCount(1, 'data.staff')
             ->assertJsonPath('data.staff.0.nama', 'Staff IT')
+            ->assertJsonPath('data.staff.0.jabatan', 'Staff IT')
             ->assertJsonPath('data.staff.0.jumlah_tugas_dikerjakan', 5);
+    }
+
+    public function test_dashboard_returns_kadiv_notifications_without_legacy_prefixes(): void
+    {
+        $kadiv = $this->createAccount('KD-N', 'Kadiv Notifikasi', 'DIV-IT', 'ROLE-KADIV', 'kadiv.notif');
+
+        Notifikasi::create([
+            'id_notifikasi' => 'NTF-KADIV',
+            'judul_notifikasi' => 'Pesan Baru',
+            'isi_notif' => 'Anda menerima pesan: Rapat Divisi',
+            'tanggal_notifikasi' => '2026-09-29',
+            'user_id_user' => $kadiv->id_user,
+        ]);
+
+        $this->actingAs($kadiv)
+            ->getJson('/api/kadiv/dashboard')
+            ->assertOk()
+            ->assertJsonPath('data.notifikasi_terbaru.0.isi_notif', 'Rapat Divisi');
     }
 
     public function test_kadiv_can_send_and_list_a_letter_to_hrd(): void

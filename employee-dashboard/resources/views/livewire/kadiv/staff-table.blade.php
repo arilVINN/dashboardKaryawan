@@ -61,7 +61,13 @@
                 @endforelse
             </tbody>
         </table>
-    </div>
 
-    <div>{{ $rows->links('vendor.pagination.custom') }}</div>
+        @if ($rows->hasPages())
+            <div class="border-t border-slate-100 px-6 py-4">
+                <div class="flex justify-center">
+                    {{ $rows->links('vendor.pagination.custom') }}
+                </div>
+            </div>
+        @endif
+    </div>
 </div>

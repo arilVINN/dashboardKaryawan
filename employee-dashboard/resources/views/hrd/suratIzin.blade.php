@@ -8,18 +8,19 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gray-100 flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
     @include('component_hrd.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs', [
-            'parentText' => 'Pesan',
-            'parentUrl' => route('hrd.pesan'),
-            'currentPage' => 'Surat Izin Masuk',
-        ])
 
         <main class="flex-1 overflow-y-auto p-8 pt-6">
+            @include('component.breadcrumbs', [
+                'parentText' => 'Pesan',
+                'parentUrl' => route('hrd.pesan'),
+                'currentPage' => 'Surat Izin Masuk',
+                'inline' => true,
+            ])
             <h1 class="text-2xl font-bold text-slate-800 mb-6">Surat Izin Masuk</h1>
 
             @if (session('success'))
@@ -69,7 +70,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span
-                                            class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $surat->status === 'Disetujui' ? 'bg-green-100 text-green-700' : ($surat->status === 'Ditolak' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }}">
+                                            class="inline-block px-2.5 py-0.5 rounded-full border text-xs font-semibold {{ $surat->status === 'Disetujui' ? 'bg-emerald-100 text-emerald-700 border-emerald-500' : ($surat->status === 'Ditolak' ? 'bg-red-100 text-red-700 border-red-500' : 'bg-amber-100 text-amber-700 border-amber-500') }}">
                                             {{ $surat->status }}
                                         </span>
                                     </td>
@@ -108,7 +109,7 @@
                 </div>
 
                 <div class="border-t border-slate-200 px-6 py-4">
-                    {{ $suratIzin->links() }}
+                    {{ $suratIzin->links('vendor.pagination.custom-links') }}
                 </div>
             </div>
         </main>

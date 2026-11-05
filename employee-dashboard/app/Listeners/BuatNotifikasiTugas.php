@@ -26,7 +26,7 @@ class BuatNotifikasiTugas
         Notifikasi::create([
             'id_notifikasi' => $this->generateNotifikasiId(),
             'judul_notifikasi' => 'Tugas Baru',
-            'isi_notif' => 'Anda mendapat tugas baru: '.$event->tugas->judul_tugas,
+            'isi_notif' => $event->tugas->judul_tugas,
             'tanggal_notifikasi' => now()->toDateString(),
             'user_id_user' => $penerima->id_user,
         ]);

@@ -8,7 +8,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-[#F3F4F6] flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
     
     @include('component_kadiv.sidebar')
 
@@ -20,7 +20,7 @@
             
             <div class="px-9 pt-7 pb-16">
 
-                @include('component.breadcrumbs', ['parentText' => 'Manajemen Staff', 'parentUrl' => url('/kadiv/manajemenStaff'), 'currentPage' => 'Detail Staff'])
+                @include('component.breadcrumbs', ['parentText' => 'Manajemen Staff', 'parentUrl' => url('/kadiv/manajemenStaff'), 'currentPage' => 'Detail Staff', 'inline' => true])
                 <div class="mt-4 flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div class="w-14 h-14 rounded-full bg-[#19A7CE] text-white text-xl font-bold flex items-center justify-center">
@@ -107,17 +107,17 @@
                 approval.className = 'px-6 py-4 text-center';
                 const badge = document.createElement('span');
                 const st = (task.status_efektif || task.status || '').toLowerCase().trim();
-                let badgeClass = 'bg-slate-100 text-slate-700';
+                let badgeClass = 'bg-slate-100 text-slate-700 border border-slate-300';
                 if (st === 'baru') {
-                    badgeClass = 'bg-[#C0E7FF] text-blue-700';
+                    badgeClass = 'bg-[#C0E7FF] text-blue-700 border border-blue-500';
                 } else if (st === 'berjalan') {
-                    badgeClass = 'bg-emerald-100 text-emerald-700';
+                    badgeClass = 'bg-emerald-100 text-emerald-700 border border-emerald-500';
                 } else if (st === 'menunggu di-acc' || st === 'menunggu acc' || st === 'menunggu di acc') {
-                    badgeClass = 'bg-amber-100 text-amber-700';
+                    badgeClass = 'bg-amber-100 text-amber-700 border border-amber-500';
                 } else if (st === 'sudah di-acc' || st === 'sudah acc' || st === 'sudah di acc') {
-                    badgeClass = 'bg-emerald-700 text-white';
+                    badgeClass = 'bg-emerald-700 text-white border border-emerald-800';
                 } else if (st === 'terlambat' || st === 'telat') {
-                    badgeClass = 'bg-red-100 text-red-700';
+                    badgeClass = 'bg-red-100 text-red-700 border border-red-500';
                 }
                 badge.className = 'inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize ' + badgeClass;
                 badge.textContent = status;

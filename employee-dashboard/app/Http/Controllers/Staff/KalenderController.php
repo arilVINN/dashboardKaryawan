@@ -35,7 +35,7 @@ class KalenderController extends Controller
                 'textColor'       => '#1D4ED8',
                 'badgeClass'      => 'bg-[#C0E7FF] text-blue-700 border border-blue-200',
                 'label'           => 'Baru',
-                'dotColor'        => '#3B82F6',
+                'dotColor'        => '#1D4ED8',
             ],
             'berjalan' => [
                 'backgroundColor' => '#D1FAE5',
@@ -43,7 +43,7 @@ class KalenderController extends Controller
                 'textColor'       => '#047857',
                 'badgeClass'      => 'bg-emerald-100 text-emerald-700 border border-emerald-200',
                 'label'           => 'Berjalan',
-                'dotColor'        => '#10B981',
+                'dotColor'        => '#047857',
             ],
             'menunggu di-acc' => [
                 'backgroundColor' => '#FEF3C7',
@@ -51,15 +51,15 @@ class KalenderController extends Controller
                 'textColor'       => '#B45309',
                 'badgeClass'      => 'bg-amber-100 text-amber-700 border border-amber-200',
                 'label'           => 'Menunggu di-acc',
-                'dotColor'        => '#F59E0B',
+                'dotColor'        => '#B45309',
             ],
             'sudah di-acc' => [
-                'backgroundColor' => '#00ae7d',
+                'backgroundColor' => '#047857',
                 'borderColor'     => '#065F46',
                 'textColor'       => '#FFFFFF',
                 'badgeClass'      => 'bg-emerald-700 text-white border border-emerald-800',
                 'label'           => 'Sudah di-acc',
-                'dotColor'        => '#065F46',
+                'dotColor'        => '#D1FAE5',
             ],
             'terlambat' => [
                 'backgroundColor' => '#FEE2E2',
@@ -67,7 +67,7 @@ class KalenderController extends Controller
                 'textColor'       => '#B91C1C',
                 'badgeClass'      => 'bg-red-100 text-red-700 border border-red-200',
                 'label'           => 'Terlambat',
-                'dotColor'        => '#EF4444',
+                'dotColor'        => '#B91C1C',
             ],
             default => [
                 'backgroundColor' => '#F1F5F9',
@@ -75,7 +75,7 @@ class KalenderController extends Controller
                 'textColor'       => '#475569',
                 'badgeClass'      => 'bg-slate-100 text-slate-700 border border-slate-200',
                 'label'           => ucfirst($status),
-                'dotColor'        => '#94A3B8',
+                'dotColor'        => '#475569',
             ],
         };
     }

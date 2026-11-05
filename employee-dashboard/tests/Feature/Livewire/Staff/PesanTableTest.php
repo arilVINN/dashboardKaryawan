@@ -107,6 +107,28 @@ class PesanTableTest extends TestCase
             ->assertDontSee('Desain Logo');
     }
 
+    public function test_shows_sent_messages_as_outgoing(): void
+    {
+        $sender = User2::where('username', 'abby')->firstOrFail();
+
+        Pesan::create([
+            'id_pesan' => 'P-OUT',
+            'judul_pesan' => 'Pesan Keluar',
+            'deskripsi' => 'Pesan Keluar body',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-10-03',
+            'tugas_id_tugas' => null,
+            'tugas_karyawan_id_karyawan' => null,
+            'pengirim_id_user' => $this->staff->id_user,
+            'penerima_id_user' => $sender->id_user,
+        ]);
+
+        Livewire::actingAs($this->staff)->test(PesanTable::class)
+            ->assertSee('Pesan Keluar')
+            ->assertSee('Anda')
+            ->assertSee('Ke: Abby Sender');
+    }
+
     public function test_staff_can_submit_surat_izin_from_the_page_form(): void
     {
         $response = $this->actingAs($this->staff)->post(route('staff.suratIzin.store'), [

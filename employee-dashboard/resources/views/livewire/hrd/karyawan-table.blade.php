@@ -120,14 +120,14 @@
                             <td class="{{ $cellPadding }} whitespace-nowrap">
                                 @if ($k->status_aktif === 'Tidak Aktif')
                                     <span
-                                        class="px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">Tidak Aktif</span>
+                                        class="px-2.5 py-1 border border-red-500 bg-red-100 text-red-700 rounded-full text-xs font-bold">Tidak Aktif</span>
                                 @else
                                     <span
-                                        class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Aktif</span>
+                                        class="px-2.5 py-1 border border-emerald-500 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Aktif</span>
                                 @endif
                             </td>
 
-                            <td class="{{ $cellPadding }} whitespace-nowrap text-center text-xs">
+                            <td class="{{ $cellPadding }} whitespace-nowrap text-center text-sm">
                                 <div class="flex items-center justify-center gap-3">
                                     <a href="{{ url('/hrd/detailKaryawan/' . $k->id_karyawan) }}"
                                         class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
@@ -191,13 +191,20 @@
             </table>
         </div>
 
-        {{-- Footer: Ringkasan & Baris per Halaman --}}
-        <div class="border-t border-slate-200 px-6 pt-4 pb-4">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-[13px] text-[#4B5563]">
+        {{-- Footer: Ringkasan, Pagination & Baris per Halaman --}}
+        <div class="border-t border-slate-200 px-6 py-4">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <p class="text-[13px] text-[#4B5563] lg:shrink-0">
                     Menampilkan {{ $rows->firstItem() ?? 0 }}-{{ $rows->lastItem() ?? 0 }} dari {{ $rows->total() }} data
                 </p>
-                <label class="flex items-center gap-2 text-[13px] text-[#4B5563]">
+
+                @if ($rows->hasPages())
+                    <div class="flex w-full justify-center lg:w-auto lg:flex-1">
+                        {{ $rows->links('vendor.pagination.custom') }}
+                    </div>
+                @endif
+
+                <label class="flex items-center gap-2 text-[13px] text-[#4B5563] lg:shrink-0">
                     <span>Baris per halaman</span>
                     <select wire:model.live="perPage"
                         class="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm text-[#334155] outline-none focus:border-[#146C94]">
@@ -209,11 +216,4 @@
             </div>
         </div>
     </div>
-
-    {{-- Pagination di luar kartu tabel, rata tengah --}}
-    @if ($rows->hasPages())
-        <div class="mt-3 flex justify-center pb-8">
-            {{ $rows->links('vendor.pagination.custom') }}
-        </div>
-    @endif
 </div>

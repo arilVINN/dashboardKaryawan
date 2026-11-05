@@ -87,6 +87,7 @@ class TaskEmailNotificationTest extends TestCase
         $this->assertDatabaseHas('notifikasis', [
             'user_id_user' => $staffUser->id_user,
             'judul_notifikasi' => 'Tugas Baru',
+            'isi_notif' => 'Tugas Notifikasi',
         ]);
     }
 

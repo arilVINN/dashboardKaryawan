@@ -5,19 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Pesan Staff - PT Silindo</title>
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-white flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
 
     @include('component.sidebar')
     
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         @include('component.topbar')
-        @include('component.breadcrumbs', ['parentText' => 'Pesan', 'parentUrl' => url('/pesan'), 'currentPage' => 'Detail Pesan'])
 
         <main class="flex-1 overflow-y-auto px-10 py-8">
+            @include('component.breadcrumbs', ['parentText' => 'Pesan', 'parentUrl' => url('/pesan'), 'currentPage' => 'Detail Pesan', 'inline' => true])
             <h1 class="text-2xl font-bold text-slate-900 mb-6">Pesan</h1>
 
             <!-- Detail Pesan -->
