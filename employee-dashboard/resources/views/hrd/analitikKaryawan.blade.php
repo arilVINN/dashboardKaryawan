@@ -27,6 +27,10 @@
                 <p class="text-sm text-gray-500 mt-1">Ringkasan data karyawan di seluruh divisi</p>
             </div>
 
+
+
+
+
             {{-- KARTU RINGKASAN --}}
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
@@ -76,6 +80,78 @@
                 </div>
             </div>
 
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Persentase Data Karyawan</h1>
+            </div>
+
+            {{-- BREAKDOWN --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                @php
+                    $breakdowns = [
+                        'Gender' => $gender,
+                        'Status Karyawan' => $statusKaryawan,
+                        'Pendidikan' => $pendidikan,
+                        'JobLevel' => $jobLevel,
+                    ];
+                @endphp
+
+                @foreach ($breakdowns as $judul => $data)
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+                        <h3 class="font-semibold text-slate-800 mb-3">{{ $judul }}</h3>
+                        @if ($data->isEmpty())
+                            <p class="text-sm text-slate-400">Belum ada data.</p>
+                        @else
+                            <div class="space-y-2">
+                                @foreach ($data as $label => $jumlah)
+                                    @php
+                                        $pct =
+                                            $totalKaryawanAktif > 0 ? round(($jumlah / $totalKaryawanAktif) * 100) : 0;
+                                        $barColor = match ($judul) {
+                                            'Gender' => match (strtolower((string) $label)) {
+                                                'perempuan' => 'bg-pink-500',
+                                                'laki-laki' => 'bg-blue-500',
+                                                default => 'bg-[#0097B2]',
+                                            },
+                                            'Pendidikan' => match (strtolower((string) $label)) {
+                                                'sma/smk' => 'bg-blue-500',
+                                                'd3' => 'bg-blue-500',
+                                                's1' => 'bg-blue-500',
+                                                's2' => 'bg-blue-500',
+                                                default => 'bg-[#0097B2]',
+                                            },
+                                            'JobLevel' => match (strtolower((string) $label)) {
+                                                'junior' => 'bg-blue-500',
+                                                'magang' => 'bg-blue-500',
+                                                'manager' => 'bg-blue-500',
+                                                'senior' => 'bg-blue-500',
+                                                default => 'bg-[#0097B2]',
+                                            },
+                                            'Status Karyawan' => match (strtolower((string) $label)) {
+                                                'tetap' => 'bg-blue-500',
+                                                'kontrak' => 'bg-orange-500',
+                                                default => 'bg-[#0097B2]',
+                                            },
+                                            default => 'bg-[#0097B2]',
+                                        };
+                                    @endphp
+                                    <div>
+                                        <div class="flex justify-between text-xs text-slate-600 mb-1">
+                                            <span>{{ $label ?: 'Tidak diketahui' }}</span>
+                                            <span class="font-semibold">{{ $jumlah }}
+                                                ({{ $pct }}%)
+                                            </span>
+                                        </div>
+                                        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <div class="h-full {{ $barColor }}" style="width: {{ $pct }}%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
 
             {{-- CONTAINER UTAMA UNTUK DAFTAR TABEL PER DIVISI --}}
             <div class="space-y-6 mt-6">
@@ -162,78 +238,7 @@
                 @endforelse
             </div>
 
-            <div>
-                <h1 class="text-2xl font-bold text-slate-800">Persentase Data Karyawan</h1>
-            </div>
 
-            {{-- BREAKDOWN --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                @php
-                    $breakdowns = [
-                        'Gender' => $gender,
-                        'Status Karyawan' => $statusKaryawan,
-                        'Pendidikan' => $pendidikan,
-                        'JobLevel' => $jobLevel,
-                    ];
-                @endphp
-
-                @foreach ($breakdowns as $judul => $data)
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
-                        <h3 class="font-semibold text-slate-800 mb-3">{{ $judul }}</h3>
-                        @if ($data->isEmpty())
-                            <p class="text-sm text-slate-400">Belum ada data.</p>
-                        @else
-                            <div class="space-y-2">
-                                @foreach ($data as $label => $jumlah)
-                                    @php
-                                        $pct =
-                                            $totalKaryawanAktif > 0 ? round(($jumlah / $totalKaryawanAktif) * 100) : 0;
-                                        $barColor = match ($judul) {
-                                            'Gender' => match (strtolower((string) $label)) {
-                                                'perempuan' => 'bg-pink-500',
-                                                'laki-laki' => 'bg-blue-500',
-                                                default => 'bg-[#0097B2]',
-                                            },
-                                            'Pendidikan' => match(strtolower((string)$label)){
-                                                'sma/smk' => 'bg-blue-500',
-                                                'd3' => 'bg-blue-500',
-                                                's1' => 'bg-blue-500',
-                                                's2' => 'bg-blue-500',
-                                                default => 'bg-[#0097B2]',
-                                            },
-                                            'JobLevel' => match (strtolower((string) $label)) {
-                                                'junior' => 'bg-blue-500',
-                                                'magang' => 'bg-blue-500',
-                                                'manager' => 'bg-blue-500',
-                                                'senior' => 'bg-blue-500',
-                                                default => 'bg-[#0097B2]',
-                                            },
-                                            'Status Karyawan' => match (strtolower((string) $label)) {
-                                                'tetap' => 'bg-blue-500',
-                                                'kontrak' => 'bg-orange-500',
-                                                default => 'bg-[#0097B2]',
-                                            },
-                                            default => 'bg-[#0097B2]',
-                                        };
-                                    @endphp
-                                    <div>
-                                        <div class="flex justify-between text-xs text-slate-600 mb-1">
-                                            <span>{{ $label ?: 'Tidak diketahui' }}</span>
-                                            <span class="font-semibold">{{ $jumlah }}
-                                                ({{ $pct }}%)
-                                            </span>
-                                        </div>
-                                        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                                            <div class="h-full {{ $barColor }}"
-                                                style="width: {{ $pct }}%"></div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
-                @endforeach
-            </div>
 
         </main>
     </div>
