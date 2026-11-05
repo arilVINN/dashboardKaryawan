@@ -160,7 +160,7 @@ class HrdListUiTest extends TestCase
         $this->assertStringContainsString('aria-label="', $html);
         $this->assertStringContainsString('role="progressbar"', $html);
         $this->assertStringContainsString('bukaModalEditDivisi', $html);
-        $this->assertStringNotContainsString('>Hapus<', $html);
+        $this->assertStringContainsString('hapusDivisi', $html);
     }
 
 

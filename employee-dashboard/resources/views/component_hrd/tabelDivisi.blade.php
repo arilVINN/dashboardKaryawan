@@ -14,10 +14,10 @@
         <table class="w-full min-w-[640px] table-fixed text-left text-[13px] text-[#475569]">
             <thead class="bg-[#EAF4F8]">
                 <tr class="h-8">
-                    <th class="w-[38%] px-4 text-left text-xs font-medium text-[#334155]">Divisi</th>
-                    <th class="w-[26%] px-4 text-left text-xs font-medium text-[#334155]">Tugas selesai</th>
-                    <th class="w-[18%] px-4 text-left text-xs font-medium text-[#334155]">Status</th>
-                    <th class="w-[18%] px-3"></th>
+                    <th class="w-[36%] px-4 text-left text-xs font-medium text-[#334155]">Divisi</th>
+                    <th class="w-[24%] px-4 text-left text-xs font-medium text-[#334155]">Tugas selesai</th>
+                    <th class="w-[16%] px-4 text-left text-xs font-medium text-[#334155]">Status</th>
+                    <th class="w-[24%] px-3"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-[#EEF2F5]">
@@ -63,6 +63,12 @@
                                     data-nama="{{ $divisi->nama_divisi }}"
                                     class="text-xs font-medium text-amber-600 hover:text-amber-800 hover:underline">
                                     Edit
+                                </button>
+                                <button type="button" onclick="event.stopPropagation(); hapusDivisi(this)"
+                                    data-id="{{ $divisi->id_divisi }}"
+                                    data-nama="{{ $divisi->nama_divisi }}"
+                                    class="text-xs font-medium text-red-600 hover:text-red-800 hover:underline">
+                                    Hapus
                                 </button>
                                 <svg class="h-4 w-4 text-[#94A3B8]" fill="none" stroke="currentColor"
                                     stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
