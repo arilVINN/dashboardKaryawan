@@ -4,20 +4,21 @@
 @endphp
 
 @if ($isCompact)
-    <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
-        <div class="flex items-center justify-between border-b border-[#EEF2F5] px-4 py-3">
-            <h2 class="text-sm font-medium text-[#172B36]">Tugas saya</h2>
+    <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-between px-1">
+            <h2 class="text-lg font-semibold text-[#172B36]">Tugas saya</h2>
             <a href="/tugas" class="text-xs text-[#146C94] hover:underline">Lihat semua &rsaquo;</a>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+            <div class="overflow-x-auto">
             <table class="w-full min-w-[520px] table-fixed text-left text-[13px] text-[#475569]">
                 <thead class="bg-[#EAF4F8]">
                     <tr class="h-8">
                         <th class="w-[50%] px-4 text-left text-xs font-medium text-[#334155]">Judul tugas</th>
                         <th class="w-[20%] px-4 text-left text-xs font-medium text-[#334155]">Status</th>
                         <th class="w-[22%] px-4 text-left text-xs font-medium text-[#334155]">Tenggat</th>
-                        <th class="w-10 px-2"></th>
+                        <th class="w-16 px-2"></th>
                     </tr>
                 </thead>
                 <tbody id="tbody-tugas" class="divide-y divide-[#EEF2F5]">
@@ -26,6 +27,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 @else
@@ -99,6 +101,13 @@
     window.staffOverviewRequest = window.staffOverviewRequest || null;
 
     const STAFF_STATUS_PALETTE = @json(\App\Support\StatusPalette::all());
+    const STAFF_STATUS_HIGH_CONTRAST = {
+        'baru': 'bg-[#C0E7FF] text-blue-700 border border-blue-500',
+        'berjalan': 'bg-emerald-100 text-emerald-700 border border-emerald-500',
+        'menunggu': 'bg-amber-100 text-amber-700 border border-amber-500',
+        'disetujui': 'bg-emerald-700 text-white border border-emerald-800',
+        'terlambat': 'bg-red-100 text-red-700 border border-red-500',
+    };
     const staffTugasIsCompact = {{ $isCompact ? 'true' : 'false' }};
     const staffTugasSearch = document.getElementById('staffTugasSearch');
     const staffTugasStatus = document.getElementById('staffTugasStatus');
@@ -122,14 +131,15 @@
     function staffStatusBadgeHtml(status, shortLabel = false) {
         const key = staffStatusKey(status);
         const palette = STAFF_STATUS_PALETTE[key];
+        const label = palette ? (shortLabel ? palette.short : palette.label) : (status || '-');
 
         if (!palette) {
-            return `<span class="inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-[#172B36]">${status || '-'}</span>`;
+            return `<span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-300">${status || '-'}</span>`;
         }
 
-        const label = shortLabel ? palette.short : palette.label;
+        const highContrast = STAFF_STATUS_HIGH_CONTRAST[key] || 'bg-slate-100 text-slate-700 border border-slate-300';
 
-        return `<span class="inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] text-[#172B36]" style="background-color: ${palette.bg}; border-color: ${palette.border};" title="${palette.label}"><span class="h-1.5 w-1.5 shrink-0 rounded-full" style="background-color: ${palette.dot};"></span>${label}</span>`;
+        return `<span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${highContrast}">${label}</span>`;
     }
 
     function formatStaffDeadline(value) {
@@ -278,8 +288,11 @@
                                 <div class="text-[13px] text-[#475569]">${deadline}</div>
                                 ${deadlineHint.hint ? `<div class="text-[11px] ${deadlineHint.className}">${deadlineHint.hint}</div>` : ''}
                             </td>
-                            <td class="px-3 py-2 text-right">
-                                <svg class="ml-auto h-4 w-4 text-[#94A3B8]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            <td class="px-2 py-2 text-right">
+                                <a href="/tugas/detail/${encodeURIComponent(t.id_tugas)}" onclick="event.stopPropagation()"
+                                    class="inline-flex items-center justify-center rounded px-1 py-1 text-sm font-semibold text-[#146C94] transition hover:text-[#0B4A66] hover:underline focus:outline-none focus:ring-2 focus:ring-[#146C94]/30">
+                                    Detail
+                                </a>
                             </td>
                         </tr>`;
                 }

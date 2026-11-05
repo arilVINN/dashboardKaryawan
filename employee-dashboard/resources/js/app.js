@@ -1,15 +1,25 @@
 import './bootstrap';
 
+let isRedirectingToLogin = false;
+
+function handleUnauthorizedSession() {
+    if (window.location.pathname === '/login' || isRedirectingToLogin) {
+        return;
+    }
+    isRedirectingToLogin = true;
+    sessionStorage.removeItem('staff_token');
+    localStorage.removeItem('staff_token');
+    alert('Sesi Anda telah habis. Silakan login kembali.');
+    window.location.href = '/login';
+}
+
+window.handleUnauthorizedSession = handleUnauthorizedSession;
+
 const originalFetch = window.fetch;
 window.fetch = async function() {
     const response = await originalFetch.apply(this, arguments);
     if (response.status === 401) {
-        // Jangan tampilkan alert jika berada di halaman login
-        if (window.location.pathname !== '/login') {
-            alert('Sesi Anda telah habis (lebih dari 4 jam). Silakan login kembali.');
-            sessionStorage.removeItem('staff_token');
-            window.location.href = '/login';
-        }
+        handleUnauthorizedSession();
     }
     return response;
 };

@@ -90,11 +90,11 @@
                 ? escapeProjectHtml(project.deskripsi)
                 : '<span class="text-slate-400">-</span>';
             const statusClasses = {
-                'berjalan': 'bg-emerald-100 text-emerald-700',
-                'menunggu di-acc': 'bg-amber-100 text-amber-700',
-                'sudah di-acc': 'bg-emerald-700 text-white',
-                'terlambat': 'bg-red-100 text-red-700',
-                'baru': 'bg-[#C0E7FF] text-blue-700'
+                'berjalan': 'bg-emerald-100 text-emerald-700 border border-emerald-500',
+                'menunggu di-acc': 'bg-amber-100 text-amber-700 border border-amber-500',
+                'sudah di-acc': 'bg-emerald-700 text-white border border-emerald-800',
+                'terlambat': 'bg-red-100 text-red-700 border border-red-500',
+                'baru': 'bg-[#C0E7FF] text-blue-700 border border-blue-500'
             };
             const status = escapeProjectHtml(project.status || 'baru');
             const statusBadge = `<span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${statusClasses[project.status] || statusClasses.baru}">${status}</span>`;

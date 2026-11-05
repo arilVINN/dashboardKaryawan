@@ -2,15 +2,16 @@
     $divisis = collect($divisis ?? []);
 @endphp
 
-<div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
-    <div class="flex items-center justify-between border-b border-[#EEF2F5] px-4 py-3">
-        <h2 class="text-sm font-medium text-[#172B36]">Manajemen divisi</h2>
+<div class="flex flex-col gap-2">
+    <div class="flex items-center justify-between px-1">
+        <h2 class="text-lg font-semibold text-[#172B36]">Manajemen divisi</h2>
         <a href="{{ route('hrd.manajemenDivisi') }}" class="text-xs text-[#146C94] hover:underline">
             Lihat semua &rsaquo;
         </a>
     </div>
 
-    <div class="overflow-x-auto">
+    <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+        <div class="overflow-x-auto">
         <table class="w-full min-w-[640px] table-fixed text-left text-[13px] text-[#475569]">
             <thead class="bg-[#EAF4F8]">
                 <tr class="h-8">
@@ -57,23 +58,23 @@
                         </td>
                         <td class="px-3 py-2">
                             <div class="flex items-center justify-end gap-2">
+                                <a href="{{ $detailUrl }}" onclick="event.stopPropagation()"
+                                    class="inline-flex items-center justify-center rounded px-1 py-1 text-sm font-semibold text-[#146C94] transition hover:text-[#0B4A66] hover:underline focus:outline-none focus:ring-2 focus:ring-[#146C94]/30">
+                                    Detail
+                                </a>
                                 <button type="button" onclick="event.stopPropagation(); bukaModalEditDivisi(this)"
                                     data-id="{{ $divisi->id_divisi }}"
                                     data-kode="{{ $divisi->kode_divisi }}"
                                     data-nama="{{ $divisi->nama_divisi }}"
-                                    class="text-xs font-medium text-amber-600 hover:text-amber-800 hover:underline">
+                                    class="text-sm font-medium text-amber-600 hover:text-amber-800 hover:underline">
                                     Edit
                                 </button>
                                 <button type="button" onclick="event.stopPropagation(); hapusDivisi(this)"
                                     data-id="{{ $divisi->id_divisi }}"
                                     data-nama="{{ $divisi->nama_divisi }}"
-                                    class="text-xs font-medium text-red-600 hover:text-red-800 hover:underline">
+                                    class="text-sm font-medium text-red-600 hover:text-red-800 hover:underline">
                                     Hapus
                                 </button>
-                                <svg class="h-4 w-4 text-[#94A3B8]" fill="none" stroke="currentColor"
-                                    stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                                </svg>
                             </div>
                         </td>
                     </tr>
@@ -88,7 +89,8 @@
         </table>
     </div>
 
-    <div class="border-t border-[#EEF2F5] px-4 py-3 text-xs text-[#4B5563]">
-        Menampilkan {{ $divisis->count() }} dari {{ $divisis->count() }} divisi
+        <div class="border-t border-[#EEF2F5] px-4 py-3 text-xs text-[#4B5563]">
+            Menampilkan {{ $divisis->count() }} dari {{ $divisis->count() }} divisi
+        </div>
     </div>
 </div>

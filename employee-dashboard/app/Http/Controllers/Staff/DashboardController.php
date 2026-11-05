@@ -144,7 +144,7 @@ class DashboardController extends Controller
                         ] : null,
                     ];
                 }),
-                'notifikasi_terbaru' => array_merge(
+                'notifikasi_terbaru' => collect(array_merge(
                     $pengingatNote,
                     $pengingatTugas,
                     $notifikasiTerbaru->map(function (Notifikasi $notifikasi) {
@@ -153,10 +153,14 @@ class DashboardController extends Controller
                             'judul_notifikasi'   => $notifikasi->judul_notifikasi,
                             'isi_notif'          => $notifikasi->displayMessage(),
                             'tanggal_notifikasi' => $notifikasi->tanggal_notifikasi,
-                            'created_at'         => $notifikasi->created_at,
+                            'created_at'         => $notifikasi->created_at?->toISOString(),
                         ];
                     })->all()
-                ),
+                ))
+                    ->sortByDesc(fn (array $notifikasi) => strtotime((string) ($notifikasi['created_at'] ?? '')))
+                    ->take(5)
+                    ->values()
+                    ->all(),
             ],
         ]);
     }

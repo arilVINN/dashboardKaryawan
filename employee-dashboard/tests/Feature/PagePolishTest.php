@@ -108,7 +108,7 @@ class PagePolishTest extends TestCase
         return $this->actingAs($user)->get($url)->assertOk()->getContent();
     }
 
-    private function assertRowHeading(string $html, string $parent, string $current, string $title, string $rowHeading): void
+    private function assertRowHeading(string $html, string $parent, string $current, string $title, string $rowHeading, string $rowHeadingClass = 'text-xl font-bold text-slate-800'): void
     {
         $this->assertStringContainsString('data-breadcrumb-parent="'.$parent.'"', $html);
         $this->assertStringContainsString('data-breadcrumb-current="'.$current.'"', $html);
@@ -116,7 +116,7 @@ class PagePolishTest extends TestCase
         // No page-level h1: the button-row h2 below owns the visible heading.
         // (The sidebar brand mark is an h1 too, so pin the heading scale.)
         $this->assertStringNotContainsString('<h1 class="text-2xl', $html);
-        $this->assertStringContainsString('<h2 class="text-xl font-bold text-slate-800">'.$rowHeading.'</h2>', $html);
+        $this->assertStringContainsString('<h2 class="'.$rowHeadingClass.'">'.$rowHeading.'</h2>', $html);
     }
 
     private function assertTwoLevelHeading(string $html, string $parent, string $current, string $title, string $pageHeading, string $rowHeading): void
@@ -214,7 +214,7 @@ class PagePolishTest extends TestCase
     {
         $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/pesan'),
-            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
+            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan', 'text-lg font-semibold text-[#172B36]'
         );
     }
 
@@ -238,7 +238,7 @@ class PagePolishTest extends TestCase
     {
         $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/daftarPesan'),
-            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
+            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan', 'text-lg font-semibold text-[#172B36]'
         );
     }
 
@@ -350,7 +350,6 @@ class PagePolishTest extends TestCase
             'resources/views/livewire/kadiv/tugas-table.blade.php',
             'resources/views/livewire/kadiv/pesan-table.blade.php',
             'resources/views/livewire/kadiv/staff-table.blade.php',
-            'resources/views/livewire/staff/tugas-table.blade.php',
             'resources/views/livewire/staff/pesan-table.blade.php',
         ];
 

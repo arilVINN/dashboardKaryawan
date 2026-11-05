@@ -39,7 +39,7 @@
                                 {{ $karyawan->user?->role?->nama_role ?? 'Belum ada akun' }}
                             </span>
                             <span
-                                class="px-2.5 py-1 {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }} rounded-full text-xs font-bold">
+                                class="px-2.5 py-1 border {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'bg-red-100 text-red-700 border-red-500' : 'bg-emerald-100 text-emerald-700 border-emerald-500' }} rounded-full text-xs font-bold">
                                 {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'Tidak Aktif' : 'Aktif' }}
                             </span>
                         </div>
@@ -293,10 +293,7 @@
                                         {{ $t->deadline ? \Carbon\Carbon::parse($t->deadline)->format('d M Y') : '-' }}
                                     </td>
                                     <td class="px-6 py-3 text-center whitespace-nowrap">
-                                        <span
-                                            class="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800">
-                                            {{ $t->status ?? '-' }}
-                                        </span>
+                                        <x-status-badge :status="$t->status" />
                                     </td>
                                 </tr>
                             @empty

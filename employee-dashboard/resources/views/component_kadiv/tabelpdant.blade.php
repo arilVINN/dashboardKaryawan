@@ -1,10 +1,10 @@
-<div class="mt-6 grid grid-cols-1 items-start gap-6 min-[900px]:grid-cols-[1.15fr_1fr]">
-    <section class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
-        <div class="flex items-center justify-between border-b border-[#EEF2F5] px-4 py-3">
-            <h2 class="text-sm font-medium text-[#172B36]">Tugas</h2>
-            <a href="/kadiv/tugas" class="text-xs text-[#146C94] hover:underline">Lihat semua &rsaquo;</a>
-        </div>
+<div class="mt-6">
+    <div class="mb-2 flex items-center justify-between px-1">
+        <h2 class="text-lg font-semibold text-[#172B36]">Tugas</h2>
+        <a href="/kadiv/tugas" class="text-xs text-[#146C94] hover:underline">Lihat semua &rsaquo;</a>
+    </div>
 
+    <section class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
         <div class="grid h-8 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.7fr)_24px] items-center gap-3 bg-[#EAF4F8] px-4 text-xs font-medium text-[#334155]">
             <span>Nama tugas</span>
             <span>Status</span>
@@ -14,24 +14,6 @@
 
         <div id="kadiv-task-rows" class="divide-y divide-[#EEF2F5]">
             <div class="flex min-h-11 items-center px-4 text-[13px] text-[#4B5563]">Memuat data tugas...</div>
-        </div>
-    </section>
-
-    <section class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
-        <div class="flex items-center justify-between border-b border-[#EEF2F5] px-4 py-3">
-            <h2 class="text-sm font-medium text-[#172B36]">Pesan</h2>
-            <a href="/kadiv/pesan" class="text-xs text-[#146C94] hover:underline">Lihat semua &rsaquo;</a>
-        </div>
-
-        <div class="grid h-8 grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,0.7fr)_24px] items-center gap-3 bg-[#EAF4F8] px-4 text-xs font-medium text-[#334155]">
-            <span>Dari</span>
-            <span>Topik</span>
-            <span>Tanggal</span>
-            <span></span>
-        </div>
-
-        <div id="kadiv-message-rows" class="divide-y divide-[#EEF2F5]">
-            <div class="flex min-h-11 items-center px-4 text-[13px] text-[#4B5563]">Memuat data pesan...</div>
         </div>
     </section>
 </div>
@@ -56,22 +38,18 @@
 
         if (!palette) {
             const fallback = document.createElement('span');
-            fallback.className = 'inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-[#172B36]';
+            fallback.className = 'inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-semibold text-slate-700';
             fallback.textContent = key || '-';
             return fallback;
         }
 
         const badge = document.createElement('span');
-        badge.className = 'inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] text-[#172B36]';
+        badge.className = 'inline-flex w-fit items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold';
         badge.style.backgroundColor = palette.bg;
         badge.style.borderColor = palette.border;
+        badge.style.color = palette.text;
         badge.title = palette.label;
-
-        const dot = document.createElement('span');
-        dot.className = 'h-1.5 w-1.5 shrink-0 rounded-full';
-        dot.style.backgroundColor = palette.dot;
-
-        badge.append(dot, document.createTextNode(shortLabel ? palette.short : palette.label));
+        badge.textContent = shortLabel ? palette.short : palette.label;
 
         return badge;
     }
@@ -94,12 +72,14 @@
         return row;
     }
 
-    function makeKadivChevron() {
-        const chevron = document.createElement('span');
-        chevron.className = 'flex justify-end';
-        chevron.innerHTML = '<svg class="h-4 w-4 text-[#94A3B8]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>';
+    function makeKadivDetail(url) {
+        const detail = document.createElement('a');
+        detail.href = url;
+        detail.className = 'inline-flex justify-self-end rounded px-1 py-1 text-sm font-semibold text-[#146C94] transition hover:text-[#0B4A66] hover:underline focus:outline-none focus:ring-2 focus:ring-[#146C94]/30';
+        detail.textContent = 'Detail';
+        detail.addEventListener('click', (event) => event.stopPropagation());
 
-        return chevron;
+        return detail;
     }
 
     function formatKadivDeadline(value) {
@@ -116,34 +96,8 @@
         return date.toLocaleDateString('id-ID', options);
     }
 
-    function formatKadivMessageDate(value) {
-        if (!value) return '-';
-
-        const date = new Date(String(value).replace(' ', 'T'));
-        if (Number.isNaN(date.getTime())) return value;
-
-        const now = new Date();
-        const yesterday = new Date(now);
-        yesterday.setDate(now.getDate() - 1);
-
-        const sameDay = (first, second) => first.getFullYear() === second.getFullYear()
-            && first.getMonth() === second.getMonth()
-            && first.getDate() === second.getDate();
-
-        if (sameDay(date, now)) return 'Hari ini';
-        if (sameDay(date, yesterday)) return 'Kemarin';
-
-        const options = { day: 'numeric', month: 'short' };
-        if (date.getFullYear() !== now.getFullYear()) {
-            options.year = 'numeric';
-        }
-
-        return date.toLocaleDateString('id-ID', options);
-    }
-
-    async function loadKadivTaskAndMessageTables() {
+    async function loadKadivTaskTable() {
         const taskRows = document.getElementById('kadiv-task-rows');
-        const messageRows = document.getElementById('kadiv-message-rows');
         const token = sessionStorage.getItem('staff_token');
         if (!token) {
             window.location.href = '/login';
@@ -172,7 +126,7 @@
 
                 tasks.forEach((task) => {
                     const row = makeKadivClickableRow('/kadiv/detailTugas/' + encodeURIComponent(task.id_tugas));
-                    row.classList.add('grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.7fr)_24px]');
+                    row.classList.add('grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.7fr)_64px]');
 
                     const title = document.createElement('span');
                     title.className = 'truncate text-[13px] font-medium text-[#172B36]';
@@ -196,7 +150,7 @@
                     deadline.textContent = formatKadivDeadline(task.deadline);
                     row.appendChild(deadline);
 
-                    row.appendChild(makeKadivChevron());
+                    row.appendChild(makeKadivDetail('/kadiv/detailTugas/' + encodeURIComponent(task.id_tugas)));
                     taskRows.appendChild(row);
                 });
             } catch (error) {
@@ -205,56 +159,12 @@
             }
         };
 
-        const loadMessages = async () => {
-            try {
-                const response = await fetch('/api/kadiv/pesan?per_page=5', { headers });
-                const result = await response.json();
-                if (!response.ok) {
-                    throw new Error(result.message || 'Gagal mengambil daftar pesan.');
-                }
-
-                const messages = Array.isArray(result.data) ? result.data : [];
-                messageRows.replaceChildren();
-                if (messages.length === 0) {
-                    messageRows.innerHTML = '<div class="flex min-h-11 items-center px-4 text-[13px] text-[#4B5563]">Belum ada pesan.</div>';
-                    return;
-                }
-
-                messages.forEach((message) => {
-                    const row = makeKadivClickableRow('/kadiv/detailPesan/' + encodeURIComponent(message.id_pesan));
-                    row.classList.add('grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,0.7fr)_24px]');
-
-                    const sender = document.createElement('span');
-                    sender.className = 'text-[13px] text-[#475569]';
-                    sender.textContent = message.pengirim?.nama || message.pengirim?.username || '-';
-                    row.appendChild(sender);
-
-                    const subject = document.createElement('span');
-                    subject.className = 'truncate text-[13px] font-medium text-[#172B36]';
-                    subject.textContent = message.judul_pesan || message.deskripsi || '-';
-                    subject.title = subject.textContent;
-                    row.appendChild(subject);
-
-                    const date = document.createElement('span');
-                    date.className = 'text-[13px] text-[#4B5563]';
-                    date.textContent = formatKadivMessageDate(message.tanggal_pesan || message.created_at);
-                    row.appendChild(date);
-
-                    row.appendChild(makeKadivChevron());
-                    messageRows.appendChild(row);
-                });
-            } catch (error) {
-                console.error('Gagal memuat pesan Kadiv:', error);
-                messageRows.innerHTML = '<div class="flex min-h-11 items-center px-4 text-[13px] text-red-600">Data pesan gagal dimuat. Silakan muat ulang halaman.</div>';
-            }
-        };
-
-        await Promise.all([loadTasks(), loadMessages()]);
+        await loadTasks();
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadKadivTaskAndMessageTables);
+        document.addEventListener('DOMContentLoaded', loadKadivTaskTable);
     } else {
-        loadKadivTaskAndMessageTables();
+        loadKadivTaskTable();
     }
 </script>

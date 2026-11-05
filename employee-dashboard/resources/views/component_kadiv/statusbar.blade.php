@@ -4,7 +4,7 @@
     <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
         <div class="flex items-start justify-between">
             <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Yang Belum</span>
-            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#DCEEFE] text-[#2563EB]">
+            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#D9F5E5] text-[#059669]">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
@@ -58,7 +58,7 @@
             <div class="relative w-12 h-12 shrink-0">
                 <svg class="block h-12 w-12 -rotate-90" viewBox="0 0 56 56" role="img" aria-label="Grafik persentase tugas">
                     <circle cx="28" cy="28" r="22" fill="none" stroke="#e2e8f0" stroke-width="8"></circle>
-                    <circle id="ring-berjalan" cx="28" cy="28" r="22" fill="none" stroke="#2563EB" stroke-width="8"></circle>
+                    <circle id="ring-berjalan" cx="28" cy="28" r="22" fill="none" stroke="#059669" stroke-width="8"></circle>
                     <circle id="ring-pending" cx="28" cy="28" r="22" fill="none" stroke="#D97706" stroke-width="8"></circle>
                     <circle id="ring-selesai" cx="28" cy="28" r="22" fill="none" stroke="#0D9488" stroke-width="8"></circle>
                 </svg>
@@ -66,7 +66,7 @@
             <div class="flex-1 space-y-1 text-[10px] font-bold text-slate-600">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-[#2563EB]"></span> Yang Belum
+                        <span class="w-2.5 h-2.5 rounded-sm bg-[#059669]"></span> Yang Belum
                     </div>
                     <span id="pct-berjalan" class="text-slate-800">0%</span>
                 </div>

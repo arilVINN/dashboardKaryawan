@@ -22,10 +22,10 @@
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 pb-2">
     <div class="rounded-xl drop-shadow-md bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-black">Total Pesan</span>
-            <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['pesan'] }}</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Pesan</span>
+            <span class="text-2xl font-bold text-slate-900 leading-none mt-1">{{ $total['pesan'] }}</span>
             <div class="flex justify-between items-center pt-0.5">
-                <span class="text-[9px] text-slate-400 normal-case font-medium">semua pesan</span>
+                <span class="text-xs text-slate-400 mt-1">Semua Pesan</span>
             </div>
         </div>
         <svg class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 p-2" fill="none" stroke="currentColor"
@@ -38,10 +38,10 @@
 
     <div class="rounded-xl drop-shadow-md bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-black">Pesan Masuk</span>
-            <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['masuk'] }}</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Pesan Masuk</span>
+            <span class="text-2xl font-bold text-slate-900 leading-none mt-1">{{ $total['masuk'] }}</span>
             <div class="flex justify-between items-center pt-0.5">
-                <span class="text-[9px] text-slate-400 normal-case font-medium">semua pesan yang masuk</span>
+                <span class="text-xs text-slate-400 mt-1">Semua Pesan yang Masuk</span>
             </div>
         </div>
         <svg class="w-10 h-10 rounded-lg bg-green-100 text-green-600 p-2" fill="none" stroke="currentColor"
@@ -55,10 +55,10 @@
     <a href="{{ route('hrd.suratIzin') }}"
         class="rounded-xl drop-shadow-md bg-white p-4 flex items-center justify-between hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-[#146C94] gap-9">
         <div class="flex flex-col">
-            <span class="text-sm font-bold text-black">Surat Izin Masuk</span>
-            <span class="text-xl font-bold text-slate-800 mt-1">{{ $total['suratIzinMasuk'] }}</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Surat Izin Masuk</span>
+            <span class="text-2xl font-bold text-slate-900 leading-none mt-1">{{ $total['suratIzinMasuk'] }}</span>
             <div class="flex justify-between items-center pt-0.5">
-                <span class="text-[9px] text-slate-400 normal-case font-medium">Lihat detail →</span>
+                <span class="text-xs text-slate-400 mt-1">Lihat Detail</span>
             </div>
         </div>
         <svg class="w-10 h-10 rounded-lg bg-violet-100 text-violet-600 p-2" fill="none" stroke="currentColor"
