@@ -5,59 +5,66 @@ namespace App\Support;
 class StatusPalette
 {
     /**
-     * Shared status colors used by the calendar, dashboard and tables.
+     * Shared high-contrast status colors used by the calendar, dashboard and tables.
      *
-     * @var array<string, array{label: string, short: string, bg: string, border: string, dot: string}>
+     * @var array<string, array{label: string, short: string, bg: string, border: string, dot: string, text: string}>
      */
     public const STATUSES = [
         'baru' => [
             'label' => 'Baru',
             'short' => 'Baru',
-            'bg' => '#DCEEFE',
-            'border' => '#93C5FD',
-            'dot' => '#2563EB',
+            'bg' => '#C0E7FF',
+            'border' => '#3B82F6',
+            'dot' => '#1D4ED8',
+            'text' => '#1D4ED8',
         ],
         'berjalan' => [
             'label' => 'Berjalan',
             'short' => 'Berjalan',
-            'bg' => '#D9F5E5',
-            'border' => '#86D9AE',
-            'dot' => '#059669',
+            'bg' => '#D1FAE5',
+            'border' => '#10B981',
+            'dot' => '#047857',
+            'text' => '#047857',
         ],
         'menunggu' => [
             'label' => 'Menunggu persetujuan',
             'short' => 'Menunggu',
-            'bg' => '#FEF0C3',
-            'border' => '#F5C85C',
-            'dot' => '#D97706',
+            'bg' => '#FEF3C7',
+            'border' => '#F59E0B',
+            'dot' => '#B45309',
+            'text' => '#B45309',
         ],
         'disetujui' => [
             'label' => 'Disetujui',
             'short' => 'Disetujui',
-            'bg' => '#D5F3F0',
-            'border' => '#7DD3C8',
-            'dot' => '#0D9488',
+            'bg' => '#047857',
+            'border' => '#065F46',
+            'dot' => '#D1FAE5',
+            'text' => '#FFFFFF',
         ],
         'terlambat' => [
             'label' => 'Terlambat',
             'short' => 'Terlambat',
-            'bg' => '#FDE0E0',
-            'border' => '#F5A3A3',
-            'dot' => '#DC2626',
+            'bg' => '#FEE2E2',
+            'border' => '#EF4444',
+            'dot' => '#B91C1C',
+            'text' => '#B91C1C',
         ],
         'aktif' => [
             'label' => 'Aktif',
             'short' => 'Aktif',
-            'bg' => '#D9F5E5',
-            'border' => '#86D9AE',
-            'dot' => '#059669',
+            'bg' => '#D1FAE5',
+            'border' => '#10B981',
+            'dot' => '#047857',
+            'text' => '#047857',
         ],
         'tidak_aktif' => [
             'label' => 'Tidak aktif',
             'short' => 'Tidak aktif',
             'bg' => '#F1F5F9',
-            'border' => '#CBD5E1',
-            'dot' => '#64748B',
+            'border' => '#94A3B8',
+            'dot' => '#475569',
+            'text' => '#475569',
         ],
     ];
 

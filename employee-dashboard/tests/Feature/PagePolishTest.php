@@ -350,7 +350,6 @@ class PagePolishTest extends TestCase
             'resources/views/livewire/kadiv/tugas-table.blade.php',
             'resources/views/livewire/kadiv/pesan-table.blade.php',
             'resources/views/livewire/kadiv/staff-table.blade.php',
-            'resources/views/livewire/staff/tugas-table.blade.php',
             'resources/views/livewire/staff/pesan-table.blade.php',
         ];
 

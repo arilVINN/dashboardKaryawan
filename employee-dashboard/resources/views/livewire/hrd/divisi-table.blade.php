@@ -89,7 +89,7 @@
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap">
                                 @if (strtolower($divisi->status_aktif ?? '') === 'aktif')
-                                    <span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                    <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">
                                         {{ $divisi->status_aktif }}
                                     </span>
                                 @else

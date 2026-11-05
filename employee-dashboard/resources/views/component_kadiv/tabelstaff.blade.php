@@ -1,17 +1,18 @@
-<div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
-    <div class="flex items-center justify-between border-b border-[#EEF2F5] px-4 py-3">
-        <h2 class="text-sm font-medium text-[#172B36]">Manajemen staff</h2>
+<div class="flex flex-col gap-2">
+    <div class="flex items-center justify-between px-1">
+        <h2 class="text-lg font-semibold text-[#172B36]">Manajemen staff</h2>
         <a href="/kadiv/manajemenStaff" class="text-xs text-[#146C94] hover:underline">Lihat semua &rsaquo;</a>
     </div>
 
-    <div class="overflow-x-auto">
+    <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+        <div class="overflow-x-auto">
         <table class="w-full min-w-[650px] text-left text-[13px] text-[#475569]">
             <thead class="bg-[#EAF4F8]">
                 <tr class="h-8">
                     <th class="px-4 text-left text-xs font-medium text-[#334155]">Staff</th>
                     <th class="px-4 text-left text-xs font-medium text-[#334155]">Tugas</th>
                     <th class="px-4 text-left text-xs font-medium text-[#334155]">Terakhir login</th>
-                    <th class="w-10 px-2"></th>
+                    <th class="w-20 px-2"></th>
                 </tr>
             </thead>
             <tbody id="kadiv-staff-rows" class="divide-y divide-[#EEF2F5]">
@@ -20,6 +21,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 
@@ -130,10 +132,17 @@
                 lastLogin.textContent = formatKadivLastLogin(person.terakhir_login);
                 row.appendChild(lastLogin);
 
-                const chevronCell = document.createElement('td');
-                chevronCell.className = 'px-3 py-2 text-right';
-                chevronCell.innerHTML = '<svg class="ml-auto h-4 w-4 text-[#94A3B8]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>';
-                row.appendChild(chevronCell);
+                const detailCell = document.createElement('td');
+                detailCell.className = 'px-3 py-2 text-right';
+
+                const detailLink = document.createElement('a');
+                detailLink.href = url;
+                detailLink.className = 'inline-flex items-center justify-center rounded px-1 py-1 text-[11px] font-semibold text-[#146C94] transition hover:text-[#0B4A66] hover:underline focus:outline-none focus:ring-2 focus:ring-[#146C94]/30';
+                detailLink.textContent = 'Detail';
+                detailLink.addEventListener('click', (event) => event.stopPropagation());
+
+                detailCell.appendChild(detailLink);
+                row.appendChild(detailCell);
 
                 rows.appendChild(row);
             });

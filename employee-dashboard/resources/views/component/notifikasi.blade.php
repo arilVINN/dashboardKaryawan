@@ -1,11 +1,13 @@
-<div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
-    <div class="flex items-center justify-between border-b border-[#EEF2F5] px-4 py-3">
-        <h2 class="text-sm font-medium text-[#172B36]">Notifikasi</h2>
+<div class="flex flex-col gap-2">
+    <div class="flex items-center justify-between px-1">
+        <h2 class="text-lg font-semibold text-[#172B36]">Notifikasi</h2>
         <a href="/tugas" class="text-xs text-[#146C94] hover:underline">Lihat semua &rsaquo;</a>
     </div>
 
-    <div id="notifikasi-container" class="divide-y divide-[#EEF2F5]">
-        <p class="px-4 py-3 text-[13px] text-[#4B5563]">Memuat notifikasi...</p>
+    <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+        <div id="notifikasi-container" class="divide-y divide-[#EEF2F5]">
+            <p class="px-4 py-3 text-[13px] text-[#4B5563]">Memuat notifikasi...</p>
+        </div>
     </div>
 </div>
 
@@ -273,12 +275,14 @@
                         </svg>
                     </span>
                     <span class="min-w-0 flex-1">
-                        <span class="flex items-center gap-1.5">
-                            <span class="text-[13px] font-medium text-[#172B36]">${config.title}</span>
-                            ${isUnread ? '<span class="h-1.5 w-1.5 rounded-full bg-[#146C94]" data-unread-dot></span>' : ''}
+                        <span class="flex items-center justify-between gap-2">
+                            <span class="flex min-w-0 items-center gap-1.5">
+                                <span class="truncate text-[13px] font-medium text-[#172B36]">${config.title}</span>
+                                ${isUnread ? '<span class="h-1.5 w-1.5 shrink-0 rounded-full bg-[#146C94]" data-unread-dot></span>' : ''}
+                            </span>
+                            <span class="shrink-0 whitespace-nowrap text-[11px] text-[#4B5563]">${formatNotificationTime(notification.created_at || notification.tanggal_notifikasi)}</span>
                         </span>
                         <span class="mt-0.5 block text-xs leading-[1.45] text-[#4B5563]">${escapeNotificationHtml(notification.isi_notif || '')}</span>
-                        <span class="mt-1 block text-[11px] text-[#4B5563]">${formatNotificationTime(notification.created_at || notification.tanggal_notifikasi)}</span>
                     </span>
                 `;
                 row.addEventListener('click', () => {

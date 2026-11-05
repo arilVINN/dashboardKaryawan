@@ -70,7 +70,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span
-                                            class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $surat->status === 'Disetujui' ? 'bg-green-100 text-green-700' : ($surat->status === 'Ditolak' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }}">
+                                            class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $surat->status === 'Disetujui' ? 'bg-emerald-100 text-emerald-700' : ($surat->status === 'Ditolak' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }}">
                                             {{ $surat->status }}
                                         </span>
                                     </td>

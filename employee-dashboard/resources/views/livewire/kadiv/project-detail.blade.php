@@ -99,7 +99,7 @@
                             </td>
                             <td class="px-5 py-4 align-top">
                                 <span
-                                    class="inline-flex rounded-full px-3 py-1.5 text-xs font-medium {{ $task->selesai ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' }}">
+                                    class="inline-flex rounded-full px-3 py-1.5 text-xs font-medium {{ $task->selesai ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
                                     {{ $task->selesai ? 'Selesai' : 'Belum selesai' }}
                                 </span>
                             </td>
@@ -107,7 +107,7 @@
                                 @if ($task->file_hasil_path)
                                     <div class="flex flex-col gap-1">
                                         <span
-                                            class="inline-flex w-fit rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">Sudah
+                                            class="inline-flex w-fit rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Sudah
                                             dikumpulkan</span>
                                         <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($task->file_hasil_path) }}"
                                             target="_blank" rel="noopener noreferrer"
@@ -121,7 +121,7 @@
                                     </div>
                                 @else
                                     <span
-                                        class="inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">Belum
+                                        class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Belum
                                         dikumpulkan</span>
                                 @endif
                             </td>

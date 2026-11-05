@@ -123,7 +123,7 @@
                                         class="px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">Tidak Aktif</span>
                                 @else
                                     <span
-                                        class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Aktif</span>
+                                        class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Aktif</span>
                                 @endif
                             </td>
 
