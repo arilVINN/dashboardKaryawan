@@ -66,19 +66,19 @@
             <div class="flex-1 space-y-1 text-[10px] font-bold text-slate-600">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-[#059669]"></span> Yang Belum
+                        <span class="w-2.5 h-2.5 rounded-sm bg-[#05962c]"></span> Yang Belum
                     </div>
                     <span id="pct-berjalan" class="text-slate-800">0%</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-[#D97706]"></span> Belum Di-acc
+                        <span class="w-2.5 h-2.5 rounded-sm bg-[#ffb157]"></span> Belum Di-acc
                     </div>
                     <span id="pct-pending" class="text-slate-800">0%</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-[#0D9488]"></span> Selesai
+                        <span class="w-2.5 h-2.5 rounded-sm bg-[#34f9e9]"></span> Selesai
                     </div>
                     <span id="pct-selesai" class="text-slate-800">0%</span>
                 </div>
