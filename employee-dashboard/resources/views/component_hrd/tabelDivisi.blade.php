@@ -14,10 +14,10 @@
         <table class="w-full min-w-[640px] table-fixed text-left text-[13px] text-[#475569]">
             <thead class="bg-[#EAF4F8]">
                 <tr class="h-8">
-                    <th class="w-[40%] px-4 text-left text-xs font-medium text-[#334155]">Divisi</th>
-                    <th class="w-[28%] px-4 text-left text-xs font-medium text-[#334155]">Tugas selesai</th>
-                    <th class="w-[20%] px-4 text-left text-xs font-medium text-[#334155]">Status</th>
-                    <th class="w-10 px-2"></th>
+                    <th class="w-[38%] px-4 text-left text-xs font-medium text-[#334155]">Divisi</th>
+                    <th class="w-[26%] px-4 text-left text-xs font-medium text-[#334155]">Tugas selesai</th>
+                    <th class="w-[18%] px-4 text-left text-xs font-medium text-[#334155]">Status</th>
+                    <th class="w-[18%] px-3"></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-[#EEF2F5]">
@@ -31,7 +31,7 @@
                     <tr class="h-[54px] cursor-pointer hover:bg-[#F5FAFC] focus:bg-[#F5FAFC] focus:outline-none"
                         tabindex="0" role="link"
                         onclick="window.location.href='{{ $detailUrl }}'"
-                        onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); window.location.href='{{ $detailUrl }}'; }">
+                        onkeydown="if (event.target.closest('button, a')) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); window.location.href='{{ $detailUrl }}'; }">
                         <td class="px-4 py-2">
                             <div class="min-w-0">
                                 <p class="truncate text-[13px] font-medium text-[#172B36]">{{ $divisi->nama_divisi }}</p>
@@ -55,11 +55,20 @@
                         <td class="px-4 py-2">
                             <x-status-badge :status="$divisi->status_aktif ?? 'Aktif'" />
                         </td>
-                        <td class="px-3 py-2 text-right">
-                            <svg class="ml-auto h-4 w-4 text-[#94A3B8]" fill="none" stroke="currentColor"
-                                stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                            </svg>
+                        <td class="px-3 py-2">
+                            <div class="flex items-center justify-end gap-2">
+                                <button type="button" onclick="event.stopPropagation(); bukaModalEditDivisi(this)"
+                                    data-id="{{ $divisi->id_divisi }}"
+                                    data-kode="{{ $divisi->kode_divisi }}"
+                                    data-nama="{{ $divisi->nama_divisi }}"
+                                    class="text-xs font-medium text-amber-600 hover:text-amber-800 hover:underline">
+                                    Edit
+                                </button>
+                                <svg class="h-4 w-4 text-[#94A3B8]" fill="none" stroke="currentColor"
+                                    stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
                         </td>
                     </tr>
                 @empty

@@ -29,10 +29,16 @@
                 <section>
                     <div class="flex items-center justify-between gap-4">
                         <h1 id="detail-task-id" class="text-[28px] leading-[36px] font-bold text-black">Tugas</h1>
-                        <button type="button" id="editTaskButton" data-modal-open="modalEditTugas" disabled
-                                class="h-9 px-5 rounded-[9px] bg-[#146C94] text-white text-sm font-medium hover:bg-[#0f5878] transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-                            Edit Tugas
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="editTaskButton" data-modal-open="modalEditTugas" disabled
+                                    class="h-9 px-5 rounded-[9px] bg-[#146C94] text-white text-sm font-medium hover:bg-[#0f5878] transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                                Edit Tugas
+                            </button>
+                            <button type="button" id="deleteTaskButton" disabled
+                                    class="h-9 px-5 rounded-[9px] bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                                Hapus Tugas
+                            </button>
+                        </div>
                     </div>
 
                     <h2 id="detail-task-title" class="mt-6 text-[28px] leading-[36px] font-bold text-black">Memuat tugas...</h2>
@@ -371,6 +377,16 @@
                 return result;
             }
 
+            async function deleteTask() {
+                const response = await fetch('/api/kadiv/tugas/' + encodeURIComponent(taskId), {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || 'Gagal menghapus tugas.');
+                return result;
+            }
+
             async function loadTaskDetail() {
                 if (!token) {
                     window.location.href = '/login';
@@ -396,6 +412,8 @@
                     }
                     editPenerima.value = recipientId;
                     editTaskButton.disabled = task.status === 'sudah di-acc';
+                    const deleteTaskButton = document.getElementById('deleteTaskButton');
+                    deleteTaskButton.disabled = false;
                     setText('detail-task-title', task.judul_tugas);
                     setText('detail-task-deadline', 'tenggat : ' + formatDate(task.deadline));
                     const taskStatus = task.is_terlambat && ['menunggu di-acc', 'sudah di-acc'].includes(task.status)
@@ -623,6 +641,22 @@
                     await loadTaskDetail();
                     alert('Tugas berhasil diperbarui.');
                 } catch (error) {
+                    alert(error.message);
+                }
+            });
+
+            document.getElementById('deleteTaskButton').addEventListener('click', async function () {
+                if (!confirm('Yakin ingin menghapus tugas ini beserta riwayat pengumpulannya?')) {
+                    return;
+                }
+
+                this.disabled = true;
+                try {
+                    await deleteTask();
+                    alert('Tugas berhasil dihapus.');
+                    window.location.href = '/kadiv/tugas';
+                } catch (error) {
+                    this.disabled = false;
                     alert(error.message);
                 }
             });

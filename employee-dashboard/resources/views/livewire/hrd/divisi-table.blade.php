@@ -104,6 +104,13 @@
                                     {{ $manage ? 'Detail' : 'Selengkapnya' }}
                                 </a>
                                 @if ($manage)
+                                    <button type="button" onclick="bukaModalEditDivisi(this)"
+                                        data-id="{{ $divisi->id_divisi }}"
+                                        data-kode="{{ $divisi->kode_divisi }}"
+                                        data-nama="{{ $divisi->nama_divisi }}"
+                                        class="ml-3 text-amber-600 hover:text-amber-800 font-medium hover:underline">
+                                        Edit
+                                    </button>
                                     <button type="button" onclick="hapusDivisi(this)" data-id="{{ $divisi->id_divisi }}"
                                         data-nama="{{ $divisi->nama_divisi }}"
                                         class="ml-3 text-red-600 hover:text-red-800 font-medium hover:underline">

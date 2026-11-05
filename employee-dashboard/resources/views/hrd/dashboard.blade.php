@@ -23,6 +23,8 @@
                 @include('component_hrd.tabelDivisi')
                 @include('component_hrd.notifikasi', ['pesan' => $pesan])
             </div>
+
+            @include('component_hrd.divisiModal')
         </main>
         
     </div>
