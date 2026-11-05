@@ -96,7 +96,7 @@
                     <tbody class="divide-y divide-slate-200">
                         @forelse ($messages as $message)
                             <tr wire:key="pesan-{{ $message['id_pesan'] }}" class="hover:bg-slate-50 transition">
-                                <td class="px-6 py-4 font-semibold text-slate-800 truncate max-w-[200px]">
+                                <td class="px-6 py-4 font-semibold text-slate-500 truncate max-w-[200px]">
                                     {{ $message['judul_pesan'] }}</td>
                                 <td class="px-6 py-4 text-slate-700 text-center whitespace-nowrap">
                                     {{ $message['pengirim']['nama'] ?? ($message['pengirim']['username'] ?? '-') }}</td>

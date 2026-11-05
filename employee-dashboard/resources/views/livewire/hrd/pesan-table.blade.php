@@ -20,11 +20,11 @@
                         <tr wire:key="hrd-pesan-{{ $pesan->id_pesan }}"
                             onclick="window.location.href='{{ route('hrd.detailPesan', $pesan->id_pesan) }}'"
                             class="hover:bg-slate-50 cursor-pointer transition">
-                            <td class="px-6 py-4 text-slate-900 font-medium">
+                            <td class="px-6 py-4 text-slate-500 font-medium">
                                 {{ $pesan->judul_pesan }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-slate-500">{{ $isIncoming ? 'Dari' : 'Kepada' }}:</span>
+                                <span class="text-slate-900">{{ $isIncoming ? 'Dari' : 'Kepada' }}:</span>
                                 {{ $contact?->karyawan?->nama ?? ($contact?->username ?? 'Pengguna tidak tersedia') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">

@@ -103,7 +103,7 @@
                         <div
                             class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                             <a href="{{ route('hrd.daftarKaryawan', ['divisi' => $d->id_divisi]) }}"
-                                class="font-bold text-black hover:underline flex items-center gap-2">
+                                class="font-bold text-blue-500 hover:underline flex items-center gap-2 hover:text-blue-300 transition">
                                 {{ $d->nama_divisi }}
                             </a>
                             <span class="text-xs font-bold px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
@@ -163,7 +163,7 @@
             </div>
 
             <div>
-                <h1 class="text-2xl font-bold text-slate-800">Persentasi Data Karyawan</h1>
+                <h1 class="text-2xl font-bold text-slate-800">Persentase Data Karyawan</h1>
             </div>
 
             {{-- BREAKDOWN --}}
@@ -195,22 +195,22 @@
                                                 default => 'bg-[#0097B2]',
                                             },
                                             'Pendidikan' => match(strtolower((string)$label)){
-                                                'sma/smk' => 'bg-slate-500',
-                                                'd3' => 'bg-green-500',
+                                                'sma/smk' => 'bg-blue-500',
+                                                'd3' => 'bg-blue-500',
                                                 's1' => 'bg-blue-500',
-                                                's2' => 'bg-red-500',
+                                                's2' => 'bg-blue-500',
                                                 default => 'bg-[#0097B2]',
                                             },
                                             'JobLevel' => match (strtolower((string) $label)) {
-                                                'junior' => 'bg-green-500',
-                                                'magang' => 'bg-slate-500',
-                                                'manager' => 'bg-red-500',
-                                                'senior' => 'bg-violet-500',
+                                                'junior' => 'bg-blue-500',
+                                                'magang' => 'bg-blue-500',
+                                                'manager' => 'bg-blue-500',
+                                                'senior' => 'bg-blue-500',
                                                 default => 'bg-[#0097B2]',
                                             },
                                             'Status Karyawan' => match (strtolower((string) $label)) {
                                                 'tetap' => 'bg-blue-500',
-                                                'kontrak' => 'bg-red-500',
+                                                'kontrak' => 'bg-orange-500',
                                                 default => 'bg-[#0097B2]',
                                             },
                                             default => 'bg-[#0097B2]',
