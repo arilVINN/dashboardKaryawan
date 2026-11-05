@@ -19,6 +19,62 @@
     </span>
 </h2>
 
+<style>
+    .surat-card {
+        transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+    }
+
+    .surat-card:hover {
+        border-color: #146C94;
+        box-shadow: 0 4px 12px rgba(20, 108, 148, .14);
+        transform: translateY(-1px);
+    }
+
+    .surat-card:hover .surat-card-label {
+        text-decoration: underline;
+    }
+
+    .surat-card-label {
+        color: #146C94;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .surat-card-arrow {
+        transition: transform 150ms ease;
+    }
+
+    .surat-card:hover .surat-card-arrow {
+        transform: translateX(3px);
+    }
+
+    .surat-card:focus-visible {
+        outline: 2px solid #146C94;
+        outline-offset: 2px;
+    }
+
+    .surat-card:active {
+        transform: none;
+        box-shadow: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .surat-card,
+        .surat-card:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .surat-card:hover .surat-card-label {
+            text-decoration: none;
+        }
+
+        .surat-card:hover .surat-card-arrow {
+            transform: none;
+        }
+    }
+</style>
+
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 pb-2">
     <div class="rounded-xl drop-shadow-md bg-white p-4 flex items-center justify-between">
         <div class="flex flex-col">
@@ -53,12 +109,19 @@
     </div>
 
     <a href="{{ route('hrd.suratIzin') }}"
-        class="rounded-xl drop-shadow-md bg-white p-4 flex items-center justify-between hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-[#146C94] gap-9">
+        aria-label="Surat izin masuk: {{ $total['suratIzinMasuk'] }}. Lihat detail"
+        class="surat-card rounded-xl drop-shadow-md bg-white p-4 flex items-center justify-between border border-transparent cursor-pointer gap-9">
         <div class="flex flex-col">
             <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Surat Izin Masuk</span>
             <span class="text-2xl font-bold text-slate-900 leading-none mt-1">{{ $total['suratIzinMasuk'] }}</span>
             <div class="flex justify-between items-center pt-0.5">
-                <span class="text-xs text-slate-400 mt-1">Lihat Detail</span>
+                <span class="surat-card-label mt-1 inline-flex items-center gap-1">
+                    Lihat detail
+                    <svg class="surat-card-arrow h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"></path>
+                    </svg>
+                </span>
             </div>
         </div>
         <svg class="w-10 h-10 rounded-lg bg-violet-100 text-violet-600 p-2" fill="none" stroke="currentColor"

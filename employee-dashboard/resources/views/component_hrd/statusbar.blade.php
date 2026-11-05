@@ -11,23 +11,23 @@
 
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-    {{-- Total Karyawan --}}
-    <a href="{{ route('hrd.analitikKaryawan') }}"
-        class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2 hover:shadow-md transition">
+    {{-- Total Pesan --}}
+    <a href="{{ route('hrd.pesan') }}"
+       class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2 hover:shadow-md transition">
         <div class="flex items-start justify-between">
-            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Karyawan</span>
-            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-green-100">
-                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Pesan</span>
+            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100">
+                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+                          d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                 </svg>
             </span>
         </div>
         <div>
-            <p class="text-2xl font-bold text-slate-900 leading-none" data-dashboard-metric="total-staff">
-                {{ $totalStaff }}<span class="text-sm font-medium text-slate-900 ml-1">staff</span>
+            <p class="text-2xl font-bold text-slate-900 leading-none" data-dashboard-metric="total-pesan">
+                {{ $totalPesanPerusahaan }}<span class="text-sm font-medium text-slate-400 ml-1">pesan</span>
             </p>
-            <p class="text-xs text-slate-400 mt-1">Karyawan terdaftar</p>
+            <p class="text-xs text-slate-400 mt-1">Pesan masuk</p>
         </div>
     </a>
 
@@ -51,29 +51,38 @@
         </div>
     </a>
 
-    {{-- Total Pesan --}}
-    <a href="{{ route('hrd.pesan') }}"
-        class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2 hover:shadow-md transition">
+    {{-- Total Karyawan --}}
+    <a href="{{ route('hrd.analitikKaryawan') }}"
+       class="group bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2 hover:shadow-md transition">
         <div class="flex items-start justify-between">
-            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Pesan</span>
-            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100">
-                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Karyawan</span>
+            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-green-100">
+                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                          d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                 </svg>
             </span>
         </div>
         <div>
-            <p class="text-2xl font-bold text-slate-900 leading-none" data-dashboard-metric="total-pesan">
-                {{ $totalPesanPerusahaan }}<span class="text-sm font-medium text-slate-400 ml-1">pesan</span>
+            <p class="text-2xl font-bold text-slate-900 leading-none" data-dashboard-metric="total-staff">
+                {{ $totalStaff }}<span class="text-sm font-medium text-slate-900 ml-1">staff</span>
             </p>
-            <p class="text-xs text-slate-400 mt-1">Pesan masuk</p>
+            <div class="mt-1 flex items-center justify-between gap-2">
+                <p class="text-xs text-slate-400">Karyawan terdaftar</p>
+                <span class="inline-flex items-center gap-1 text-[12px] font-medium text-[#146C94] group-hover:underline">
+                    Lihat detail
+                    <svg class="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-[3px]" fill="none"
+                         stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"></path>
+                    </svg>
+                </span>
+            </div>
         </div>
     </a>
 
     {{-- Turnover Karyawan --}}
     <a href="{{ route('hrd.turnoverKaryawan') }}"
-        class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2 hover:shadow-md transition">
+        class="group bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2 hover:shadow-md transition">
         <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Turnover Karyawan</span>
 
         <div class="flex items-center gap-3">
@@ -93,8 +102,14 @@
                     </div>
                     <span class="text-slate-800">{{ $totalKaryawanAktif }}</span>
                 </div>
-                <div class="flex justify-between items-center pt-0.5">
-                    <span class="text-[9px] text-slate-400 normal-case font-medium">Lihat detail →</span>
+                <div class="flex justify-end items-center pt-0.5">
+                    <span class="inline-flex items-center gap-1 text-[12px] font-medium text-[#146C94] group-hover:underline">
+                        Lihat detail
+                        <svg class="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-[3px]" fill="none"
+                            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"></path>
+                        </svg>
+                    </span>
                 </div>
             </div>
         </div>
