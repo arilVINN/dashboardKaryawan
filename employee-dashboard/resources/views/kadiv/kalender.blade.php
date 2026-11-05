@@ -1736,7 +1736,7 @@
             if (reminderUnit) reminderUnit.value = 'day';
 
             if (defaultDate) {
-                dateInput.value = defaultDate;
+                dateInput.value = String(defaultDate).slice(0, 10);
             } else {
                 const today = new Date();
                 const yyyy = today.getFullYear();
@@ -2423,7 +2423,7 @@
                     });
                 },
                 dateClick: function(info) {
-                    openModalNote(info.dateStr);
+                    openModalNote((info.dateStr || '').slice(0, 10));
                 },
                 /* Tampilan Kustom Event untuk Kadiv: Menampilkan Divisi, Alur (Dari Kadiv ➔ Ke Staff), dan Judul Tugas */
                 eventContent: function(arg) {
@@ -2545,7 +2545,9 @@
                     if (info.event.extendedProps?.type === 'note') {
                         openModalDetailNote(info.event);
                     } else {
-                        lastEventTrigger = info.el;
+                        lastEventTrigger =
+                            info.el.closest?.('tr.fc-list-event')?.querySelector('.fc-list-event-title')
+                            || info.el;
                         openModalEvent(info.event);
                     }
                 },
