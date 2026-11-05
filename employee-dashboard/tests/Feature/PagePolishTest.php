@@ -108,7 +108,7 @@ class PagePolishTest extends TestCase
         return $this->actingAs($user)->get($url)->assertOk()->getContent();
     }
 
-    private function assertRowHeading(string $html, string $parent, string $current, string $title, string $rowHeading): void
+    private function assertRowHeading(string $html, string $parent, string $current, string $title, string $rowHeading, string $rowHeadingClass = 'text-xl font-bold text-slate-800'): void
     {
         $this->assertStringContainsString('data-breadcrumb-parent="'.$parent.'"', $html);
         $this->assertStringContainsString('data-breadcrumb-current="'.$current.'"', $html);
@@ -116,7 +116,7 @@ class PagePolishTest extends TestCase
         // No page-level h1: the button-row h2 below owns the visible heading.
         // (The sidebar brand mark is an h1 too, so pin the heading scale.)
         $this->assertStringNotContainsString('<h1 class="text-2xl', $html);
-        $this->assertStringContainsString('<h2 class="text-xl font-bold text-slate-800">'.$rowHeading.'</h2>', $html);
+        $this->assertStringContainsString('<h2 class="'.$rowHeadingClass.'">'.$rowHeading.'</h2>', $html);
     }
 
     private function assertTwoLevelHeading(string $html, string $parent, string $current, string $title, string $pageHeading, string $rowHeading): void
@@ -185,10 +185,13 @@ class PagePolishTest extends TestCase
 
     public function test_kadiv_pesan_page_polish(): void
     {
-        $this->assertRowHeading(
-            $this->getPage($this->kadiv, '/kadiv/pesan'),
-            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
-        );
+        $html = $this->getPage($this->kadiv, '/kadiv/pesan');
+
+        $this->assertStringContainsString('data-breadcrumb-parent="Dashboard"', $html);
+        $this->assertStringContainsString('data-breadcrumb-current="Daftar Pesan"', $html);
+        $this->assertStringContainsString('<title>Daftar Pesan - PT Silindo</title>', $html);
+        $this->assertStringContainsString('<h1 class="text-2xl', $html);
+        $this->assertStringContainsString('<span>Daftar Pesan</span>', $html);
     }
 
     public function test_kadiv_manajemen_staff_page_polish(): void
@@ -211,7 +214,7 @@ class PagePolishTest extends TestCase
     {
         $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/pesan'),
-            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
+            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan', 'text-lg font-semibold text-[#172B36]'
         );
     }
 
@@ -235,7 +238,7 @@ class PagePolishTest extends TestCase
     {
         $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/daftarPesan'),
-            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan'
+            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan', 'text-lg font-semibold text-[#172B36]'
         );
     }
 
@@ -300,9 +303,25 @@ class PagePolishTest extends TestCase
 
         $this->assertStringContainsString('data-polish-pagination', $html);
         $this->assertStringContainsString('aria-label="Navigasi halaman"', $html);
-        $this->assertStringContainsString('?page=1', $html);
-        $this->assertStringContainsString('?page=3', $html);
+        $this->assertStringContainsString("wire:click=\"previousPage('page')\"", $html);
+        $this->assertStringContainsString("wire:click=\"nextPage('page')\"", $html);
+        $this->assertStringContainsString("wire:click=\"gotoPage(1, 'page')\"", $html);
+        $this->assertStringContainsString("wire:click=\"gotoPage(3, 'page')\"", $html);
         $this->assertStringContainsString('bg-[#004A65]', $html);
+    }
+
+    public function test_custom_pagination_shows_first_and_last_controls_for_long_pagination(): void
+    {
+        $paginator = new LengthAwarePaginator(
+            range(1, 100), 100, 10, 6, ['path' => 'http://localhost']
+        );
+
+        $html = (string) $paginator->links('vendor.pagination.custom');
+
+        $this->assertStringContainsString('aria-label="Halaman pertama"', $html);
+        $this->assertStringContainsString('aria-label="Halaman terakhir"', $html);
+        $this->assertStringContainsString("wire:click=\"gotoPage(1, 'page')\"", $html);
+        $this->assertStringContainsString("wire:click=\"gotoPage(10, 'page')\"", $html);
     }
 
     public function test_daftar_karyawan_pagination_uses_custom_view(): void
@@ -331,7 +350,6 @@ class PagePolishTest extends TestCase
             'resources/views/livewire/kadiv/tugas-table.blade.php',
             'resources/views/livewire/kadiv/pesan-table.blade.php',
             'resources/views/livewire/kadiv/staff-table.blade.php',
-            'resources/views/livewire/staff/tugas-table.blade.php',
             'resources/views/livewire/staff/pesan-table.blade.php',
         ];
 

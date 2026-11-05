@@ -2,88 +2,146 @@
     $indicator = fn(string $col) => $sort === $col ? ($dir === 'asc' ? '▲' : '▼') : '↕';
 @endphp
 
-<div class="flex flex-col gap-3 w-full mt-2">
-    <div class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5">
-        <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-            <label for="staffPesanSearch" class="text-xs font-bold text-slate-500">Cari</label>
+<div class="w-full">
+    {{-- Compact filters --}}
+    <div class="mb-4 flex flex-wrap items-center gap-3">
+        <div class="relative min-w-0 flex-1">
+            <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
             <input id="staffPesanSearch" type="text" wire:model.live.debounce.300ms="search"
-                placeholder="Pengirim / topik..."
-                class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
-            <button type="button" data-modal-open="modalSuratIzin"
-                class="text-sm px-4 py-2 bg-[#146C94] text-white rounded-lg font-medium hover:bg-[#0f5878] transition flex items-center gap-1.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 12h6m-6 4h6M9 8h1m5 12H7a2 2 0 01-2-2V6a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z" />
-                </svg>
-                Kirim Surat Izin
-            </button>
+                placeholder="Cari pengirim atau topik..."
+                class="h-10 w-full rounded-lg border border-slate-300 pl-9 pr-3 text-sm text-[#172B36] outline-none focus:border-[#146C94]">
         </div>
-        <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-            <label for="staffPesanJenis" class="text-xs font-bold text-slate-500">Jenis</label>
-            <select id="staffPesanJenis" wire:model.live="jenis"
-                class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
-                <option value="">Semua</option>
-                <option value="tugas">Pesan Tugas</option>
-                <option value="langsung">Pesan Langsung</option>
-            </select>
-        </div>
-        <div class="flex shrink-0 gap-2 sm:ml-auto">
+
+        <select id="staffPesanJenis" wire:model.live="jenis"
+            class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-[#172B36] outline-none focus:border-[#146C94] sm:w-48">
+            <option value="">Semua jenis</option>
+            <option value="tugas">Pesan Tugas</option>
+            <option value="langsung">Pesan Langsung</option>
+        </select>
+
+        @if ($search !== '' || $jenis !== '')
             <button type="button" wire:click="resetFilters"
-                class="h-10 inline-flex items-center px-4 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Reset</button>
-        </div>
+                class="h-10 shrink-0 text-sm font-medium text-[#146C94] hover:underline">
+                Reset
+            </button>
+        @endif
     </div>
 
-    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
+    <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
+            <table class="w-full min-w-[720px] table-fixed text-left text-sm text-[#475569]">
+                <thead class="bg-slate-100">
                     <tr>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap">
-                            <button type="button" wire:click="sortBy('pengirim')"
-                                class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                Pengirim <span
-                                    class="{{ $sort === 'pengirim' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('pengirim') }}</span>
-                            </button>
-                        </th>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap">
+                        <th class="w-[45%] px-4 py-3 text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap">
                             <button type="button" wire:click="sortBy('judul')"
                                 class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                Topik / Judul <span
-                                    class="{{ $sort === 'judul' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('judul') }}</span>
+                                Topik / judul
+                                <span class="{{ $sort === 'judul' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('judul') }}</span>
                             </button>
                         </th>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap">
+                        <th class="w-[28%] px-4 py-3 text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap">
+                            <button type="button" wire:click="sortBy('pengirim')"
+                                class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                Pengirim
+                                <span class="{{ $sort === 'pengirim' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('pengirim') }}</span>
+                            </button>
+                        </th>
+                        <th class="w-[18%] px-4 py-3 text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap">
                             <button type="button" wire:click="sortBy('tanggal')"
                                 class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                Tanggal <span
-                                    class="{{ $sort === 'tanggal' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('tanggal') }}</span>
+                                Tanggal
+                                <span class="{{ $sort === 'tanggal' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('tanggal') }}</span>
                             </button>
                         </th>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap text-center">Aksi</th>
+                        <th class="w-20 px-4 py-3 text-right text-[13px] font-semibold text-slate-500 whitespace-nowrap">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200">
+                <tbody class="divide-y divide-[#EEF2F5]">
                     @forelse ($rows as $row)
+                        @php
+                            $url = url('/pesan/detail/' . $row['link_id']);
+                            $date = !empty($row['tanggal_raw'])
+                                ? \Illuminate\Support\Carbon::parse($row['tanggal_raw'])
+                                : null;
+                            $dateLabel = $date
+                                ? ($date->isToday()
+                                    ? 'Hari ini'
+                                    : ($date->isYesterday()
+                                        ? 'Kemarin'
+                                        : $date->locale('id')->translatedFormat('j M Y')))
+                                : '-';
+                            $hasUnread = !empty($row['unread']);
+                        @endphp
                         <tr wire:key="pesan-{{ $row['jenis'] }}-{{ $row['link_id'] }}"
-                            class="hover:bg-slate-50 transition">
-                            <td class="px-6 py-4 font-semibold text-slate-800 whitespace-nowrap">{{ $row['pengirim'] }}
+                            role="link" tabindex="0"
+                            onclick="window.location.href='{{ $url }}'"
+                            onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); window.location.href='{{ $url }}'; }"
+                            class="h-16 cursor-pointer hover:bg-[#F5FAFC] focus:bg-[#F5FAFC] focus:outline-none">
+                            <td class="px-4 py-2">
+                                <div class="flex min-w-0 items-center gap-2">
+                                    @if ($hasUnread)
+                                        <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-[#146C94]"></span>
+                                    @endif
+                                    <span class="truncate text-sm text-[#172B36] {{ $hasUnread ? 'font-semibold' : 'font-medium' }}">
+                                        {{ $row['judul'] }}
+                                    </span>
+                                </div>
                             </td>
-                            <td class="px-6 py-4 max-w-[160px] truncate text-slate-500">{{ $row['judul'] }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-slate-500">{{ $row['tanggal'] }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <a href="{{ url('/pesan/detail/' . $row['link_id']) }}"
-                                    class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">Baca</a>
+                            <td class="px-4 py-2">
+                                @if (($row['arah'] ?? 'masuk') === 'keluar')
+                                    <div class="text-sm text-[#172B36]">Anda</div>
+                                    <div class="text-xs text-[#4B5563]">Ke: {{ $row['pengirim'] }}</div>
+                                @else
+                                    <div class="text-sm text-[#172B36]">{{ $row['pengirim'] }}</div>
+                                    @if (!empty($row['pengirim_username']))
+                                        <div class="text-xs text-[#4B5563]">{{ $row['pengirim_username'] }}</div>
+                                    @endif
+                                @endif
+                            </td>
+                            <td class="px-4 py-2 text-sm text-[#4B5563]">{{ $dateLabel }}</td>
+                            <td class="px-4 py-2 text-right">
+                                <a href="{{ $url }}" onclick="event.stopPropagation()"
+                                    class="text-sm font-medium text-[#146C94] hover:underline">
+                                    Baca
+                                </a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-10 text-center text-slate-400">Belum ada pesan masuk.</td>
+                            <td colspan="4" class="px-4 py-12">
+                                <div class="flex flex-col items-center justify-center gap-2 text-center">
+                                    <svg class="h-10 w-10 text-slate-300" fill="none" stroke="currentColor"
+                                        stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                    </svg>
+                                    <p class="text-sm font-medium text-[#4B5563]">Tidak ada pesan ditemukan</p>
+                                    <button type="button" wire:click="resetFilters"
+                                        class="text-sm font-medium text-[#146C94] hover:underline">
+                                        Reset filter
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <div>{{ $rows->links('vendor.pagination.custom') }}</div>
+        <div class="border-t border-[#EEF2F5] px-4 py-3">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-[13px] text-[#4B5563]">
+                    Menampilkan {{ $rows->firstItem() ?? 0 }}-{{ $rows->lastItem() ?? 0 }} dari {{ $rows->total() }} pesan
+                </p>
+
+                @if ($rows->hasPages())
+                    <div>{{ $rows->links('vendor.pagination.custom') }}</div>
+                @endif
+            </div>
+        </div>
+    </div>
 </div>

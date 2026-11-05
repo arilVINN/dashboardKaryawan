@@ -329,23 +329,23 @@
         .fc-timegrid .fc-event {
             margin: 0 !important;
         }
-        /* Kartu tugas: isi pucat + 1px border tipis; aksen status via --tugas-accent */
+        /* Kartu tugas: isi kontras tinggi + border tegas; aksen status via --tugas-accent */
         .tugas-card {
             border-width: 1px !important;
             border-style: solid !important;
         }
-        .tugas-status-baru      { background-color: #DCEEFE !important; border-color: #93C5FD !important; --tugas-accent: #2563EB; }
-        .tugas-status-berjalan  { background-color: #D9F5E5 !important; border-color: #86D9AE !important; --tugas-accent: #059669; }
-        .tugas-status-menunggu  { background-color: #FEF0C3 !important; border-color: #F5C85C !important; --tugas-accent: #D97706; }
-        .tugas-status-disetujui { background-color: #D5F3F0 !important; border-color: #7DD3C8 !important; --tugas-accent: #0D9488; }
-        .tugas-status-terlambat { background-color: #FDE0E0 !important; border-color: #F5A3A3 !important; --tugas-accent: #DC2626; }
+        .tugas-status-baru      { background-color: #C0E7FF !important; border-color: #3B82F6 !important; color: #1D4ED8 !important; --tugas-accent: #1D4ED8; }
+        .tugas-status-berjalan  { background-color: #D1FAE5 !important; border-color: #10B981 !important; color: #047857 !important; --tugas-accent: #047857; }
+        .tugas-status-menunggu  { background-color: #FEF3C7 !important; border-color: #F59E0B !important; color: #B45309 !important; --tugas-accent: #B45309; }
+        .tugas-status-disetujui { background-color: #047857 !important; border-color: #065F46 !important; color: #FFFFFF !important; --tugas-accent: #D1FAE5; }
+        .tugas-status-terlambat { background-color: #FEE2E2 !important; border-color: #EF4444 !important; color: #B91C1C !important; --tugas-accent: #B91C1C; }
 
-        /* Hover: isi sedikit lebih gelap (~4%), border tetap */
-        .tugas-status-baru:hover      { background-color: #D3E4F4 !important; }
-        .tugas-status-berjalan:hover  { background-color: #D0EBDC !important; }
-        .tugas-status-menunggu:hover  { background-color: #F4E6BB !important; }
-        .tugas-status-disetujui:hover { background-color: #CCE9E6 !important; }
-        .tugas-status-terlambat:hover { background-color: #F3D7D7 !important; }
+        /* Hover: isi sedikit lebih gelap, border tetap */
+        .tugas-status-baru:hover      { background-color: #A9DAFF !important; }
+        .tugas-status-berjalan:hover  { background-color: #A7F3D0 !important; }
+        .tugas-status-menunggu:hover  { background-color: #FDE68A !important; }
+        .tugas-status-disetujui:hover { background-color: #065F46 !important; }
+        .tugas-status-terlambat:hover { background-color: #FECACA !important; }
         /* Sembunyikan dot/bullet bawaan FullCalendar */
         .fc-daygrid-event-dot {
             display: none !important;
@@ -771,7 +771,7 @@
             line-height: 1.5;
         }
         .event-submission.is-submitted {
-            background: #D9F5E5;
+            background: #D1FAE5;
             color: #047857;
         }
         .event-description {
@@ -884,15 +884,6 @@
             min-height: 0;
             overflow: hidden;
             scrollbar-gutter: stable;
-        }
-        /* Breadcrumb statis: 16px atas, 8px bawah (scoped ke halaman kalender) */
-        .calendar-breadcrumb {
-            position: static !important;
-            flex: none;
-        }
-        .calendar-breadcrumb > div {
-            padding-top: 16px !important;
-            padding-bottom: 8px !important;
         }
         /* Toolbar kustom kalender: navigasi, filter, dan view switcher */
         .cal-btn {
@@ -1073,7 +1064,7 @@
     </style>
 </head>
 
-<body class="bg-gray-100 flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
 
     @include('component_kadiv.sidebar')
 
@@ -1083,18 +1074,16 @@
 
         <div class="calendar-page flex-1 min-h-0 flex flex-col overflow-y-auto">
 
-            <div class="calendar-breadcrumb flex-none">
-                @include('component.breadcrumbs', [
-                    'parentText' => 'Dashboard',
-                    'parentUrl' => url('/kadiv/dashboard'),
-                    'currentPage' => 'Kalender Tugas Divisi',
-                ])
-            </div>
-
-            <main class="flex-1 min-h-0 flex flex-col p-8 pt-0 pb-8">
+            <main class="flex-1 min-h-0 flex flex-col p-8 pt-6 pb-6">
+            @include('component.breadcrumbs', [
+                'parentText' => 'Dashboard',
+                'parentUrl' => url('/kadiv/dashboard'),
+                'currentPage' => 'Kalender Tugas Divisi',
+                'inline' => true,
+            ])
 
             <!-- Page Title -->
-            <div class="flex-none mb-4">
+            <div class="flex-none mb-6">
                 <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5">
                     <span class="p-2 rounded-lg bg-blue-100 text-[#004A65]">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -1107,7 +1096,7 @@
             </div>
 
             <!-- Calendar Card -->
-            <div class="calendar-card bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex-1 min-h-0 flex flex-col">
+            <div class="calendar-card bg-white p-4 rounded-xl shadow-sm border border-[#E2E8EC] flex-1 min-h-0 flex flex-col">
                 <!-- Judul bulan + tombol tambah catatan di atas segmented control -->
                 <div class="cal-title-row flex-none mb-4">
                     <div></div>
@@ -1173,20 +1162,20 @@
                 <!-- Legend Status -->
                 <div class="flex-none mt-2 flex flex-nowrap items-center gap-1.5 overflow-x-auto text-[11px] leading-none">
                     <span class="font-semibold text-slate-600 mr-1 whitespace-nowrap">Status:</span>
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#93C5FD] bg-[#DCEEFE] text-[#172B36] font-medium whitespace-nowrap">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#2563EB]"></span> Baru
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#3B82F6] bg-[#C0E7FF] text-[#1D4ED8] font-semibold whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#1D4ED8]"></span> Baru
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#86D9AE] bg-[#D9F5E5] text-[#172B36] font-medium whitespace-nowrap">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#059669]"></span> Berjalan
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#10B981] bg-[#D1FAE5] text-[#047857] font-semibold whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#047857]"></span> Berjalan
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#F5C85C] bg-[#FEF0C3] text-[#172B36] font-medium whitespace-nowrap">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span> Menunggu persetujuan
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#F59E0B] bg-[#FEF3C7] text-[#B45309] font-semibold whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#B45309]"></span> Menunggu persetujuan
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#7DD3C8] bg-[#D5F3F0] text-[#172B36] font-medium whitespace-nowrap">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span> Disetujui
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#065F46] bg-[#047857] text-white font-semibold whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#D1FAE5]"></span> Disetujui
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#F5A3A3] bg-[#FDE0E0] text-[#172B36] font-medium whitespace-nowrap">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#DC2626]"></span> Terlambat
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-[#EF4444] bg-[#FEE2E2] text-[#B91C1C] font-semibold whitespace-nowrap">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#B91C1C]"></span> Terlambat
                     </span>
                 </div>
             </div>
@@ -1747,7 +1736,7 @@
             if (reminderUnit) reminderUnit.value = 'day';
 
             if (defaultDate) {
-                dateInput.value = defaultDate;
+                dateInput.value = String(defaultDate).slice(0, 10);
             } else {
                 const today = new Date();
                 const yyyy = today.getFullYear();
@@ -2434,7 +2423,7 @@
                     });
                 },
                 dateClick: function(info) {
-                    openModalNote(info.dateStr);
+                    openModalNote((info.dateStr || '').slice(0, 10));
                 },
                 /* Tampilan Kustom Event untuk Kadiv: Menampilkan Divisi, Alur (Dari Kadiv ➔ Ke Staff), dan Judul Tugas */
                 eventContent: function(arg) {
@@ -2556,7 +2545,9 @@
                     if (info.event.extendedProps?.type === 'note') {
                         openModalDetailNote(info.event);
                     } else {
-                        lastEventTrigger = info.el;
+                        lastEventTrigger =
+                            info.el.closest?.('tr.fc-list-event')?.querySelector('.fc-list-event-title')
+                            || info.el;
                         openModalEvent(info.event);
                     }
                 },

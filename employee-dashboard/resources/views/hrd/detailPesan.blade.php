@@ -8,14 +8,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gray-100 flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
     @include('component_hrd.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
-        @include('component.breadcrumbs', ['parentText' => 'Pesan', 'parentUrl' => url('/hrd/pesan'), 'currentPage' => 'Detail Pesan'])
 
         <main class="flex-1 overflow-y-auto px-6 py-8 lg:px-10">
+            @include('component.breadcrumbs', ['parentText' => 'Pesan', 'parentUrl' => url('/hrd/pesan'), 'currentPage' => 'Detail Pesan', 'inline' => true])
             <h1 class="text-2xl font-bold text-slate-900 mt-5 mb-6">Detail Pesan</h1>
 
             <section class="space-y-5 bg-white p-5 sm:p-7 rounded-2xl shadow-lg">

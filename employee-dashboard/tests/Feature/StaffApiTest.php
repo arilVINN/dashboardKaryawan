@@ -50,6 +50,9 @@ class StaffApiTest extends TestCase
     {
         $this->createTask('TGS-0', $this->staff->karyawan_id_karyawan, Tugas::STATUS_BERJALAN);
         $this->createTask('TGS-1', $this->staff->karyawan_id_karyawan, Tugas::STATUS_BARU);
+        // Tugas "baru" yang lebih dari sehari otomatis menjadi "berjalan".
+        // Buat tanggal dibuatnya hari ini agar tetap masuk bucket "baru".
+        Tugas::whereKey('TGS-1')->update(['tanggal_dibuat' => now()->toDateString()]);
         $this->createTask('TGS-2', $this->staff->karyawan_id_karyawan, Tugas::STATUS_MENUNGGU_ACC);
         // Di-ACC meski deadline lewat: tetap "sudah di-acc", bukan "telat".
         $this->createTask(
@@ -323,6 +326,22 @@ class StaffApiTest extends TestCase
             ->assertJsonPath('data.0.id_notifikasi', 'NTF-OWN');
 
         $this->assertNotNull($response->json('data.0.created_at'));
+    }
+
+    public function test_notification_api_strips_legacy_prefixes(): void
+    {
+        Notifikasi::create([
+            'id_notifikasi' => 'NTF-LEGACY',
+            'judul_notifikasi' => 'Pesan Baru',
+            'isi_notif' => 'Anda menerima pesan: Rapat Mingguan',
+            'tanggal_notifikasi' => '2026-09-29',
+            'user_id_user' => $this->staff->id_user,
+        ]);
+
+        $this->actingAs($this->staff)
+            ->getJson('/staff/notifikasi')
+            ->assertOk()
+            ->assertJsonPath('data.0.isi_notif', 'Rapat Mingguan');
     }
 
     public function test_staff_cannot_open_another_staff_task_thread(): void

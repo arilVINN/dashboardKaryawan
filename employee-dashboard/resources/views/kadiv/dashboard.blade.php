@@ -8,7 +8,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-gray-100 flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
 
     @include('component_kadiv.sidebar')
 
@@ -16,14 +16,13 @@
 
         @include('component.topbar')
 
-        <div class="px-8">
+        <main class="flex-1 overflow-y-auto p-8 pb-6">
             @include('component_kadiv.statusbar')
-        </div>
-        <main class="flex-1 overflow-y-auto p-8">
-            <h4 class="text-2xl font-bold text-slate-800 pt-2">
-                Manajemen Staff
-            </h4>
-            @include('component_kadiv.tabelstaff')
+
+            <div class="mt-6 grid grid-cols-1 items-start gap-6 min-[900px]:grid-cols-[1.5fr_1fr]">
+                @include('component_kadiv.tabelstaff')
+                @include('component_kadiv.notifikasi')
+            </div>
 
             @include('component_kadiv.tabelpdant')
         </main>

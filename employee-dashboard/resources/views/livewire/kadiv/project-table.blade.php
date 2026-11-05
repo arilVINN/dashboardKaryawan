@@ -51,11 +51,11 @@
                                 @php
                                     $status = $project->status_efektif;
                                     $badgeBg = match ($status) {
-                                        \App\Models\Tugas::STATUS_BERJALAN => 'bg-emerald-100 text-emerald-700',
-                                        \App\Models\Tugas::STATUS_MENUNGGU_ACC => 'bg-amber-100 text-amber-700',
-                                        \App\Models\Tugas::STATUS_SUDAH_ACC => 'bg-emerald-700 text-white',
-                                        \App\Models\Tugas::STATUS_TERLAMBAT => 'bg-red-100 text-red-700',
-                                        default => 'bg-[#C0E7FF] text-blue-700',
+                                        \App\Models\Tugas::STATUS_BERJALAN => 'bg-emerald-100 text-emerald-700 border border-emerald-500',
+                                        \App\Models\Tugas::STATUS_MENUNGGU_ACC => 'bg-amber-100 text-amber-700 border border-amber-500',
+                                        \App\Models\Tugas::STATUS_SUDAH_ACC => 'bg-emerald-700 text-white border border-emerald-800',
+                                        \App\Models\Tugas::STATUS_TERLAMBAT => 'bg-red-100 text-red-700 border border-red-500',
+                                        default => 'bg-[#C0E7FF] text-blue-700 border border-blue-500',
                                     };
                                 @endphp
                                 <td class="px-5 py-4 text-center whitespace-nowrap">
@@ -85,25 +85,25 @@
                                 <td class="px-5 py-4 text-center">
                                     <div class="inline-flex items-center gap-2">
                                         <a href="{{ route('kadiv.project.show', $project->id_project) }}"
-                                            class="inline-flex items-center  text-blue-500 px-3 py-2 text-xs font-semibold hover:text-[#083c53] transition">
+                                            class="inline-flex items-center  text-blue-500 px-3 py-2 text-sm font-semibold hover:text-[#083c53] transition">
                                             Detail
                                         </a>
                                         @if ($project->approved_at)
                                             <span
-                                                class="inline-flex items-center px-3 py-2 text-xs font-semibold text-slate-400 cursor-not-allowed"
+                                                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-slate-400 cursor-not-allowed"
                                                 title="Project yang sudah di-ACC tidak dapat diedit">
                                                 Edit
                                             </span>
                                         @else
                                             <button type="button" wire:click="editProject('{{ $project->id_project }}')"
-                                                class="inline-flex items-center text-amber-500 px-3 py-2 text-xs font-semibold hover:text-amber-700 transition">
+                                                class="inline-flex items-center text-amber-500 px-3 py-2 text-sm font-semibold hover:text-amber-700 transition">
                                                 Edit
                                             </button>
                                         @endif
                                         <button type="button" wire:click="deleteProject('{{ $project->id_project }}')"
                                             wire:confirm="Yakin ingin menghapus project ini beserta semua task-nya?"
                                             wire:loading.attr="disabled" wire:target="deleteProject('{{ $project->id_project }}')"
-                                            class="inline-flex items-center  text-red-500 px-3 py-2 text-xs font-semibold hover:text-red-700 transition disabled:opacity-60">
+                                            class="inline-flex items-center  text-red-500 px-3 py-2 text-sm font-semibold hover:text-red-700 transition disabled:opacity-60">
                                             Hapus
                                         </button>
                                     </div>

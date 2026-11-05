@@ -8,16 +8,16 @@
     @vite('resources/css/app.css')
 </head>
 
-<body class="bg-white flex h-screen overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
 
     @include('component.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
         @include('component.topbar')
-        @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/tugas'), 'currentPage' => 'Detail Tugas'])
 
         <main class="flex-1 overflow-y-auto px-10 py-8">
+            @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/tugas'), 'currentPage' => 'Detail Tugas', 'inline' => true])
             <h1 class="text-xl font-bold text-slate-900 mb-8">Tugas</h1>
 
             <div class="max-w-3xl space-y-0">

@@ -18,9 +18,9 @@
 
         {{-- Topbar --}}
         @include('component.topbar')
-        @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/kadiv/dashboard'), 'currentPage' => 'Profil Saya'])
 
         <main class="flex-1 overflow-y-auto px-10 py-8">
+            @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/kadiv/dashboard'), 'currentPage' => 'Profil Saya', 'inline' => true])
 
             <div class="max-w-5xl space-y-8">
 
