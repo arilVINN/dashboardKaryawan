@@ -12,7 +12,7 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-5">
 
     {{-- Total Karyawan --}}
-    <a href="{{ route('hrd.daftarKaryawan') }}"
+    <a href="{{ route('hrd.analitikKaryawan') }}"
         class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2 hover:shadow-md transition">
         <div class="flex items-start justify-between">
             <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Karyawan</span>
@@ -32,7 +32,7 @@
     </a>
 
     {{-- Total Divisi --}}
-    <a href="{{ route('hrd.analitikKaryawan') }}"
+    <a href="{{ route('hrd.manajemenDivisi') }}"
         class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2 hover:shadow-md transition">
         <div class="flex items-start justify-between">
             <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Divisi</span>

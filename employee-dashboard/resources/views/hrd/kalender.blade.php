@@ -262,7 +262,7 @@
         .fc .fc-today-button:not(:disabled):active {
             background-color: #FFFFFF;
             border-color: #CBD5E1;
-            color: #334155;
+            color: #0F4F6D;
         }
         .fc .fc-today-button {
             margin-left: 0.5rem !important;
