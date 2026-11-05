@@ -137,7 +137,7 @@
 
                 const detailLink = document.createElement('a');
                 detailLink.href = url;
-                detailLink.className = 'inline-flex items-center justify-center rounded px-1 py-1 text-[11px] font-semibold text-[#146C94] transition hover:text-[#0B4A66] hover:underline focus:outline-none focus:ring-2 focus:ring-[#146C94]/30';
+                detailLink.className = 'inline-flex items-center justify-center rounded px-1 py-1 text-sm font-semibold text-[#146C94] transition hover:text-[#0B4A66] hover:underline focus:outline-none focus:ring-2 focus:ring-[#146C94]/30';
                 detailLink.textContent = 'Detail';
                 detailLink.addEventListener('click', (event) => event.stopPropagation());
 

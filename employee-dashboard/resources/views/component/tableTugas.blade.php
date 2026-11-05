@@ -102,11 +102,11 @@
 
     const STAFF_STATUS_PALETTE = @json(\App\Support\StatusPalette::all());
     const STAFF_STATUS_HIGH_CONTRAST = {
-        'baru': 'bg-[#C0E7FF] text-blue-700',
-        'berjalan': 'bg-emerald-100 text-emerald-700',
-        'menunggu': 'bg-amber-100 text-amber-700',
-        'disetujui': 'bg-emerald-700 text-white',
-        'terlambat': 'bg-red-100 text-red-700',
+        'baru': 'bg-[#C0E7FF] text-blue-700 border border-blue-500',
+        'berjalan': 'bg-emerald-100 text-emerald-700 border border-emerald-500',
+        'menunggu': 'bg-amber-100 text-amber-700 border border-amber-500',
+        'disetujui': 'bg-emerald-700 text-white border border-emerald-800',
+        'terlambat': 'bg-red-100 text-red-700 border border-red-500',
     };
     const staffTugasIsCompact = {{ $isCompact ? 'true' : 'false' }};
     const staffTugasSearch = document.getElementById('staffTugasSearch');
@@ -134,10 +134,10 @@
         const label = palette ? (shortLabel ? palette.short : palette.label) : (status || '-');
 
         if (!palette) {
-            return `<span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold bg-slate-100 text-slate-700">${status || '-'}</span>`;
+            return `<span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-300">${status || '-'}</span>`;
         }
 
-        const highContrast = STAFF_STATUS_HIGH_CONTRAST[key] || 'bg-slate-100 text-slate-700';
+        const highContrast = STAFF_STATUS_HIGH_CONTRAST[key] || 'bg-slate-100 text-slate-700 border border-slate-300';
 
         return `<span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${highContrast}">${label}</span>`;
     }
@@ -290,7 +290,7 @@
                             </td>
                             <td class="px-2 py-2 text-right">
                                 <a href="/tugas/detail/${encodeURIComponent(t.id_tugas)}" onclick="event.stopPropagation()"
-                                    class="inline-flex items-center justify-center rounded px-1 py-1 text-[11px] font-semibold text-[#146C94] transition hover:text-[#0B4A66] hover:underline focus:outline-none focus:ring-2 focus:ring-[#146C94]/30">
+                                    class="inline-flex items-center justify-center rounded px-1 py-1 text-sm font-semibold text-[#146C94] transition hover:text-[#0B4A66] hover:underline focus:outline-none focus:ring-2 focus:ring-[#146C94]/30">
                                     Detail
                                 </a>
                             </td>

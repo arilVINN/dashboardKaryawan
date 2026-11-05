@@ -59,20 +59,20 @@
                         <td class="px-3 py-2">
                             <div class="flex items-center justify-end gap-2">
                                 <a href="{{ $detailUrl }}" onclick="event.stopPropagation()"
-                                    class="inline-flex items-center justify-center rounded px-1 py-1 text-[11px] font-semibold text-[#146C94] transition hover:text-[#0B4A66] hover:underline focus:outline-none focus:ring-2 focus:ring-[#146C94]/30">
+                                    class="inline-flex items-center justify-center rounded px-1 py-1 text-sm font-semibold text-[#146C94] transition hover:text-[#0B4A66] hover:underline focus:outline-none focus:ring-2 focus:ring-[#146C94]/30">
                                     Detail
                                 </a>
                                 <button type="button" onclick="event.stopPropagation(); bukaModalEditDivisi(this)"
                                     data-id="{{ $divisi->id_divisi }}"
                                     data-kode="{{ $divisi->kode_divisi }}"
                                     data-nama="{{ $divisi->nama_divisi }}"
-                                    class="text-xs font-medium text-amber-600 hover:text-amber-800 hover:underline">
+                                    class="text-sm font-medium text-amber-600 hover:text-amber-800 hover:underline">
                                     Edit
                                 </button>
                                 <button type="button" onclick="event.stopPropagation(); hapusDivisi(this)"
                                     data-id="{{ $divisi->id_divisi }}"
                                     data-nama="{{ $divisi->nama_divisi }}"
-                                    class="text-xs font-medium text-red-600 hover:text-red-800 hover:underline">
+                                    class="text-sm font-medium text-red-600 hover:text-red-800 hover:underline">
                                     Hapus
                                 </button>
                             </div>

@@ -39,7 +39,7 @@
                                 {{ $karyawan->user?->role?->nama_role ?? 'Belum ada akun' }}
                             </span>
                             <span
-                                class="px-2.5 py-1 {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700' }} rounded-full text-xs font-bold">
+                                class="px-2.5 py-1 border {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'bg-red-100 text-red-700 border-red-500' : 'bg-emerald-100 text-emerald-700 border-emerald-500' }} rounded-full text-xs font-bold">
                                 {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'Tidak Aktif' : 'Aktif' }}
                             </span>
                         </div>

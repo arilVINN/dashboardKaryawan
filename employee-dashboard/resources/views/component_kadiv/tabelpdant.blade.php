@@ -75,7 +75,7 @@
     function makeKadivDetail(url) {
         const detail = document.createElement('a');
         detail.href = url;
-        detail.className = 'inline-flex justify-self-end rounded px-1 py-1 text-[11px] font-semibold text-[#146C94] transition hover:text-[#0B4A66] hover:underline focus:outline-none focus:ring-2 focus:ring-[#146C94]/30';
+        detail.className = 'inline-flex justify-self-end rounded px-1 py-1 text-sm font-semibold text-[#146C94] transition hover:text-[#0B4A66] hover:underline focus:outline-none focus:ring-2 focus:ring-[#146C94]/30';
         detail.textContent = 'Detail';
         detail.addEventListener('click', (event) => event.stopPropagation());
 

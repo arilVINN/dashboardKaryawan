@@ -5,11 +5,11 @@
     $pct = $total > 0 ? round(($selesai / $total) * 100) : 0;
     $status = $project->status_efektif;
     $badgeBg = match ($status) {
-        \App\Models\Tugas::STATUS_BERJALAN => 'bg-emerald-100 text-emerald-700',
-        \App\Models\Tugas::STATUS_MENUNGGU_ACC => 'bg-amber-100 text-amber-700',
-        \App\Models\Tugas::STATUS_SUDAH_ACC => 'bg-emerald-700 text-white',
-        \App\Models\Tugas::STATUS_TERLAMBAT => 'bg-red-100 text-red-700',
-        default => 'bg-[#C0E7FF] text-blue-700',
+        \App\Models\Tugas::STATUS_BERJALAN => 'bg-emerald-100 text-emerald-700 border border-emerald-500',
+        \App\Models\Tugas::STATUS_MENUNGGU_ACC => 'bg-amber-100 text-amber-700 border border-amber-500',
+        \App\Models\Tugas::STATUS_SUDAH_ACC => 'bg-emerald-700 text-white border border-emerald-800',
+        \App\Models\Tugas::STATUS_TERLAMBAT => 'bg-red-100 text-red-700 border border-red-500',
+        default => 'bg-[#C0E7FF] text-blue-700 border border-blue-500',
     };
     $semuaTerkumpul = $total > 0 && $terkumpul === $total;
 @endphp
@@ -99,7 +99,7 @@
                             </td>
                             <td class="px-5 py-4 align-top">
                                 <span
-                                    class="inline-flex rounded-full px-3 py-1.5 text-xs font-medium {{ $task->selesai ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
+                                    class="inline-flex rounded-full px-3 py-1.5 text-xs font-medium {{ $task->selesai ? 'bg-emerald-100 text-emerald-700 border border-emerald-500' : 'bg-amber-100 text-amber-700 border border-amber-500' }}">
                                     {{ $task->selesai ? 'Selesai' : 'Belum selesai' }}
                                 </span>
                             </td>
@@ -107,7 +107,7 @@
                                 @if ($task->file_hasil_path)
                                     <div class="flex flex-col gap-1">
                                         <span
-                                            class="inline-flex w-fit rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Sudah
+                                            class="inline-flex w-fit rounded-full border border-emerald-500 bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Sudah
                                             dikumpulkan</span>
                                         <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($task->file_hasil_path) }}"
                                             target="_blank" rel="noopener noreferrer"
@@ -121,7 +121,7 @@
                                     </div>
                                 @else
                                     <span
-                                        class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Belum
+                                        class="inline-flex rounded-full border border-amber-500 bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Belum
                                         dikumpulkan</span>
                                 @endif
                             </td>

@@ -120,14 +120,14 @@
                             <td class="{{ $cellPadding }} whitespace-nowrap">
                                 @if ($k->status_aktif === 'Tidak Aktif')
                                     <span
-                                        class="px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">Tidak Aktif</span>
+                                        class="px-2.5 py-1 border border-red-500 bg-red-100 text-red-700 rounded-full text-xs font-bold">Tidak Aktif</span>
                                 @else
                                     <span
-                                        class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Aktif</span>
+                                        class="px-2.5 py-1 border border-emerald-500 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Aktif</span>
                                 @endif
                             </td>
 
-                            <td class="{{ $cellPadding }} whitespace-nowrap text-center text-xs">
+                            <td class="{{ $cellPadding }} whitespace-nowrap text-center text-sm">
                                 <div class="flex items-center justify-center gap-3">
                                     <a href="{{ url('/hrd/detailKaryawan/' . $k->id_karyawan) }}"
                                         class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">

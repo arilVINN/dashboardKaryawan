@@ -89,16 +89,16 @@
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap">
                                 @if (strtolower($divisi->status_aktif ?? '') === 'aktif')
-                                    <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">
+                                    <span class="px-2.5 py-1 border border-emerald-500 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">
                                         {{ $divisi->status_aktif }}
                                     </span>
                                 @else
-                                    <span class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">
+                                    <span class="px-2.5 py-1 border border-slate-400 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">
                                         {{ $divisi->status_aktif }}
                                     </span>
                                 @endif
                             </td>
-                            <td class="{{ $cellPadding }} whitespace-nowrap text-center text-xs">
+                            <td class="{{ $cellPadding }} whitespace-nowrap text-center text-sm">
                                 <a href="{{ url('/hrd/detailDivisi/' . $divisi->id_divisi) }}"
                                     class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
                                     {{ $manage ? 'Detail' : 'Selengkapnya' }}

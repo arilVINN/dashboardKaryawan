@@ -74,11 +74,11 @@
             const done = project.tasks.filter(task => task.selesai).length;
             const percent = total ? Math.round((done / total) * 100) : 0;
             const statusClasses = {
-                'berjalan': 'bg-emerald-100 text-emerald-700',
-                'menunggu di-acc': 'bg-amber-100 text-amber-700',
-                'sudah di-acc': 'bg-emerald-700 text-white',
-                'terlambat': 'bg-red-100 text-red-700',
-                'baru': 'bg-[#C0E7FF] text-blue-700'
+                'berjalan': 'bg-emerald-100 text-emerald-700 border border-emerald-500',
+                'menunggu di-acc': 'bg-amber-100 text-amber-700 border border-amber-500',
+                'sudah di-acc': 'bg-emerald-700 text-white border border-emerald-800',
+                'terlambat': 'bg-red-100 text-red-700 border border-red-500',
+                'baru': 'bg-[#C0E7FF] text-blue-700 border border-blue-500'
             };
             const statusBadge = `<span class="inline-flex rounded-full px-3 py-1.5 text-xs font-bold ${statusClasses[project.status] || statusClasses.baru}">${escapeProjectDetail(project.status || 'baru')}</span>`;
             const deadline = project.tenggat ? new Date(project.tenggat).toLocaleString('id-ID') : '-';
@@ -96,11 +96,11 @@
                         : '';
                     const submittedFile = task.file_hasil_url
                         ? `<div class="flex min-w-0 flex-col gap-1">
-                               <span class="inline-flex w-fit items-center rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700">Sudah dikumpulkan</span>
+                               <span class="inline-flex w-fit items-center rounded-full border border-emerald-500 bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700">Sudah dikumpulkan</span>
                                <a href="${escapeProjectDetail(task.file_hasil_url)}" target="_blank" rel="noopener noreferrer" class="max-w-56 truncate text-xs text-[#146C94] hover:underline" title="${escapeProjectDetail(task.file_hasil_name)}">${escapeProjectDetail(task.file_hasil_name || 'Lihat file')}</a>
                                ${submittedAt ? `<span class="text-xs text-slate-400">${escapeProjectDetail(submittedAt)}</span>` : ''}
                            </div>`
-                        : '<span class="inline-flex w-fit items-center rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700">Belum dikumpulkan</span>';
+                        : '<span class="inline-flex w-fit items-center rounded-full border border-amber-500 bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700">Belum dikumpulkan</span>';
                     const submitControl = task.milik_saya
                         ? `<input type="file" class="hidden projectSubmissionInput" data-id="${taskId}" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip">
                            <button type="button" class="projectSubmissionButton inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg bg-[#146C94] px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-[#0f5878] focus:outline-none focus:ring-2 focus:ring-[#146C94] focus:ring-offset-2 disabled:cursor-wait disabled:opacity-60 transition" data-id="${taskId}">

@@ -246,6 +246,30 @@ class HrdListUiTest extends TestCase
             ->assertSee('Tidak enak badan');
     }
 
+    public function test_hrd_surat_izin_pagination_uses_url_based_custom_view(): void
+    {
+        for ($i = 1; $i <= 6; $i++) {
+            SuratIzin::create([
+                'id_surat' => 'SRT10'.$i,
+                'karyawan_id_karyawan' => 'KRY-A',
+                'jenis_izin' => 'Izin',
+                'judul_surat' => 'Izin Pagination '.$i,
+                'tanggal_izin' => '2026-10-20',
+                'tanggal_mulai' => '2026-10-20',
+                'tanggal_selesai' => '2026-10-21',
+            ]);
+        }
+
+        $this->actingAs($this->hrd)->get(route('hrd.suratIzin'))
+            ->assertOk()
+            ->assertSee('data-polish-pagination', false)
+            ->assertSee('page=2', false);
+
+        $this->actingAs($this->hrd)->get(route('hrd.suratIzin', ['page' => 2]))
+            ->assertOk()
+            ->assertSee('data-polish-pagination', false);
+    }
+
     public function test_hrd_can_approve_and_reject_pending_leave_requests(): void
     {
         SuratIzin::create([
