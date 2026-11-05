@@ -1,8 +1,8 @@
-<aside id="sidebar" 
+<aside id="sidebar"
        class="w-64 flex flex-col h-screen shrink-0 bg-gradient-to-b from-[#044564] from-50% to-[#19A7CE] transition-all duration-150 ease-in-out">
-    
+
     <div class="h-16 flex items-center justify-between px-4 bg-white rounded-bl-3xl border-b border-r border-slate-200 shrink-0 box-border overflow-hidden">
-        
+
         <div class="sidebar-text flex items-center gap-2.5 overflow-hidden transition-all duration-150">
             <img src="{{ asset('gambar/silindo.png') }}" alt="Logo" class="w-10 h-10 object-contain shrink-0">
             <div class="flex flex-col leading-tight whitespace-nowrap">
@@ -57,7 +57,7 @@
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
             </svg>
-            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Pusat Data</span>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Pusat Arsip & Data</span>
         </a>
 
     </nav>
