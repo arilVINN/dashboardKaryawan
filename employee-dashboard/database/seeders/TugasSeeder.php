@@ -42,7 +42,7 @@ class TugasSeeder extends Seeder
             [
                 'judul' => 'Implementasi Integrasi REST API Kalender',
                 'deskripsi' => 'Hubungkan endpoint CRUD catatan kalender dengan UI modal interaktif staff.',
-                'status' => 'menunggu di-acc',
+                'status' => 'sudah di-acc',
                 'progress' => '100',
                 'days' => 5,
             ],
@@ -63,7 +63,7 @@ class TugasSeeder extends Seeder
             [
                 'judul' => 'Penyusunan Dokumentasi Endpoint API Internal',
                 'deskripsi' => 'Tuliskan spesifikasi request dan response API tugas dan notifikasi di Swagger/Postman.',
-                'status' => 'menunggu di-acc',
+                'status' => 'sudah di-acc',
                 'progress' => '90',
                 'days' => 7,
             ],
@@ -87,7 +87,7 @@ class TugasSeeder extends Seeder
             [
                 'judul' => 'Verifikasi Berkas Pengajuan Cuti dan Izin',
                 'deskripsi' => 'Lakukan validasi bukti surat dokter dan form permohonan izin dari divisi operasional.',
-                'status' => 'menunggu di-acc',
+                'status' => 'sudah di-acc',
                 'progress' => '100',
                 'days' => 6,
             ],
@@ -108,7 +108,7 @@ class TugasSeeder extends Seeder
             [
                 'judul' => 'Evaluasi Kuesioner Kepuasan Lingkungan Kerja',
                 'deskripsi' => 'Tabulasi hasil feedback survey internal kuartal ketiga untuk bahan rapat manajemen.',
-                'status' => 'menunggu di-acc',
+                'status' => 'sudah di-acc',
                 'progress' => '95',
                 'days' => 4,
             ],

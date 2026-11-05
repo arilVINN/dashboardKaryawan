@@ -298,17 +298,12 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
 });
 
 
-//surat izin
-Route::post('/surat-izin', [KadivController::class, 'storeSuratIzin'])
-    ->middleware('throttle:submit-form')
-    ->name('kadiv.suratIzin.store');
-
-// di dalam grup staff yang sudah ada (middleware ['auth', 'role:staff'])
+// Surat Izin (Staff)
 Route::post('/surat-izin', [SuratIzinController::class, 'store'])
     ->middleware(['auth', 'role:staff', 'throttle:submit-form'])
     ->name('staff.suratIzin.store');
 
-// di dalam grup hrd yang sudah ada (middleware ['auth', 'role:hrd', 'throttle:umum'])
+// Surat Izin (HRD)
 Route::get('/suratIzin', [HrdDashboardController::class, 'suratIzinPage'])
     ->middleware(['auth', 'role:hrd', 'throttle:pencarian'])
     ->name('hrd.suratIzin');
@@ -319,7 +314,25 @@ Route::post('/suratIzin/{suratIzin}/tolak', [HrdDashboardController::class, 'rej
     ->middleware(['auth', 'role:hrd', 'throttle:submit-form'])
     ->name('hrd.suratIzin.tolak');
 
-//project 
-Route::post('/project', [KadivController::class, 'storeProject'])
-    ->middleware('throttle:submit-form')
-    ->name('kadiv.project.store');
+// Fallback Route (404 Not Found) -> Otomatis diarahkan ke dashboard masing-masing role dengan toast
+Route::fallback(function (Request $request) {
+    if ($request->expectsJson() || $request->isXmlHttpRequest() || $request->is('api/*')) {
+        return response()->json(['message' => 'Halaman atau endpoint tidak ditemukan.'], 404);
+    }
+
+    $user = auth()->user();
+    if (! $user) {
+        return redirect()->route('login')->with('error', 'Halaman tidak ditemukan. Silakan login terlebih dahulu.');
+    }
+
+    $role = strtolower($user->role?->nama_role ?? '');
+    $dashboardRoute = match ($role) {
+        'hrd'   => 'hrd.dashboard',
+        'kadiv' => 'kadiv.dashboard',
+        'staff' => 'dashboard',
+        default => 'login',
+    };
+
+    return redirect()->route($dashboardRoute)
+        ->with('error', 'Halaman tidak ditemukan. Anda telah diarahkan ke dashboard Anda.');
+});
