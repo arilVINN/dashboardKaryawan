@@ -73,12 +73,12 @@
         </div>
         <div class="overflow-x-auto">
             <table class="w-full min-w-[760px] text-left text-sm">
-                <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                     <tr>
-                        <th class="px-5 py-3 font-semibold">Task</th>
-                        <th class="px-5 py-3 font-semibold">Dikerjakan oleh</th>
-                        <th class="px-5 py-3 font-semibold">Status</th>
-                        <th class="px-5 py-3 font-semibold">Pengumpulan</th>
+                        <th class="px-5 py-3 font-medium">Task</th>
+                        <th class="px-5 py-3 font-medium">Dikerjakan oleh</th>
+                        <th class="px-5 py-3 font-medium">Status</th>
+                        <th class="px-5 py-3 font-medium">Pengumpulan</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">

@@ -129,22 +129,22 @@
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-slate-100">
+                <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                     <tr>
-                        <th class="{{ $headPadding }} text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap min-w-[16rem]">
+                        <th class="{{ $headPadding }} text-left font-medium whitespace-nowrap min-w-[16rem]">
                             <button type="button" wire:click="sortBy('nama')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Nama <span class="{{ $sort === 'nama' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('nama') }}</span>
                             </button>
                         </th>
-                        <th class="{{ $headPadding }} text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap w-36">
+                        <th class="{{ $headPadding }} text-left font-medium whitespace-nowrap w-36">
                             <button type="button" wire:click="sortBy('jenis')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Jenis <span class="{{ $sort === 'jenis' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('jenis') }}</span>
                             </button>
                         </th>
-                        <th class="{{ $headPadding }} text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap min-w-[16rem]">
+                        <th class="{{ $headPadding }} text-left font-medium whitespace-nowrap min-w-[16rem]">
                             Detail / Nilai
                         </th>
-                        <th class="{{ $headPadding }} text-right text-[13px] font-semibold text-slate-500 whitespace-nowrap w-48">
+                        <th class="{{ $headPadding }} text-right font-medium whitespace-nowrap w-48">
                             Aksi
                         </th>
                     </tr>

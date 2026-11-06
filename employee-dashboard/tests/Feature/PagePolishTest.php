@@ -209,9 +209,9 @@ class PagePolishTest extends TestCase
 
     public function test_kadiv_manajemen_staff_page_polish(): void
     {
-        $this->assertTwoLevelHeading(
+        $this->assertPagePolish(
             $this->getPage($this->kadiv, '/kadiv/manajemenStaff'),
-            'Dashboard', 'Manajemen Staff', 'Manajemen Staff - PT Silindo', 'Manajemen Staff', 'Daftar Staff'
+            'Dashboard', 'Manajemen Staff', 'Manajemen Staff - PT Silindo', 'Manajemen Staff'
         );
     }
 

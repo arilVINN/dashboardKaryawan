@@ -278,7 +278,7 @@
                         <h2 class="text-lg font-bold text-slate-800">Tugas {{ $karyawan->nama }}</h2>
                     </div>
                     <table class="w-full text-left text-sm text-slate-600">
-                        <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
+                        <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                             <tr>
                                 <th class="px-6 py-3 font-medium">Tugas</th>
                                 <th class="px-6 py-3 font-medium text-center">Tanggal Tenggat</th>
@@ -317,7 +317,7 @@
                     </div>
 
                     <table class="w-full text-left text-sm text-slate-600">
-                        <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
+                        <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                             <tr>
                                 <th class="px-6 py-3 font-medium">Jenis Izin</th>
                                 <th class="px-6 py-3 font-medium text-center">Tanggal Mulai & Selesai</th>

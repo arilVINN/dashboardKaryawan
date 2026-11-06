@@ -29,15 +29,15 @@
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[850px] text-left text-sm text-slate-600">
-                    <thead class="bg-slate-100 text-xs uppercase tracking-wide text-slate-500">
+                    <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                         <tr>
-                            <th class="px-5 py-4 font-semibold">Nama Project</th>
-                            <th class="px-5 py-4 font-semibold text-center">Status</th>
-                            <th class="px-5 py-4 font-semibold text-center whitespace-nowrap">Tenggat</th>
-                            <th class="px-5 py-4 font-semibold">Progress</th>
-                            <th class="px-5 py-4 font-semibold text-center">Task Selesai</th>
-                            <th class="px-5 py-4 font-semibold text-center">File Terkumpul</th>
-                            <th class="px-5 py-4 font-semibold text-center">Aksi</th>
+                            <th class="px-5 py-4 font-medium">Nama Project</th>
+                            <th class="px-5 py-4 font-medium text-center">Status</th>
+                            <th class="px-5 py-4 font-medium text-center whitespace-nowrap">Tenggat</th>
+                            <th class="px-5 py-4 font-medium">Progress</th>
+                            <th class="px-5 py-4 font-medium text-center">Task Selesai</th>
+                            <th class="px-5 py-4 font-medium text-center">File Terkumpul</th>
+                            <th class="px-5 py-4 font-medium text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200">

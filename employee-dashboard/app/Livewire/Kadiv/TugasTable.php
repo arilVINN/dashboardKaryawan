@@ -21,6 +21,8 @@ class TugasTable extends Component
     use WithPagination;
     use WithFileUploads;
 
+    private const FILTER_SESSION_KEY = 'kadiv.tugas.filters';
+
     #[Url]
     public string $search = '';
 
@@ -75,6 +77,36 @@ class TugasTable extends Component
     public function mount(): void
     {
         $this->divisionId();
+
+        $previous = (string) url()->previous();
+        $saved = session(self::FILTER_SESSION_KEY, []);
+        $query = request()->only(['search', 'status', 'staff']);
+
+        // Returning from a task detail: the breadcrumb points to the plain
+        // list URL, so restore the last toolbar state from the session.
+        if (str_contains($previous, '/kadiv/detailTugas/') && empty($query)) {
+            $this->search = (string) ($saved['search'] ?? '');
+            $this->status = (string) ($saved['status'] ?? '');
+            $this->staff = (string) ($saved['staff'] ?? '');
+        }
+
+        // A filtered URL always wins and becomes the new remembered state.
+        if (! empty($query)) {
+            $this->search = (string) ($query['search'] ?? '');
+            $this->status = (string) ($query['status'] ?? '');
+            $this->staff = (string) ($query['staff'] ?? '');
+        }
+
+        $this->rememberFilters();
+    }
+
+    private function rememberFilters(): void
+    {
+        session([self::FILTER_SESSION_KEY => [
+            'search' => $this->search,
+            'status' => $this->status,
+            'staff' => $this->staff,
+        ]]);
     }
 
     private function divisionId(): string
@@ -95,16 +127,19 @@ class TugasTable extends Component
     public function updatedSearch(): void
     {
         $this->resetPage();
+        $this->rememberFilters();
     }
 
     public function updatedStatus(): void
     {
         $this->resetPage();
+        $this->rememberFilters();
     }
 
     public function updatedStaff(): void
     {
         $this->resetPage();
+        $this->rememberFilters();
     }
 
     public function sortBy(string $column): void
@@ -124,8 +159,9 @@ class TugasTable extends Component
         $this->search = '';
         $this->status = '';
         $this->staff = '';
-        $this->sort = 'tanggal';
+        $this->sort = '';
         $this->dir = 'desc';
+        session()->forget(self::FILTER_SESSION_KEY);
         $this->resetPage();
     }
 
