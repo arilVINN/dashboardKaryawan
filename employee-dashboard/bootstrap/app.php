@@ -73,19 +73,29 @@ return Application::configure(basePath: dirname(__DIR__))
                     default => 'login',
                 };
 
+                if ($dashboardRoute === 'login') {
+                    // Jika user tidak terautentikasi, selalu tampilkan pesan login generic
+                    $message = 'Silakan login terlebih dahulu untuk mengakses sistem.';
+                }
+
                 $targetUrl = route($dashboardRoute);
+                // Jika sudah di halaman dashboard, jangan redirect (cukup flash session saja)
                 if ($request->url() === $targetUrl) {
-                    return null;
+                    session()->flash($key, $message);
+                    return back()->with($key, $message);
                 }
 
                 return redirect()->route($dashboardRoute)->with($key, $message);
             };
 
-            if ($e instanceof \Illuminate\Session\TokenMismatchException) {
+            $is419 = $e instanceof \Illuminate\Session\TokenMismatchException
+                || (method_exists($e, 'getStatusCode') && $e->getStatusCode() === 419);
+
+            if ($is419) {
                 if ($request->expectsJson() || $request->isXmlHttpRequest()) {
-                    return response()->json(['message' => 'CSRF token mismatch.'], 419);
+                    return response()->json(['message' => 'CSRF token mismatch / Page Expired.'], 419);
                 }
-                return redirect()->route('login')->withErrors(['message' => 'Sesi telah kadaluarsa. Silakan login kembali.']);
+                return redirect()->route('login')->with('error', 'Sesi telah kadaluarsa (Page Expired). Silakan login kembali.');
             }
 
             if ($e instanceof \Illuminate\Http\Exceptions\ThrottleRequestsException) {
@@ -130,7 +140,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     ], 500);
                 }
 
-                return $redirectToDashboard('error', 'Terjadi kendala pada sistem. Anda telah diarahkan kembali ke dashboard.');
+                return $redirectToDashboard('error', 'Terjadi kendala pada sistem. Harap coba lagi');
             }
         });
     })->create();
