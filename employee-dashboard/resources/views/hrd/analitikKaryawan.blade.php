@@ -24,7 +24,7 @@
             ])
 
             <div>
-                <h1 class="text-2xl font-bold text-slate-800">Analitik Karyawan</h1>
+                <x-page-heading title="Analitik Karyawan" icon="analytics" />
                 <p class="text-sm text-gray-500 mt-1">Ringkasan data karyawan di seluruh divisi</p>
             </div>
 

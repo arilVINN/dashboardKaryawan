@@ -5,7 +5,14 @@
 <div>
     <div class="flex flex-col gap-3 w-full mt-2">
         <div class="flex justify-between items-center">
-            <h2 class="text-xl font-bold text-slate-800">Daftar Tugas</h2>
+            <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5">
+                <span class="shrink-0 rounded-lg bg-[#E3F1F7] p-1.5 text-[#146C94]">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9 2 2 4-4"></path>
+                    </svg>
+                </span>
+                <span>Daftar Tugas</span>
+            </h2>
             <button type="button" data-modal-open="modalTugasBaru"
                 class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

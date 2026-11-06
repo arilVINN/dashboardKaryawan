@@ -24,7 +24,7 @@
                 'inline' => true,
             ])
             <div>
-                <h1 class="text-2xl font-bold text-slate-800">Turnover Karyawan</h1>
+                <x-page-heading title="Turnover Karyawan" icon="door" />
                 <p class="text-sm text-gray-500 mt-1">{{ $totalKeluarTahunIni }} karyawan keluar tahun ini</p>
             </div>
 

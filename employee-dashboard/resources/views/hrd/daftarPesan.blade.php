@@ -16,7 +16,7 @@
         @include('component.topbar')
         <main class="flex-1 overflow-y-auto p-8 pt-6">
             @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Daftar Pesan', 'inline' => true])
-            @include('component_hrd.tabelPesan')
+            @include('component_hrd.tabelPesan', ['withIcon' => true])
         </main>
         
 

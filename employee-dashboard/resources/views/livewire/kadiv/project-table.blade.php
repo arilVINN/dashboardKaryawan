@@ -1,6 +1,13 @@
 <div class="flex flex-col gap-3 w-full mt-6">
     <div>
-        <h2 class="text-xl font-bold text-slate-800">Daftar Project</h2>
+        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5">
+            <span class="shrink-0 rounded-lg bg-[#E3F1F7] p-1.5 text-[#146C94]">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.25v-6.75a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v6.75m16.5 0v2.625a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-2.625m16.5 0H3.75"></path>
+                </svg>
+            </span>
+            <span>Daftar Project</span>
+        </h2>
     </div>
 
     @if (session('tugas_success'))
