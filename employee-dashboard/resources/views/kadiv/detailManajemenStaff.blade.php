@@ -76,6 +76,8 @@
             const staff = result.data;
             document.getElementById('detail-staff-initial').textContent = (staff.nama || '-').charAt(0).toUpperCase();
             document.getElementById('detail-staff-name').textContent = staff.nama || '-';
+            const crumb = document.querySelector('[data-breadcrumb-current]');
+            if (crumb) crumb.textContent = staff.nama || 'Detail Staff';
             document.getElementById('detail-staff-task-name').textContent = staff.nama || '-';
             document.getElementById('detail-staff-role').textContent = staff.jabatan || staff.user?.role?.nama_role || '-';
             document.getElementById('detail-staff-status').textContent = staff.user?.last_login_at ? 'Aktif' : 'Belum pernah login';

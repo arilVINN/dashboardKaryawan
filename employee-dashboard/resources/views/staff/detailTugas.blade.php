@@ -58,7 +58,7 @@
 
                 {{-- Breadcrumb --}}
                 @include('component.breadcrumbs', [
-                    'parentText' => 'Tugas',
+                    'parentText' => 'Daftar Tugas',
                     'parentUrl' => url('/tugas'),
                     'currentPage' => 'Detail Tugas',
                     'inline' => true,
@@ -404,6 +404,8 @@
 
                 // === HEADER ===
                 document.getElementById('tugas-judul').textContent = t.judul_tugas || '-';
+                const crumb = document.querySelector('[data-breadcrumb-current]');
+                if (crumb) crumb.textContent = t.judul_tugas || 'Detail Tugas';
                 renderStatusBadge(t.status_efektif || t.status);
                 renderMeta(t);
                 renderDescription(t);

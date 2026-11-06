@@ -136,4 +136,11 @@
             </table>
         </div>
     </div>
+
+    <script>
+        (function () {
+            const crumb = document.querySelector('[data-breadcrumb-current]');
+            if (crumb) crumb.textContent = @json($project->nama_project);
+        })();
+    </script>
 </div>

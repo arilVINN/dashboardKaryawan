@@ -77,8 +77,8 @@ class HrdStaffCrudTest extends TestCase
             ->assertSee('Teknologi Informasi')
             ->assertSee('Bikin API')
             ->assertSee('Tandai Karyawan Keluar')
-            ->assertSee('data-breadcrumb-parent="Karyawan"', false)
-            ->assertSee('data-breadcrumb-current="Detail Karyawan"', false);
+            ->assertSee('data-breadcrumb-parent="Manajemen Karyawan"', false)
+            ->assertSee('data-breadcrumb-current="Andi Wijaya"', false);
     }
 
     public function test_hrd_can_mark_employee_as_departed_without_deleting_task_history(): void

@@ -61,7 +61,7 @@
         {{-- CONTENT --}}
         <main class="flex-1 overflow-y-auto px-6 pt-6 pb-8 sm:px-8">
             <div class="w-full">
-                @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/kadiv/tugas'), 'currentPage' => 'Detail Tugas', 'inline' => true])
+                @include('component.breadcrumbs', ['parentText' => 'Daftar Tugas', 'parentUrl' => url('/kadiv/tugas'), 'currentPage' => 'Detail Tugas', 'inline' => true])
 
                 {{-- HEADER --}}
                 <div class="flex flex-wrap items-start justify-between gap-4">
@@ -75,7 +75,7 @@
 
                     <div class="flex shrink-0 items-center gap-2">
                         <button type="button" id="editTaskButton" data-modal-open="modalEditTugas" disabled
-                                class="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5DEE3] bg-white px-4 text-sm font-medium text-[#172B36] transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">
+                                class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#FACC15] px-4 text-sm font-semibold text-[#422006] transition hover:bg-[#EAB308] disabled:cursor-not-allowed disabled:opacity-50">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
                             </svg>
@@ -83,7 +83,7 @@
                         </button>
 
                         <button type="button" id="deleteTaskButton" disabled
-                                class="inline-flex h-10 items-center gap-2 rounded-lg border border-[#FCA5A5] bg-white px-4 text-sm font-medium text-[#B91C1C] transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50">
+                                class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#DC2626] px-4 text-sm font-semibold text-white transition hover:bg-[#B91C1C] disabled:cursor-not-allowed disabled:opacity-50">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                             </svg>
@@ -138,7 +138,7 @@
 
                                     <button type="button" data-modal-open="modalKonfirmasiAcc"
                                             class="inline-flex h-10 items-center justify-center rounded-lg bg-[#146C94] px-5 text-sm font-medium text-white transition hover:bg-[#0f5878] cursor-pointer">
-                                        Acc
+                                        Setujui
                                     </button>
                                 </div>
                             </div>
@@ -258,7 +258,7 @@
                         Catatan revisi <span class="text-[#DC2626]">*</span>
                     </label>
                     <textarea id="isi_revisi" name="isi_revisi" rows="4" required
-                              placeholder="Jelaskan bagian yang perlu diperbaiki"
+                              placeholder="Jelaskan bagian yang perlu diperbaiki.."
                               class="mt-1.5 w-full resize-none rounded-lg border border-[#D5DEE3] bg-white px-3 py-2.5 text-sm text-[#172B36] outline-none transition placeholder:text-[#4B5563] focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]"></textarea>
                 </div>
 
@@ -295,13 +295,9 @@
             </div>
 
             <div class="border-t border-[#E2E8F0] px-6 py-4">
-                <p class="text-[13px] text-[#4B5563]">
-                    <span id="revisiPenerima">Staff</span> akan menerima notifikasi berisi catatan ini.
-                </p>
-
                 <div id="revisiErrors" class="mt-3 hidden space-y-1 rounded-lg border border-[#F5C2C7] bg-[#FEF2F2] px-3 py-2 text-[13px] leading-5 text-[#B91C1C]" role="alert" aria-live="polite"></div>
 
-                <div class="mt-4 flex items-center justify-end gap-3">
+                <div class="flex items-center justify-end gap-3">
                     <button type="button" data-modal-close="modalRevisi"
                             class="h-10 rounded-lg bg-[#E8E7E9] px-4 text-sm font-medium text-[#333335] transition hover:bg-[#D9D9D9] cursor-pointer">
                         Batal

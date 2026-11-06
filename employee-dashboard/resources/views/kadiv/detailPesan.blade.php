@@ -18,7 +18,7 @@
         @include('component.topbar')
 
         <main class="flex-1 overflow-y-auto px-10 py-8">
-            @include('component.breadcrumbs', ['parentText' => 'Pesan', 'parentUrl' => url('/kadiv/pesan'), 'currentPage' => 'Detail Pesan', 'inline' => true])
+            @include('component.breadcrumbs', ['parentText' => 'Daftar Pesan', 'parentUrl' => url('/kadiv/pesan'), 'currentPage' => 'Detail Pesan', 'inline' => true])
             <h1 class="text-2xl font-bold text-slate-900 mb-6">Pesan</h1>
 
             @if (session('success'))
@@ -169,6 +169,8 @@
                 if (!response.ok) throw new Error(result.message || 'Gagal memuat pesan.');
                 const message = result.data;
                 document.getElementById('detail-message-subject').textContent = message.judul_pesan || '-';
+                const crumb = document.querySelector('[data-breadcrumb-current]');
+                if (crumb) crumb.textContent = message.judul_pesan || 'Detail Pesan';
                 document.getElementById('detail-message-sender').textContent =
                     'Dari: ' + (message.pengirim?.nama || message.pengirim?.username || 'Sistem');
                 document.getElementById('detail-message-date').textContent =

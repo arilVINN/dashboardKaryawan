@@ -192,7 +192,7 @@ class PagePolishTest extends TestCase
     {
         $this->assertRowHeading(
             $this->getPage($this->kadiv, '/kadiv/tugas'),
-            'Dashboard', 'Daftar Tugas', 'Daftar Tugas - PT Silindo', 'Daftar Tugas', 'text-xl font-bold text-slate-800', true
+            'Dashboard', 'Daftar Tugas', 'Daftar Tugas - PT Silindo', 'Daftar Tugas', 'text-2xl font-bold text-slate-800', true
         );
     }
 

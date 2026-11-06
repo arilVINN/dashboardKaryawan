@@ -328,7 +328,7 @@ class HrdListUiTest extends TestCase
 
         $this->actingAs($this->hrd)->get('/hrd/detailPesan/PSN-BC-1')
             ->assertOk()
-            ->assertSee('data-breadcrumb-parent="Pesan"', false)
-            ->assertSee('data-breadcrumb-current="Detail Pesan"', false);
+            ->assertSee('data-breadcrumb-parent="Daftar Pesan"', false)
+            ->assertSee('data-breadcrumb-current="Halo"', false);
     }
 }

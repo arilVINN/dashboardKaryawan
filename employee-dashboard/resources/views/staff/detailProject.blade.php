@@ -70,6 +70,9 @@
                 throw new Error('Data detail project tidak valid.');
             }
 
+            const crumb = document.querySelector('[data-breadcrumb-current]');
+            if (crumb) crumb.textContent = project.nama_project || 'Detail Project';
+
             const total = project.tasks.length;
             const done = project.tasks.filter(task => task.selesai).length;
             const percent = total ? Math.round((done / total) * 100) : 0;
