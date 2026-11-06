@@ -59,6 +59,9 @@ return Application::configure(basePath: dirname(__DIR__))
                     'code'    => $statusCode,
                     'message' => $message,
                     'data'    => $data,
+                    // Keep the conventional Laravel shape too so clients can read
+                    // field-level validation messages without knowing about `data`.
+                    'errors'  => $e instanceof \Illuminate\Validation\ValidationException ? $data : null,
                 ], $statusCode);
             }
             // Helper untuk redirect pengguna browser ke dashboard peran masing-masing dengan pesan toast

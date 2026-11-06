@@ -50,9 +50,31 @@ class KadivTaskController extends Controller
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar divisi Anda.'], 404);
         }
 
+        $task->submitTugas->each(function ($submission) {
+            $submission->setAttribute('file_hasil_size', $this->fileSize($submission->file_hasil));
+            $submission->setAttribute('file_revisi_size', $this->fileSize($submission->file_revisi));
+        });
+        $task->setAttribute('file_pendukung_size', $this->fileSize($task->file_pendukung));
+
         return response()->json([
             'data' => $task,
         ]);
+    }
+
+    private function fileSize(?string $path): ?int
+    {
+        if (! is_string($path) || trim($path) === '' || trim($path) === '-') {
+            return null;
+        }
+
+        try {
+            $disk = Storage::disk('public');
+            $path = ltrim($path, '/');
+
+            return $disk->exists($path) ? $disk->size($path) : null;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**
@@ -225,6 +247,16 @@ class KadivTaskController extends Controller
             'catatan_revisi' => 'required_if:status_review,revisi|nullable|string|max:10000',
             'deadline' => ['required_if:status_review,revisi', 'nullable', 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s,Y-m-d H:i:s'],
             'file_revisi' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip',
+        ], [
+            'status_review.required' => 'Pilih tindakan review (acc atau revisi).',
+            'status_review.in' => 'Tindakan review tidak valid.',
+            'catatan_revisi.required_if' => 'Catatan revisi wajib diisi saat meminta revisi.',
+            'catatan_revisi.max' => 'Catatan revisi maksimal 10.000 karakter.',
+            'deadline.required_if' => 'Tenggat revisi wajib ditentukan.',
+            'deadline.date_format' => 'Format tenggat revisi tidak valid.',
+            'file_revisi.file' => 'Lampiran revisi tidak valid atau gagal diunggah.',
+            'file_revisi.max' => 'Ukuran lampiran revisi maksimal 200 MB.',
+            'file_revisi.mimes' => 'Format lampiran harus PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG, atau ZIP.',
         ]);
 
         $latestSubmit = $tugas->submitTugas->first();

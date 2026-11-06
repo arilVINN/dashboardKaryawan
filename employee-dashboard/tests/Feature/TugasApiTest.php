@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use App\Models\User2;
 use App\Models\Tugas;
+use App\Models\SubmitTugas;
 use App\Models\Notifikasi;
 
 class TugasApiTest extends TestCase
@@ -82,6 +83,46 @@ class TugasApiTest extends TestCase
     }
 
     #[Test]
+    public function staff_submit_membuat_id_unik_walau_ada_id_legacy()
+    {
+        $user = User2::where('username', 'budist')->firstOrFail();
+        $tugas = Tugas::where('karyawan_id_karyawan', $user->karyawan_id_karyawan)->firstOrFail();
+
+        $base = [
+            'tugas_id_tugas' => $tugas->id_tugas,
+            'tugas_karyawan_id_karyawan' => $user->karyawan_id_karyawan,
+            'file_hasil' => '-',
+            'link_submit' => '-',
+            'catatan_karyawan' => '-',
+            'catatan_revisi' => '-',
+            'tanggal_submit' => now()->toDateString(),
+            'status_review' => 'acc',
+        ];
+
+        // Seeded/legacy identifiers used to sort after "SB001" and reset the
+        // counter, causing a duplicate primary key on the next submission.
+        SubmitTugas::create(['id_submit_tugas' => 'SB001'] + $base);
+        SubmitTugas::create(['id_submit_tugas' => 'SUB-OLDB-KR001'] + $base);
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'catatan_karyawan' => 'Pengumpulan pertama',
+                'progress' => 100,
+            ])
+            ->assertOk();
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'catatan_karyawan' => 'Pengumpulan kedua',
+                'progress' => 100,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('submit_tugas', ['id_submit_tugas' => 'SB002']);
+        $this->assertDatabaseHas('submit_tugas', ['id_submit_tugas' => 'SB003']);
+    }
+
+    #[Test]
     public function submit_selesai_setelah_deadline_memiliki_status_selesai_dan_terlambat_terpisah()
     {
         $staff = User2::where('username', 'budist')->firstOrFail();
@@ -139,7 +180,10 @@ class TugasApiTest extends TestCase
                 'progress' => 100,
             ])
             ->assertUnprocessable()
-            ->assertJsonStructure(['data' => ['file_hasil', 'catatan_karyawan']]);
+            ->assertJsonStructure([
+                'data' => ['file_hasil', 'catatan_karyawan'],
+                'errors' => ['file_hasil', 'catatan_karyawan'],
+            ]);
 
         $this->assertDatabaseCount('submit_tugas', 0);
     }

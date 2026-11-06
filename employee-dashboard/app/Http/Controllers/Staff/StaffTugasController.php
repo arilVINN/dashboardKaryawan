@@ -93,20 +93,34 @@ class StaffTugasController extends Controller
             'file_hasil' => 'required_without:catatan_karyawan|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip', // max 200 MB (dalam kilobyte)
             'link_submit' => 'nullable|url|max:2048',
             'catatan_karyawan' => 'required_without:file_hasil|string',
-            'progress' => 'sometimes|integer|min:0|max:100'
+            'progress' => 'sometimes|integer|min:0|max:100',
+        ], [
+            'file_hasil.required_without' => 'Lampirkan file hasil atau isi catatan pengumpulan.',
+            'file_hasil.file' => 'File hasil tidak valid atau gagal diunggah.',
+            'file_hasil.max' => 'Ukuran file hasil maksimal 200 MB.',
+            'file_hasil.mimes' => 'Format file hasil harus PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG, atau ZIP.',
+            'link_submit.url' => 'Link pengumpulan harus berupa URL yang valid.',
+            'link_submit.max' => 'Link pengumpulan maksimal 2048 karakter.',
+            'catatan_karyawan.required_without' => 'Isi catatan atau lampirkan file hasil.',
+            'progress.integer' => 'Nilai progress harus berupa angka.',
+            'progress.min' => 'Nilai progress minimal 0.',
+            'progress.max' => 'Nilai progress maksimal 100.',
         ]);
+
         $progress = $validated['progress'] ?? $tugas->progress;
         $filePath = '-'; // Default string '-' karena database Anda melarang NULL
         if ($request->hasFile('file_hasil')) {
             $filePath = $request->file('file_hasil')->store('submissions', 'public');
-        }
-        // Generate dynamic ID SB001, SB002, etc. (Max 5 chars)
-        $lastSubmit = SubmitTugas::orderBy('id_submit_tugas', 'desc')->first();
-        $newId = $lastSubmit ? 'SB' . str_pad(intval(substr($lastSubmit->id_submit_tugas, 2)) + 1, 3, '0', STR_PAD_LEFT) : 'SB001';
 
-        // 1. Simpan ke tabel submit_tugas dengan antisipasi NOT NULL SQL
-        SubmitTugas::create([
-            'id_submit_tugas' => $newId,
+            if (! $filePath) {
+                return response()->json([
+                    'message' => 'File hasil gagal disimpan. Silakan coba lagi.',
+                    'errors' => ['file_hasil' => ['File hasil gagal disimpan. Silakan coba lagi.']],
+                ], 422);
+            }
+        }
+
+        $attributes = [
             'tugas_id_tugas' => $tugas->id_tugas,
             'tugas_karyawan_id_karyawan' => $karyawanId,
             'file_hasil' => $filePath,
@@ -115,7 +129,21 @@ class StaffTugasController extends Controller
             'catatan_revisi' => '-', // Pasti '-' saat pertama submit
             'tanggal_submit' => now(),
             'status_review' => 'submitted',
-        ]);
+        ];
+
+        // Retry once or twice if two submissions race for the same ID.
+        $attempts = 0;
+        while (true) {
+            try {
+                SubmitTugas::create(['id_submit_tugas' => SubmitTugas::nextId()] + $attributes);
+                break;
+            } catch (\Illuminate\Database\QueryException $exception) {
+                $isDuplicate = in_array((string) $exception->getCode(), ['23505', '23000'], true);
+                if (! $isDuplicate || ++$attempts >= 3) {
+                    throw $exception;
+                }
+            }
+        }
         $tugas->update([
             'progress' => $progress,
             'status' => $progress == 100

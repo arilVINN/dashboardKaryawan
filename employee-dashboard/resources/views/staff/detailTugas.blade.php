@@ -6,6 +6,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Tugas - PT Silindo</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        /* Detail Tugas: revision thread + submission form layout */
+        .tugas-body { display: block; }
+        .tugas-form-col { max-width: 640px; }
+
+        .tugas-body.has-revisi .tugas-form-col {
+            max-width: none;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #E2E8EC;
+        }
+
+        @media (min-width: 1100px) {
+            .tugas-body.has-revisi {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 360px;
+                align-items: start;
+            }
+
+            .tugas-body.has-revisi .tugas-thread {
+                padding-right: 24px;
+            }
+
+            .tugas-body.has-revisi .tugas-form-col {
+                margin-top: 0;
+                padding-top: 0;
+                padding-left: 24px;
+                border-top: 0;
+                border-left: 1px solid #E2E8EC;
+            }
+
+            .tugas-body.has-revisi #section-submit-inner {
+                position: sticky;
+                top: 24px;
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-slate-50 flex h-screen overflow-hidden">
@@ -17,24 +54,15 @@
         @include('component.topbar')
 
         <main class="flex-1 overflow-y-auto px-6 sm:px-8 pt-6 pb-8">
-            <div class="w-full max-w-[640px]">
+            <div class="w-full">
 
                 {{-- Breadcrumb --}}
-                <nav aria-label="Breadcrumb" class="mb-4">
-                    <div class="flex flex-wrap items-center gap-1 text-[13px]">
-                        <a href="{{ url('/tugas') }}"
-                            class="inline-flex items-center gap-1 font-medium text-[#146C94] hover:underline">
-                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18">
-                                </path>
-                            </svg>
-                            Tugas
-                        </a>
-                        <span class="px-0.5 text-slate-400" aria-hidden="true">&rsaquo;</span>
-                        <span id="breadcrumb-tugas" class="font-medium text-[#172B36]">Detail Tugas</span>
-                    </div>
-                </nav>
+                @include('component.breadcrumbs', [
+                    'parentText' => 'Tugas',
+                    'parentUrl' => url('/tugas'),
+                    'currentPage' => 'Detail Tugas',
+                    'inline' => true,
+                ])
 
                 {{-- Task header --}}
                 <div class="flex flex-wrap items-center gap-3">
@@ -51,74 +79,80 @@
                 {{-- File pendukung dari Kadiv --}}
                 <div id="lampiran-container" class="mt-4 flex flex-wrap gap-3 empty:hidden"></div>
 
-                {{-- Revisi (submit sebelumnya + catatan revisi) --}}
-                <div id="section-revisi" class="mt-6 hidden">
-                    <h2 id="revisi-judul" class="text-2xl font-bold text-slate-900 leading-snug mb-1">Revisi</h2>
-                    <p id="revisi-tenggat" class="text-sm font-semibold text-slate-800">tenggat : -</p>
-                    <p id="revisi-status" class="text-sm font-semibold text-slate-800 mb-4">status : -</p>
-                    <p id="revisi-catatan" class="text-sm text-slate-700 leading-relaxed text-justify mb-6">-</p>
-
-                    {{-- File Pendukung Revisi dari Kadiv --}}
-                    <div id="revisi-attachment-container" class="flex flex-wrap gap-4 mb-4"></div>
-
-                    {{-- File Hasil Submit Sebelumnya --}}
-                    <div id="revisi-file-container" class="flex flex-wrap gap-4"></div>
-                </div>
-
                 {{-- Divider --}}
-                <div class="mt-6">
-                    <hr class="border-0 border-t border-[#E2E8EC]">
-                </div>
+                <hr class="mt-6 border-0 border-t border-[#E2E8EC]">
 
-                {{-- Submission form --}}
-                <section id="section-submit" class="mt-4">
-                    <h2 class="mb-4 text-base font-semibold text-[#172B36]">Kirim tugas</h2>
+                {{-- Body: revision thread + submission form --}}
+                <div id="tugas-body" class="tugas-body mt-6">
 
-                    <form id="form-submit-tugas" class="hidden space-y-4">
-                        <div>
-                            <label for="file_tugas" class="mb-1.5 block text-[13px] font-medium text-[#172B36]">File hasil</label>
-                            <div class="flex h-10 items-center overflow-hidden rounded-lg border border-[#D5DEE3] bg-white">
-                                <label for="file_tugas"
-                                    class="flex h-full shrink-0 cursor-pointer items-center border-r border-[#D5DEE3] bg-slate-50 px-3 text-[13px] font-medium text-[#172B36] transition hover:bg-slate-100">
-                                    Pilih file
-                                </label>
-                                <span id="file-status" class="ml-3 min-w-0 flex-1 truncate text-[13px] text-[#4B5563]">Belum ada file dipilih</span>
-                                <button type="button" id="btn-hapus-file"
-                                    class="mr-3 hidden shrink-0 text-xs text-[#4B5563] hover:underline">Hapus</button>
-                            </div>
-                            <input type="file" id="file_tugas" name="file_tugas" class="sr-only">
+                    {{-- Revisi (submit sebelumnya + catatan revisi) --}}
+                    <section id="section-revisi" class="tugas-thread hidden min-w-0">
+                        <h2 class="text-base font-semibold text-[#172B36]">Revisi</h2>
+                        <p id="revisi-tenggat" class="mt-1 text-[13px] text-[#4B5563]">-</p>
+                        <p id="revisi-status" class="text-[13px] text-[#4B5563]">-</p>
+                        <p id="revisi-catatan" class="mt-3 text-sm leading-relaxed text-[#172B36]">-</p>
+
+                        {{-- File Pendukung Revisi dari Kadiv --}}
+                        <div id="revisi-attachment-container" class="mt-4 flex flex-wrap gap-3"></div>
+
+                        {{-- File Hasil Submit Sebelumnya --}}
+                        <div id="revisi-file-container" class="mt-4 flex flex-wrap gap-3"></div>
+                    </section>
+
+                    {{-- Submission form --}}
+                    <div id="section-submit-wrap" class="tugas-form-col min-w-0">
+                        <div id="section-submit-inner">
+                            <section id="section-submit">
+                                <h2 id="submit-title" class="mb-4 text-base font-semibold text-[#172B36]">Kirim tugas</h2>
+
+                                <form id="form-submit-tugas" class="hidden space-y-4">
+                                    <div>
+                                        <label for="file_tugas" class="mb-1.5 block text-[13px] font-medium text-[#172B36]">File hasil</label>
+                                        <div class="flex h-10 items-center overflow-hidden rounded-lg border border-[#D5DEE3] bg-white">
+                                            <label for="file_tugas"
+                                                class="flex h-full shrink-0 cursor-pointer items-center border-r border-[#D5DEE3] bg-slate-50 px-3 text-[13px] font-medium text-[#172B36] transition hover:bg-slate-100">
+                                                Pilih file
+                                            </label>
+                                            <span id="file-status" class="ml-3 min-w-0 flex-1 truncate text-[13px] text-[#4B5563]">Belum ada file dipilih</span>
+                                            <button type="button" id="btn-hapus-file"
+                                                class="mr-3 hidden shrink-0 text-xs text-[#4B5563] hover:underline">Hapus</button>
+                                        </div>
+                                        <input type="file" id="file_tugas" name="file_tugas" class="sr-only">
+                                    </div>
+
+                                    <div>
+                                        <label for="deskripsi_tugas" class="mb-1.5 block text-[13px] font-medium text-[#172B36]">Catatan</label>
+                                        <textarea id="deskripsi_tugas" name="deskripsi_tugas" rows="4" placeholder="Tambahkan catatan"
+                                            class="w-full resize-none rounded-lg border border-[#D5DEE3] px-3 py-2.5 text-sm text-[#172B36] placeholder:text-[#4B5563] focus:border-[#146C94] focus:outline-none focus:ring-1 focus:ring-[#146C94]"></textarea>
+                                    </div>
+
+                                    <div id="form-errors" class="hidden space-y-1 rounded-lg border border-[#F5C2C7] bg-[#FEF2F2] px-3 py-2 text-[13px] leading-5 text-[#B91C1C]" role="alert" aria-live="polite"></div>
+
+                                    <div class="flex items-center gap-4">
+                                        <button type="submit" id="btn-submit-tugas"
+                                            class="inline-flex h-10 items-center justify-center rounded-lg bg-[#146C94] px-5 text-sm font-medium text-white transition hover:bg-[#0f5878] disabled:cursor-not-allowed disabled:bg-[#A9C7D6]">
+                                            Kirim tugas
+                                        </button>
+                                        <button type="button" id="btn-reset-tugas"
+                                            class="text-sm font-medium text-[#4B5563] hover:underline">
+                                            Reset
+                                        </button>
+                                    </div>
+                                </form>
+
+                                {{-- State jika tugas sudah dikirim / disetujui --}}
+                                <div id="status-disabled" class="hidden">
+                                    <p class="text-sm text-[#4B5563]">
+                                        <span id="status-disabled-text" class="font-medium text-[#172B36]">-</span><span
+                                            id="status-disabled-file-wrap" class="hidden"> &middot; <a id="status-disabled-file"
+                                                href="#" download class="text-[#146C94] hover:underline"></a></span>
+                                    </p>
+                                </div>
+                            </section>
                         </div>
-
-                        <div>
-                            <label for="deskripsi_tugas" class="mb-1.5 block text-[13px] font-medium text-[#172B36]">Catatan</label>
-                            <textarea id="deskripsi_tugas" name="deskripsi_tugas" rows="3" placeholder="Tambahkan catatan"
-                                class="w-full resize-none rounded-lg border border-[#D5DEE3] px-3 py-2.5 text-sm text-[#172B36] placeholder:text-[#4B5563] focus:border-[#146C94] focus:outline-none focus:ring-1 focus:ring-[#146C94]"></textarea>
-                        </div>
-
-                        <p id="form-helper" class="text-[13px] text-[#4B5563]">Isi catatan atau lampirkan file hasil.</p>
-
-                        <div class="flex items-center gap-4">
-                            <button type="submit" id="btn-submit-tugas"
-                                class="inline-flex h-10 items-center justify-center rounded-lg bg-[#146C94] px-5 text-sm font-medium text-white transition hover:bg-[#0f5878] disabled:cursor-not-allowed disabled:bg-[#A9C7D6]">
-                                Kirim tugas
-                            </button>
-                            <button type="button" id="btn-reset-tugas"
-                                class="text-sm font-medium text-[#4B5563] hover:underline">
-                                Reset
-                            </button>
-                        </div>
-                    </form>
-
-                    {{-- State jika tugas sudah dikirim / disetujui --}}
-                    <div id="status-disabled" class="hidden">
-                        <p class="text-sm text-[#4B5563]">
-                            <span id="status-disabled-text" class="font-medium text-[#172B36]">-</span><span
-                                id="status-disabled-file-wrap" class="hidden"> &middot; <a id="status-disabled-file"
-                                    href="#" download class="text-[#146C94] hover:underline"></a></span>
-                        </p>
                     </div>
-                </section>
 
+                </div>
             </div>
         </main>
 
@@ -131,10 +165,24 @@
         const fileInput = document.getElementById('file_tugas');
         const deskripsiInput = document.getElementById('deskripsi_tugas');
         const submitButton = document.getElementById('btn-submit-tugas');
-        const helper = document.getElementById('form-helper');
+        const submitTitle = document.getElementById('submit-title');
+        const tugasBody = document.getElementById('tugas-body');
         const fileStatus = document.getElementById('file-status');
         const btnHapusFile = document.getElementById('btn-hapus-file');
         let submissionCompleted = false;
+        let submitLabel = 'Kirim tugas';
+
+        function setSubmitLabel(label) {
+            submitLabel = label;
+            submitTitle.textContent = label;
+            submitButton.textContent = label;
+        }
+
+        function showRevisionSection() {
+            document.getElementById('section-revisi').classList.remove('hidden');
+            tugasBody.classList.add('has-revisi');
+            setSubmitLabel('Kirim ulang tugas');
+        }
 
         // Helper: render kartu file
         function renderFileCard(filePath, label) {
@@ -280,7 +328,6 @@
 
                 // === HEADER ===
                 document.getElementById('tugas-judul').textContent = t.judul_tugas || '-';
-                document.getElementById('breadcrumb-tugas').textContent = t.judul_tugas || 'Detail Tugas';
                 renderStatusBadge(t.status_efektif || t.status);
                 renderMeta(t);
                 renderDescription(t);
@@ -304,8 +351,6 @@
                 }
 
                 // === REVISI ===
-                const sectionRevisi = document.getElementById('section-revisi');
-
                 const revisionSubmit = [...submissions].reverse().find((submission) =>
                     submission.status_review === 'revisi'
                     && typeof submission.catatan_revisi === 'string'
@@ -316,11 +361,10 @@
                 if (revisionSubmit) {
                     const catatanRevisi = revisionSubmit.catatan_revisi;
 
-                    document.getElementById('revisi-judul').textContent = 'Revisi ' + (t.judul_tugas || '');
                     document.getElementById('revisi-tenggat').textContent =
-                        'tenggat : ' + fmtDateTime(revisionSubmit.deadline_revisi || t.deadline);
+                        'Tenggat revisi: ' + fmtDateTime(revisionSubmit.deadline_revisi || t.deadline);
                     document.getElementById('revisi-status').textContent =
-                        'status : ' + (revisionSubmit.status_review || '-');
+                        'Status: ' + (revisionSubmit.status_review || '-');
                     document.getElementById('revisi-catatan').textContent = catatanRevisi;
 
                     const revisionAttachmentContainer = document.getElementById('revisi-attachment-container');
@@ -338,7 +382,7 @@
                         revisiFileContainer.innerHTML = renderFileCard(lastSubmit.file_hasil, t.judul_tugas || 'File Hasil');
                     }
 
-                    sectionRevisi.classList.remove('hidden');
+                    showRevisionSection();
                 }
 
                 // Juga tampilkan pesan dari Kadiv di section revisi jika ada
@@ -357,7 +401,7 @@
 
                     // Tambahkan ke section revisi
                     document.getElementById('revisi-file-container').insertAdjacentHTML('afterend', pesanHtml);
-                    sectionRevisi.classList.remove('hidden');
+                    showRevisionSection();
                 }
 
                 // === SUBMIT STATE ===
@@ -415,10 +459,38 @@
             }
         }
 
-        function setHelperError(isError) {
-            helper.textContent = 'Isi catatan atau lampirkan file hasil.';
-            helper.classList.toggle('text-[#B91C1C]', isError);
-            helper.classList.toggle('text-[#4B5563]', !isError);
+        const formErrors = document.getElementById('form-errors');
+
+        function clearFormErrors() {
+            formErrors.replaceChildren();
+            formErrors.classList.add('hidden');
+        }
+
+        function showFormErrors(payload, fallbackMessage) {
+            const messages = [];
+            const fieldErrors = (payload?.errors && typeof payload.errors === 'object')
+                ? payload.errors
+                : ((payload?.data && typeof payload.data === 'object') ? payload.data : null);
+
+            if (fieldErrors) {
+                Object.values(fieldErrors).forEach((value) => {
+                    (Array.isArray(value) ? value : [value]).forEach((message) => {
+                        if (message) messages.push(String(message));
+                    });
+                });
+            }
+
+            if (!messages.length) {
+                messages.push(payload?.message || fallbackMessage || 'Gagal mengirim hasil tugas.');
+            }
+
+            formErrors.replaceChildren();
+            messages.forEach((message) => {
+                const line = document.createElement('p');
+                line.textContent = message;
+                formErrors.appendChild(line);
+            });
+            formErrors.classList.remove('hidden');
         }
 
         function hasSubmissionInput() {
@@ -433,15 +505,17 @@
 
         fileInput.addEventListener('change', () => {
             updateFileDisplay();
-            setHelperError(false);
+            clearFormErrors();
         });
 
-        deskripsiInput.addEventListener('input', () => setHelperError(false));
+        deskripsiInput.addEventListener('input', () => {
+            clearFormErrors();
+        });
 
         btnHapusFile.addEventListener('click', () => {
             fileInput.value = '';
             updateFileDisplay();
-            setHelperError(false);
+            clearFormErrors();
         });
 
         document.addEventListener('click', function(event) {
@@ -468,22 +542,26 @@
             fileInput.value = '';
             deskripsiInput.value = '';
             updateFileDisplay();
-            setHelperError(false);
+            clearFormErrors();
             submitButton.disabled = false;
-            submitButton.textContent = 'Kirim tugas';
+            submitButton.textContent = submitLabel;
         });
 
         // Submit tugas
         document.getElementById('form-submit-tugas').addEventListener('submit', async function(e) {
             e.preventDefault();
+            clearFormErrors();
 
             if (!hasSubmissionInput()) {
-                setHelperError(true);
+                showFormErrors(null, 'Lampirkan file hasil atau isi catatan pengumpulan.');
                 return;
             }
 
             const token = sessionStorage.getItem('staff_token');
-            if (!token) return alert('Sesi habis, silakan login ulang.');
+            if (!token) {
+                showFormErrors(null, 'Sesi habis, silakan login ulang.');
+                return;
+            }
 
             const formData = new FormData();
 
@@ -491,7 +569,6 @@
             if (deskripsiInput.value) formData.append('catatan_karyawan', deskripsiInput.value);
             formData.append('progress', 100);
 
-            setHelperError(false);
             submitButton.disabled = true;
             submitButton.textContent = 'Mengirim...';
 
@@ -501,20 +578,29 @@
                     headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
                     body: formData
                 });
-                const json = await res.json();
+
+                let json = {};
+                try {
+                    json = await res.json();
+                } catch {
+                    json = {};
+                }
+
                 if (res.ok) {
                     submissionCompleted = true;
                     alert('Hasil tugas berhasil dikirim!');
                     window.location.reload();
                 } else {
-                    alert(json.message || 'Gagal mengirim hasil tugas.');
+                    showFormErrors(json, res.status >= 500
+                        ? 'Server gagal memproses pengumpulan. Silakan coba lagi.'
+                        : 'Gagal mengirim hasil tugas.');
                 }
             } catch(error) {
-                alert('Terjadi kesalahan jaringan.');
+                showFormErrors(null, 'Tidak dapat terhubung ke server. Periksa koneksi Anda lalu coba lagi.');
             }
 
             submitButton.disabled = false;
-            submitButton.textContent = 'Kirim tugas';
+            submitButton.textContent = submitLabel;
         });
     </script>
 
