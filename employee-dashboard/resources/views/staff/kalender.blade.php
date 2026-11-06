@@ -520,6 +520,9 @@
             line-height: 1.25;
             color: #4B5563;
         }
+        .popover-event-approved .popover-event-title { color: #FFFFFF; }
+        .popover-event-approved .popover-event-flow,
+        .popover-event-approved .popover-event-time { color: #D1FAE5; }
         .fc .fc-popover-body .fc-event-main {
             padding: 0 !important;
         }
@@ -1328,11 +1331,8 @@
                 <div class="flex-1 overflow-y-auto p-6 space-y-4">
                     <div>
                         <label for="note-input-tanggal" class="block text-[13px] font-medium text-[#4B5563] mb-1.5">Tanggal <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <input type="date" id="note-input-tanggal" required onchange="updateTanggalLengkap()"
-                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                            <div id="note-input-tanggal-display" class="w-full h-10 rounded-lg border border-slate-300 px-3 text-sm text-[#172B36] flex items-center bg-white pointer-events-none">-</div>
-                        </div>
+                        <input type="date" id="note-input-tanggal" required
+                            class="w-full h-10 rounded-lg border border-slate-300 px-3 text-sm text-[#172B36] outline-none cursor-pointer focus:border-[#146C94]">
                     </div>
 
                     <div>
@@ -1544,12 +1544,6 @@
             return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
         }
 
-        function updateTanggalLengkap() {
-            const raw = document.getElementById('note-input-tanggal')?.value || '';
-            const target = document.getElementById('note-input-tanggal-display');
-            if (target) target.textContent = raw ? formatTanggalIndonesia(raw) : '-';
-        }
-
         // --- PENGINGAT CATATAN ---
         let noteReminderEnabled = false;
 
@@ -1730,7 +1724,6 @@
                 dateInput.value = `${yyyy}-${mm}-${dd}`;
             }
 
-            updateTanggalLengkap();
             setNoteReminderSwitchState(false);
 
             modal.style.display = 'flex';
@@ -2223,12 +2216,13 @@
             const pengirimNama = props.pengirim_nama || 'Kadiv';
             const flowText = `${pengirimNama} → ${staffName}`;
             const dotColor = props.dot_color || '#004A65';
+            const isApproved = String(props.status || '').toLowerCase() === 'sudah di-acc';
             const time = event.start && !event.allDay
                 ? String(event.start.getHours()).padStart(2, '0') + ':' + String(event.start.getMinutes()).padStart(2, '0')
                 : '';
 
             return `
-                <div class="popover-event-row">
+                <div class="popover-event-row${isApproved ? ' popover-event-approved' : ''}">
                     <div class="popover-event-main">
                         <span class="popover-event-dot" style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});"></span>
                         <span class="popover-event-title" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
@@ -2404,6 +2398,9 @@
                     const props = arg.event.extendedProps || {};
                     const isList = arg.view.type.startsWith('list');
                     const isTimeGrid = arg.view.type.startsWith('timeGrid');
+                    const isApproved = String(props.status || '').toLowerCase() === 'sudah di-acc';
+                    const titleColor = isApproved ? 'text-white' : 'text-[#172B36]';
+                    const flowColor = isApproved ? 'text-emerald-100' : 'text-[#4B5563]';
                     const el = document.createElement('div');
 
                     // Tampilan Khusus Note Pribadi
@@ -2473,7 +2470,7 @@
                             el.innerHTML = `
                                 <span class="w-1.5 h-1.5 rounded-full shrink-0"
                                       style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});"></span>
-                                <span class="font-semibold text-[10px] truncate leading-tight text-[#172B36] min-w-0">
+                                <span class="font-semibold text-[10px] truncate leading-tight ${titleColor} min-w-0">
                                     ${escapeHtml(title)}
                                 </span>
                             `;
@@ -2483,11 +2480,11 @@
                                 <div class="flex items-center gap-1 min-w-0 overflow-hidden">
                                     <span class="w-1.5 h-1.5 rounded-full shrink-0"
                                           style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});"></span>
-                                    <span class="font-semibold text-[11px] truncate leading-tight text-[#172B36] min-w-0">
+                                    <span class="font-semibold text-[11px] truncate leading-tight ${titleColor} min-w-0">
                                         ${escapeHtml(title)}
                                     </span>
                                 </div>
-                                <div class="text-[9.5px] text-[#4B5563] font-medium truncate leading-tight min-w-0">
+                                <div class="text-[9.5px] ${flowColor} font-medium truncate leading-tight min-w-0">
                                     ${escapeHtml(flowText)}
                                 </div>
                             `;
@@ -2499,11 +2496,11 @@
                             <div class="flex items-center gap-1 min-w-0 overflow-hidden">
                                 <span class="w-1.5 h-1.5 rounded-full shrink-0"
                                       style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});"></span>
-                                <span class="font-semibold text-[11px] truncate leading-tight text-[#172B36] min-w-0">
+                                <span class="font-semibold text-[11px] truncate leading-tight ${titleColor} min-w-0">
                                     ${escapeHtml(title)}
                                 </span>
                             </div>
-                            <div class="text-[10px] text-[#4B5563] font-medium truncate leading-tight min-w-0">
+                            <div class="text-[10px] ${flowColor} font-medium truncate leading-tight min-w-0">
                                 ${escapeHtml(flowText)}
                             </div>
                         `;

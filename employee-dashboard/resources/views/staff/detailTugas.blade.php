@@ -16,76 +16,108 @@
 
         @include('component.topbar')
 
-        <main class="flex-1 overflow-y-auto px-10 py-8">
-            @include('component.breadcrumbs', ['parentText' => 'Tugas', 'parentUrl' => url('/tugas'), 'currentPage' => 'Detail Tugas', 'inline' => true])
-            <h1 class="text-xl font-bold text-slate-900 mb-8">Tugas</h1>
+        <main class="flex-1 overflow-y-auto px-6 sm:px-8 pt-6 pb-8">
+            <div class="w-full max-w-[640px]">
 
-            <div class="max-w-3xl space-y-0">
+                {{-- Breadcrumb --}}
+                <nav aria-label="Breadcrumb" class="mb-4">
+                    <div class="flex flex-wrap items-center gap-1 text-[13px]">
+                        <a href="{{ url('/tugas') }}"
+                            class="inline-flex items-center gap-1 font-medium text-[#146C94] hover:underline">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18">
+                                </path>
+                            </svg>
+                            Tugas
+                        </a>
+                        <span class="px-0.5 text-slate-400" aria-hidden="true">&rsaquo;</span>
+                        <span id="breadcrumb-tugas" class="font-medium text-[#172B36]">Detail Tugas</span>
+                    </div>
+                </nav>
 
-                <!-- ===== SECTION 1: INFO TUGAS ===== -->
-                <div class="pb-8">
-                    <h2 id="tugas-judul" class="text-2xl font-bold text-slate-900 leading-snug mb-1">Memuat...</h2>
-                    <p id="tugas-tenggat" class="text-sm font-semibold text-slate-800">tenggat : -</p>
-                    <p id="teks-status" class="text-sm font-semibold text-slate-800 mb-4">status : -</p>
-                    <p id="tugas-deskripsi" class="text-sm text-slate-700 leading-relaxed text-justify mb-6">-</p>
-
-                    <!-- File Pendukung dari Kadiv -->
-                    <div id="lampiran-container" class="flex flex-wrap gap-4"></div>
+                {{-- Task header --}}
+                <div class="flex flex-wrap items-center gap-3">
+                    <h1 id="tugas-judul" class="text-2xl font-semibold leading-snug text-[#172B36]">Memuat...</h1>
+                    <span id="tugas-status" class="hidden"></span>
                 </div>
 
-                <hr class="border-slate-300">
+                <p id="tugas-meta" class="mt-1 hidden text-sm text-[#4B5563]">
+                    <span id="tugas-tenggat-text"></span><span id="tugas-relative"></span>
+                </p>
 
-                <!-- ===== SECTION 2: REVISI (submit sebelumnya + catatan revisi) ===== -->
-                <div id="section-revisi" class="hidden py-8">
+                <p id="tugas-deskripsi" class="mt-4 hidden text-sm font-normal leading-[1.6] text-[#172B36]"></p>
+
+                {{-- File pendukung dari Kadiv --}}
+                <div id="lampiran-container" class="mt-4 flex flex-wrap gap-3 empty:hidden"></div>
+
+                {{-- Revisi (submit sebelumnya + catatan revisi) --}}
+                <div id="section-revisi" class="mt-6 hidden">
                     <h2 id="revisi-judul" class="text-2xl font-bold text-slate-900 leading-snug mb-1">Revisi</h2>
                     <p id="revisi-tenggat" class="text-sm font-semibold text-slate-800">tenggat : -</p>
                     <p id="revisi-status" class="text-sm font-semibold text-slate-800 mb-4">status : -</p>
                     <p id="revisi-catatan" class="text-sm text-slate-700 leading-relaxed text-justify mb-6">-</p>
 
-                    <!-- File Pendukung Revisi dari Kadiv -->
+                    {{-- File Pendukung Revisi dari Kadiv --}}
                     <div id="revisi-attachment-container" class="flex flex-wrap gap-4 mb-4"></div>
 
-                    <!-- File Hasil Submit Sebelumnya -->
+                    {{-- File Hasil Submit Sebelumnya --}}
                     <div id="revisi-file-container" class="flex flex-wrap gap-4"></div>
                 </div>
 
-                <div id="hr-revisi" class="hidden"><hr class="border-slate-300"></div>
+                {{-- Divider --}}
+                <div class="mt-6">
+                    <hr class="border-0 border-t border-[#E2E8EC]">
+                </div>
 
-                <!-- ===== SECTION 3: SUBMIT TUGAS ===== -->
-                <div id="section-submit" class="py-8">
-                    <h2 class="text-xl font-bold text-slate-900 mb-4">Submit Tugas</h2>
+                {{-- Submission form --}}
+                <section id="section-submit" class="mt-4">
+                    <h2 class="mb-4 text-base font-semibold text-[#172B36]">Kirim tugas</h2>
 
-                    <form id="form-submit-tugas" class="space-y-4 max-w-xl">
+                    <form id="form-submit-tugas" class="hidden space-y-4">
                         <div>
-                            <label class="block text-sm font-semibold text-slate-900 mb-1.5">File Hasil</label>
-                            <input type="file" id="file_tugas" name="file_tugas"
-                                class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
+                            <label for="file_tugas" class="mb-1.5 block text-[13px] font-medium text-[#172B36]">File hasil</label>
+                            <div class="flex h-10 items-center overflow-hidden rounded-lg border border-[#D5DEE3] bg-white">
+                                <label for="file_tugas"
+                                    class="flex h-full shrink-0 cursor-pointer items-center border-r border-[#D5DEE3] bg-slate-50 px-3 text-[13px] font-medium text-[#172B36] transition hover:bg-slate-100">
+                                    Pilih file
+                                </label>
+                                <span id="file-status" class="ml-3 min-w-0 flex-1 truncate text-[13px] text-[#4B5563]">Belum ada file dipilih</span>
+                                <button type="button" id="btn-hapus-file"
+                                    class="mr-3 hidden shrink-0 text-xs text-[#4B5563] hover:underline">Hapus</button>
+                            </div>
+                            <input type="file" id="file_tugas" name="file_tugas" class="sr-only">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-slate-900 mb-1.5">Pesan / Catatan</label>
-                            <input type="text" id="deskripsi_tugas" name="deskripsi_tugas" placeholder="Tambahkan catatan"
-                                class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-cyan-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed">
+                            <label for="deskripsi_tugas" class="mb-1.5 block text-[13px] font-medium text-[#172B36]">Catatan</label>
+                            <textarea id="deskripsi_tugas" name="deskripsi_tugas" rows="3" placeholder="Tambahkan catatan"
+                                class="w-full resize-none rounded-lg border border-[#D5DEE3] px-3 py-2.5 text-sm text-[#172B36] placeholder:text-[#4B5563] focus:border-[#146C94] focus:outline-none focus:ring-1 focus:ring-[#146C94]"></textarea>
                         </div>
-                        <p class="text-xs text-slate-500">Wajib mengisi pesan/catatan atau melampirkan file hasil.</p>
 
-                        <div class="flex items-center gap-3 pt-1">
-                            <button type="button" id="btn-reset-tugas"
-                                class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition">
-                                Reset
+                        <p id="form-helper" class="text-[13px] text-[#4B5563]">Isi catatan atau lampirkan file hasil.</p>
+
+                        <div class="flex items-center gap-4">
+                            <button type="submit" id="btn-submit-tugas"
+                                class="inline-flex h-10 items-center justify-center rounded-lg bg-[#146C94] px-5 text-sm font-medium text-white transition hover:bg-[#0f5878] disabled:cursor-not-allowed disabled:bg-[#A9C7D6]">
+                                Kirim tugas
                             </button>
-                            <button type="submit" id="btn-submit-tugas" disabled
-                                class="px-6 py-2 bg-slate-400 cursor-not-allowed opacity-70 text-white text-sm font-medium rounded-lg transition">
-                                Submit
+                            <button type="button" id="btn-reset-tugas"
+                                class="text-sm font-medium text-[#4B5563] hover:underline">
+                                Reset
                             </button>
                         </div>
                     </form>
 
-                    <!-- Pesan status jika tugas sudah selesai / menunggu -->
+                    {{-- State jika tugas sudah dikirim / disetujui --}}
                     <div id="status-disabled" class="hidden">
-                        <p id="status-disabled-text" class="text-sm font-semibold text-slate-500 italic">-</p>
+                        <p class="text-sm text-[#4B5563]">
+                            <span id="status-disabled-text" class="font-medium text-[#172B36]">-</span><span
+                                id="status-disabled-file-wrap" class="hidden"> &middot; <a id="status-disabled-file"
+                                    href="#" download class="text-[#146C94] hover:underline"></a></span>
+                        </p>
                     </div>
-                </div>
+                </section>
 
             </div>
         </main>
@@ -94,6 +126,15 @@
 
     <script>
         const tugasId = window.location.pathname.split('/').filter(Boolean).pop();
+        const STATUS_PALETTE = @json(\App\Support\StatusPalette::all());
+
+        const fileInput = document.getElementById('file_tugas');
+        const deskripsiInput = document.getElementById('deskripsi_tugas');
+        const submitButton = document.getElementById('btn-submit-tugas');
+        const helper = document.getElementById('form-helper');
+        const fileStatus = document.getElementById('file-status');
+        const btnHapusFile = document.getElementById('btn-hapus-file');
+        let submissionCompleted = false;
 
         // Helper: render kartu file
         function renderFileCard(filePath, label) {
@@ -122,6 +163,115 @@
             </a>`;
         }
 
+        function pad2(value) {
+            return String(value).padStart(2, '0');
+        }
+
+        function parseDate(raw) {
+            if (!raw) return null;
+            const date = new Date(String(raw).replace(' ', 'T'));
+            return Number.isNaN(date.getTime()) ? null : date;
+        }
+
+        function fmtDate(raw) {
+            const date = parseDate(raw);
+            if (!date) return '-';
+            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function fmtDateTime(raw) {
+            const date = parseDate(raw);
+            if (!date) return '-';
+            return fmtDate(raw) + ', ' + pad2(date.getHours()) + ':' + pad2(date.getMinutes());
+        }
+
+        function normalizeStatus(status) {
+            const value = String(status || '').toLowerCase().trim();
+            if (!value) return null;
+
+            if (value.includes('tidak') && value.includes('aktif')) return 'tidak_aktif';
+            if (value === 'aktif') return 'aktif';
+            if (value === 'baru') return 'baru';
+            if (value === 'berjalan') return 'berjalan';
+            if (value.includes('menunggu')) return 'menunggu';
+            if (value.includes('sudah') || value.includes('disetujui') || value.includes('selesai')) return 'disetujui';
+            if (value.includes('terlambat') || value.includes('telat')) return 'terlambat';
+
+            return null;
+        }
+
+        function renderStatusBadge(status) {
+            const badge = document.getElementById('tugas-status');
+            const palette = STATUS_PALETTE[normalizeStatus(status)] || null;
+
+            if (!palette) {
+                badge.textContent = '';
+                badge.className = 'hidden';
+                return;
+            }
+
+            badge.textContent = palette.label;
+            badge.className = 'inline-flex w-fit items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold';
+            badge.style.backgroundColor = palette.bg;
+            badge.style.borderColor = palette.border;
+            badge.style.color = palette.text;
+        }
+
+        function renderMeta(tugas, lastSubmit) {
+            const meta = document.getElementById('tugas-meta');
+            const deadline = parseDate(tugas.deadline);
+
+            if (!deadline) {
+                meta.classList.add('hidden');
+                return;
+            }
+
+            const hours = pad2(deadline.getHours());
+            const minutes = pad2(deadline.getMinutes());
+            const showTime = !(hours === '23' && minutes === '59');
+            const status = String(tugas.status || '').toLowerCase();
+            const isSubmitted = ['menunggu di-acc', 'sudah di-acc', 'menunggu acc', 'sudah acc'].includes(status);
+            const relative = document.getElementById('tugas-relative');
+
+            let relativeText = '';
+            let overdue = Boolean(tugas.is_terlambat);
+
+            if (overdue) {
+                const submittedAt = isSubmitted && lastSubmit
+                    ? parseDate(lastSubmit.tanggal_submit || lastSubmit.created_at)
+                    : null;
+                const reference = submittedAt || new Date();
+                const days = Math.max(1, Math.ceil((reference.getTime() - deadline.getTime()) / 86400000));
+                relativeText = 'Terlambat ' + days + ' hari';
+            } else if (deadline.getTime() > Date.now()) {
+                const days = Math.max(1, Math.ceil((deadline.getTime() - Date.now()) / 86400000));
+                relativeText = days + ' hari lagi';
+            }
+
+            document.getElementById('tugas-tenggat-text').textContent =
+                'Tenggat ' + fmtDate(tugas.deadline) +
+                (showTime ? ', ' + hours + ':' + minutes : '') +
+                (relativeText ? ' · ' : '');
+            relative.textContent = relativeText;
+            relative.className = overdue ? 'font-medium text-[#B91C1C]' : '';
+
+            meta.classList.remove('hidden');
+        }
+
+        function renderDescription(tugas) {
+            const description = document.getElementById('tugas-deskripsi');
+            const text = String(tugas.deskripsi || '').trim();
+
+            if (!text || text === '-') {
+                description.textContent = '';
+                description.classList.add('hidden');
+                return;
+            }
+
+            description.textContent = text;
+            description.classList.remove('hidden');
+        }
+
         async function loadDetailTugas() {
             const token = sessionStorage.getItem('staff_token');
             if (!token || !tugasId) { window.location.href = '/login'; return; }
@@ -133,23 +283,15 @@
                 const json = await res.json();
                 const t = json.data;
 
-                // Format tanggal
-                function fmtDate(raw) {
-                    if (!raw) return '-';
-                    return new Date(String(raw).replace(' ', 'T')).toLocaleString('id-ID', {
-                        dateStyle: 'medium',
-                        timeStyle: 'short'
-                    });
-                }
+                const submissions = Array.isArray(t.submit_tugas) ? t.submit_tugas : [];
+                const lastSubmit = submissions[submissions.length - 1];
 
-                // === SECTION 1: TUGAS ===
+                // === HEADER ===
                 document.getElementById('tugas-judul').textContent = t.judul_tugas || '-';
-                document.getElementById('tugas-tenggat').textContent = 'tenggat : ' + fmtDate(t.deadline);
-                const taskStatus = t.is_terlambat && ['menunggu di-acc', 'sudah di-acc'].includes(t.status)
-                    ? t.status + ' · Terlambat'
-                    : (t.status_efektif || t.status || 'baru');
-                document.getElementById('teks-status').textContent = 'status : ' + taskStatus;
-                document.getElementById('tugas-deskripsi').textContent = t.deskripsi || '-';
+                document.getElementById('breadcrumb-tugas').textContent = t.judul_tugas || 'Detail Tugas';
+                renderStatusBadge(t.status_efektif || t.status);
+                renderMeta(t, lastSubmit);
+                renderDescription(t);
 
                 // File pendukung dari Kadiv
                 const lampiranContainer = document.getElementById('lampiran-container');
@@ -169,12 +311,9 @@
                     </a>`;
                 }
 
-                // === SECTION 2: REVISI ===
+                // === REVISI ===
                 const sectionRevisi = document.getElementById('section-revisi');
-                const hrRevisi = document.getElementById('hr-revisi');
 
-                const submissions = Array.isArray(t.submit_tugas) ? t.submit_tugas : [];
-                const lastSubmit = submissions[ submissions.length - 1 ];
                 const revisionSubmit = [...submissions].reverse().find((submission) =>
                     submission.status_review === 'revisi'
                     && typeof submission.catatan_revisi === 'string'
@@ -184,11 +323,10 @@
 
                 if (revisionSubmit) {
                     const catatanRevisi = revisionSubmit.catatan_revisi;
-                    const fileHasil = lastSubmit.file_hasil;
 
                     document.getElementById('revisi-judul').textContent = 'Revisi ' + (t.judul_tugas || '');
                     document.getElementById('revisi-tenggat').textContent =
-                        'tenggat : ' + fmtDate(revisionSubmit.deadline_revisi || t.deadline);
+                        'tenggat : ' + fmtDateTime(revisionSubmit.deadline_revisi || t.deadline);
                     document.getElementById('revisi-status').textContent =
                         'status : ' + (revisionSubmit.status_review || '-');
                     document.getElementById('revisi-catatan').textContent = catatanRevisi;
@@ -209,7 +347,6 @@
                     }
 
                     sectionRevisi.classList.remove('hidden');
-                    hrRevisi.classList.remove('hidden');
                 }
 
                 // Juga tampilkan pesan dari Kadiv di section revisi jika ada
@@ -229,33 +366,37 @@
                     // Tambahkan ke section revisi
                     document.getElementById('revisi-file-container').insertAdjacentHTML('afterend', pesanHtml);
                     sectionRevisi.classList.remove('hidden');
-                    hrRevisi.classList.remove('hidden');
                 }
 
-                // === SECTION 3: SUBMIT ===
-                const st = (t.status || '').toLowerCase();
+                // === SUBMIT STATE ===
+                const status = String(t.status || '').toLowerCase();
+                const approved = ['sudah di-acc', 'sudah acc', 'disetujui'].includes(status);
+                const pending = ['menunggu di-acc', 'menunggu acc'].includes(status);
                 const formSubmit = document.getElementById('form-submit-tugas');
                 const statusDisabled = document.getElementById('status-disabled');
-                const statusDisabledText = document.getElementById('status-disabled-text');
 
-                if (st === 'sudah di-acc' || st === 'sudah acc') {
+                if (approved || pending) {
                     formSubmit.classList.add('hidden');
                     statusDisabled.classList.remove('hidden');
-                    statusDisabledText.textContent = 'Tugas ini telah disetujui oleh Kadiv.';
-                } else if (st === 'menunggu acc' || st === 'menunggu di-acc') {
-                    formSubmit.querySelectorAll('input, button').forEach(control => {
-                        control.disabled = true;
-                    });
-                    const btnReset = document.getElementById('btn-reset-tugas');
-                    btnReset.classList.remove('bg-red-600', 'hover:bg-red-700');
-                    btnReset.classList.add('bg-slate-400', 'cursor-not-allowed', 'opacity-70');
 
-                    const btnSubmit = document.getElementById('btn-submit-tugas');
-                    btnSubmit.classList.remove('bg-[#0097B2]', 'hover:bg-[#008199]');
-                    btnSubmit.classList.add('bg-slate-400', 'cursor-not-allowed', 'opacity-70');
+                    document.getElementById('status-disabled-text').textContent = approved
+                        ? 'Disetujui'
+                        : 'Dikirim ' + fmtDate(lastSubmit?.tanggal_submit || lastSubmit?.created_at);
+
+                    const file = lastSubmit?.file_hasil;
+                    const fileWrap = document.getElementById('status-disabled-file-wrap');
+                    const fileLink = document.getElementById('status-disabled-file');
+
+                    if (file && file !== '-') {
+                        fileLink.textContent = String(file).split('/').pop();
+                        fileLink.href = '/storage/' + file;
+                        fileWrap.classList.remove('hidden');
+                    } else {
+                        fileWrap.classList.add('hidden');
+                    }
                 } else {
-                    const btnSubmit = document.getElementById('btn-submit-tugas');
-                    updateSubmitButton();
+                    formSubmit.classList.remove('hidden');
+                    statusDisabled.classList.add('hidden');
                 }
 
             } catch(e) {
@@ -264,29 +405,52 @@
             }
         }
 
-        loadDetailTugas();
+        function formatSize(bytes) {
+            if (!bytes) return '0 KB';
+            const kb = bytes / 1024;
+            if (kb < 1024) return kb.toFixed(1).replace('.', ',') + ' KB';
+            return (kb / 1024).toFixed(1).replace('.', ',') + ' MB';
+        }
 
-        const fileInput = document.getElementById('file_tugas');
-        const deskripsiInput = document.getElementById('deskripsi_tugas');
-        const submitButton = document.getElementById('btn-submit-tugas');
-        let submissionCompleted = false;
+        function updateFileDisplay() {
+            const file = fileInput.files[0];
+            if (file) {
+                fileStatus.textContent = file.name + ' · ' + formatSize(file.size);
+                btnHapusFile.classList.remove('hidden');
+            } else {
+                fileStatus.textContent = 'Belum ada file dipilih';
+                btnHapusFile.classList.add('hidden');
+            }
+        }
+
+        function setHelperError(isError) {
+            helper.textContent = 'Isi catatan atau lampirkan file hasil.';
+            helper.classList.toggle('text-[#B91C1C]', isError);
+            helper.classList.toggle('text-[#4B5563]', !isError);
+        }
+
+        function hasSubmissionInput() {
+            return Boolean(fileInput.files.length || deskripsiInput.value.trim());
+        }
 
         function hasUnsavedSubmission() {
-            return !submissionCompleted && Boolean(fileInput.files.length || deskripsiInput.value.trim());
+            return !submissionCompleted && hasSubmissionInput();
         }
 
-        function updateSubmitButton() {
-            const hasSubmission = Boolean(fileInput.files.length || deskripsiInput.value.trim());
-            submitButton.disabled = !hasSubmission;
-            submitButton.classList.toggle('bg-slate-400', !hasSubmission);
-            submitButton.classList.toggle('cursor-not-allowed', !hasSubmission);
-            submitButton.classList.toggle('opacity-70', !hasSubmission);
-            submitButton.classList.toggle('bg-[#0097B2]', hasSubmission);
-            submitButton.classList.toggle('hover:bg-[#008199]', hasSubmission);
-        }
+        loadDetailTugas();
 
-        fileInput.addEventListener('change', updateSubmitButton);
-        deskripsiInput.addEventListener('input', updateSubmitButton);
+        fileInput.addEventListener('change', () => {
+            updateFileDisplay();
+            setHelperError(false);
+        });
+
+        deskripsiInput.addEventListener('input', () => setHelperError(false));
+
+        btnHapusFile.addEventListener('click', () => {
+            fileInput.value = '';
+            updateFileDisplay();
+            setHelperError(false);
+        });
 
         document.addEventListener('click', function(event) {
             const link = event.target.closest('a');
@@ -311,22 +475,23 @@
         document.getElementById('btn-reset-tugas').addEventListener('click', () => {
             fileInput.value = '';
             deskripsiInput.value = '';
-            updateSubmitButton();
+            updateFileDisplay();
+            setHelperError(false);
+            submitButton.disabled = false;
+            submitButton.textContent = 'Kirim tugas';
         });
 
         // Submit tugas
         document.getElementById('form-submit-tugas').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const btnSubmit = document.getElementById('btn-submit-tugas');
-            if (btnSubmit.disabled) return;
+
+            if (!hasSubmissionInput()) {
+                setHelperError(true);
+                return;
+            }
 
             const token = sessionStorage.getItem('staff_token');
             if (!token) return alert('Sesi habis, silakan login ulang.');
-
-            if (!fileInput.files.length && !deskripsiInput.value.trim()) {
-                alert('Lampirkan file hasil atau isi pesan/catatan sebelum mengirim.');
-                return;
-            }
 
             const formData = new FormData();
 
@@ -334,8 +499,9 @@
             if (deskripsiInput.value) formData.append('catatan_karyawan', deskripsiInput.value);
             formData.append('progress', 100);
 
-            btnSubmit.disabled = true;
-            btnSubmit.textContent = 'Mengirim...';
+            setHelperError(false);
+            submitButton.disabled = true;
+            submitButton.textContent = 'Mengirim...';
 
             try {
                 const res = await fetch('/api/staff/tugas/' + tugasId + '/submit', {
@@ -355,8 +521,8 @@
                 alert('Terjadi kesalahan jaringan.');
             }
 
-            btnSubmit.disabled = false;
-            btnSubmit.textContent = 'Submit';
+            submitButton.disabled = false;
+            submitButton.textContent = 'Kirim tugas';
         });
     </script>
 
