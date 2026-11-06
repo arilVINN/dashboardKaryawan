@@ -58,6 +58,7 @@ class Tugas extends Model
         'judul_tugas',
         'deskripsi',
         'file_pendukung',
+        'file_pendukung_name',
         'link_pendukung',
         'deadline',
         'deadline_reminder_sent_at',

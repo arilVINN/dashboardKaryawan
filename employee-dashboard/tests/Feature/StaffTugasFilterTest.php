@@ -111,6 +111,6 @@ class StaffTugasFilterTest extends TestCase
         $this->actingAs($this->staff)
             ->get('/tugas/detail/T-1')
             ->assertOk()
-            ->assertSee('File Hasil');
+            ->assertSee('Hasil sebelumnya');
     }
 }

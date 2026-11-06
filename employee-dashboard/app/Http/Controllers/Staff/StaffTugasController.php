@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Tugas;
 use App\Models\SubmitTugas;
 use App\Queries\StaffTugasQuery;
+use App\Support\FileMetadata;
 
 class StaffTugasController extends Controller
 {
@@ -43,6 +44,12 @@ class StaffTugasController extends Controller
                 'tanggal_update' => now(),
             ]);
         }
+
+        $tugas->submitTugas->each(function ($submission) {
+            $submission->setAttribute('file_hasil_size', FileMetadata::size($submission->file_hasil));
+            $submission->setAttribute('file_revisi_size', FileMetadata::size($submission->file_revisi));
+        });
+        $tugas->setAttribute('file_pendukung_size', FileMetadata::size($tugas->file_pendukung));
 
         return response()->json([
             'message' => 'Detail tugas',
@@ -109,8 +116,10 @@ class StaffTugasController extends Controller
 
         $progress = $validated['progress'] ?? $tugas->progress;
         $filePath = '-'; // Default string '-' karena database Anda melarang NULL
+        $fileOriginalName = null;
         if ($request->hasFile('file_hasil')) {
-            $filePath = $request->file('file_hasil')->store('submissions', 'public');
+            $uploadedFile = $request->file('file_hasil');
+            $filePath = $uploadedFile->store('submissions', 'public');
 
             if (! $filePath) {
                 return response()->json([
@@ -118,12 +127,15 @@ class StaffTugasController extends Controller
                     'errors' => ['file_hasil' => ['File hasil gagal disimpan. Silakan coba lagi.']],
                 ], 422);
             }
+
+            $fileOriginalName = $uploadedFile->getClientOriginalName();
         }
 
         $attributes = [
             'tugas_id_tugas' => $tugas->id_tugas,
             'tugas_karyawan_id_karyawan' => $karyawanId,
             'file_hasil' => $filePath,
+            'file_hasil_name' => $fileOriginalName,
             'link_submit' => $validated['link_submit'] ?? '-', // Cegah error NOT NULL
             'catatan_karyawan' => isset($validated['catatan_karyawan']) ? strip_tags($validated['catatan_karyawan']) : '-', // Cegah error NOT NULL
             'catatan_revisi' => '-', // Pasti '-' saat pertama submit

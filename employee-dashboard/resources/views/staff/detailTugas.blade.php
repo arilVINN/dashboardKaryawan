@@ -85,27 +85,30 @@
                 {{-- Body: revision thread + submission form --}}
                 <div id="tugas-body" class="tugas-body mt-6">
 
-                    {{-- Revisi (submit sebelumnya + catatan revisi) --}}
+                    {{-- Revisi (catatan + tenggat) --}}
                     <section id="section-revisi" class="tugas-thread hidden min-w-0">
-                        <h2 class="text-base font-semibold text-[#172B36]">Revisi</h2>
+                        <h2 class="text-lg font-semibold text-[#172B36]">Daftar Revisi</h2>
                         <p id="revisi-tenggat" class="mt-1 text-[13px] text-[#4B5563]">-</p>
                         <p id="revisi-status" class="text-[13px] text-[#4B5563]">-</p>
                         <p id="revisi-catatan" class="mt-3 text-sm leading-relaxed text-[#172B36]">-</p>
-
-                        {{-- File Pendukung Revisi dari Kadiv --}}
-                        <div id="revisi-attachment-container" class="mt-4 flex flex-wrap gap-3"></div>
-
-                        {{-- File Hasil Submit Sebelumnya --}}
-                        <div id="revisi-file-container" class="mt-4 flex flex-wrap gap-3"></div>
+                        <div id="revisi-pesan-container" class="mt-3"></div>
                     </section>
 
                     {{-- Submission form --}}
                     <div id="section-submit-wrap" class="tugas-form-col min-w-0">
                         <div id="section-submit-inner">
                             <section id="section-submit">
-                                <h2 id="submit-title" class="mb-4 text-base font-semibold text-[#172B36]">Kirim tugas</h2>
+                                <h2 id="submit-title" class="mb-4 text-lg font-semibold text-[#172B36]">Kirim Tugas</h2>
 
                                 <form id="form-submit-tugas" class="hidden space-y-4">
+                                    {{-- Referensi revisi: file dari Kadiv + hasil sebelumnya --}}
+                                    <section id="referensi-revisi" class="hidden border-b border-[#E2E8EC] pb-4">
+                                        <h3 class="text-base font-semibold text-[#172B36]">Referensi revisi</h3>
+{{--                                        <p class="mt-1 text-[13px] text-[#4B5563]">Unduh file berikut sebelum mengirim ulang.</p>--}}
+                                        <div id="revisi-attachment-container" class="flex flex-wrap gap-3"></div>
+                                        <div id="revisi-file-container" class="mt-3 flex flex-wrap gap-3"></div>
+                                    </section>
+
                                     <div>
                                         <label for="file_tugas" class="mb-1.5 block text-[13px] font-medium text-[#172B36]">File hasil</label>
                                         <div class="flex h-10 items-center overflow-hidden rounded-lg border border-[#D5DEE3] bg-white">
@@ -142,11 +145,8 @@
 
                                 {{-- State jika tugas sudah dikirim / disetujui --}}
                                 <div id="status-disabled" class="hidden">
-                                    <p class="text-sm text-[#4B5563]">
-                                        <span id="status-disabled-text" class="font-medium text-[#172B36]">-</span><span
-                                            id="status-disabled-file-wrap" class="hidden"> &middot; <a id="status-disabled-file"
-                                                href="#" download class="text-[#146C94] hover:underline"></a></span>
-                                    </p>
+                                    <p id="status-disabled-text" class="text-sm font-medium text-[#172B36]">-</p>
+                                    <div id="status-disabled-card" class="mt-3 flex flex-wrap gap-3"></div>
                                 </div>
                             </section>
                         </div>
@@ -181,34 +181,110 @@
         function showRevisionSection() {
             document.getElementById('section-revisi').classList.remove('hidden');
             tugasBody.classList.add('has-revisi');
-            setSubmitLabel('Kirim ulang tugas');
+            setSubmitLabel('Kirim Ulang Tugas');
+        }
+
+        // Escape values that may come from uploaded filenames before they are
+        // injected into innerHTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+            }[char]));
+        }
+
+        function fileDisplayName(filePath, originalName) {
+            const storedName = String(filePath || '').split(/[?#]/)[0].split('/').pop() || '';
+            const original = typeof originalName === 'string' ? originalName.trim() : '';
+            if (original) return original;
+            if (!storedName) return '';
+
+            // Laravel's generated names are long random strings. Showing them
+            // is what made attachments ambiguous, so let the role label win.
+            if (/^[A-Za-z0-9]{24,}(?:\.[A-Za-z0-9]+)?$/.test(storedName)) return '';
+
+            return storedName;
+        }
+
+        const downloadIconSvg = '<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>';
+
+        const attachmentIconPaths = {
+            document: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z',
+            text: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z',
+            table: 'M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125V6.375c0-.621.504-1.125 1.125-1.125h17.25c.621 0 1.125.504 1.125 1.125v12c0 .621-.504 1.125-1.125 1.125ZM3.375 9.75h17.25M9.75 9.75v9.75M15 9.75v9.75',
+            image: 'm2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z',
+            archive: 'm20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z',
+            link: 'M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244',
+        };
+
+        function attachmentIcon(ext, isLink = false) {
+            const icon = (path) => `<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="${path}" /></svg>`;
+
+            if (isLink) return { color: 'text-[#146C94]', svg: icon(attachmentIconPaths.link) };
+            if (ext === 'PDF') return { color: 'text-red-500', svg: icon(attachmentIconPaths.text) };
+            if (['DOC', 'DOCX'].includes(ext)) return { color: 'text-blue-500', svg: icon(attachmentIconPaths.text) };
+            if (['XLS', 'XLSX', 'CSV'].includes(ext)) return { color: 'text-emerald-600', svg: icon(attachmentIconPaths.table) };
+            if (['JPG', 'JPEG', 'PNG', 'GIF', 'WEBP'].includes(ext)) return { color: 'text-violet-500', svg: icon(attachmentIconPaths.image) };
+            if (['ZIP', 'RAR', '7Z'].includes(ext)) return { color: 'text-amber-600', svg: icon(attachmentIconPaths.archive) };
+
+            return { color: 'text-[#64748B]', svg: icon(attachmentIconPaths.document) };
+        }
+
+        function renderAttachmentRow({ href, title, meta, icon, downloadName = null, download = true }) {
+            const downloadAttribute = download
+                ? (downloadName ? ` download="${escapeHtml(downloadName)}"` : ' download')
+                : '';
+
+            return `
+            <a href="${escapeHtml(href)}"${downloadAttribute} target="_blank" rel="noopener noreferrer"
+                class="group flex w-[320px] max-w-full items-center gap-3 rounded-lg bg-white px-3 py-2.5 shadow-sm transition hover:shadow-md">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F1F5F9] ${icon.color}">
+                    ${icon.svg}
+                </span>
+                <span class="min-w-0 flex-1">
+                    <span class="block truncate text-sm font-medium text-[#172B36]">${escapeHtml(title)}</span>
+                    <span class="block truncate text-[12px] leading-5 text-[#4B5563]">${escapeHtml(meta)}</span>
+                </span>
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-[#4B5563] transition group-hover:text-[#146C94]" aria-hidden="true">
+                    ${downloadIconSvg}
+                </span>
+            </a>`;
         }
 
         // Helper: render kartu file
-        function renderFileCard(filePath, label) {
+        function renderFileCard(filePath, role, options = {}) {
             if (!filePath || filePath === '-') return '';
-            const ext = filePath.split('.').pop().toUpperCase();
-            const iconColor = ext === 'PDF' ? 'text-red-500' : ext === 'DOCX' || ext === 'DOC' ? 'text-blue-600' : 'text-slate-600';
 
-            // Pilih ikon berdasarkan ekstensi
-            let iconSvg = '';
-            if (ext === 'PDF') {
-                iconSvg = `<svg class="w-8 h-8 ${iconColor}" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8.5 17.5c-.3 0-.5-.2-.5-.5v-5c0-.3.2-.5.5-.5s.5.2.5.5v5c0 .3-.2.5-.5.5zm3 0c-1.1 0-2-.9-2-2v-1c0-1.1.9-2 2-2s2 .9 2 2v1c0 1.1-.9 2-2 2zm0-4c-.6 0-1 .4-1 1v1c0 .6.4 1 1 1s1-.4 1-1v-1c0-.6-.4-1-1-1zm3.5 4c-.3 0-.5-.2-.5-.5v-2h1.5c.3 0 .5-.2.5-.5s-.2-.5-.5-.5H14.5v-1.5c0-.3.2-.5.5-.5s.5.2.5.5v5c0 .3-.2.5-.5.5z"/></svg>`;
-            } else if (ext === 'DOCX' || ext === 'DOC') {
-                iconSvg = `<svg class="w-8 h-8 ${iconColor}" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM9 13h1.5l1 3.5 1-3.5H14l-1.8 5H11L9 13z"/></svg>`;
-            } else {
-                iconSvg = `<svg class="w-8 h-8 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
-            }
+            const storedName = String(filePath).split(/[?#]/)[0].split('/').pop() || '';
+            const ext = (storedName.includes('.') ? storedName.split('.').pop() : 'FILE').toUpperCase();
+            const displayName = fileDisplayName(filePath, options.name);
+            const title = displayName || role || 'Lampiran';
+            const sizeLabel = options.size ? formatSize(options.size) : '';
+            const meta = [ext, sizeLabel].filter(Boolean).join(' · ');
+            const url = options.url || ('/storage/' + String(filePath).replace(/^\/+/, ''));
 
-            return `
-            <a href="/storage/${filePath}" download target="_blank"
-                class="flex items-center gap-3 bg-white border border-slate-300 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition w-56 cursor-pointer">
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-slate-900 underline truncate">${label}</p>
-                    <p class="text-xs text-slate-400 mt-0.5">${ext}</p>
-                </div>
-                ${iconSvg}
-            </a>`;
+            return renderAttachmentRow({
+                href: url,
+                title,
+                meta,
+                icon: attachmentIcon(ext),
+                downloadName: displayName || null,
+            });
+        }
+
+        function renderLinkCard(url, label = 'Link Referensi') {
+            if (!url || url === '-') return '';
+
+            return renderAttachmentRow({
+                href: url,
+                title: label,
+                meta: 'Tautan',
+                icon: attachmentIcon('', true),
+                download: false,
+            });
         }
 
         function pad2(value) {
@@ -336,18 +412,13 @@
                 const lampiranContainer = document.getElementById('lampiran-container');
                 lampiranContainer.innerHTML = '';
                 if (t.file_pendukung && t.file_pendukung !== '-') {
-                    lampiranContainer.innerHTML += renderFileCard(t.file_pendukung, t.judul_tugas || 'File Pendukung');
+                    lampiranContainer.innerHTML += renderFileCard(t.file_pendukung, 'Lampiran dari Kadiv', {
+                        name: t.file_pendukung_name,
+                        size: t.file_pendukung_size,
+                    });
                 }
                 if (t.link_pendukung && t.link_pendukung !== '-') {
-                    lampiranContainer.innerHTML += `
-                    <a href="${t.link_pendukung}" target="_blank"
-                        class="flex items-center gap-3 bg-white border border-slate-300 rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition w-56">
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-bold text-slate-900 underline truncate">Link Referensi</p>
-                            <p class="text-xs text-slate-400 mt-0.5">URL</p>
-                        </div>
-                        <svg class="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                    </a>`;
+                    lampiranContainer.innerHTML += renderLinkCard(t.link_pendukung);
                 }
 
                 // === REVISI ===
@@ -362,7 +433,7 @@
                     const catatanRevisi = revisionSubmit.catatan_revisi;
 
                     document.getElementById('revisi-tenggat').textContent =
-                        'Tenggat revisi: ' + fmtDateTime(revisionSubmit.deadline_revisi || t.deadline);
+                        fmtDateTime(revisionSubmit.deadline_revisi || t.deadline);
                     document.getElementById('revisi-status').textContent =
                         'Status: ' + (revisionSubmit.status_review || '-');
                     document.getElementById('revisi-catatan').textContent = catatanRevisi;
@@ -372,35 +443,50 @@
                     if (revisionSubmit.file_revisi && revisionSubmit.file_revisi !== '-') {
                         revisionAttachmentContainer.innerHTML = renderFileCard(
                             revisionSubmit.file_revisi,
-                            'File Pendukung Revisi'
+                            'Lampiran revisi',
+                            {
+                                name: revisionSubmit.file_revisi_name,
+                                size: revisionSubmit.file_revisi_size,
+                            }
                         );
                     }
 
                     const revisiFileContainer = document.getElementById('revisi-file-container');
                     revisiFileContainer.innerHTML = '';
                     if (lastSubmit?.file_hasil && lastSubmit.file_hasil !== '-') {
-                        revisiFileContainer.innerHTML = renderFileCard(lastSubmit.file_hasil, t.judul_tugas || 'File Hasil');
+                        revisiFileContainer.innerHTML = renderFileCard(lastSubmit.file_hasil, 'Hasil sebelumnya', {
+                            name: lastSubmit.file_hasil_name,
+                            size: lastSubmit.file_hasil_size,
+                        });
                     }
 
+                    const hasReferenceFiles = Boolean(
+                        (revisionSubmit.file_revisi && revisionSubmit.file_revisi !== '-')
+                        || (lastSubmit?.file_hasil && lastSubmit.file_hasil !== '-')
+                    );
+                    document.getElementById('referensi-revisi').classList.toggle('hidden', !hasReferenceFiles);
                     showRevisionSection();
+                } else {
+                    document.getElementById('referensi-revisi').classList.add('hidden');
                 }
 
                 // Juga tampilkan pesan dari Kadiv di section revisi jika ada
+                const pesanContainer = document.getElementById('revisi-pesan-container');
+                pesanContainer.replaceChildren();
                 if (t.pesans && t.pesans.length > 0) {
                     const pesanHtml = t.pesans.map(p => {
                         const tgl = p.created_at ? new Date(p.created_at).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) : '-';
                         const pengirim = p.pengirim ? p.pengirim.username : 'Kadiv';
                         return `<div class="mt-3 bg-slate-50 border border-slate-200 rounded-lg px-4 py-3">
                             <div class="flex justify-between items-center mb-1">
-                                <span class="text-xs font-bold text-[#044564]">${pengirim}</span>
-                                <span class="text-xs text-slate-400">${tgl}</span>
+                                <span class="text-xs font-bold text-[#044564]">${escapeHtml(pengirim)}</span>
+                                <span class="text-xs text-slate-400">${escapeHtml(tgl)}</span>
                             </div>
-                            <p class="text-sm text-slate-700">${p.deskripsi || '-'}</p>
+                            <p class="text-sm text-slate-700">${escapeHtml(p.deskripsi || '-')}</p>
                         </div>`;
                     }).join('');
 
-                    // Tambahkan ke section revisi
-                    document.getElementById('revisi-file-container').insertAdjacentHTML('afterend', pesanHtml);
+                    pesanContainer.innerHTML = pesanHtml;
                     showRevisionSection();
                 }
 
@@ -420,15 +506,14 @@
                         : 'Dikirim ' + fmtDate(lastSubmit?.tanggal_submit || lastSubmit?.created_at);
 
                     const file = lastSubmit?.file_hasil;
-                    const fileWrap = document.getElementById('status-disabled-file-wrap');
-                    const fileLink = document.getElementById('status-disabled-file');
+                    const statusCard = document.getElementById('status-disabled-card');
+                    statusCard.replaceChildren();
 
                     if (file && file !== '-') {
-                        fileLink.textContent = String(file).split('/').pop();
-                        fileLink.href = '/storage/' + file;
-                        fileWrap.classList.remove('hidden');
-                    } else {
-                        fileWrap.classList.add('hidden');
+                        statusCard.innerHTML = renderFileCard(file, 'Hasil terkirim', {
+                            name: lastSubmit?.file_hasil_name,
+                            size: lastSubmit?.file_hasil_size,
+                        });
                     }
                 } else {
                     formSubmit.classList.remove('hidden');

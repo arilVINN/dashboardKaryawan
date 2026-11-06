@@ -8,6 +8,7 @@ use App\Models\Tugas;
 use App\Models\Karyawan;
 use App\Models\Notifikasi;
 use App\Queries\KadivTugasQuery;
+use App\Support\FileMetadata;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -51,30 +52,14 @@ class KadivTaskController extends Controller
         }
 
         $task->submitTugas->each(function ($submission) {
-            $submission->setAttribute('file_hasil_size', $this->fileSize($submission->file_hasil));
-            $submission->setAttribute('file_revisi_size', $this->fileSize($submission->file_revisi));
+            $submission->setAttribute('file_hasil_size', FileMetadata::size($submission->file_hasil));
+            $submission->setAttribute('file_revisi_size', FileMetadata::size($submission->file_revisi));
         });
-        $task->setAttribute('file_pendukung_size', $this->fileSize($task->file_pendukung));
+        $task->setAttribute('file_pendukung_size', FileMetadata::size($task->file_pendukung));
 
         return response()->json([
             'data' => $task,
         ]);
-    }
-
-    private function fileSize(?string $path): ?int
-    {
-        if (! is_string($path) || trim($path) === '' || trim($path) === '-') {
-            return null;
-        }
-
-        try {
-            $disk = Storage::disk('public');
-            $path = ltrim($path, '/');
-
-            return $disk->exists($path) ? $disk->size($path) : null;
-        } catch (\Throwable) {
-            return null;
-        }
     }
 
     /**
@@ -110,8 +95,11 @@ class KadivTaskController extends Controller
         $newId = Tugas::nextId();
 
         $filePath = null;
+        $fileName = null;
         if ($request->hasFile('file_pendukung')) {
-            $filePath = $request->file('file_pendukung')->store('tugas_pendukung', 'public');
+            $uploadedFile = $request->file('file_pendukung');
+            $filePath = $uploadedFile->store('tugas_pendukung', 'public');
+            $fileName = $uploadedFile->getClientOriginalName();
         }
 
         $tugas = Tugas::create([
@@ -120,6 +108,7 @@ class KadivTaskController extends Controller
             'judul_tugas' => $request->judul_tugas,
             'deskripsi' => $request->deskripsi,
             'file_pendukung' => $filePath,
+            'file_pendukung_name' => $fileName,
             'link_pendukung' => $request->link_pendukung,
             'deadline' => \Illuminate\Support\Carbon::parse($request->deadline)->format('Y-m-d H:i:s'),
             'progress' => '0',
@@ -173,8 +162,11 @@ class KadivTaskController extends Controller
         }
 
         $filePath = $tugas->file_pendukung;
+        $fileName = $tugas->file_pendukung_name;
         if ($request->hasFile('file_pendukung')) {
-            $filePath = $request->file('file_pendukung')->store('tugas_pendukung', 'public');
+            $uploadedFile = $request->file('file_pendukung');
+            $filePath = $uploadedFile->store('tugas_pendukung', 'public');
+            $fileName = $uploadedFile->getClientOriginalName();
         }
 
         $tugas->update([
@@ -182,6 +174,7 @@ class KadivTaskController extends Controller
             'judul_tugas' => $request->judul_tugas ?? $tugas->judul_tugas,
             'deskripsi' => $request->deskripsi ?? $tugas->deskripsi,
             'file_pendukung' => $filePath,
+            'file_pendukung_name' => $fileName,
             'link_pendukung' => $request->link_pendukung ?? $tugas->link_pendukung,
             'deadline' => $request->filled('deadline')
                 ? \Illuminate\Support\Carbon::parse($request->deadline)->format('Y-m-d H:i:s')
@@ -268,18 +261,22 @@ class KadivTaskController extends Controller
         }
 
         $filePath = null;
+        $fileName = null;
         if ($request->hasFile('file_revisi')) {
-            $filePath = $request->file('file_revisi')->store('revisi', 'public');
+            $uploadedFile = $request->file('file_revisi');
+            $filePath = $uploadedFile->store('revisi', 'public');
+            $fileName = $uploadedFile->getClientOriginalName();
         }
 
         try {
-            DB::transaction(function () use ($latestSubmit, $tugas, $validated, $filePath): void {
+            DB::transaction(function () use ($latestSubmit, $tugas, $validated, $filePath, $fileName): void {
                 $latestSubmit->update([
                     'status_review' => $validated['status_review'],
                     'catatan_revisi' => $validated['status_review'] === 'revisi'
                         ? trim($validated['catatan_revisi'])
                         : $latestSubmit->catatan_revisi,
                     'file_revisi' => $filePath ?? $latestSubmit->file_revisi,
+                    'file_revisi_name' => $filePath ? $fileName : $latestSubmit->file_revisi_name,
                     'deadline_revisi' => $validated['status_review'] === 'revisi'
                         ? \Illuminate\Support\Carbon::parse($validated['deadline'])->format('Y-m-d H:i:s')
                         : $latestSubmit->deadline_revisi,

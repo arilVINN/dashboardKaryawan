@@ -128,107 +128,19 @@
                             {{-- GARIS PEMISAH --}}
                             <hr class="mt-6 border-0 border-t border-[#E2E8EC]">
 
-                            {{-- AKSI / FORM REVISI --}}
+                            {{-- AKSI REVIEW --}}
                             <div class="mt-6">
+                                <div id="aksiTombol" class="hidden items-center gap-3">
+                                    <button type="button" id="btnOpenRevisi" data-modal-open="modalRevisi"
+                                            class="inline-flex h-10 items-center justify-center rounded-lg border border-[#D5DEE3] bg-white px-5 text-sm font-medium text-[#172B36] transition hover:bg-slate-50 cursor-pointer">
+                                        Revisi
+                                    </button>
 
-                    {{-- STATE 1: TOMBOL --}}
-                    <div id="aksiTombol" class="hidden items-center gap-3">
-                        <button type="button"
-                                data-toggle-form="formRevisi"
-                                class="inline-flex h-10 items-center justify-center rounded-lg border border-[#D5DEE3] bg-white px-5 text-sm font-medium text-[#172B36] transition hover:bg-slate-50 cursor-pointer">
-                            Revisi
-                        </button>
-
-                        <button type="button"
-                                data-modal-open="modalKonfirmasiAcc"
-                                class="inline-flex h-10 items-center justify-center rounded-lg bg-[#146C94] px-5 text-sm font-medium text-white transition hover:bg-[#0f5878] cursor-pointer">
-                            Acc
-                        </button>
-                    </div>
-
-                    {{-- STATE 2: FORM REVISI --}}
-                    <form id="formRevisi"
-                          action="#"
-                          method="POST"
-                          enctype="multipart/form-data"
-                          class="hidden">
-
-                        @csrf
-
-                        <div>
-
-                            <h3 class="text-base font-semibold text-[#172B36]">Revisi</h3>
-
-                            {{-- Catatan revisi --}}
-                            <div class="mt-5">
-                                <label for="isi_revisi" class="block text-[13px] font-medium text-[#172B36]">
-                                    Catatan revisi <span class="text-[#DC2626]">*</span>
-                                </label>
-                                <textarea id="isi_revisi"
-                                          name="isi_revisi"
-                                          rows="3"
-                                          required
-                                          placeholder="Jelaskan bagian yang perlu diperbaiki"
-                                          class="mt-1.5 w-full resize-none rounded-lg border border-[#D5DEE3] bg-white px-3 py-2.5 text-sm text-[#172B36] outline-none transition placeholder:text-[#4B5563] focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]"></textarea>
-                            </div>
-
-                            {{-- Tenggat baru + jam --}}
-                            <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_180px]">
-                                <div>
-                                    <label for="tenggatTanggal" class="block text-[13px] font-medium text-[#172B36]">
-                                        Tenggat baru <span class="font-normal text-[#4B5563]">(opsional)</span>
-                                    </label>
-                                    <input type="date"
-                                           id="tenggatTanggal"
-                                           name="tenggat_tanggal"
-                                           class="mt-1.5 h-10 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36] outline-none transition focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]">
+                                    <button type="button" data-modal-open="modalKonfirmasiAcc"
+                                            class="inline-flex h-10 items-center justify-center rounded-lg bg-[#146C94] px-5 text-sm font-medium text-white transition hover:bg-[#0f5878] cursor-pointer">
+                                        Acc
+                                    </button>
                                 </div>
-                                <div>
-                                    <label for="tenggatJam" class="block text-[13px] font-medium text-[#172B36]">Jam</label>
-                                    <input type="time"
-                                           id="tenggatJam"
-                                           name="tenggat_jam"
-                                           class="mt-1.5 h-10 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36] outline-none transition focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]">
-                                </div>
-                            </div>
-
-                            {{-- Lampiran --}}
-                            <div class="mt-5">
-                                <label for="fileRevisi" class="block text-[13px] font-medium text-[#172B36]">
-                                    Lampiran <span class="font-normal text-[#4B5563]">(opsional)</span>
-                                </label>
-                                <div class="mt-1.5 flex h-10 items-center overflow-hidden rounded-lg border border-[#D5DEE3] bg-white">
-                                    <label for="fileRevisi"
-                                           class="flex h-full shrink-0 cursor-pointer items-center border-r border-[#D5DEE3] bg-slate-50 px-3 text-[13px] font-medium text-[#172B36] transition hover:bg-slate-100">
-                                        Pilih file
-                                    </label>
-                                    <span id="namaFileRevisi" class="ml-3 min-w-0 flex-1 truncate text-[13px] text-[#4B5563]">Belum ada file dipilih</span>
-                                </div>
-                                <input type="file" name="file_revisi" id="fileRevisi" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip" class="sr-only">
-                            </div>
-
-                            <p class="mt-3 text-[13px] text-[#4B5563]">
-                                <span id="revisiPenerima">Staff</span> akan menerima notifikasi berisi catatan ini.
-                            </p>
-
-                            <div id="revisiErrors" class="mt-3 hidden space-y-1 rounded-lg border border-[#F5C2C7] bg-[#FEF2F2] px-3 py-2 text-[13px] leading-5 text-[#B91C1C]" role="alert" aria-live="polite"></div>
-
-                            {{-- Tombol --}}
-                            <div class="mt-4 flex items-center gap-4">
-                                <button type="submit"
-                                        class="inline-flex h-10 items-center justify-center rounded-lg bg-[#146C94] px-5 text-sm font-medium text-white transition hover:bg-[#0f5878] cursor-pointer">
-                                    Kirim revisi
-                                </button>
-                                <button type="button" id="btnBatalRevisi"
-                                        class="text-sm font-medium text-[#4B5563] hover:underline cursor-pointer">
-                                    Batal
-                                </button>
-                            </div>
-
-                        </div>
-
-                    </form>
-
                             </div>
 
                         </div>
@@ -245,7 +157,7 @@
     <div id="modalEditTugas" class="hidden fixed inset-0 z-50 bg-[rgba(86,94,116,0.4)] flex items-center justify-center p-4">
         <form id="formEditTugas" class="bg-white rounded-xl w-full max-w-[420px] max-h-[90vh] flex flex-col shadow-[0_8px_16px_rgba(0,0,0,0.12)]">
             <div class="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC] rounded-t-xl">
-                <h3 class="text-base font-bold text-black">Edit Tugas</h3>
+                <h3 class="text-lg font-semibold text-black">Edit Tugas</h3>
                 <button type="button" data-modal-close="modalEditTugas" class="text-[#565E74] hover:text-black text-2xl leading-none cursor-pointer">&times;</button>
             </div>
 
@@ -322,6 +234,87 @@
         </div>
     </div>
 
+    {{-- MODAL REVISI --}}
+    <div id="modalRevisi"
+         class="hidden fixed inset-0 z-50 bg-[rgba(86,94,116,0.4)] flex items-center justify-center p-4">
+        <form id="formRevisi"
+              action="#"
+              method="POST"
+              enctype="multipart/form-data"
+              class="bg-white rounded-xl w-full max-w-[520px] max-h-[90vh] flex flex-col shadow-[0_8px_16px_rgba(0,0,0,0.12)]">
+            @csrf
+
+            <div class="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC] rounded-t-xl">
+                <h3 class="text-lg font-semibold text-[#172B36]">Revisi</h3>
+                <button type="button" data-modal-close="modalRevisi"
+                        class="text-[#565E74] hover:text-black text-2xl leading-none cursor-pointer"
+                        aria-label="Tutup">&times;</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto px-6 py-5">
+                {{-- Catatan revisi --}}
+                <div>
+                    <label for="isi_revisi" class="block text-[13px] font-medium text-[#172B36]">
+                        Catatan revisi <span class="text-[#DC2626]">*</span>
+                    </label>
+                    <textarea id="isi_revisi" name="isi_revisi" rows="4" required
+                              placeholder="Jelaskan bagian yang perlu diperbaiki"
+                              class="mt-1.5 w-full resize-none rounded-lg border border-[#D5DEE3] bg-white px-3 py-2.5 text-sm text-[#172B36] outline-none transition placeholder:text-[#4B5563] focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]"></textarea>
+                </div>
+
+                {{-- Tenggat baru + jam --}}
+                <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_140px]">
+                    <div>
+                        <label for="tenggatTanggal" class="block text-[13px] font-medium text-[#172B36]">
+                            Tenggat baru <span class="font-normal text-[#4B5563]">(opsional)</span>
+                        </label>
+                        <input type="date" id="tenggatTanggal" name="tenggat_tanggal"
+                               class="mt-1.5 h-10 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36] outline-none transition focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]">
+                    </div>
+                    <div>
+                        <label for="tenggatJam" class="block text-[13px] font-medium text-[#172B36]">Jam</label>
+                        <input type="time" id="tenggatJam" name="tenggat_jam"
+                               class="mt-1.5 h-10 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36] outline-none transition focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]">
+                    </div>
+                </div>
+
+                {{-- Lampiran --}}
+                <div class="mt-5">
+                    <label for="fileRevisi" class="block text-[13px] font-medium text-[#172B36]">
+                        Lampiran <span class="font-normal text-[#4B5563]">(opsional)</span>
+                    </label>
+                    <div class="mt-1.5 flex h-10 items-center overflow-hidden rounded-lg border border-[#D5DEE3] bg-white">
+                        <label for="fileRevisi"
+                               class="flex h-full shrink-0 cursor-pointer items-center border-r border-[#D5DEE3] bg-slate-50 px-3 text-[13px] font-medium text-[#172B36] transition hover:bg-slate-100">
+                            Pilih file
+                        </label>
+                        <span id="namaFileRevisi" class="ml-3 min-w-0 flex-1 truncate text-[13px] text-[#4B5563]">Belum ada file dipilih</span>
+                    </div>
+                    <input type="file" name="file_revisi" id="fileRevisi" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip" class="sr-only">
+                </div>
+            </div>
+
+            <div class="border-t border-[#E2E8F0] px-6 py-4">
+                <p class="text-[13px] text-[#4B5563]">
+                    <span id="revisiPenerima">Staff</span> akan menerima notifikasi berisi catatan ini.
+                </p>
+
+                <div id="revisiErrors" class="mt-3 hidden space-y-1 rounded-lg border border-[#F5C2C7] bg-[#FEF2F2] px-3 py-2 text-[13px] leading-5 text-[#B91C1C]" role="alert" aria-live="polite"></div>
+
+                <div class="mt-4 flex items-center justify-end gap-3">
+                    <button type="button" data-modal-close="modalRevisi"
+                            class="h-10 rounded-lg bg-[#E8E7E9] px-4 text-sm font-medium text-[#333335] transition hover:bg-[#D9D9D9] cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="inline-flex h-10 items-center justify-center rounded-lg bg-[#146C94] px-5 text-sm font-medium text-white transition hover:bg-[#0f5878] cursor-pointer">
+                        Kirim revisi
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
     {{-- SCRIPT --}}
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
@@ -338,7 +331,8 @@
             const editPenerima = document.getElementById('editPenerimaTugas');
             let currentTaskDeadline = null;
             const setText = (id, value) => {
-                document.getElementById(id).textContent = value || '-';
+                const element = document.getElementById(id);
+                if (element) element.textContent = value || '-';
             };
             const pad2 = (value) => String(value).padStart(2, '0');
             const formatDate = (value) => {
@@ -397,9 +391,28 @@
                 badge.style.color = palette.text;
             }
 
-            const fileIconSvg = '<svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>';
-            const externalIconSvg = '<svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>';
-            const downloadIconSvg = '<svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>';
+            const attachmentIconPaths = {
+                document: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z',
+                text: 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z',
+                table: 'M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125V6.375c0-.621.504-1.125 1.125-1.125h17.25c.621 0 1.125.504 1.125 1.125v12c0 .621-.504 1.125-1.125 1.125ZM3.375 9.75h17.25M9.75 9.75v9.75M15 9.75v9.75',
+                image: 'm2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z',
+                archive: 'm20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z',
+                link: 'M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244',
+            };
+            const downloadIconSvg = '<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>';
+
+            function attachmentIcon(ext, isLink = false) {
+                const icon = (path) => `<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="${path}" /></svg>`;
+
+                if (isLink) return { color: 'text-[#146C94]', svg: icon(attachmentIconPaths.link) };
+                if (ext === 'PDF') return { color: 'text-red-500', svg: icon(attachmentIconPaths.text) };
+                if (['DOC', 'DOCX'].includes(ext)) return { color: 'text-blue-500', svg: icon(attachmentIconPaths.text) };
+                if (['XLS', 'XLSX', 'CSV'].includes(ext)) return { color: 'text-emerald-600', svg: icon(attachmentIconPaths.table) };
+                if (['JPG', 'JPEG', 'PNG', 'GIF', 'WEBP'].includes(ext)) return { color: 'text-violet-500', svg: icon(attachmentIconPaths.image) };
+                if (['ZIP', 'RAR', '7Z'].includes(ext)) return { color: 'text-amber-600', svg: icon(attachmentIconPaths.archive) };
+
+                return { color: 'text-[#64748B]', svg: icon(attachmentIconPaths.document) };
+            }
 
             const formatSize = (bytes) => {
                 const value = Number(bytes);
@@ -409,7 +422,7 @@
                 return (kb / 1024).toFixed(1).replace('.', ',') + ' MB';
             };
 
-            function appendAttachmentRow(container, filePath, label, href = null, sizeBytes = null) {
+            function appendAttachmentRow(container, filePath, label, href = null, sizeBytes = null, displayName = null) {
                 if (typeof filePath !== 'string' || !filePath.trim() || filePath.trim() === '-') return false;
 
                 const value = filePath.trim();
@@ -422,50 +435,49 @@
                 if (!['http:', 'https:'].includes(targetUrl.protocol)) return false;
 
                 const isExternalLink = /^https?:\/\//i.test(value) && !href;
+                const storedName = value.split(/[?#]/)[0].split('/').pop() || '';
+                const originalName = typeof displayName === 'string' ? displayName.trim() : '';
+                const looksHashed = /^[A-Za-z0-9]{24,}(?:\.[A-Za-z0-9]+)?$/.test(storedName);
                 const fileName = isExternalLink
                     ? (label || 'Link Referensi')
-                    : (value.split(/[?#]/)[0].split('/').pop() || label || 'Lampiran');
+                    : (originalName || (!looksHashed ? storedName : '') || label || 'Lampiran');
                 const extension = isExternalLink
                     ? 'Tautan'
-                    : (fileName.includes('.') ? fileName.split('.').pop().toUpperCase() : 'FILE');
+                    : (storedName.includes('.') ? storedName.split('.').pop().toUpperCase() : 'FILE');
+                const sizeLabel = formatSize(sizeBytes);
+                const metaParts = isExternalLink ? ['Tautan'] : [extension, sizeLabel];
 
-                const row = document.createElement('div');
-                row.className = 'flex items-center justify-between gap-4';
+                const row = document.createElement('a');
+                row.href = targetUrl.href;
+                row.target = '_blank';
+                row.rel = 'noopener noreferrer';
+                if (!isExternalLink) row.setAttribute('download', fileName);
+                row.className = 'group flex w-[320px] max-w-full items-center gap-3 rounded-lg bg-white px-3 py-2.5 shadow-sm transition hover:shadow-md';
 
-                const left = document.createElement('div');
-                left.className = 'flex min-w-0 items-center gap-3';
+                const icon = attachmentIcon(extension, isExternalLink);
+                const iconTile = document.createElement('span');
+                iconTile.className = 'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F1F5F9] ' + icon.color;
+                iconTile.innerHTML = icon.svg;
 
-                const icon = document.createElement('span');
-                icon.className = 'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#4B5563]';
-                icon.innerHTML = isExternalLink ? externalIconSvg : fileIconSvg;
-                left.appendChild(icon);
+                const details = document.createElement('span');
+                details.className = 'min-w-0 flex-1';
 
-                const details = document.createElement('div');
-                details.className = 'min-w-0';
-
-                const name = document.createElement('a');
-                name.href = targetUrl.href;
-                name.target = '_blank';
-                name.rel = 'noopener noreferrer';
-                name.className = 'block truncate text-sm font-medium text-[#146C94] underline underline-offset-2 hover:text-[#0f5878]';
+                const name = document.createElement('span');
+                name.className = 'block truncate text-sm font-medium text-[#172B36]';
                 name.textContent = fileName;
 
-                const type = document.createElement('p');
-                type.className = 'text-[13px] leading-5 text-[#4B5563]';
-                const sizeLabel = formatSize(sizeBytes);
-                type.textContent = sizeLabel ? extension + ' · ' + sizeLabel : extension;
+                const meta = document.createElement('span');
+                meta.className = 'block truncate text-[12px] leading-5 text-[#4B5563]';
+                meta.textContent = metaParts.filter(Boolean).join(' · ');
 
-                details.append(name, type);
-                left.appendChild(details);
+                details.append(name, meta);
 
-                const action = document.createElement('a');
-                action.href = targetUrl.href;
-                action.target = '_blank';
-                action.rel = 'noopener noreferrer';
-                action.className = 'inline-flex shrink-0 items-center gap-2 text-sm font-medium text-[#146C94] hover:underline';
-                action.innerHTML = downloadIconSvg + '<span>' + (isExternalLink ? 'Buka' : 'Unduh') + '</span>';
+                const action = document.createElement('span');
+                action.className = 'flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-[#4B5563] transition group-hover:text-[#146C94]';
+                action.innerHTML = downloadIconSvg;
+                action.setAttribute('aria-hidden', 'true');
 
-                row.append(left, action);
+                row.append(iconTile, details, action);
                 container.appendChild(row);
                 return true;
             }
@@ -639,11 +651,12 @@
                     const hasTaskFile = appendAttachmentRow(
                         taskSupportCard,
                         taskFileName,
-                        task.judul_tugas || 'File Pendukung',
+                        'Lampiran tugas',
                         taskFileName && taskFileName !== '-'
                             ? '/storage/' + taskFileName.replace(/^\/+/, '')
                             : null,
-                        task.file_pendukung_size
+                        task.file_pendukung_size,
+                        task.file_pendukung_name
                     );
                     const hasTaskLink = appendAttachmentRow(taskSupportCard, taskLink, 'Link Referensi');
                     taskSupportCard.classList.toggle('hidden', !(hasTaskFile || hasTaskLink));
@@ -660,11 +673,12 @@
                     const hasSubmissionFile = appendAttachmentRow(
                         submissionCard,
                         submissionFileName,
-                        'File Hasil',
+                        'File hasil',
                         submissionFileName && submissionFileName !== '-'
                             ? '/storage/' + submissionFileName.replace(/^\/+/, '')
                             : null,
-                        submission?.file_hasil_size
+                        submission?.file_hasil_size,
+                        submission?.file_hasil_name
                     );
                     const hasSubmissionLink = appendAttachmentRow(submissionCard, submissionLink, 'Link Pengumpulan');
                     submissionCard.classList.toggle('hidden', !(hasSubmissionFile || hasSubmissionLink));
@@ -704,7 +718,7 @@
                             const date = document.createElement('p');
                             date.className = 'text-[13px] leading-5 text-[#4B5563]';
                             date.textContent = formatDate(revision.created_at || revision.tanggal_submit)
-                                + ' · Tenggat revisi ' + formatDate(revision.deadline_revisi || task.deadline);
+                                + ' · Tanggal Revisi ' + formatDate(revision.deadline_revisi || task.deadline);
                             item.appendChild(date);
 
                             const note = document.createElement('p');
@@ -721,9 +735,10 @@
                                 appendAttachmentRow(
                                     revisionAttachment,
                                     revisionFile,
-                                    'File Revisi',
+                                    'Lampiran revisi',
                                     '/storage/' + revisionFile.replace(/^\/+/, ''),
-                                    revision.file_revisi_size
+                                    revision.file_revisi_size,
+                                    revision.file_revisi_name
                                 );
                                 item.appendChild(revisionAttachment);
                             }
@@ -743,7 +758,6 @@
                     const canReview = submission?.status_review === 'submitted'
                         && task.status !== 'sudah di-acc';
                     setActionsVisible(canReview);
-                    formRevisi.classList.add('hidden');
 
                     // Prefill tenggat revisi dengan deadline tugas saat ini.
                     currentTaskDeadline = task.deadline || null;
@@ -770,31 +784,40 @@
             }
             await loadTaskDetail();
 
-            // Toggle form revisi ↔ tombol
-            document.querySelectorAll('[data-toggle-form]').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    const form = document.getElementById(this.dataset.toggleForm);
-                    if (form) {
-                        form.classList.remove('hidden');
-                        setActionsVisible(false);
-                        form.querySelector('textarea')?.focus();
-                    }
-                });
-            });
+            const closeModal = (modal) => {
+                if (!modal) return;
 
-            // Batal revisi → kembali ke tombol aksi
-            document.getElementById('btnBatalRevisi').addEventListener('click', function () {
-                formRevisi.classList.add('hidden');
-                setActionsVisible(true);
-            });
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+
+                if (modal.id === 'modalRevisi') {
+                    formRevisi.reset();
+                    document.getElementById('namaFileRevisi').textContent = 'Belum ada file dipilih';
+                    clearRevisiErrors();
+                }
+            };
 
             // Modal open
             document.querySelectorAll('[data-modal-open]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     const t = document.getElementById(this.dataset.modalOpen);
-                    if (t) {
-                        t.classList.remove('hidden');
-                        document.body.classList.add('overflow-hidden');
+                    if (!t) return;
+
+                    t.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+
+                    if (t.id === 'modalRevisi') {
+                        clearRevisiErrors();
+
+                        // Re-apply the task deadline when the modal is reopened
+                        // after a reset.
+                        const fallback = splitDateTime(currentTaskDeadline);
+                        const dateInput = t.querySelector('#tenggatTanggal');
+                        const timeInput = t.querySelector('#tenggatJam');
+                        if (dateInput && !dateInput.value) dateInput.value = fallback.date;
+                        if (timeInput && !timeInput.value) timeInput.value = fallback.time || '17:00';
+
+                        t.querySelector('textarea')?.focus();
                     }
                 });
             });
@@ -802,20 +825,15 @@
             // Modal close
             document.querySelectorAll('[data-modal-close]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
-                    const t = document.getElementById(this.dataset.modalClose);
-                    if (t) {
-                        t.classList.add('hidden');
-                        document.body.classList.remove('overflow-hidden');
-                    }
+                    closeModal(document.getElementById(this.dataset.modalClose));
                 });
             });
 
             // Klik area overlay → tutup modal
-            document.querySelectorAll('[id^="modalKonfirmasi"]').forEach(function (modal) {
+            document.querySelectorAll('#modalKonfirmasiAcc, #modalRevisi').forEach(function (modal) {
                 modal.addEventListener('click', function (e) {
                     if (e.target === modal) {
-                        modal.classList.add('hidden');
-                        document.body.classList.remove('overflow-hidden');
+                        closeModal(modal);
                     }
                 });
             });
@@ -874,9 +892,7 @@
 
                 try {
                     await requestTask('POST', payload);
-                    this.reset();
-                    document.getElementById('namaFileRevisi').textContent = 'Belum ada file dipilih';
-                    this.classList.add('hidden');
+                    closeModal(document.getElementById('modalRevisi'));
                     await loadTaskDetail();
                     alert('Revisi berhasil dikirim.');
                 } catch (error) {
