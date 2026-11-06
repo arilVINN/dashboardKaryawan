@@ -170,15 +170,9 @@
 
         const difference = Math.round((deadlineDay - today) / 86400000);
 
-        if (isLate) {
-            return {
-                hint: `Terlambat ${Math.max(1, Math.abs(difference))} hari`,
-                className: 'text-[#B91C1C] font-medium'
-            };
-        }
-
-        // Tugas yang sudah di-ACC/dikirim bisa punya tenggat lampau tanpa terlambat.
-        if (difference < 0) {
+        // Status terlambat ditampilkan lewat status pill, bukan teks di kolom tenggat.
+        // Tugas yang sudah di-ACC/dikirim juga bisa punya tenggat lampau tanpa terlambat.
+        if (isLate || difference < 0) {
             return { hint: '', className: 'text-[#4B5563]' };
         }
 
