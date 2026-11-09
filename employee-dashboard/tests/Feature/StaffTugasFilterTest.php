@@ -89,9 +89,12 @@ class StaffTugasFilterTest extends TestCase
             ->assertOk()
             ->assertSee('id="staffTugasSearch"', false)
             ->assertSee('id="staffTugasStatus"', false)
-            ->assertSee('wire:click="sortBy(\'judul\')"', false)
-            ->assertDontSee('setStaffTugasSort', false)
-            ->assertDontSee('data-sort-indicator', false);
+            ->assertSee('id="staffTugasReset"', false)
+            ->assertSee('placeholder="Cari judul tugas..."', false)
+            ->assertSee('<option value="">Semua status</option>', false)
+            ->assertSee('setStaffTugasSort', false)
+            ->assertDontSee('id="staffTugasApply"', false)
+            ->assertDontSee('Terapkan', false);
     }
 
     public function test_staff_pesan_page_renders_sort_filter_controls(): void
@@ -111,6 +114,27 @@ class StaffTugasFilterTest extends TestCase
         $this->actingAs($this->staff)
             ->get('/tugas/detail/T-1')
             ->assertOk()
-            ->assertSee('File Hasil');
+            ->assertSee('Hasil sebelumnya');
+    }
+
+    public function test_staff_tugas_detail_uses_revision_history_layout(): void
+    {
+        $this->actingAs($this->staff)
+            ->get('/tugas/detail/T-1')
+            ->assertOk()
+            ->assertSee('Riwayat Revisi')
+            ->assertSee('id="revisi-history-list"', false)
+            ->assertSee('id="revisi-count"', false);
+    }
+
+    public function test_staff_tugas_detail_has_submit_confirmation_modal(): void
+    {
+        $this->actingAs($this->staff)
+            ->get('/tugas/detail/T-1')
+            ->assertOk()
+            ->assertSee('id="modalKonfirmasiSubmit"', false)
+            ->assertSee('id="btn-confirm-submit-tugas"', false)
+            ->assertSee('Kirim tugas ini?', false)
+            ->assertSee('Ya, kirim tugas', false);
     }
 }

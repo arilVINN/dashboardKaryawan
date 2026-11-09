@@ -24,7 +24,7 @@
                 'inline' => true,
             ])
             <div>
-                <h1 class="text-2xl font-bold text-slate-800">Turnover Karyawan</h1>
+                <x-page-heading title="Turnover Karyawan" icon="door" />
                 <p class="text-sm text-gray-500 mt-1">{{ $totalKeluarTahunIni }} karyawan keluar tahun ini</p>
             </div>
 
@@ -38,7 +38,7 @@
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
 
                 <table class="w-full text-left text-sm text-slate-600">
-                    <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
+                    <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                         <tr>
                             <th class="px-5 py-3 font-medium">Nama</th>
                             <th class="px-5 py-3 font-medium">Jabatan</th>

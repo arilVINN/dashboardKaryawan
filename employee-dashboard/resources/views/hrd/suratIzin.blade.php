@@ -21,7 +21,7 @@
                 'currentPage' => 'Surat Izin Masuk',
                 'inline' => true,
             ])
-            <h1 class="text-2xl font-bold text-slate-800 mb-6">Surat Izin Masuk</h1>
+            <x-page-heading title="Surat Izin Masuk" icon="mail" class="mb-6" />
 
             @if (session('success'))
                 <div class="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
@@ -32,7 +32,7 @@
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm text-slate-600">
-                        <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
+                        <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                             <tr>
                                 <th class="px-6 py-4 font-medium">Karyawan</th>
                                 <th class="px-6 py-4 font-medium">Jenis & Judul</th>

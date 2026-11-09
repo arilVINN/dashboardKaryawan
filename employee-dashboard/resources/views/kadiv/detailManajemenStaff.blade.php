@@ -40,12 +40,12 @@
 
                 <div class="mt-4 bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
                     <table class="w-full text-sm">
-                        <thead class="bg-[#F1F5F9] text-[#565E74] uppercase">
+                        <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                             <tr>
-                                <th class="px-6 py-4 text-left font-normal">Tugas</th>
-                                <th class="px-6 py-4 text-center font-normal">Tenggat</th>
-                                <th class="px-6 py-4 text-center font-normal">Approval</th>
-                                <th class="px-6 py-4 text-center font-normal">Aksi</th>
+                                <th class="px-6 py-4 text-left font-medium">Tugas</th>
+                                <th class="px-6 py-4 text-center font-medium">Tenggat</th>
+                                <th class="px-6 py-4 text-center font-medium">Approval</th>
+                                <th class="px-6 py-4 text-center font-medium">Aksi</th>
                             </tr>
                         </thead>
 
@@ -76,6 +76,8 @@
             const staff = result.data;
             document.getElementById('detail-staff-initial').textContent = (staff.nama || '-').charAt(0).toUpperCase();
             document.getElementById('detail-staff-name').textContent = staff.nama || '-';
+            const crumb = document.querySelector('[data-breadcrumb-current]');
+            if (crumb) crumb.textContent = staff.nama || 'Detail Staff';
             document.getElementById('detail-staff-task-name').textContent = staff.nama || '-';
             document.getElementById('detail-staff-role').textContent = staff.jabatan || staff.user?.role?.nama_role || '-';
             document.getElementById('detail-staff-status').textContent = staff.user?.last_login_at ? 'Aktif' : 'Belum pernah login';

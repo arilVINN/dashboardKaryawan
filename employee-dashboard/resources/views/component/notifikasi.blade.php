@@ -124,6 +124,18 @@
                 };
             }
 
+            if (lower.includes('revisi')) {
+                return {
+                    badgeText: 'Revisi Tugas',
+                    badgeClass: 'text-amber-700 bg-amber-100 border-amber-200',
+                    borderClass: 'border-amber-200',
+                    iconBg: 'bg-amber-100 text-amber-600',
+                    linkUrl: '/tugas',
+                    actionLabel: 'Lihat Revisi',
+                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z" />`
+                };
+            }
+
             if (lower.includes('tugas')) {
                 return {
                     badgeText: 'Tugas Baru',
@@ -169,6 +181,15 @@
                 };
             }
 
+            if (lower.includes('revisi')) {
+                return {
+                    title: 'Revisi tugas',
+                    iconClass: 'bg-[#FEF0C3] text-[#B45309]',
+                    linkUrl: '/tugas',
+                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z" />`
+                };
+            }
+
             if (lower.includes('tugas')) {
                 return {
                     title: 'Tugas baru',
@@ -186,6 +207,18 @@
             };
         }
 
+        function notificationUrl(notification, fallback) {
+            if (notification.pesan_id_pesan) {
+                return '/pesan/detail/' + encodeURIComponent(notification.pesan_id_pesan);
+            }
+
+            if (notification.tugas_id_tugas) {
+                return '/tugas/detail/' + encodeURIComponent(notification.tugas_id_tugas);
+            }
+
+            return fallback;
+        }
+
         function saveReadNotifications() {
             localStorage.setItem('staff_read_notifications', JSON.stringify([...readNotifications]));
         }
@@ -201,6 +234,7 @@
             if (!toastContainer) return;
 
             const config = getNotifConfig(notif.judul_notifikasi);
+            const toastUrl = notificationUrl(notif, config.linkUrl);
             const toast = document.createElement('div');
             toast.className = `pointer-events-auto flex items-start gap-3 p-4 bg-white border ${config.borderClass} shadow-xl rounded-2xl w-80 md:w-96 transform transition-all duration-150 ease-out translate-y-[-20px] opacity-0`;
 
@@ -226,7 +260,7 @@
 
                     <div class="mt-2.5 flex items-center justify-between">
                         <span class="text-[10px] text-slate-400 font-medium">Baru saja</span>
-                        <a href="${config.linkUrl}" class="text-xs font-semibold text-[#004A65] hover:underline inline-flex items-center gap-1">
+                        <a href="${toastUrl}" class="text-xs font-semibold text-[#004A65] hover:underline inline-flex items-center gap-1">
                             ${config.actionLabel} &rarr;
                         </a>
                     </div>
@@ -266,7 +300,7 @@
                 const readKey = notificationReadKey(notification);
                 const isUnread = !readNotifications.has(readKey);
                 const row = document.createElement('a');
-                row.href = config.linkUrl;
+                row.href = notificationUrl(notification, config.linkUrl);
                 row.className = 'flex items-start gap-3 px-4 py-3 transition hover:bg-[#F5FAFC] focus:bg-[#F5FAFC] focus:outline-none';
                 row.innerHTML = `
                     <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${config.iconClass}">

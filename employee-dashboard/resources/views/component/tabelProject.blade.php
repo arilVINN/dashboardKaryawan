@@ -4,7 +4,7 @@
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
+                <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                     <tr>
                         <th class="px-6 py-4 font-medium whitespace-nowrap">Nama Project</th>
                         <th class="px-6 py-4 font-medium">Deskripsi</th>

@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Tugas;
+use App\Models\Notifikasi;
 use App\Models\SubmitTugas;
+use App\Models\Tugas;
+use App\Models\User2;
 use App\Queries\StaffTugasQuery;
+use App\Support\FileMetadata;
+use Illuminate\Support\Facades\Log;
 
 class StaffTugasController extends Controller
 {
@@ -43,6 +47,12 @@ class StaffTugasController extends Controller
                 'tanggal_update' => now(),
             ]);
         }
+
+        $tugas->submitTugas->each(function ($submission) {
+            $submission->setAttribute('file_hasil_size', FileMetadata::size($submission->file_hasil));
+            $submission->setAttribute('file_revisi_size', FileMetadata::size($submission->file_revisi));
+        });
+        $tugas->setAttribute('file_pendukung_size', FileMetadata::size($tugas->file_pendukung));
 
         return response()->json([
             'message' => 'Detail tugas',
@@ -89,33 +99,74 @@ class StaffTugasController extends Controller
         if ($tugas->status === Tugas::STATUS_SUDAH_ACC) {
             return response()->json(['message' => 'Tugas ini sudah di-ACC dan tidak bisa dikirim ulang'], 403);
         }
+
+        // Submission sebelumnya berstatus "revisi" berarti ini pengumpulan ulang.
+        $previousSubmission = SubmitTugas::query()
+            ->where('tugas_id_tugas', $tugas->id_tugas)
+            ->latest('created_at')
+            ->first();
+        $isRevisionSubmission = $previousSubmission?->status_review === 'revisi';
+
         $validated = $request->validate([
             'file_hasil' => 'required_without:catatan_karyawan|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip', // max 200 MB (dalam kilobyte)
             'link_submit' => 'nullable|url|max:2048',
             'catatan_karyawan' => 'required_without:file_hasil|string',
-            'progress' => 'sometimes|integer|min:0|max:100'
+            'progress' => 'sometimes|integer|min:0|max:100',
+        ], [
+            'file_hasil.required_without' => 'Lampirkan file hasil atau isi catatan pengumpulan.',
+            'file_hasil.file' => 'File hasil tidak valid atau gagal diunggah.',
+            'file_hasil.max' => 'Ukuran file hasil maksimal 200 MB.',
+            'file_hasil.mimes' => 'Format file hasil harus PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG, atau ZIP.',
+            'link_submit.url' => 'Link pengumpulan harus berupa URL yang valid.',
+            'link_submit.max' => 'Link pengumpulan maksimal 2048 karakter.',
+            'catatan_karyawan.required_without' => 'Isi catatan atau lampirkan file hasil.',
+            'progress.integer' => 'Nilai progress harus berupa angka.',
+            'progress.min' => 'Nilai progress minimal 0.',
+            'progress.max' => 'Nilai progress maksimal 100.',
         ]);
+
         $progress = $validated['progress'] ?? $tugas->progress;
         $filePath = '-'; // Default string '-' karena database Anda melarang NULL
+        $fileOriginalName = null;
         if ($request->hasFile('file_hasil')) {
-            $filePath = $request->file('file_hasil')->store('submissions', 'public');
-        }
-        // Generate dynamic ID SB001, SB002, etc. (Max 5 chars)
-        $lastSubmit = SubmitTugas::orderBy('id_submit_tugas', 'desc')->first();
-        $newId = $lastSubmit ? 'SB' . str_pad(intval(substr($lastSubmit->id_submit_tugas, 2)) + 1, 3, '0', STR_PAD_LEFT) : 'SB001';
+            $uploadedFile = $request->file('file_hasil');
+            $filePath = $uploadedFile->store('submissions', 'public');
 
-        // 1. Simpan ke tabel submit_tugas dengan antisipasi NOT NULL SQL
-        SubmitTugas::create([
-            'id_submit_tugas' => $newId,
+            if (! $filePath) {
+                return response()->json([
+                    'message' => 'File hasil gagal disimpan. Silakan coba lagi.',
+                    'errors' => ['file_hasil' => ['File hasil gagal disimpan. Silakan coba lagi.']],
+                ], 422);
+            }
+
+            $fileOriginalName = $uploadedFile->getClientOriginalName();
+        }
+
+        $attributes = [
             'tugas_id_tugas' => $tugas->id_tugas,
             'tugas_karyawan_id_karyawan' => $karyawanId,
             'file_hasil' => $filePath,
+            'file_hasil_name' => $fileOriginalName,
             'link_submit' => $validated['link_submit'] ?? '-', // Cegah error NOT NULL
             'catatan_karyawan' => isset($validated['catatan_karyawan']) ? strip_tags($validated['catatan_karyawan']) : '-', // Cegah error NOT NULL
             'catatan_revisi' => '-', // Pasti '-' saat pertama submit
             'tanggal_submit' => now(),
             'status_review' => 'submitted',
-        ]);
+        ];
+
+        // Retry once or twice if two submissions race for the same ID.
+        $attempts = 0;
+        while (true) {
+            try {
+                SubmitTugas::create(['id_submit_tugas' => SubmitTugas::nextId()] + $attributes);
+                break;
+            } catch (\Illuminate\Database\QueryException $exception) {
+                $isDuplicate = in_array((string) $exception->getCode(), ['23505', '23000'], true);
+                if (! $isDuplicate || ++$attempts >= 3) {
+                    throw $exception;
+                }
+            }
+        }
         $tugas->update([
             'progress' => $progress,
             'status' => $progress == 100
@@ -123,7 +174,60 @@ class StaffTugasController extends Controller
                 : $tugas->status,
 
         ]);
+
+        try {
+            $this->notifyKadivOnSubmission($tugas, $request->user(), $isRevisionSubmission);
+        } catch (\Throwable $exception) {
+            Log::error('Gagal membuat notifikasi pengumpulan tugas: '.$exception->getMessage(), [
+                'id_tugas' => $tugas->id_tugas,
+            ]);
+        }
+
         return response()->json(['message' => 'Hasil tugas berhasil dikirim', 'data' => $tugas]);
     }
-    
+
+    private function notifyKadivOnSubmission(Tugas $tugas, User2 $staff, bool $isRevision): void
+    {
+        $tugas->loadMissing('karyawan');
+        $divisiId = $tugas->karyawan?->divisi_id_divisi;
+
+        if (! $divisiId) {
+            return;
+        }
+
+        $kadivUsers = User2::query()
+            ->whereHas('role', fn ($query) => $query->whereRaw('LOWER(nama_role) = ?', ['kadiv']))
+            ->whereHas('karyawan', fn ($query) => $query->where('divisi_id_divisi', $divisiId))
+            ->get();
+
+        if ($kadivUsers->isEmpty()) {
+            return;
+        }
+
+        $staffName = $staff->karyawan?->nama ?? $staff->username;
+        $judul = $isRevision ? 'Pengumpulan Revisi' : 'Pengumpulan Tugas';
+        $isiNotif = $isRevision
+            ? $staffName.' mengirim revisi tugas "'.$tugas->judul_tugas.'".'
+            : $staffName.' mengumpulkan tugas "'.$tugas->judul_tugas.'".';
+
+        foreach ($kadivUsers as $kadiv) {
+            Notifikasi::create([
+                'id_notifikasi' => $this->generateNotifikasiId(),
+                'judul_notifikasi' => $judul,
+                'isi_notif' => $isiNotif,
+                'tugas_id_tugas' => $tugas->id_tugas,
+                'tanggal_notifikasi' => now()->toDateString(),
+                'user_id_user' => $kadiv->id_user,
+            ]);
+        }
+    }
+
+    private function generateNotifikasiId(): string
+    {
+        do {
+            $id = 'NTF'.strtoupper(substr(uniqid(), -8));
+        } while (Notifikasi::where('id_notifikasi', $id)->exists());
+
+        return $id;
+    }
 }

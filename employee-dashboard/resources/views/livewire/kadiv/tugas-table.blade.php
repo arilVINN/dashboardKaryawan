@@ -5,14 +5,14 @@
 <div>
     <div class="flex flex-col gap-3 w-full mt-2">
         <div class="flex justify-between items-center">
-            <h2 class="text-xl font-bold text-slate-800">Daftar Tugas</h2>
-            <button type="button" data-modal-open="modalTugasBaru"
-                class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
-                </svg>
-                Tambah Tugas
-            </button>
+            <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5">
+                <span class="shrink-0 rounded-lg bg-[#E3F1F7] p-1.5 text-[#146C94]">
+                    <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9 2 2 4-4"></path>
+                    </svg>
+                </span>
+                <span>Daftar Tugas</span>
+            </h2>
         </div>
 
         @if (session('tugas_success'))
@@ -21,78 +21,97 @@
             </div>
         @endif
 
-        <div class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5">
-            <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-                <label for="kadivTaskSearch" class="text-xs font-bold text-slate-500">Cari Judul</label>
+        <div class="mt-1 flex flex-col gap-2 min-[700px]:flex-row min-[700px]:items-center">
+            <div class="relative w-full shrink-0 min-[700px]:w-[280px]">
+                <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]"
+                    fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"></path>
+                </svg>
                 <input id="kadivTaskSearch" type="text" wire:model.live.debounce.300ms="search"
-                    placeholder="Judul tugas..."
-                    class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                    value="{{ $search }}" placeholder="Cari judul tugas..."
+                    class="h-10 w-full rounded-lg border bg-white pl-9 pr-3 text-sm text-[#172B36] outline-none transition placeholder:text-[#6B7280] focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94] {{ $search !== '' ? 'border-[#146C94]' : 'border-[#D5DEE3]' }}">
             </div>
-            <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-                <label for="kadivTaskStatus" class="text-xs font-bold text-slate-500">Status</label>
+
+            <div class="flex w-full flex-wrap gap-2 min-[700px]:w-auto min-[700px]:flex-nowrap">
                 <select id="kadivTaskStatus" wire:model.live="status"
-                    class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
-                    <option value="">Semua</option>
-                    <option value="baru">Baru</option>
-                    <option value="berjalan">Berjalan</option>
-                    <option value="menunggu di-acc">Menunggu persetujuan</option>
-                    <option value="sudah di-acc">Disetujui</option>
-                    <option value="terlambat">Terlambat</option>
+                    class="h-10 min-w-0 flex-1 rounded-lg border px-3 text-sm outline-none transition focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94] min-[700px]:w-[170px] min-[700px]:flex-none {{ $status !== '' ? 'border-[#146C94] bg-[#E3F1F7] font-medium text-[#0B4A66]' : 'border-[#D5DEE3] bg-white text-[#172B36]' }}">
+                    <option value="" @selected($status === '')>Semua status</option>
+                    <option value="baru" @selected($status === 'baru')>Baru</option>
+                    <option value="berjalan" @selected($status === 'berjalan')>Berjalan</option>
+                    <option value="menunggu di-acc" @selected($status === 'menunggu di-acc')>Menunggu persetujuan</option>
+                    <option value="sudah di-acc" @selected($status === 'sudah di-acc')>Disetujui</option>
+                    <option value="terlambat" @selected($status === 'terlambat')>Terlambat</option>
                 </select>
-            </div>
-            <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-                <label for="kadivTaskStaff" class="text-xs font-bold text-slate-500">Staff</label>
+
                 <select id="kadivTaskStaff" wire:model.live="staff"
-                    class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
-                    <option value="">Semua Staff</option>
+                    class="h-10 min-w-0 flex-1 rounded-lg border px-3 text-sm outline-none transition focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94] min-[700px]:w-[190px] min-[700px]:flex-none {{ $staff !== '' ? 'border-[#146C94] bg-[#E3F1F7] font-medium text-[#0B4A66]' : 'border-[#D5DEE3] bg-white text-[#172B36]' }}">
+                    <option value="" @selected($staff === '')>Semua staff</option>
                     @foreach ($staffOptions as $option)
-                        <option value="{{ $option->id_karyawan }}">{{ $option->nama }}</option>
+                        <option value="{{ $option->id_karyawan }}" @selected((string) $staff === (string) $option->id_karyawan)>{{ $option->nama }}</option>
                     @endforeach
                 </select>
+
+                @if ($search !== '' || $status !== '' || $staff !== '')
+                    <button type="button" wire:click="resetFilters"
+                        class="inline-flex h-10 shrink-0 items-center gap-1 text-sm font-medium text-[#146C94] transition hover:text-[#0B4A66]">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+                        </svg>
+                        Reset
+                    </button>
+                @endif
             </div>
-            <div class="flex shrink-0 gap-2 sm:ml-auto">
-                <button type="button" wire:click="resetFilters"
-                    class="h-10 inline-flex items-center px-4 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Reset</button>
-            </div>
+
+            <button type="button" data-modal-open="modalTugasBaru"
+                class="inline-flex h-10 w-full shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[#146C94] px-4 text-sm font-medium text-white transition hover:bg-[#0f5878] min-[700px]:ml-auto min-[700px]:w-auto">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                </svg>
+                Tambah Tugas
+            </button>
         </div>
 
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm text-slate-600">
-                    <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
+                    <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                         <tr>
-                            <th class="px-6 py-4 font-medium whitespace-nowrap">
+                            <th class="px-6 py-4 font-medium whitespace-nowrap text-left">
                                 <button type="button" wire:click="sortBy('judul')"
                                     class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                     Nama Tugas <span
                                         class="{{ $sort === 'judul' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('judul') }}</span>
                                 </button>
                             </th>
-                            <th class="px-6 py-4 font-medium whitespace-nowrap text-center">
+                            <th class="px-6 py-4 font-medium whitespace-nowrap text-left">
                                 <button type="button" wire:click="sortBy('status')"
                                     class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                    Keterangan <span
+                                    Status <span
                                         class="{{ $sort === 'status' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('status') }}</span>
                                 </button>
                             </th>
-                            <th class="px-6 py-4 font-medium whitespace-nowrap text-center">
+                            <th class="px-6 py-4 font-medium whitespace-nowrap text-left">
                                 <button type="button" wire:click="sortBy('tanggal')"
                                     class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                    Tanggal <span
+                                    Tenggat <span
                                         class="{{ $sort === 'tanggal' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('tanggal') }}</span>
                                 </button>
                             </th>
-                            <th class="px-6 py-4 font-medium whitespace-nowrap text-center">Aksi</th>
+                            <th class="px-6 py-4 font-medium whitespace-nowrap text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200">
+                    <tbody class="divide-y divide-[#EEF2F5]">
                         @forelse ($rows as $task)
                             @php $status = $task->status_efektif; @endphp
-                            <tr wire:key="tugas-{{ $task->id_tugas }}" class="hover:bg-slate-50 transition">
+                            <tr wire:key="tugas-{{ $task->id_tugas }}"
+                                class="h-[52px] cursor-pointer hover:bg-[#F5FAFC] transition"
+                                onclick="window.location.href='{{ url('/kadiv/detailTugas/' . $task->id_tugas) }}'">
                                 <td class="px-6 py-4 font-semibold text-slate-800 whitespace-nowrap">
                                     {{ $task->judul_tugas }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <div class="inline-flex flex-wrap items-center justify-center gap-1">
+                                <td class="px-6 py-4 whitespace-nowrap text-left">
+                                    <div class="inline-flex flex-wrap items-center justify-start gap-1">
                                         @if (
                                             $task->is_terlambat &&
                                                 in_array($task->status, [\App\Models\Tugas::STATUS_MENUNGGU_ACC, \App\Models\Tugas::STATUS_SUDAH_ACC], true))
@@ -103,12 +122,20 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-slate-500 text-center whitespace-nowrap">
-                                    {{ $task->deadline ? \Illuminate\Support\Carbon::parse($task->deadline)->format('d/m/Y H:i') : '-' }}
+                                <td class="px-6 py-4 text-slate-500 text-left whitespace-nowrap">
+                                    @php
+                                        $deadline = $task->deadline ? \Illuminate\Support\Carbon::parse($task->deadline) : null;
+                                        $deadlineLabel = $deadline ? $deadline->format('d M Y') : '-';
+                                        if ($deadline && ! in_array($deadline->format('H:i'), ['23:59', '00:00'], true)) {
+                                            $deadlineLabel .= ' ' . $deadline->format('H:i');
+                                        }
+                                    @endphp
+                                    {{ $deadlineLabel }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
                                     <a href="{{ url('/kadiv/detailTugas/' . $task->id_tugas) }}"
-                                        class="text-[#0c88a9] hover:text-[#104958] transition font-medium">Detail</a>
+                                        onclick="event.stopPropagation()"
+                                        class="text-[14px] font-medium text-[#146C94] hover:text-[#0f5878] transition">Detail</a>
                                 </td>
                             </tr>
                         @empty
@@ -120,10 +147,18 @@
                 </table>
             </div>
 
-            @if ($rows->hasPages())
-                <div class="border-t border-slate-100 px-6 py-4">
-                    <div class="flex justify-center">
-                        {{ $rows->links('vendor.pagination.custom') }}
+            @if ($rows->total() > 0)
+                <div class="border-t border-slate-100 px-6 pt-4 pb-6">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
+                        <p class="text-[12px] text-[#4B5563] sm:text-[13px]">
+                            Menampilkan {{ $rows->firstItem() }}-{{ $rows->lastItem() }} dari {{ $rows->total() }} tugas
+                        </p>
+                        <div class="flex justify-center">
+                            @if ($rows->hasPages())
+                                {{ $rows->links('vendor.pagination.custom') }}
+                            @endif
+                        </div>
+                        <div class="hidden sm:block" aria-hidden="true"></div>
                     </div>
                 </div>
             @endif
