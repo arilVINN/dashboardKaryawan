@@ -1,13 +1,69 @@
 <div>
+    @php
+        $indicator = fn(string $column) => $sort === $column ? ($dir === 'asc' ? '▲' : '▼') : '↕';
+    @endphp
+
+    <div class="mb-4 flex flex-wrap items-center gap-3">
+        <div class="relative min-w-0 flex-1">
+            <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input id="hrdPesanSearch" type="text" wire:model.live.debounce.300ms="search"
+                placeholder="Cari pengirim atau topik..."
+                class="h-10 w-full rounded-lg border border-slate-300 pl-9 pr-3 text-sm text-[#172B36] outline-none focus:border-[#146C94]">
+        </div>
+
+        <select id="hrdPesanTipe" wire:model.live="tipe"
+            class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-[#172B36] outline-none focus:border-[#146C94] sm:w-40">
+            <option value="">Semua tipe</option>
+            <option value="pesan">Pesan</option>
+            <option value="surat">Surat</option>
+        </select>
+
+        <select id="hrdPesanArah" wire:model.live="arah"
+            class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-[#172B36] outline-none focus:border-[#146C94] sm:w-40">
+            <option value="">Semua arah</option>
+            <option value="masuk">Masuk</option>
+            <option value="keluar">Keluar</option>
+        </select>
+
+        @if ($search !== '' || $tipe !== '' || $arah !== '')
+            <button type="button" wire:click="resetFilters"
+                class="h-10 shrink-0 text-sm font-medium text-[#146C94] hover:underline">
+                Reset
+            </button>
+        @endif
+    </div>
+
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                     <tr>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap">Judul Pesan</th>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap">Pengirim / Penerima</th>
+                        <th class="px-6 py-4 font-medium whitespace-nowrap">
+                            <button type="button" wire:click="sortBy('judul')"
+                                class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                Judul Pesan
+                                <span class="{{ $sort === 'judul' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('judul') }}</span>
+                            </button>
+                        </th>
+                        <th class="px-6 py-4 font-medium whitespace-nowrap">
+                            <button type="button" wire:click="sortBy('pengirim')"
+                                class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                Pengirim / Penerima
+                                <span class="{{ $sort === 'pengirim' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('pengirim') }}</span>
+                            </button>
+                        </th>
                         <th class="px-6 py-4 font-medium whitespace-nowrap">Jenis</th>
-                        <th class="px-6 py-4 font-medium whitespace-nowrap">Tanggal</th>
+                        <th class="px-6 py-4 font-medium whitespace-nowrap">
+                            <button type="button" wire:click="sortBy('tanggal')"
+                                class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                Tanggal
+                                <span class="{{ $sort === 'tanggal' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('tanggal') }}</span>
+                            </button>
+                        </th>
                         <th class="px-6 py-4 font-medium whitespace-nowrap text-center">Aksi</th>
                     </tr>
                 </thead>

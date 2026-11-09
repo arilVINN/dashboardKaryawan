@@ -66,6 +66,7 @@ class ProjectController extends Controller
             'nama_project' => $project->nama_project,
             'deskripsi' => $project->deskripsi,
             'status' => $project->status_efektif,
+            'approved_at' => $project->approved_at?->toIso8601String(),
             'tenggat' => $project->tenggat?->toIso8601String(),
             'file_url' => $project->file_path
                 ? Storage::disk('public')->url($project->file_path)
@@ -89,8 +90,15 @@ class ProjectController extends Controller
     public function submitTask(Request $request, string $id)
     {
         $task = ProjectTask::where('id_task', $id)
+            ->with('project')
             ->where('karyawan_id_karyawan', $request->user()->karyawan_id_karyawan)
             ->firstOrFail();
+
+        if ($task->project?->approved_at) {
+            return response()->json([
+                'message' => 'Project sudah di-ACC. Pengumpulan ulang tidak dapat dilakukan.',
+            ], 422);
+        }
 
         $validated = $request->validate([
             'file_hasil' => [

@@ -85,8 +85,8 @@
             };
             const statusBadge = `<span class="inline-flex rounded-full px-3 py-1.5 text-xs font-bold ${statusClasses[project.status] || statusClasses.baru}">${escapeProjectDetail(project.status || 'baru')}</span>`;
             const deadline = project.tenggat ? new Date(project.tenggat).toLocaleString('id-ID') : '-';
-            const deadlineClass = project.tenggat && new Date(project.tenggat) < new Date()
-                ? 'font-bold text-red-600'
+            const deadlineClass = !project.approved_at && project.tenggat && new Date(project.tenggat) < new Date()
+                ? 'font-bold'
                 : 'text-slate-500';
             const file = project.file_url
                 ? `<a href="${escapeProjectDetail(project.file_url)}" target="_blank" rel="noopener noreferrer" class="inline-block mt-3 text-sm font-medium text-[#146C94] hover:underline">${escapeProjectDetail(project.file_name || 'Lihat file project')}</a>`
@@ -104,12 +104,14 @@
                                ${submittedAt ? `<span class="text-xs text-slate-400">${escapeProjectDetail(submittedAt)}</span>` : ''}
                            </div>`
                         : '<span class="inline-flex w-fit items-center rounded-full border border-amber-500 bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700">Belum dikumpulkan</span>';
-                    const submitControl = task.milik_saya
+                    const submitControl = task.milik_saya && !project.approved_at
                         ? `<input type="file" class="hidden projectSubmissionInput" data-id="${taskId}" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip">
                            <button type="button" class="projectSubmissionButton inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-lg bg-[#146C94] px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-[#0f5878] focus:outline-none focus:ring-2 focus:ring-[#146C94] focus:ring-offset-2 disabled:cursor-wait disabled:opacity-60 transition" data-id="${taskId}">
                                ${task.file_hasil_url ? 'Kumpulkan ulang' : 'Kumpulkan'}
                            </button>
                            <span class="block text-xs text-red-600 mt-1" data-submit-error="${taskId}"></span>`
+                        : task.milik_saya && project.approved_at
+                            ? '<span class="text-xs font-medium text-slate-400">Project sudah di-ACC</span>'
                         : '<span class="text-xs text-slate-400">-</span>';
 
                     return `
