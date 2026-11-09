@@ -21,7 +21,7 @@
             <p class="mt-2 whitespace-pre-line text-sm text-slate-600">
                 {{ $project->deskripsi ?: 'Tidak ada deskripsi project.' }}</p>
             <p
-                class="mt-2 text-xs {{ $project->tenggat && $project->tenggat->isPast() ? 'font-bold text-red-600' : 'text-slate-500' }}">
+                class="mt-2 text-xs {{ !$project->approved_at && $project->tenggat && $project->tenggat->isPast() ? 'font-bold text-red-600' : 'text-slate-500' }}">
                 Tenggat: {{ $project->tenggat?->format('d/m/Y H:i') ?? '-' }}
             </p>
             @if ($project->approved_at)

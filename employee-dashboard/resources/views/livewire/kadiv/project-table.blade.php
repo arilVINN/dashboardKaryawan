@@ -63,7 +63,7 @@
                                         {{ $status }}
                                     </span>
                                 </td>
-                                <td class="px-5 py-4 text-center whitespace-nowrap text-xs {{ $project->tenggat && $project->tenggat->isPast() ? 'font-bold text-red-600' : 'text-slate-500' }}">
+                                <td class="px-5 py-4 text-center whitespace-nowrap text-xs {{ !$project->approved_at && $project->tenggat && $project->tenggat->isPast() ? 'font-bold text-red-600' : 'text-slate-500' }}">
                                     {{ $project->tenggat?->format('d/m/Y H:i') ?? '-' }}
                                 </td>
                                 <td class="px-5 py-4">

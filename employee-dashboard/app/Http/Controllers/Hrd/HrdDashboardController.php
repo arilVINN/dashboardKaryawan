@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Hrd;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\AuditLog;
 use App\Models\Karyawan;
 use App\Models\Divisi;
 use App\Models\Tugas;
@@ -156,6 +157,20 @@ class HrdDashboardController extends Controller
 
         $suratIzin->update(['status' => 'Disetujui']);
 
+        $suratIzin->loadMissing('karyawan.user');
+        AuditLog::catat(
+            auth()->id(),
+            'approve_surat_izin',
+            'surat_izin',
+            (string) $suratIzin->id_surat,
+            [
+                'karyawan_id' => $suratIzin->karyawan_id_karyawan,
+                'nama'        => $suratIzin->karyawan?->nama,
+                'jenis_izin'  => $suratIzin->jenis_izin,
+                'status'      => 'Disetujui',
+            ]
+        );
+
         return back()->with('success', 'Surat izin berhasil disetujui.');
     }
 
@@ -164,6 +179,20 @@ class HrdDashboardController extends Controller
         abort_unless($suratIzin->status === 'Pending', 409, 'Surat izin sudah diproses.');
 
         $suratIzin->update(['status' => 'Ditolak']);
+
+        $suratIzin->loadMissing('karyawan.user');
+        AuditLog::catat(
+            auth()->id(),
+            'reject_surat_izin',
+            'surat_izin',
+            (string) $suratIzin->id_surat,
+            [
+                'karyawan_id' => $suratIzin->karyawan_id_karyawan,
+                'nama'        => $suratIzin->karyawan?->nama,
+                'jenis_izin'  => $suratIzin->jenis_izin,
+                'status'      => 'Ditolak',
+            ]
+        );
 
         return back()->with('success', 'Surat izin berhasil ditolak.');
     }
