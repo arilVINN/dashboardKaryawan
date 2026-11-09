@@ -62,7 +62,12 @@
                     class="w-full px-4 py-2.5 border border-slate-300 rounded-full text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0097B2] focus:border-transparent transition">
             </div>
 
-            <p id="login-error" class="text-xs text-red-500 text-center hidden"></p>
+            @php
+                $initialLoginError = session('error') ?? session('forbidden') ?? $errors->first();
+            @endphp
+            <p id="login-error" class="text-xs text-red-500 text-center {{ $initialLoginError ? '' : 'hidden' }}">
+                {{ $initialLoginError }}
+            </p>
 
             <div class="pt-4 flex justify-center">
                 <button type="submit" id="btn-login"

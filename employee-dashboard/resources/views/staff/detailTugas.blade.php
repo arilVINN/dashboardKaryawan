@@ -217,7 +217,7 @@
             badge.style.color = palette.text;
         }
 
-        function renderMeta(tugas, lastSubmit) {
+        function renderMeta(tugas) {
             const meta = document.getElementById('tugas-meta');
             const deadline = parseDate(tugas.deadline);
 
@@ -234,16 +234,8 @@
             const relative = document.getElementById('tugas-relative');
 
             let relativeText = '';
-            let overdue = Boolean(tugas.is_terlambat);
 
-            if (overdue) {
-                const submittedAt = isSubmitted && lastSubmit
-                    ? parseDate(lastSubmit.tanggal_submit || lastSubmit.created_at)
-                    : null;
-                const reference = submittedAt || new Date();
-                const days = Math.max(1, Math.ceil((reference.getTime() - deadline.getTime()) / 86400000));
-                relativeText = 'Terlambat ' + days + ' hari';
-            } else if (deadline.getTime() > Date.now()) {
+            if (!isSubmitted && !tugas.is_terlambat && deadline.getTime() > Date.now()) {
                 const days = Math.max(1, Math.ceil((deadline.getTime() - Date.now()) / 86400000));
                 relativeText = days + ' hari lagi';
             }
@@ -253,7 +245,7 @@
                 (showTime ? ', ' + hours + ':' + minutes : '') +
                 (relativeText ? ' · ' : '');
             relative.textContent = relativeText;
-            relative.className = overdue ? 'font-medium text-[#B91C1C]' : '';
+            relative.className = '';
 
             meta.classList.remove('hidden');
         }
@@ -290,7 +282,7 @@
                 document.getElementById('tugas-judul').textContent = t.judul_tugas || '-';
                 document.getElementById('breadcrumb-tugas').textContent = t.judul_tugas || 'Detail Tugas';
                 renderStatusBadge(t.status_efektif || t.status);
-                renderMeta(t, lastSubmit);
+                renderMeta(t);
                 renderDescription(t);
 
                 // File pendukung dari Kadiv

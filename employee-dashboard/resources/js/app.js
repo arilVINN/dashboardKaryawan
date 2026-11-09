@@ -9,7 +9,6 @@ function handleUnauthorizedSession() {
     isRedirectingToLogin = true;
     sessionStorage.removeItem('staff_token');
     localStorage.removeItem('staff_token');
-    alert('Sesi Anda telah habis. Silakan login kembali.');
     window.location.href = '/login';
 }
 
@@ -18,11 +17,25 @@ window.handleUnauthorizedSession = handleUnauthorizedSession;
 const originalFetch = window.fetch;
 window.fetch = async function() {
     const response = await originalFetch.apply(this, arguments);
-    if (response.status === 401) {
+    if (response.status === 401 || response.status === 419) {
         handleUnauthorizedSession();
     }
     return response;
 };
+
+// Tangani sesi kedaluwarsa (419 / 401) pada komponen Livewire secara otomatis
+document.addEventListener('livewire:init', () => {
+    if (window.Livewire) {
+        window.Livewire.hook('request', ({ fail }) => {
+            fail(({ status, preventDefault }) => {
+                if (status === 419 || status === 401) {
+                    if (typeof preventDefault === 'function') preventDefault();
+                    handleUnauthorizedSession();
+                }
+            });
+        });
+    }
+});
 
 // Shared modal toggle for [data-modal-open] / [data-modal-close].
 (function () {
