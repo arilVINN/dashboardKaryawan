@@ -41,7 +41,18 @@
     @endif
 
     <div class="flex justify-between items-center">
-        <h2 class="text-xl font-bold text-slate-800">Daftar Divisi</h2>
+        @if ($manage)
+            <h2 class="text-xl font-bold text-slate-800">Daftar Divisi</h2>
+        @else
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2.5">
+                <span class="shrink-0 rounded-lg bg-[#E3F1F7] p-1.5 text-[#146C94]">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M4 18h16M6 18v-7m4 7v-7m4 7v-7m4 7v-7M2 10l10-6 10 6"></path>
+                    </svg>
+                </span>
+                <span>Daftar Divisi</span>
+            </h2>
+        @endif
         @if ($manage)
             <button type="button" onclick="bukaModalDivisi()"
                 class="text-sm px-4 py-2 bg-[#0097B2] text-white rounded-lg font-medium hover:bg-[#008199] transition flex items-center gap-1.5">
@@ -54,7 +65,7 @@
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
+                <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                     <tr>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
                             <button type="button" wire:click="sortBy('kode')" class="inline-flex items-center gap-1 hover:text-[#004A65]">

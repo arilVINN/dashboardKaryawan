@@ -24,7 +24,7 @@
             ])
 
             <div>
-                <h1 class="text-2xl font-bold text-slate-800">Analitik Karyawan</h1>
+                <x-page-heading title="Analitik Karyawan" icon="analytics" />
                 <p class="text-sm text-gray-500 mt-1">Ringkasan data karyawan di seluruh divisi</p>
             </div>
 
@@ -115,15 +115,14 @@
                         {{-- Tabel Rincian Anggota Divisi --}}
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr
-                                        class="text-slate-500 text-xs uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">
-                                        <th class="px-5 py-2.5">Nama Karyawan</th>
-                                        <th class="px-5 py-2.5">Jabatan</th>
-                                        <th class="px-5 py-2.5">Gender</th>
-                                        <th class="px-5 py-2.5">Pendidikan</th>
-                                        <th class="px-5 py-2.5">Job Level</th>
-                                        <th class="px-5 py-2.5">Status Karyawan</th>
+                                <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
+                                    <tr class="border-b border-[#EEF2F5]">
+                                        <th class="px-5 py-2.5 font-medium">Nama Karyawan</th>
+                                        <th class="px-5 py-2.5 font-medium">Jabatan</th>
+                                        <th class="px-5 py-2.5 font-medium">Gender</th>
+                                        <th class="px-5 py-2.5 font-medium">Pendidikan</th>
+                                        <th class="px-5 py-2.5 font-medium">Job Level</th>
+                                        <th class="px-5 py-2.5 font-medium">Status Karyawan</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100 text-sm text-slate-700">

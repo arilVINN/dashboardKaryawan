@@ -15,7 +15,7 @@
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full mt-2">
         <div class="{{ $isCompact ? 'overflow-hidden' : 'overflow-x-auto' }}">
             <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-slate-100 text-slate-500 uppercase text-xs">
+                <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                     <tr>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">ID Karyawan</th>
                         <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Nama Karyawan</th>

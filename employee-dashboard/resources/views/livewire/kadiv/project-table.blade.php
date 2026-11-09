@@ -1,6 +1,13 @@
 <div class="flex flex-col gap-3 w-full mt-6">
     <div>
-        <h2 class="text-xl font-bold text-slate-800">Daftar Project</h2>
+        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5">
+            <span class="shrink-0 rounded-lg bg-[#E3F1F7] p-1.5 text-[#146C94]">
+                <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.25v-6.75a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v6.75m16.5 0v2.625a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-2.625m16.5 0H3.75"></path>
+                </svg>
+            </span>
+            <span>Daftar Project</span>
+        </h2>
     </div>
 
     @if (session('tugas_success'))
@@ -22,15 +29,15 @@
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[850px] text-left text-sm text-slate-600">
-                    <thead class="bg-slate-100 text-xs uppercase tracking-wide text-slate-500">
+                    <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                         <tr>
-                            <th class="px-5 py-4 font-semibold">Nama Project</th>
-                            <th class="px-5 py-4 font-semibold text-center">Status</th>
-                            <th class="px-5 py-4 font-semibold text-center whitespace-nowrap">Tenggat</th>
-                            <th class="px-5 py-4 font-semibold">Progress</th>
-                            <th class="px-5 py-4 font-semibold text-center">Task Selesai</th>
-                            <th class="px-5 py-4 font-semibold text-center">File Terkumpul</th>
-                            <th class="px-5 py-4 font-semibold text-center">Aksi</th>
+                            <th class="px-5 py-4 font-medium">Nama Project</th>
+                            <th class="px-5 py-4 font-medium text-center">Status</th>
+                            <th class="px-5 py-4 font-medium text-center whitespace-nowrap">Tenggat</th>
+                            <th class="px-5 py-4 font-medium">Progress</th>
+                            <th class="px-5 py-4 font-medium text-center">Task Selesai</th>
+                            <th class="px-5 py-4 font-medium text-center">File Terkumpul</th>
+                            <th class="px-5 py-4 font-medium text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200">

@@ -8,6 +8,7 @@ use App\Models\Tugas;
 use App\Models\Karyawan;
 use App\Models\Notifikasi;
 use App\Queries\KadivTugasQuery;
+use App\Support\FileMetadata;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -50,6 +51,12 @@ class KadivTaskController extends Controller
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar divisi Anda.'], 404);
         }
 
+        $task->submitTugas->each(function ($submission) {
+            $submission->setAttribute('file_hasil_size', FileMetadata::size($submission->file_hasil));
+            $submission->setAttribute('file_revisi_size', FileMetadata::size($submission->file_revisi));
+        });
+        $task->setAttribute('file_pendukung_size', FileMetadata::size($task->file_pendukung));
+
         return response()->json([
             'data' => $task,
         ]);
@@ -88,8 +95,11 @@ class KadivTaskController extends Controller
         $newId = Tugas::nextId();
 
         $filePath = null;
+        $fileName = null;
         if ($request->hasFile('file_pendukung')) {
-            $filePath = $request->file('file_pendukung')->store('tugas_pendukung', 'public');
+            $uploadedFile = $request->file('file_pendukung');
+            $filePath = $uploadedFile->store('tugas_pendukung', 'public');
+            $fileName = $uploadedFile->getClientOriginalName();
         }
 
         $tugas = Tugas::create([
@@ -98,6 +108,7 @@ class KadivTaskController extends Controller
             'judul_tugas' => $request->judul_tugas,
             'deskripsi' => $request->deskripsi,
             'file_pendukung' => $filePath,
+            'file_pendukung_name' => $fileName,
             'link_pendukung' => $request->link_pendukung,
             'deadline' => \Illuminate\Support\Carbon::parse($request->deadline)->format('Y-m-d H:i:s'),
             'progress' => '0',
@@ -151,8 +162,11 @@ class KadivTaskController extends Controller
         }
 
         $filePath = $tugas->file_pendukung;
+        $fileName = $tugas->file_pendukung_name;
         if ($request->hasFile('file_pendukung')) {
-            $filePath = $request->file('file_pendukung')->store('tugas_pendukung', 'public');
+            $uploadedFile = $request->file('file_pendukung');
+            $filePath = $uploadedFile->store('tugas_pendukung', 'public');
+            $fileName = $uploadedFile->getClientOriginalName();
         }
 
         $tugas->update([
@@ -160,6 +174,7 @@ class KadivTaskController extends Controller
             'judul_tugas' => $request->judul_tugas ?? $tugas->judul_tugas,
             'deskripsi' => $request->deskripsi ?? $tugas->deskripsi,
             'file_pendukung' => $filePath,
+            'file_pendukung_name' => $fileName,
             'link_pendukung' => $request->link_pendukung ?? $tugas->link_pendukung,
             'deadline' => $request->filled('deadline')
                 ? \Illuminate\Support\Carbon::parse($request->deadline)->format('Y-m-d H:i:s')
@@ -225,6 +240,16 @@ class KadivTaskController extends Controller
             'catatan_revisi' => 'required_if:status_review,revisi|nullable|string|max:10000',
             'deadline' => ['required_if:status_review,revisi', 'nullable', 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s,Y-m-d H:i:s'],
             'file_revisi' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip',
+        ], [
+            'status_review.required' => 'Pilih tindakan review (acc atau revisi).',
+            'status_review.in' => 'Tindakan review tidak valid.',
+            'catatan_revisi.required_if' => 'Catatan revisi wajib diisi saat meminta revisi.',
+            'catatan_revisi.max' => 'Catatan revisi maksimal 10.000 karakter.',
+            'deadline.required_if' => 'Tenggat revisi wajib ditentukan.',
+            'deadline.date_format' => 'Format tenggat revisi tidak valid.',
+            'file_revisi.file' => 'Lampiran revisi tidak valid atau gagal diunggah.',
+            'file_revisi.max' => 'Ukuran lampiran revisi maksimal 200 MB.',
+            'file_revisi.mimes' => 'Format lampiran harus PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG, atau ZIP.',
         ]);
 
         $latestSubmit = $tugas->submitTugas->first();
@@ -236,18 +261,22 @@ class KadivTaskController extends Controller
         }
 
         $filePath = null;
+        $fileName = null;
         if ($request->hasFile('file_revisi')) {
-            $filePath = $request->file('file_revisi')->store('revisi', 'public');
+            $uploadedFile = $request->file('file_revisi');
+            $filePath = $uploadedFile->store('revisi', 'public');
+            $fileName = $uploadedFile->getClientOriginalName();
         }
 
         try {
-            DB::transaction(function () use ($latestSubmit, $tugas, $validated, $filePath): void {
+            DB::transaction(function () use ($latestSubmit, $tugas, $validated, $filePath, $fileName): void {
                 $latestSubmit->update([
                     'status_review' => $validated['status_review'],
                     'catatan_revisi' => $validated['status_review'] === 'revisi'
                         ? trim($validated['catatan_revisi'])
                         : $latestSubmit->catatan_revisi,
                     'file_revisi' => $filePath ?? $latestSubmit->file_revisi,
+                    'file_revisi_name' => $filePath ? $fileName : $latestSubmit->file_revisi_name,
                     'deadline_revisi' => $validated['status_review'] === 'revisi'
                         ? \Illuminate\Support\Carbon::parse($validated['deadline'])->format('Y-m-d H:i:s')
                         : $latestSubmit->deadline_revisi,
@@ -268,6 +297,7 @@ class KadivTaskController extends Controller
                         'judul_notifikasi' => 'Revisi Tugas',
                         'isi_notif' => 'Tugas "'.$tugas->judul_tugas.'" mendapat revisi baru: '
                             .trim($validated['catatan_revisi']),
+                        'tugas_id_tugas' => $tugas->id_tugas,
                         'tanggal_notifikasi' => now()->toDateString(),
                         'user_id_user' => $tugas->karyawan->user->id_user,
                     ]);

@@ -87,18 +87,24 @@ class PagePolishTest extends TestCase
     public function test_h1_icon_badges_use_section_colors(): void
     {
         $badges = [
-            [$this->staff, '/tugas', 'bg-blue-100'],
-            [$this->staff, '/pesan', 'bg-green-100'],
-            [$this->hrd, '/hrd/daftarKaryawan', 'bg-cyan-100'],
-            [$this->hrd, '/hrd/manajemenDivisi', 'bg-violet-100'],
-            [$this->kadiv, '/kadiv/manajemenStaff', 'bg-teal-100'],
+            [$this->staff, '/tugas', 'bg-[#E3F1F7]'],
+            [$this->staff, '/pesan', 'bg-[#E3F1F7]'],
+            [$this->hrd, '/hrd/daftarKaryawan', 'bg-[#E3F1F7]'],
+            [$this->hrd, '/hrd/manajemenDivisi', 'bg-[#E3F1F7]'],
+            [$this->kadiv, '/kadiv/manajemenStaff', 'bg-[#E3F1F7]'],
         ];
 
         foreach ($badges as [$user, $url, $badge]) {
+            $html = $this->getPage($user, $url);
             $this->assertStringContainsString(
                 $badge,
-                $this->getPage($user, $url),
+                $html,
                 "Badge {$badge} missing on {$url}"
+            );
+            $this->assertStringContainsString(
+                'text-[#146C94]',
+                $html,
+                "Navbar palette text color missing on {$url}"
             );
         }
     }
@@ -108,7 +114,7 @@ class PagePolishTest extends TestCase
         return $this->actingAs($user)->get($url)->assertOk()->getContent();
     }
 
-    private function assertRowHeading(string $html, string $parent, string $current, string $title, string $rowHeading, string $rowHeadingClass = 'text-xl font-bold text-slate-800'): void
+    private function assertRowHeading(string $html, string $parent, string $current, string $title, string $rowHeading, string $rowHeadingClass = 'text-xl font-bold text-slate-800', bool $expectIcon = false): void
     {
         $this->assertStringContainsString('data-breadcrumb-parent="'.$parent.'"', $html);
         $this->assertStringContainsString('data-breadcrumb-current="'.$current.'"', $html);
@@ -116,7 +122,14 @@ class PagePolishTest extends TestCase
         // No page-level h1: the button-row h2 below owns the visible heading.
         // (The sidebar brand mark is an h1 too, so pin the heading scale.)
         $this->assertStringNotContainsString('<h1 class="text-2xl', $html);
-        $this->assertStringContainsString('<h2 class="'.$rowHeadingClass.'">'.$rowHeading.'</h2>', $html);
+
+        if ($expectIcon) {
+            $pattern = '/<h2[^>]*class="'.preg_quote($rowHeadingClass, '/').'[^"]*"[^>]*>.*?<svg\b.*?<\/h2>/s';
+            $this->assertMatchesRegularExpression($pattern, $html, "No icon in row heading '{$rowHeading}'");
+            $this->assertStringContainsString($rowHeading, $html);
+        } else {
+            $this->assertStringContainsString('<h2 class="'.$rowHeadingClass.'">'.$rowHeading.'</h2>', $html);
+        }
     }
 
     private function assertTwoLevelHeading(string $html, string $parent, string $current, string $title, string $pageHeading, string $rowHeading): void
@@ -179,7 +192,7 @@ class PagePolishTest extends TestCase
     {
         $this->assertRowHeading(
             $this->getPage($this->kadiv, '/kadiv/tugas'),
-            'Dashboard', 'Daftar Tugas', 'Daftar Tugas - PT Silindo', 'Daftar Tugas'
+            'Dashboard', 'Daftar Tugas', 'Daftar Tugas - PT Silindo', 'Daftar Tugas', 'text-2xl font-bold text-slate-800', true
         );
     }
 
@@ -196,9 +209,9 @@ class PagePolishTest extends TestCase
 
     public function test_kadiv_manajemen_staff_page_polish(): void
     {
-        $this->assertTwoLevelHeading(
+        $this->assertPagePolish(
             $this->getPage($this->kadiv, '/kadiv/manajemenStaff'),
-            'Dashboard', 'Manajemen Staff', 'Manajemen Staff - PT Silindo', 'Manajemen Staff', 'Daftar Staff'
+            'Dashboard', 'Manajemen Staff', 'Manajemen Staff - PT Silindo', 'Manajemen Staff'
         );
     }
 
@@ -230,7 +243,7 @@ class PagePolishTest extends TestCase
     {
         $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/daftarDivisi'),
-            'Dashboard', 'Daftar Divisi', 'Daftar Divisi - PT Silindo', 'Daftar Divisi'
+            'Dashboard', 'Daftar Divisi', 'Daftar Divisi - PT Silindo', 'Daftar Divisi', 'text-xl font-bold text-slate-800', true
         );
     }
 
@@ -238,7 +251,7 @@ class PagePolishTest extends TestCase
     {
         $this->assertRowHeading(
             $this->getPage($this->hrd, '/hrd/daftarPesan'),
-            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan', 'text-lg font-semibold text-[#172B36]'
+            'Dashboard', 'Daftar Pesan', 'Daftar Pesan - PT Silindo', 'Daftar Pesan', 'text-lg font-semibold text-[#172B36]', true
         );
     }
 
@@ -279,10 +292,7 @@ class PagePolishTest extends TestCase
         $html = $this->getPage($this->hrd, '/hrd/pesan');
 
         $this->assertSame(1, substr_count($html, 'Pusat Pesan & Komunikasi'));
-        $this->assertStringContainsString(
-            '<h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5"><span class="p-2 rounded-lg bg-green-100 text-green-600">',
-            $html
-        );
+        $this->assertStringContainsString('bg-[#E3F1F7] text-[#146C94]', $html);
     }
 
     public function test_dashboard_compact_tables_keep_labels(): void

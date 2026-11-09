@@ -438,7 +438,7 @@ class KadivApiTest extends TestCase
             ->assertSee('id="topbar-inisial"', false)
             ->assertSee('id="btn-logout-topbar"', false)
             ->assertSee(route('kadiv.profile'))
-            ->assertSee('Nama Staff')
+            ->assertSee('Nama staff')
             ->assertSee('id="kadiv-staff-rows"', false);
     }
 

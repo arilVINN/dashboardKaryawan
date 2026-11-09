@@ -34,30 +34,30 @@
     <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
         <div class="overflow-x-auto">
             <table class="w-full min-w-[720px] table-fixed text-left text-sm text-[#475569]">
-                <thead class="bg-slate-100">
+                <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                     <tr>
-                        <th class="w-[45%] px-4 py-3 text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap">
+                        <th class="w-[45%] px-4 py-3 text-left font-medium whitespace-nowrap">
                             <button type="button" wire:click="sortBy('judul')"
                                 class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Topik / judul
                                 <span class="{{ $sort === 'judul' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('judul') }}</span>
                             </button>
                         </th>
-                        <th class="w-[28%] px-4 py-3 text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap">
+                        <th class="w-[28%] px-4 py-3 text-left font-medium whitespace-nowrap">
                             <button type="button" wire:click="sortBy('pengirim')"
                                 class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Pengirim
                                 <span class="{{ $sort === 'pengirim' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('pengirim') }}</span>
                             </button>
                         </th>
-                        <th class="w-[18%] px-4 py-3 text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap">
+                        <th class="w-[18%] px-4 py-3 text-left font-medium whitespace-nowrap">
                             <button type="button" wire:click="sortBy('tanggal')"
                                 class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Tanggal
                                 <span class="{{ $sort === 'tanggal' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('tanggal') }}</span>
                             </button>
                         </th>
-                        <th class="w-20 px-4 py-3 text-right text-[13px] font-semibold text-slate-500 whitespace-nowrap">Aksi</th>
+                        <th class="w-20 px-4 py-3 text-right font-medium whitespace-nowrap">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-[#EEF2F5]">

@@ -101,6 +101,24 @@ class TugasTableTest extends TestCase
         $this->assertSame(2, Tugas::where('judul_tugas', 'Bulk')->count());
     }
 
+    public function test_filters_restore_when_returning_from_task_detail(): void
+    {
+        session([
+            'kadiv.tugas.filters' => [
+                'search' => 'Alpha',
+                'status' => '',
+                'staff' => '',
+            ],
+        ]);
+
+        $this->actingAs($this->kadiv)
+            ->withHeader('referer', url('/kadiv/detailTugas/T-1'))
+            ->get('/kadiv/tugas')
+            ->assertOk()
+            ->assertSee('Alpha')
+            ->assertDontSee('Gamma');
+    }
+
     public function test_non_kadiv_is_forbidden(): void
     {
         Livewire::actingAs($this->staff)->test(TugasTable::class)->assertForbidden();

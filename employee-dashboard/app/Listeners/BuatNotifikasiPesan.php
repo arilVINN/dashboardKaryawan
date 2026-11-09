@@ -29,6 +29,8 @@ class BuatNotifikasiPesan
                 'id_notifikasi' => $this->generateNotifikasiId(),
                 'judul_notifikasi' => ucfirst($pesan->tipe ?? 'pesan').' Baru',
                 'isi_notif' => $pesan->judul_pesan,
+                'tugas_id_tugas' => $pesan->tugas_id_tugas,
+                'pesan_id_pesan' => $pesan->id_pesan,
                 'tanggal_notifikasi' => now()->toDateString(),
                 'user_id_user' => $pesan->penerima_id_user,
             ]);
@@ -58,6 +60,7 @@ class BuatNotifikasiPesan
             'id_notifikasi' => $this->generateNotifikasiId(),
             'judul_notifikasi' => 'Pesan Baru',
             'isi_notif' => $tugas->judul_tugas,
+            'tugas_id_tugas' => $tugas->id_tugas,
             'tanggal_notifikasi' => now()->toDateString(),
             'user_id_user' => $penerima->id_user,
         ]);

@@ -36,7 +36,7 @@
     {{-- Header Judul --}}
     <div class="mb-2 flex items-center justify-between gap-3">
         <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5">
-            <span class="p-2 rounded-lg bg-blue-100 text-[#004A65]">
+            <span class="p-2 rounded-lg bg-[#E3F1F7] text-[#146C94]">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
@@ -129,22 +129,22 @@
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
-                <thead class="bg-slate-100">
+                <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                     <tr>
-                        <th class="{{ $headPadding }} text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap min-w-[16rem]">
+                        <th class="{{ $headPadding }} text-left font-medium whitespace-nowrap min-w-[16rem]">
                             <button type="button" wire:click="sortBy('nama')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Nama <span class="{{ $sort === 'nama' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('nama') }}</span>
                             </button>
                         </th>
-                        <th class="{{ $headPadding }} text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap w-36">
+                        <th class="{{ $headPadding }} text-left font-medium whitespace-nowrap w-36">
                             <button type="button" wire:click="sortBy('jenis')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Jenis <span class="{{ $sort === 'jenis' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('jenis') }}</span>
                             </button>
                         </th>
-                        <th class="{{ $headPadding }} text-left text-[13px] font-semibold text-slate-500 whitespace-nowrap min-w-[16rem]">
+                        <th class="{{ $headPadding }} text-left font-medium whitespace-nowrap min-w-[16rem]">
                             Detail / Nilai
                         </th>
-                        <th class="{{ $headPadding }} text-right text-[13px] font-semibold text-slate-500 whitespace-nowrap w-48">
+                        <th class="{{ $headPadding }} text-right font-medium whitespace-nowrap w-48">
                             Aksi
                         </th>
                     </tr>

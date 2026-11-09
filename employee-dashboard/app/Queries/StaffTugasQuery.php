@@ -46,6 +46,9 @@ class StaffTugasQuery
             case 'status':
                 $query->orderBy('status', $dir);
                 break;
+            case 'terbaru':
+                $query->orderByDesc('created_at');
+                break;
             default:
                 $query->orderBy('tanggal_update', 'desc')->orderBy('tanggal_dibuat', 'desc');
         }

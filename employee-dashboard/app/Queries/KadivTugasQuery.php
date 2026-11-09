@@ -50,8 +50,30 @@ class KadivTugasQuery
             case 'tanggal':
                 $query->orderBy('deadline', $dir);
                 break;
+            case 'terbaru':
+                $query->orderByDesc('created_at')->orderByDesc('id_tugas');
+                break;
             default:
-                $query->orderBy('tanggal_dibuat', 'desc');
+                // Default: waiting for approval first, then new/in-progress,
+                // then approved. Each group uses the nearest deadline.
+                $query->orderByRaw(
+                    'CASE
+                        WHEN status = ? THEN 0
+                        WHEN status IN (?, ?) THEN 1
+                        WHEN status = ? THEN 2
+                        ELSE 3
+                    END',
+                    [
+                        Tugas::STATUS_MENUNGGU_ACC,
+                        Tugas::STATUS_BARU,
+                        Tugas::STATUS_BERJALAN,
+                        Tugas::STATUS_SUDAH_ACC,
+                    ]
+                )
+                    ->orderByRaw('CASE WHEN deadline IS NULL THEN 1 ELSE 0 END')
+                    ->orderBy('deadline', 'asc')
+                    ->orderBy('tanggal_dibuat', 'desc')
+                    ->orderBy('id_tugas', 'asc');
         }
 
         return $query;

@@ -17,7 +17,7 @@
         @include('component.topbar')
 
         <main class="flex-1 overflow-y-auto px-10 py-8">
-            @include('component.breadcrumbs', ['parentText' => 'Pesan', 'parentUrl' => url('/pesan'), 'currentPage' => 'Detail Pesan', 'inline' => true])
+            @include('component.breadcrumbs', ['parentText' => 'Daftar Pesan', 'parentUrl' => url('/pesan'), 'currentPage' => 'Detail Pesan', 'inline' => true])
             <h1 class="text-2xl font-bold text-slate-900 mb-6">Pesan</h1>
 
             <!-- Detail Pesan -->
@@ -168,6 +168,9 @@
                         btnToggleBalas.classList.add('hidden');
                     }
                 }
+
+                const crumb = document.querySelector('[data-breadcrumb-current]');
+                if (crumb) crumb.textContent = document.getElementById('pesan-judul').textContent;
 
                 renderAttachments(document.getElementById('pesan-lampiran'), pesanUtama?.lampiran);
 

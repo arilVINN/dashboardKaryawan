@@ -21,16 +21,7 @@
                 'currentPage' => 'Manajemen Karyawan',
                 'inline' => true,
             ])
-            <h1 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2.5">
-                <span class="p-2 rounded-lg bg-blue-100 p-1.5 rounded text-blue-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z">
-                        </path>
-                    </svg>
-                </span>
-                <span>Manajemen Karyawan</span>
-            </h1>
+            <x-page-heading title="Manajemen Karyawan" icon="staff" class="mb-6" />
             <livewire:hrd.karyawan-table />
             @include('component_hrd.karyawanModals', ['daftarDivisi' => $daftarDivisi])
 

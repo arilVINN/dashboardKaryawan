@@ -76,6 +76,15 @@
                 };
             }
 
+            if (lower.includes('pengumpulan') || lower.includes('dikumpulkan') || lower.includes('submit')) {
+                return {
+                    title: 'Pengumpulan tugas',
+                    iconClass: 'bg-[#E3F1F7] text-[#146C94]',
+                    linkUrl: '/kadiv/tugas',
+                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />`
+                };
+            }
+
             if (lower.includes('tugas')) {
                 return {
                     title: 'Tugas baru',
@@ -93,6 +102,18 @@
             };
         };
 
+        const notificationUrl = (notification, fallback) => {
+            if (notification.pesan_id_pesan) {
+                return '/kadiv/detailPesan/' + encodeURIComponent(notification.pesan_id_pesan);
+            }
+
+            if (notification.tugas_id_tugas) {
+                return '/kadiv/detailTugas/' + encodeURIComponent(notification.tugas_id_tugas);
+            }
+
+            return fallback;
+        };
+
         const render = (notifications) => {
             container.replaceChildren();
 
@@ -107,7 +128,7 @@
                 const isUnread = !readNotifications.has(readKey);
 
                 const row = document.createElement('a');
-                row.href = config.linkUrl;
+                row.href = notificationUrl(notification, config.linkUrl);
                 row.className = 'flex items-start gap-3 px-4 py-3 transition hover:bg-[#F5FAFC] focus:bg-[#F5FAFC] focus:outline-none';
                 row.innerHTML = `
                     <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${config.iconClass}">
@@ -137,11 +158,15 @@
             });
         };
 
-        window.fetchKadivDashboardData?.()
-            .then((dashboardData) => render(dashboardData?.notifikasi_terbaru || []))
-            .catch((error) => {
-                console.error('Gagal memuat notifikasi Kadiv:', error);
-                render([]);
-            });
+        const loadNotifications = () => {
+            window.fetchKadivDashboardData?.()
+                .then((dashboardData) => render(dashboardData?.notifikasi_terbaru || []))
+                .catch((error) => {
+                    console.error('Gagal memuat notifikasi Kadiv:', error);
+                });
+        };
+
+        loadNotifications();
+        window.setInterval(loadNotifications, 10000);
     });
 </script>
