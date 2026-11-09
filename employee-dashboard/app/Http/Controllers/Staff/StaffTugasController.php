@@ -3,20 +3,28 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Notifikasi;
 use App\Models\SubmitTugas;
 use App\Models\Tugas;
 use App\Models\User2;
 use App\Queries\StaffTugasQuery;
 <<<<<<< HEAD
+<<<<<<< HEAD
 use App\Support\FileMetadata;
 use Illuminate\Support\Facades\Log;
 =======
+=======
+use App\Support\FileMetadata;
+use Illuminate\Http\Request;
+>>>>>>> 836b8f440990db1100aa6dd63c29b9441194226d
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
+<<<<<<< HEAD
 >>>>>>> 91a7df3ef54465de22a30f7c1b4fe653111049a2
+=======
+>>>>>>> 836b8f440990db1100aa6dd63c29b9441194226d
 
 class StaffTugasController extends Controller
 {
@@ -136,51 +144,52 @@ class StaffTugasController extends Controller
         $fileOriginalName = null;
         if ($request->hasFile('file_hasil')) {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 836b8f440990db1100aa6dd63c29b9441194226d
             $uploadedFile = $request->file('file_hasil');
             $filePath = $uploadedFile->store('submissions', 'public');
 
             if (! $filePath) {
-                return response()->json([
-                    'message' => 'File hasil gagal disimpan. Silakan coba lagi.',
-                    'errors' => ['file_hasil' => ['File hasil gagal disimpan. Silakan coba lagi.']],
-                ], 422);
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'file_hasil' => 'File gagal disimpan. Silakan coba lagi.',
+                ]);
             }
 
             $fileOriginalName = $uploadedFile->getClientOriginalName();
         }
 
-        $attributes = [
-            'tugas_id_tugas' => $tugas->id_tugas,
-            'tugas_karyawan_id_karyawan' => $karyawanId,
-            'file_hasil' => $filePath,
-            'file_hasil_name' => $fileOriginalName,
-            'link_submit' => $validated['link_submit'] ?? '-', // Cegah error NOT NULL
-            'catatan_karyawan' => isset($validated['catatan_karyawan']) ? strip_tags($validated['catatan_karyawan']) : '-', // Cegah error NOT NULL
-            'catatan_revisi' => '-', // Pasti '-' saat pertama submit
-            'tanggal_submit' => now(),
-            'status_review' => 'submitted',
-        ];
+        try {
+            DB::transaction(function () use ($tugas, $karyawanId, $filePath, $fileOriginalName, $validated, $progress): void {
+                SubmitTugas::create([
+                    'id_submit_tugas' => SubmitTugas::nextId(),
+                    'tugas_id_tugas' => $tugas->id_tugas,
+                    'tugas_karyawan_id_karyawan' => $karyawanId,
+                    'file_hasil' => $filePath,
+                    'file_hasil_name' => $fileOriginalName,
+                    'link_submit' => $validated['link_submit'] ?? '-',
+                    'catatan_karyawan' => isset($validated['catatan_karyawan'])
+                        ? strip_tags($validated['catatan_karyawan'])
+                        : '-',
+                    'catatan_revisi' => '-',
+                    'tanggal_submit' => now(),
+                    'status_review' => 'submitted',
+                ]);
 
-        // Retry once or twice if two submissions race for the same ID.
-        $attempts = 0;
-        while (true) {
-            try {
-                SubmitTugas::create(['id_submit_tugas' => SubmitTugas::nextId()] + $attributes);
-                break;
-            } catch (\Illuminate\Database\QueryException $exception) {
-                $isDuplicate = in_array((string) $exception->getCode(), ['23505', '23000'], true);
-                if (! $isDuplicate || ++$attempts >= 3) {
-                    throw $exception;
-                }
+                $tugas->update([
+                    'progress' => $progress,
+                    'status' => $progress == 100
+                        ? Tugas::STATUS_MENUNGGU_ACC
+                        : $tugas->status,
+                ]);
+            });
+        } catch (Throwable $exception) {
+            if ($filePath !== '-') {
+                Storage::disk('public')->delete($filePath);
             }
-        }
-        $tugas->update([
-            'progress' => $progress,
-            'status' => $progress == 100
-                ? Tugas::STATUS_MENUNGGU_ACC
-                : $tugas->status,
 
-        ]);
+            throw $exception;
+        }
 
         try {
             $this->notifyKadivOnSubmission($tugas, $request->user(), $isRevisionSubmission);
@@ -236,6 +245,7 @@ class StaffTugasController extends Controller
         } while (Notifikasi::where('id_notifikasi', $id)->exists());
 
         return $id;
+<<<<<<< HEAD
 =======
             $filePath = $request->file('file_hasil')->store('submissions', 'public');
 
@@ -294,3 +304,7 @@ class StaffTugasController extends Controller
 >>>>>>> 91a7df3ef54465de22a30f7c1b4fe653111049a2
     }
 }
+=======
+    }
+}
+>>>>>>> 836b8f440990db1100aa6dd63c29b9441194226d

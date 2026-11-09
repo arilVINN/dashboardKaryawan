@@ -135,7 +135,7 @@ class KadivApiTest extends TestCase
             ->assertJsonPath('meta.total', 1);
     }
 
-    public function test_kadiv_cannot_send_to_staff_from_another_division(): void
+    public function test_kadiv_can_send_to_staff_from_another_division(): void
     {
         $kadiv = $this->createAccount('KD-1', 'Kadiv IT', 'DIV-IT', 'ROLE-KADIV', 'kadiv.it');
         $outsideStaff = $this->createAccount('ST-2', 'Staff HR', 'DIV-HR', 'ROLE-STAFF', 'staff.hr');
@@ -144,13 +144,16 @@ class KadivApiTest extends TestCase
             ->postJson('/api/kadiv/pesan', [
                 'penerima_id_user' => $outsideStaff->id_user,
                 'tipe' => 'pesan',
-                'judul_pesan' => 'Tidak boleh terkirim',
+                'judul_pesan' => 'Pesan Lintas Divisi',
                 'deskripsi' => 'Lintas divisi.',
             ])
-            ->assertUnprocessable()
-            ->assertJsonPath('message', 'Penerima harus Staff di divisi Anda atau HRD.');
+            ->assertCreated()
+            ->assertJsonPath('data.penerima.id_user', $outsideStaff->id_user);
 
-        $this->assertDatabaseCount('pesans', 0);
+        $this->assertDatabaseHas('pesans', [
+            'penerima_id_user' => $outsideStaff->id_user,
+            'judul_pesan' => 'Pesan Lintas Divisi',
+        ]);
     }
 
     public function test_kadiv_and_hrd_can_reply_to_messages_but_not_letters(): void

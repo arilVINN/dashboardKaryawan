@@ -3,6 +3,7 @@
 namespace App\Livewire\Kadiv;
 
 use App\Events\PesanDikirim;
+use App\Models\Divisi;
 use App\Models\Pesan;
 use App\Models\SuratIzin;
 use App\Models\User2;
@@ -34,7 +35,9 @@ class PesanTable extends Component
     #[Url]
     public string $arah = '';
 
+    public string $divisiId = '';
     public string $recipientUserId = '';
+    public string $judul = '';
     public string $isi = '';
 
     // Properti untuk form Kirim Surat Izin (Diperbarui)
@@ -63,6 +66,12 @@ class PesanTable extends Component
         }
 
         return $user;
+    }
+
+    public function updatedDivisiId(): void
+    {
+        $this->recipientUserId = '';
+        $this->resetValidation('recipientUserId');
     }
 
     public function updatedSearch(): void
@@ -107,22 +116,28 @@ class PesanTable extends Component
         $kadiv = $this->kadiv();
 
         $this->validate([
+            'divisiId' => 'nullable|string|exists:divisis,id_divisi',
             'recipientUserId' => 'required|string|exists:users2,id_user',
-            'isi' => 'required|string|max:2000',
+            'judul' => 'nullable|string|max:200',
+            'isi' => 'required|string|max:5000',
         ]);
 
         $recipient = User2::with('karyawan')->find($this->recipientUserId);
 
-        if (! $recipient || $recipient->karyawan?->divisi_id_divisi !== $kadiv->karyawan?->divisi_id_divisi) {
-            $this->addError('recipientUserId', 'Penerima harus berasal dari divisi yang sama.');
+        if (! $recipient || $recipient->id_user === $kadiv->id_user) {
+            $this->addError('recipientUserId', 'Penerima tidak valid.');
             return;
         }
 
         try {
+            $judulPesan = ! empty(trim($this->judul))
+                ? strip_tags(trim($this->judul))
+                : (Str::limit($this->isi, 200, '') ?: 'Pesan baru');
+
             $message = Pesan::create([
                 'id_pesan' => $this->generateMessageId(),
-                'judul_pesan' => Str::limit($this->isi, 200, '') ?: 'Pesan baru',
-                'deskripsi' => $this->isi,
+                'judul_pesan' => $judulPesan,
+                'deskripsi' => trim($this->isi),
                 'tipe' => 'pesan',
                 'tanggal_pesan' => now()->toDateString(),
                 'pengirim_id_user' => $kadiv->id_user,
@@ -131,7 +146,7 @@ class PesanTable extends Component
 
             PesanDikirim::dispatch($message);
 
-            $this->reset(['recipientUserId', 'isi']);
+            $this->reset(['recipientUserId', 'isi', 'divisiId', 'judul']);
             session()->flash('pesan_success', 'Pesan berhasil dikirim.');
             $this->dispatch('tutup-modal-pesan');
             $this->resetPage();
@@ -213,11 +228,23 @@ class PesanTable extends Component
             ->paginate(10)
             ->through(fn(Pesan $message) => MessagePresenter::for($message, $kadiv));
 
-        $recipients = User2::with(['karyawan', 'role'])
-            ->where('id_user', '!=', $kadiv->id_user)
-            ->whereHas('karyawan', fn($q) => $q->where('divisi_id_divisi', $kadiv->karyawan?->divisi_id_divisi))
-            ->get();
+        $divisis = Divisi::orderBy('nama_divisi')->get();
 
-        return view('livewire.kadiv.pesan-table', ['messages' => $messages, 'recipients' => $recipients]);
+        $recipientsQuery = User2::with(['karyawan.divisi', 'role'])
+            ->where('id_user', '!=', $kadiv->id_user);
+
+        if ($this->divisiId !== '') {
+            $recipientsQuery->whereHas('karyawan', fn($q) => $q->where('divisi_id_divisi', $this->divisiId));
+        }
+
+        $recipients = $recipientsQuery->get()
+            ->sortBy(fn (User2 $user) => mb_strtolower($user->karyawan?->nama ?? $user->username))
+            ->values();
+
+        return view('livewire.kadiv.pesan-table', [
+            'messages' => $messages,
+            'recipients' => $recipients,
+            'divisis' => $divisis,
+        ]);
     }
 }

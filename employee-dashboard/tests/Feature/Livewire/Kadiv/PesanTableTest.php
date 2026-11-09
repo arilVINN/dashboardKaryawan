@@ -87,15 +87,21 @@ class PesanTableTest extends TestCase
         ]);
     }
 
-    public function test_rejects_out_of_division_recipient(): void
+    public function test_can_send_to_cross_division_recipient(): void
     {
         Livewire::actingAs($this->kadiv)->test(PesanTable::class)
+            ->set('divisiId', 'DIV-HR')
             ->set('recipientUserId', $this->outsider->id_user)
-            ->set('isi', 'x')
+            ->set('judul', 'Pesan Lintas Divisi')
+            ->set('isi', 'Halo tim HR')
             ->call('sendMessage')
-            ->assertHasErrors();
+            ->assertHasNoErrors();
 
-        $this->assertDatabaseMissing('pesans', ['deskripsi' => 'x']);
+        $this->assertDatabaseHas('pesans', [
+            'penerima_id_user' => $this->outsider->id_user,
+            'judul_pesan' => 'Pesan Lintas Divisi',
+            'deskripsi' => 'Halo tim HR',
+        ]);
     }
 
     public function test_send_dispatches_pesan_dikirim(): void
