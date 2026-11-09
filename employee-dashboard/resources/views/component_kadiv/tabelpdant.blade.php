@@ -111,7 +111,7 @@
 
         const loadTasks = async () => {
             try {
-                const response = await fetch('/api/kadiv/tugas', { headers });
+                const response = await fetch('/api/kadiv/tugas?sort=terbaru', { headers });
                 const result = await response.json();
                 if (!response.ok) {
                     throw new Error(result.message || 'Gagal mengambil daftar tugas.');

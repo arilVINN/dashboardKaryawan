@@ -13,13 +13,6 @@
                 </span>
                 <span>Daftar Tugas</span>
             </h2>
-            <button type="button" data-modal-open="modalTugasBaru"
-                class="text-sm px-4 py-2 bg-[#146C94] text-white rounded-lg font-medium hover:bg-[#0f5878] transition flex items-center gap-1.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
-                </svg>
-                Tambah Tugas
-            </button>
         </div>
 
         @if (session('tugas_success'))
@@ -70,6 +63,14 @@
                     </button>
                 @endif
             </div>
+
+            <button type="button" data-modal-open="modalTugasBaru"
+                class="inline-flex h-10 w-full shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[#146C94] px-4 text-sm font-medium text-white transition hover:bg-[#0f5878] min-[700px]:ml-auto min-[700px]:w-auto">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                </svg>
+                Tambah Tugas
+            </button>
         </div>
 
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">

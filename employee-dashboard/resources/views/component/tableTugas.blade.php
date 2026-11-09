@@ -127,7 +127,8 @@
     const staffTugasCount = document.getElementById('staffTugasCount');
     const staffTugasPagination = document.getElementById('staffTugasPagination');
     const STAFF_TUGAS_PAGE_SIZE = 6;
-    let staffTugasSort = staffTugasIsCompact ? 'tenggat' : null;
+    // Dashboard compact table shows the latest assigned tasks.
+    let staffTugasSort = staffTugasIsCompact ? 'terbaru' : null;
     let staffTugasDir = 'asc';
     let staffTugasPage = 1;
     let staffTugasFilterTimer = null;

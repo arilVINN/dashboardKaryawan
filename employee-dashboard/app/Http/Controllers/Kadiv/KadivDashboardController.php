@@ -73,6 +73,8 @@ class KadivDashboardController extends Controller
                 'id_notifikasi' => $notification->id_notifikasi,
                 'judul_notifikasi' => $notification->judul_notifikasi,
                 'isi_notif' => $notification->displayMessage(),
+                'tugas_id_tugas' => $notification->tugas_id_tugas,
+                'pesan_id_pesan' => $notification->pesan_id_pesan,
                 'tanggal_notifikasi' => $notification->tanggal_notifikasi,
                 'created_at' => $notification->created_at?->toISOString(),
             ])

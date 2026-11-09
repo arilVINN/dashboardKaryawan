@@ -50,6 +50,9 @@ class KadivTugasQuery
             case 'tanggal':
                 $query->orderBy('deadline', $dir);
                 break;
+            case 'terbaru':
+                $query->orderByDesc('created_at')->orderByDesc('id_tugas');
+                break;
             default:
                 // Default: waiting for approval first, then new/in-progress,
                 // then approved. Each group uses the nearest deadline.

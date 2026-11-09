@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Tugas;
+use App\Models\Notifikasi;
 use App\Models\SubmitTugas;
+use App\Models\Tugas;
+use App\Models\User2;
 use App\Queries\StaffTugasQuery;
 use App\Support\FileMetadata;
+use Illuminate\Support\Facades\Log;
 
 class StaffTugasController extends Controller
 {
@@ -96,6 +99,14 @@ class StaffTugasController extends Controller
         if ($tugas->status === Tugas::STATUS_SUDAH_ACC) {
             return response()->json(['message' => 'Tugas ini sudah di-ACC dan tidak bisa dikirim ulang'], 403);
         }
+
+        // Submission sebelumnya berstatus "revisi" berarti ini pengumpulan ulang.
+        $previousSubmission = SubmitTugas::query()
+            ->where('tugas_id_tugas', $tugas->id_tugas)
+            ->latest('created_at')
+            ->first();
+        $isRevisionSubmission = $previousSubmission?->status_review === 'revisi';
+
         $validated = $request->validate([
             'file_hasil' => 'required_without:catatan_karyawan|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip', // max 200 MB (dalam kilobyte)
             'link_submit' => 'nullable|url|max:2048',
@@ -163,7 +174,60 @@ class StaffTugasController extends Controller
                 : $tugas->status,
 
         ]);
+
+        try {
+            $this->notifyKadivOnSubmission($tugas, $request->user(), $isRevisionSubmission);
+        } catch (\Throwable $exception) {
+            Log::error('Gagal membuat notifikasi pengumpulan tugas: '.$exception->getMessage(), [
+                'id_tugas' => $tugas->id_tugas,
+            ]);
+        }
+
         return response()->json(['message' => 'Hasil tugas berhasil dikirim', 'data' => $tugas]);
     }
-    
+
+    private function notifyKadivOnSubmission(Tugas $tugas, User2 $staff, bool $isRevision): void
+    {
+        $tugas->loadMissing('karyawan');
+        $divisiId = $tugas->karyawan?->divisi_id_divisi;
+
+        if (! $divisiId) {
+            return;
+        }
+
+        $kadivUsers = User2::query()
+            ->whereHas('role', fn ($query) => $query->whereRaw('LOWER(nama_role) = ?', ['kadiv']))
+            ->whereHas('karyawan', fn ($query) => $query->where('divisi_id_divisi', $divisiId))
+            ->get();
+
+        if ($kadivUsers->isEmpty()) {
+            return;
+        }
+
+        $staffName = $staff->karyawan?->nama ?? $staff->username;
+        $judul = $isRevision ? 'Pengumpulan Revisi' : 'Pengumpulan Tugas';
+        $isiNotif = $isRevision
+            ? $staffName.' mengirim revisi tugas "'.$tugas->judul_tugas.'".'
+            : $staffName.' mengumpulkan tugas "'.$tugas->judul_tugas.'".';
+
+        foreach ($kadivUsers as $kadiv) {
+            Notifikasi::create([
+                'id_notifikasi' => $this->generateNotifikasiId(),
+                'judul_notifikasi' => $judul,
+                'isi_notif' => $isiNotif,
+                'tugas_id_tugas' => $tugas->id_tugas,
+                'tanggal_notifikasi' => now()->toDateString(),
+                'user_id_user' => $kadiv->id_user,
+            ]);
+        }
+    }
+
+    private function generateNotifikasiId(): string
+    {
+        do {
+            $id = 'NTF'.strtoupper(substr(uniqid(), -8));
+        } while (Notifikasi::where('id_notifikasi', $id)->exists());
+
+        return $id;
+    }
 }
