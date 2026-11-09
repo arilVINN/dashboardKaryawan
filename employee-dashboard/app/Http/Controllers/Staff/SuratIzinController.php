@@ -11,6 +11,15 @@ class SuratIzinController extends Controller
 {
     public function store(Request $request)
     {
+        // Backward-compatibility: jika dikirim dari request lama dengan tanggal_izin
+        if ($request->has('tanggal_izin') && ! $request->has('tanggal_mulai')) {
+            $request->merge([
+                'tanggal_mulai' => $request->tanggal_izin,
+                'tanggal_selesai' => $request->tanggal_selesai ?? $request->tanggal_izin,
+                'jenis_izin' => $request->jenis_izin ?? 'Izin',
+            ]);
+        }
+
         // 1. Sesuaikan validasi dengan input pada modal baru
         $data = $request->validate([
             'jenis_izin'      => 'required|string|max:100',

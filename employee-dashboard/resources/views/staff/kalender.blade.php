@@ -2381,7 +2381,10 @@
                     params.set('end', fetchInfo.end.toISOString());
 
                     fetch('/kalender/data?' + params.toString(), { headers })
-                    .then(r => r.ok ? r.json() : { data: [] })
+                    .then(r => {
+                        if (!r.ok) throw new Error('Gagal memuat kalender (HTTP ' + r.status + ').');
+                        return r.json();
+                    })
                     .then(result => {
                         successCallback(result.data || []);
                     })

@@ -233,6 +233,7 @@ U
             // 3. Submit Update Profile
             document.getElementById('form-edit-profil').addEventListener('submit', async function(e) {
                 e.preventDefault();
+                let profileSaved = false;
                 try {
                     const res = await fetch('/api/staff/profile', {
                         method: 'PUT',
@@ -250,6 +251,7 @@ U
                     });
                     const data = await res.json();
                     if (res.ok) {
+                        profileSaved = true;
                         const fotoInput = document.getElementById('input-foto');
                         if (fotoInput.files.length > 0) {
                             const fotoData = new FormData();
@@ -263,8 +265,21 @@ U
                                 body: fotoData
                             });
                             if (!fotoRes.ok) {
-                                const fotoErr = await fotoRes.json();
-                                alert((fotoErr.data && fotoErr.data.foto ? fotoErr.data.foto.join('\n') : fotoErr.message) || 'Gagal mengunggah foto.');
+                                let fotoErr = {};
+                                try {
+                                    fotoErr = await fotoRes.json();
+                                } catch (error) {
+                                    console.error('Respons gagal dibaca saat mengunggah foto:', error);
+                                }
+                                const fotoMessage = (fotoErr.data && fotoErr.data.foto
+                                    ? fotoErr.data.foto.join('\n')
+                                    : fotoErr.message) || 'Gagal mengunggah foto.';
+                                alert('Data profil tersimpan, tetapi foto gagal diunggah.\n' + fotoMessage);
+                                fotoInput.value = '';
+                                editInfo.classList.add('hidden');
+                                viewInfo.classList.remove('hidden');
+                                loadProfile();
+                                return;
                             }
                             fotoInput.value = '';
                         }
@@ -276,7 +291,14 @@ U
                         alert(data.message || 'Gagal memperbarui profil.');
                     }
                 } catch (err) {
-                    alert('Kesalahan jaringan.');
+                    alert(profileSaved
+                        ? 'Data profil tersimpan, tetapi proses upload foto gagal. Silakan coba unggah foto kembali.'
+                        : 'Kesalahan jaringan.');
+                    if (profileSaved) {
+                        editInfo.classList.add('hidden');
+                        viewInfo.classList.remove('hidden');
+                        loadProfile();
+                    }
                 }
             });
 
@@ -334,4 +356,3 @@ U
     </script>
 </body>
 </html>
-

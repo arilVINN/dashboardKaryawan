@@ -94,13 +94,13 @@
                     <div class="flex items-center gap-1.5">
                         <span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span> Keluar
                     </div>
-                    <span class="text-slate-800">{{ $totalKeluarTahunIni }}</span>
+                    <span class="text-slate-800">{{ $totalKeluarTahunIni ?? 0 }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
                         <span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span> Aktif
                     </div>
-                    <span class="text-slate-800">{{ $totalKaryawanAktif }}</span>
+                    <span class="text-slate-800">{{ $totalKaryawanAktif ?? 0 }}</span>
                 </div>
                 <div class="flex justify-end items-center pt-0.5">
                     <span class="inline-flex items-center gap-1 text-[12px] font-medium text-[#146C94] group-hover:underline">
@@ -127,7 +127,7 @@
                 data: {
                     labels: ['Keluar', 'Aktif'],
                     datasets: [{
-                        data: [{{ $totalKeluarTahunIni }}, {{ $totalKaryawanAktif }}],
+                        data: [{{ $totalKeluarTahunIni ?? 0 }}, {{ $totalKaryawanAktif ?? 0 }}],
                         backgroundColor: ['#ef4444', '#22c55e'],
                         borderWidth: 0,
                         cutout: '60%'

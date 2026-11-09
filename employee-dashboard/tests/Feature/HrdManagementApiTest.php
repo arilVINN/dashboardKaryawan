@@ -7,6 +7,8 @@ use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Pesan;
 use App\Models\Role;
+use App\Models\SubmitTugas;
+use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -139,6 +141,15 @@ class HrdManagementApiTest extends TestCase
 
         $this->assertDatabaseMissing('karyawans', ['id_karyawan' => 'EMP-STAFF']);
         $this->assertDatabaseMissing('users2', ['id_user' => $staff->id_user]);
+
+        $legacyRouteStaff = $this->createAccount('EMP-LEGACY', 'Staff Lama', 'DIV-IT', 'ROLE-STAFF', 'legacy');
+        $this->actingAs($this->hrd)
+            ->deleteJson('/hrd/karyawan/EMP-LEGACY')
+            ->assertOk()
+            ->assertJsonPath('message', 'Staff dan akun login berhasil dihapus');
+
+        $this->assertDatabaseMissing('karyawans', ['id_karyawan' => 'EMP-LEGACY']);
+        $this->assertDatabaseMissing('users2', ['id_user' => $legacyRouteStaff->id_user]);
     }
 
     public function test_hrd_can_send_message_to_staff_from_message_page(): void
@@ -305,6 +316,48 @@ class HrdManagementApiTest extends TestCase
             ->assertSee('data-dashboard-metric="total-staff"', false)
             ->assertSee('data-dashboard-metric="total-divisi"', false)
             ->assertSee('data-dashboard-metric="total-pesan"', false);
+    }
+
+    public function test_hrd_dashboard_uses_only_latest_submission_for_revision_bucket(): void
+    {
+        $staff = $this->createAccount('EMP-REVISION', 'Staff Revisi', 'DIV-IT', 'ROLE-STAFF', 'revision');
+        $task = Tugas::withoutEvents(fn () => Tugas::create([
+            'id_tugas' => 'TASK-REVISION',
+            'karyawan_id_karyawan' => $staff->karyawan_id_karyawan,
+            'judul_tugas' => 'Tugas revisi',
+            'deskripsi' => 'Tugas untuk menguji bucket revisi.',
+            'deadline' => now()->addDays(3),
+            'progress' => '100',
+            'status' => Tugas::STATUS_BERJALAN,
+            'tanggal_dibuat' => now()->toDateString(),
+            'tanggal_update' => now()->toDateString(),
+        ]));
+
+        SubmitTugas::create([
+            'id_submit_tugas' => 'SB-REV-OLD',
+            'tugas_id_tugas' => $task->id_tugas,
+            'tugas_karyawan_id_karyawan' => $staff->karyawan_id_karyawan,
+            'tanggal_submit' => now()->subDay()->toDateString(),
+            'status_review' => 'revisi',
+        ]);
+        DB::table('submit_tugas')
+            ->where('id_submit_tugas', 'SB-REV-OLD')
+            ->update(['created_at' => now()->subMinute()]);
+
+        SubmitTugas::create([
+            'id_submit_tugas' => 'SB-REV-NEW',
+            'tugas_id_tugas' => $task->id_tugas,
+            'tugas_karyawan_id_karyawan' => $staff->karyawan_id_karyawan,
+            'tanggal_submit' => now()->toDateString(),
+            'status_review' => 'submitted',
+        ]);
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/dashboard')
+            ->assertOk()
+            ->assertViewHas('tugasBuckets', fn ($buckets) =>
+                $buckets['revisi'] === 0 && $buckets['ongoing'] === 1
+            );
     }
 
     public function test_division_detail_shows_its_staff_and_can_add_a_staff_member(): void

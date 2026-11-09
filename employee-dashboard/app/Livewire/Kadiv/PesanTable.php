@@ -111,7 +111,12 @@ class PesanTable extends Component
             'isi' => 'required|string|max:2000',
         ]);
 
-        $recipient = User2::find($this->recipientUserId);
+        $recipient = User2::with('karyawan')->find($this->recipientUserId);
+
+        if (! $recipient || $recipient->karyawan?->divisi_id_divisi !== $kadiv->karyawan?->divisi_id_divisi) {
+            $this->addError('recipientUserId', 'Penerima harus berasal dari divisi yang sama.');
+            return;
+        }
 
         try {
             $message = Pesan::create([
@@ -210,6 +215,7 @@ class PesanTable extends Component
 
         $recipients = User2::with(['karyawan', 'role'])
             ->where('id_user', '!=', $kadiv->id_user)
+            ->whereHas('karyawan', fn($q) => $q->where('divisi_id_divisi', $kadiv->karyawan?->divisi_id_divisi))
             ->get();
 
         return view('livewire.kadiv.pesan-table', ['messages' => $messages, 'recipients' => $recipients]);

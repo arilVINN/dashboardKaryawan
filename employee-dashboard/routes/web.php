@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\KadivController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Hrd\HrdKaryawanController;
-use App\Http\Controllers\Hrd\HrdKaryawanDeletionController;
 use App\Http\Controllers\Hrd\HrdDivisiController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
@@ -274,7 +273,7 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     Route::match(['put', 'post'], '/staff/{id}', [HrdStaffController::class, 'update'])->middleware('throttle:submit-form'); // + throttle
     Route::post('/staff/{id}/foto', [HrdStaffController::class, 'updateFoto'])->middleware('throttle:submit-form');
     Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
-    Route::delete('/karyawan/{id}', [HrdKaryawanDeletionController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
+    Route::delete('/karyawan/{id}', [HrdStaffController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
 
     Route::get('/lampiran/{id}/download', function ($id) {
         $lampiran = \App\Models\LampiranKaryawan::findOrFail($id);

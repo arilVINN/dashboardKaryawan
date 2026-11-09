@@ -10,6 +10,7 @@ use Tests\TestCase;
 use App\Models\User2;
 use App\Models\Tugas;
 use App\Models\Notifikasi;
+use Illuminate\Support\Facades\DB;
 
 class TugasApiTest extends TestCase
 {
@@ -78,6 +79,41 @@ class TugasApiTest extends TestCase
         $this->assertDatabaseHas('tugas', [
             'id_tugas' => $tugas->id_tugas,
             'status' => Tugas::STATUS_MENUNGGU_ACC,
+        ]);
+    }
+
+    #[Test]
+    public function submit_id_generation_handles_four_digit_suffixes(): void
+    {
+        $user = User2::where('username', 'budist')->firstOrFail();
+        $tugas = Tugas::where('karyawan_id_karyawan', $user->karyawan_id_karyawan)->firstOrFail();
+
+        foreach (['SB999', 'SB1000'] as $id) {
+            DB::table('submit_tugas')->insert([
+                'id_submit_tugas' => $id,
+                'link_submit' => '-',
+                'file_hasil' => '-',
+                'catatan_karyawan' => 'Riwayat',
+                'catatan_revisi' => '-',
+                'tanggal_submit' => now()->toDateString(),
+                'status_review' => 'submitted',
+                'tugas_id_tugas' => $tugas->id_tugas,
+                'tugas_karyawan_id_karyawan' => $user->karyawan_id_karyawan,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'catatan_karyawan' => 'Pengumpulan berikutnya',
+                'progress' => 100,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('submit_tugas', [
+            'id_submit_tugas' => 'SB1001',
+            'tugas_id_tugas' => $tugas->id_tugas,
         ]);
     }
 

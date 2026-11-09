@@ -11,6 +11,7 @@ use App\Queries\KadivTugasQuery;
 use App\Queries\StaffTugasQuery;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class KalenderController extends Controller
 {
@@ -110,6 +111,8 @@ class KalenderController extends Controller
      */
     public function events(Request $request)
     {
+        $this->validateDateRange($request);
+
         $user = $request->user() ?: auth()->user();
         if (!$user) {
             return response()->json(['message' => 'Unauthenticated'], 401);
@@ -228,6 +231,8 @@ class KalenderController extends Controller
 
     public function data(Request $request)
     {
+        $this->validateDateRange($request);
+
         $user = $request->user() ?: auth()->user();
         if (! $user) {
             return response()->json(['message' => 'Unauthenticated'], 401);
@@ -418,6 +423,8 @@ class KalenderController extends Controller
      */
     public function eventsKadiv(Request $request)
     {
+        $this->validateDateRange($request);
+
         $user = $request->user() ?: auth()->user();
         if (!$user || !$user->karyawan) {
             return response()->json(['message' => 'Unauthenticated'], 401);
@@ -522,6 +529,8 @@ class KalenderController extends Controller
 
     public function dataKadiv(Request $request)
     {
+        $this->validateDateRange($request);
+
         $user = $request->user() ?: auth()->user();
         if (! $user || ! $user->karyawan) {
             return response()->json(['message' => 'Unauthenticated'], 401);
@@ -673,6 +682,8 @@ class KalenderController extends Controller
      */
     public function eventsHrd(Request $request)
     {
+        $this->validateDateRange($request);
+
         $user = $request->user() ?: auth()->user();
         if (!$user) {
             return response()->json(['message' => 'Unauthenticated'], 401);
@@ -811,6 +822,8 @@ class KalenderController extends Controller
 
     public function dataHrd(Request $request)
     {
+        $this->validateDateRange($request);
+
         $user = $request->user() ?: auth()->user();
         if (! $user) {
             return response()->json(['message' => 'Unauthenticated'], 401);
@@ -965,5 +978,20 @@ class KalenderController extends Controller
         }
 
         return response()->json(['data' => $events]);
+    }
+
+    private function validateDateRange(Request $request): void
+    {
+        $dates = $request->validate([
+            'start' => ['sometimes', 'nullable', 'date'],
+            'end' => ['sometimes', 'nullable', 'date'],
+        ]);
+
+        if (! empty($dates['start']) && ! empty($dates['end'])
+            && Carbon::parse($dates['end'])->lt(Carbon::parse($dates['start']))) {
+            throw ValidationException::withMessages([
+                'end' => 'Tanggal akhir harus sama dengan atau setelah tanggal mulai.',
+            ]);
+        }
     }
 }

@@ -24,8 +24,9 @@ class CalendarNoteController extends Controller
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
-        $start = $request->input('start');
-        $end   = $request->input('end');
+        $dates = $this->validateDateRange($request);
+        $start = $dates['start'] ?? null;
+        $end = $dates['end'] ?? null;
 
         $query = CalendarNote::where('user_id_user', $user->id_user);
 
@@ -186,5 +187,22 @@ class CalendarNoteController extends Controller
                 'id_user' => $note->user_id_user,
             ]);
         }
+    }
+
+    private function validateDateRange(Request $request): array
+    {
+        $dates = $request->validate([
+            'start' => ['sometimes', 'nullable', 'date'],
+            'end' => ['sometimes', 'nullable', 'date'],
+        ]);
+
+        if (! empty($dates['start']) && ! empty($dates['end'])
+            && Carbon::parse($dates['end'])->lt(Carbon::parse($dates['start']))) {
+            throw ValidationException::withMessages([
+                'end' => 'Tanggal akhir harus sama dengan atau setelah tanggal mulai.',
+            ]);
+        }
+
+        return $dates;
     }
 }

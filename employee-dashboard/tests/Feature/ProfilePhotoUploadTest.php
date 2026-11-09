@@ -103,6 +103,28 @@ class ProfilePhotoUploadTest extends TestCase
             ->assertJsonPath('data.foto_url', '/storage/'.Karyawan::find('KRY-STAFF')->foto);
     }
 
+    public function test_staff_profile_update_rejects_an_email_used_by_another_employee(): void
+    {
+        Karyawan::where('id_karyawan', 'KRY-KADIV')
+            ->update(['email' => 'used@example.test']);
+
+        $response = $this->actingAs($this->staff)
+            ->putJson('/api/staff/profile', [
+                'nama' => 'Nama Baru',
+                'email' => 'used@example.test',
+                'no_telepon' => '081234567890',
+                'alamat' => 'Alamat baru',
+            ])
+            ->assertUnprocessable();
+
+        $this->assertArrayHasKey('email', $response->json('data'));
+
+        $this->assertDatabaseHas('karyawans', [
+            'id_karyawan' => 'KRY-STAFF',
+            'nama' => 'Pemilik stafffoto',
+        ]);
+    }
+
     public function test_rejects_non_image_file(): void
     {
         Storage::fake('public');

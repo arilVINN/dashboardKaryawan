@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Karyawan;
 use App\Models\LampiranKaryawan;
+use App\Models\ProjectTask;
 use App\Models\User2;
 use App\Models\Divisi;
 use App\Models\Role;
@@ -390,6 +391,12 @@ class HrdStaffController extends Controller
 
         if (!$karyawan) {
             return response()->json(['message' => 'Staff tidak ditemukan'], 404);
+        }
+
+        if (ProjectTask::where('karyawan_id_karyawan', $karyawan->id_karyawan)->exists()) {
+            return response()->json([
+                'message' => 'Karyawan tidak dapat dihapus karena masih memiliki task project.',
+            ], 409);
         }
 
         // Cek apakah ada tugas yang BELUM selesai (bukan sudah di-acc)

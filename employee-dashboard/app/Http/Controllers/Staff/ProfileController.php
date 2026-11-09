@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Actions\StoreKaryawanFoto;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
@@ -34,17 +35,24 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $user = $request->user();
-        
+
+        if (! $user->karyawan) {
+            return response()->json(['message' => 'Data karyawan tidak ditemukan.'], 404);
+        }
+
         $validated = $request->validate([
             'nama' => 'required|string|max:100',
-            'email' => 'required|email|max:100',
+            'email' => [
+                'required',
+                'email',
+                'max:100',
+                Rule::unique('karyawans', 'email')->ignore($user->karyawan->id_karyawan, 'id_karyawan'),
+            ],
             'no_telepon' => 'required|string|max:20',
             'alamat' => 'required|string',
         ]);
 
-        if ($user->karyawan) {
-            $user->karyawan->update($validated);
-        }
+        $user->karyawan->update($validated);
 
         return response()->json([
             'message' => 'Profil berhasil diperbarui.',
@@ -65,7 +73,7 @@ class ProfileController extends Controller
 
         $karyawan = $user->karyawan;
 
-        $path = StoreKaryawanFoto::handle($karyawan, $request->file('foto'));
+        $path = StoreKaryawanFoto::handle($karyawan, $validated['foto']);
 
         return response()->json([
             'message' => 'Foto profil berhasil diperbarui.',

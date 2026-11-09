@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\Tugas;
 use App\Models\SubmitTugas;
 use App\Queries\StaffTugasQuery;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class StaffTugasController extends Controller
 {
@@ -99,31 +102,58 @@ class StaffTugasController extends Controller
         $filePath = '-'; // Default string '-' karena database Anda melarang NULL
         if ($request->hasFile('file_hasil')) {
             $filePath = $request->file('file_hasil')->store('submissions', 'public');
+
+            if (! $filePath) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'file_hasil' => 'File gagal disimpan. Silakan coba lagi.',
+                ]);
+            }
         }
-        // Generate dynamic ID SB001, SB002, etc. (Max 5 chars)
-        $lastSubmit = SubmitTugas::orderBy('id_submit_tugas', 'desc')->first();
-        $newId = $lastSubmit ? 'SB' . str_pad(intval(substr($lastSubmit->id_submit_tugas, 2)) + 1, 3, '0', STR_PAD_LEFT) : 'SB001';
 
-        // 1. Simpan ke tabel submit_tugas dengan antisipasi NOT NULL SQL
-        SubmitTugas::create([
-            'id_submit_tugas' => $newId,
-            'tugas_id_tugas' => $tugas->id_tugas,
-            'tugas_karyawan_id_karyawan' => $karyawanId,
-            'file_hasil' => $filePath,
-            'link_submit' => $validated['link_submit'] ?? '-', // Cegah error NOT NULL
-            'catatan_karyawan' => isset($validated['catatan_karyawan']) ? strip_tags($validated['catatan_karyawan']) : '-', // Cegah error NOT NULL
-            'catatan_revisi' => '-', // Pasti '-' saat pertama submit
-            'tanggal_submit' => now(),
-            'status_review' => 'submitted',
-        ]);
-        $tugas->update([
-            'progress' => $progress,
-            'status' => $progress == 100
-                ? Tugas::STATUS_MENUNGGU_ACC
-                : $tugas->status,
+        try {
+            DB::transaction(function () use ($tugas, $karyawanId, $filePath, $validated, $progress): void {
+                SubmitTugas::create([
+                    'id_submit_tugas' => $this->nextSubmitId(),
+                    'tugas_id_tugas' => $tugas->id_tugas,
+                    'tugas_karyawan_id_karyawan' => $karyawanId,
+                    'file_hasil' => $filePath,
+                    'link_submit' => $validated['link_submit'] ?? '-',
+                    'catatan_karyawan' => isset($validated['catatan_karyawan'])
+                        ? strip_tags($validated['catatan_karyawan'])
+                        : '-',
+                    'catatan_revisi' => '-',
+                    'tanggal_submit' => now(),
+                    'status_review' => 'submitted',
+                ]);
 
-        ]);
+                $tugas->update([
+                    'progress' => $progress,
+                    'status' => $progress == 100
+                        ? Tugas::STATUS_MENUNGGU_ACC
+                        : $tugas->status,
+                ]);
+            });
+        } catch (Throwable $exception) {
+            if ($filePath !== '-') {
+                Storage::disk('public')->delete($filePath);
+            }
+
+            throw $exception;
+        }
+
         return response()->json(['message' => 'Hasil tugas berhasil dikirim', 'data' => $tugas]);
     }
-    
+
+    private function nextSubmitId(): string
+    {
+        $max = 0;
+
+        foreach (SubmitTugas::query()->lockForUpdate()->pluck('id_submit_tugas') as $id) {
+            if (preg_match('/^SB(\d+)$/', (string) $id, $matches)) {
+                $max = max($max, (int) $matches[1]);
+            }
+        }
+
+        return 'SB'.str_pad((string) ($max + 1), 3, '0', STR_PAD_LEFT);
+    }
 }

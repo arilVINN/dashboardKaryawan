@@ -75,11 +75,11 @@ class HrdDashboardController extends Controller
         $ongoingBase = Tugas::statusEfektif(Tugas::STATUS_BERJALAN);
 
         $revisiTugas = (clone $ongoingBase)
-            ->whereHas('submitTugas', fn($q) => $q->where('status_review', 'revisi'))
+            ->whereHas('latestSubmitTugas', fn($q) => $q->where('status_review', 'revisi'))
             ->count();
 
         $ongoingTugas = (clone $ongoingBase)
-            ->whereDoesntHave('submitTugas', fn($q) => $q->where('status_review', 'revisi'))
+            ->whereDoesntHave('latestSubmitTugas', fn($q) => $q->where('status_review', 'revisi'))
             ->count();
 
         $pendingTugas = Tugas::statusEfektif(Tugas::STATUS_BARU)->count()
@@ -224,13 +224,12 @@ class HrdDashboardController extends Controller
             ->groupBy('job_level')
             ->pluck('jumlah', 'job_level');
 
-        // Mengambil data status_karyawan: jika ada tanggal_akhir_kontrak maka 'Kontrak', jika null/kosong maka 'Tetap'
-        // (Atau gunakan kolom status_karyawan jika diisi, jika tidak maka fallback ke tanggal_akhir_kontrak)
+        // Mengambil data status_karyawan: jika ada tanggal_akhir_kontrak atau status kontrak maka 'Tidak Tetap', selain itu 'Tetap'
         $statusKaryawan = Karyawan::where('aktif', true)
             ->selectRaw("
                 CASE 
-                    WHEN tanggal_akhir_kontrak IS NOT NULL THEN 'Kontrak'
-                    WHEN LOWER(status_karyawan) = 'kontrak' THEN 'Kontrak'
+                    WHEN tanggal_akhir_kontrak IS NOT NULL THEN 'Tidak Tetap'
+                    WHEN LOWER(status_karyawan) IN ('kontrak', 'tidak tetap') THEN 'Tidak Tetap'
                     ELSE 'Tetap'
                 END as status_hitung,
                 COUNT(*) as jumlah
