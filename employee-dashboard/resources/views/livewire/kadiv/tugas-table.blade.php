@@ -354,10 +354,7 @@
                                                 class="w-full h-10 rounded-lg border border-[#CBD5E1] px-2 text-sm text-[#283044] bg-white outline-none focus:border-[#19A7CE]">
                                                 <option value="">-- Staff --</option>
                                                 @foreach ($projectKaryawanOptions as $option)
-                                                    <option value="{{ $option->id_karyawan }}">
-                                                        {{ $option->nama }}
-                                                        ({{ $option->divisi->nama_divisi ?? 'Tanpa divisi' }})
-                                                    </option>
+                                                    <option value="{{ $option->id_karyawan }}">{{ $option->nama }} ({{ $option->divisi->nama_divisi ?? 'Tanpa divisi' }})</option>
                                                 @endforeach
                                             </select>
                                             @error("taskKaryawan.$i")

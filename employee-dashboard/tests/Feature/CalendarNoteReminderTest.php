@@ -166,6 +166,25 @@ class CalendarNoteReminderTest extends TestCase
             ->assertJsonPath('data.0.extendedProps.reminder_date', now()->addDays(2)->toDateString());
     }
 
+    public function test_calendar_date_filters_reject_invalid_or_reversed_ranges(): void
+    {
+        $this->actingAs($this->staff)
+            ->getJson('/kalender/notes?start=invalid-date')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('start');
+
+        $start = urlencode(now()->startOfMonth()->toIso8601String());
+        $end = urlencode(now()->endOfMonth()->toIso8601String());
+        $this->actingAs($this->staff)
+            ->getJson("/kalender/data?start={$start}&end={$end}")
+            ->assertOk();
+
+        $this->actingAs($this->staff)
+            ->getJson('/kalender/data?start=2026-11-10&end=2026-11-09')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('end');
+    }
+
     public function test_notifications_include_notes_on_their_chosen_reminder_day(): void
     {
         Carbon::setTestNow('2026-11-04 08:00:00');

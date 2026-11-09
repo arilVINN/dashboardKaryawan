@@ -159,6 +159,7 @@ class TugasTableTest extends TestCase
             ->assertDontSee('Kadiv Marketing')
             ->set('namaProject', 'Project Lintas Divisi')
             ->set('deskripsiProject', 'Deskripsi project untuk tim Marketing.')
+            ->set('tenggatProject', now()->addDays(7)->format('Y-m-d\TH:i'))
             ->set('projectFile', UploadedFile::fake()->create('brief.pdf', 10, 'application/pdf'))
             ->set('taskLabels', ['Riset'])
             ->set('taskKaryawan', ['ST-MKT'])
@@ -228,6 +229,7 @@ class TugasTableTest extends TestCase
 
         Livewire::actingAs($this->kadiv)->test(TugasTable::class)
             ->set('namaProject', 'Project Tidak Valid')
+            ->set('tenggatProject', now()->addDays(7)->format('Y-m-d\TH:i'))
             ->set('taskLabels', ['Task HRD'])
             ->set('taskKaryawan', ['HRD-1'])
             ->call('createProject')
@@ -237,6 +239,7 @@ class TugasTableTest extends TestCase
 
         Livewire::actingAs($this->kadiv)->test(TugasTable::class)
             ->set('namaProject', 'Project Untuk Kadiv')
+            ->set('tenggatProject', now()->addDays(7)->format('Y-m-d\TH:i'))
             ->set('taskLabels', ['Task Kadiv'])
             ->set('taskKaryawan', ['KD-MKT'])
             ->call('createProject')
