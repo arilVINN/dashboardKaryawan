@@ -713,8 +713,7 @@
 
                             const date = document.createElement('p');
                             date.className = 'text-[13px] leading-5 text-[#4B5563]';
-                            date.textContent = formatDate(revision.created_at || revision.tanggal_submit)
-                                + ' · Tanggal Revisi ' + formatDate(revision.deadline_revisi || task.deadline);
+                            date.textContent = formatDate(revision.created_at || revision.tanggal_submit);
                             item.appendChild(date);
 
                             const note = document.createElement('p');

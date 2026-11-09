@@ -85,14 +85,23 @@
                 {{-- Body: revision thread + submission form --}}
                 <div id="tugas-body" class="tugas-body mt-6">
 
-                    {{-- Revisi (catatan + tenggat) --}}
-                    <section id="section-revisi" class="tugas-thread hidden min-w-0">
-                        <h2 class="text-lg font-semibold text-[#172B36]">Daftar Revisi</h2>
-                        <p id="revisi-tenggat" class="mt-1 text-[13px] text-[#4B5563]">-</p>
-                        <p id="revisi-status" class="text-[13px] text-[#4B5563]">-</p>
-                        <p id="revisi-catatan" class="mt-3 text-sm leading-relaxed text-[#172B36]">-</p>
-                        <div id="revisi-pesan-container" class="mt-3"></div>
-                    </section>
+                    <div class="tugas-thread min-w-0">
+                        {{-- Riwayat revisi (catatan + lampiran per revisi) --}}
+                        <section id="section-revisi" class="hidden">
+                            <div class="flex items-center justify-between gap-4">
+                                <h2 class="text-lg font-semibold text-[#172B36]">Riwayat Revisi</h2>
+                                <span id="revisi-count" class="text-[13px] text-[#4B5563]"></span>
+                            </div>
+
+                            <div id="revisi-history-list" class="mt-4 space-y-5"></div>
+                        </section>
+
+                        {{-- Pesan Kadiv, terpisah dari riwayat revisi --}}
+                        <section id="section-pesan" class="mb-6 mt-6 hidden max-w-[640px]">
+                            <h2 class="text-lg font-semibold text-[#172B36]">Pesan dari Kadiv</h2>
+                            <div id="revisi-pesan-container" class="mt-3"></div>
+                        </section>
+                    </div>
 
                     {{-- Submission form --}}
                     <div id="section-submit-wrap" class="tugas-form-col min-w-0">
@@ -101,12 +110,10 @@
                                 <h2 id="submit-title" class="mb-4 text-lg font-semibold text-[#172B36]">Kirim Tugas</h2>
 
                                 <form id="form-submit-tugas" class="hidden space-y-4">
-                                    {{-- Referensi revisi: file dari Kadiv + hasil sebelumnya --}}
+                                    {{-- Hasil sebelumnya tetap di sisi form sebagai acuan kirim ulang --}}
                                     <section id="referensi-revisi" class="hidden border-b border-[#E2E8EC] pb-4">
-                                        <h3 class="text-base font-semibold text-[#172B36]">Referensi revisi</h3>
-{{--                                        <p class="mt-1 text-[13px] text-[#4B5563]">Unduh file berikut sebelum mengirim ulang.</p>--}}
-                                        <div id="revisi-attachment-container" class="flex flex-wrap gap-3"></div>
-                                        <div id="revisi-file-container" class="mt-3 flex flex-wrap gap-3"></div>
+                                        <h3 class="text-[13px] font-semibold text-[#172B36]">Hasil sebelumnya</h3>
+                                        <div id="revisi-file-container" class="mt-2 flex flex-wrap gap-3"></div>
                                     </section>
 
                                     <div>
@@ -158,6 +165,52 @@
 
     </div>
 
+    {{-- Modal konfirmasi kirim tugas --}}
+    <div id="modalKonfirmasiSubmit"
+        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4
+               bg-[rgba(86,94,116,0.4)] backdrop-blur-sm transition-opacity duration-150 ease-in-out"
+        role="dialog" aria-modal="true" aria-labelledby="modalKonfirmasiSubmitTitle">
+        <div data-modal-panel
+            class="flex w-full max-w-[420px] flex-col overflow-hidden rounded-xl bg-white shadow-[0_8px_16px_rgba(0,0,0,0.12)]
+                   scale-95 translate-y-2 transition-all duration-150 ease-in-out">
+            <div class="flex items-center justify-between border-b border-[#E2E8F0] bg-[#F8FAFC] px-6 py-4">
+                <div class="flex min-w-0 items-center gap-3">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#D9EEF5] text-[#146C94]">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                            aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 9v4m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path>
+                        </svg>
+                    </div>
+                    <h3 id="modalKonfirmasiSubmitTitle" class="truncate text-base font-bold text-[#172B36]">
+                        Kirim tugas ini?
+                    </h3>
+                </div>
+                <button type="button" data-modal-close="modalKonfirmasiSubmit"
+                    class="shrink-0 text-2xl leading-none text-[#565E74] transition hover:text-black"
+                    aria-label="Tutup">&times;</button>
+            </div>
+
+            <div class="px-6 py-5">
+                <p class="text-sm leading-relaxed text-[#4B5563]">
+                    Pastikan file hasil dan catatan sudah benar. Setelah dikirim, tugas akan masuk ke proses
+                    persetujuan Kadiv.
+                </p>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 border-t border-[#E2E8F0] px-6 py-4">
+                <button type="button" data-modal-close="modalKonfirmasiSubmit"
+                    class="h-9 rounded-lg bg-[#E8E7E9] px-4 text-sm text-[#333335] transition hover:bg-[#D9D9D9]">
+                    Batal
+                </button>
+                <button type="button" id="btn-confirm-submit-tugas"
+                    class="inline-flex h-9 items-center justify-center rounded-lg bg-[#146C94] px-4 text-sm font-bold text-white transition hover:bg-[#0f5878] disabled:cursor-not-allowed disabled:bg-[#A9C6D3]">
+                    Ya, kirim tugas
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const tugasId = window.location.pathname.split('/').filter(Boolean).pop();
         const STATUS_PALETTE = @json(\App\Support\StatusPalette::all());
@@ -169,6 +222,8 @@
         const tugasBody = document.getElementById('tugas-body');
         const fileStatus = document.getElementById('file-status');
         const btnHapusFile = document.getElementById('btn-hapus-file');
+        const modalSubmitTitle = document.getElementById('modalKonfirmasiSubmitTitle');
+        const confirmSubmitButton = document.getElementById('btn-confirm-submit-tugas');
         let submissionCompleted = false;
         let submitLabel = 'Kirim tugas';
 
@@ -176,6 +231,8 @@
             submitLabel = label;
             submitTitle.textContent = label;
             submitButton.textContent = label;
+            if (modalSubmitTitle) modalSubmitTitle.textContent = label + '?';
+            if (confirmSubmitButton) confirmSubmitButton.textContent = 'Ya, ' + label.toLowerCase();
         }
 
         function showRevisionSection() {
@@ -423,59 +480,98 @@
                     lampiranContainer.innerHTML += renderLinkCard(t.link_pendukung);
                 }
 
-                // === REVISI ===
-                const revisionSubmit = [...submissions].reverse().find((submission) =>
-                    submission.status_review === 'revisi'
-                    && typeof submission.catatan_revisi === 'string'
-                    && submission.catatan_revisi.trim() !== ''
-                    && submission.catatan_revisi.trim() !== '-'
-                );
+                // === RIWAYAT REVISI ===
+                const revisions = submissions
+                    .filter((submission) =>
+                        submission.status_review === 'revisi'
+                        && typeof submission.catatan_revisi === 'string'
+                        && submission.catatan_revisi.trim() !== ''
+                        && submission.catatan_revisi.trim() !== '-'
+                    )
+                    .sort((a, b) => {
+                        const first = parseDate(a.created_at || a.tanggal_submit);
+                        const second = parseDate(b.created_at || b.tanggal_submit);
+                        return (second?.getTime() || 0) - (first?.getTime() || 0);
+                    });
 
-                if (revisionSubmit) {
-                    const catatanRevisi = revisionSubmit.catatan_revisi;
+                const revisionHistory = document.getElementById('revisi-history-list');
+                const revisionCount = document.getElementById('revisi-count');
+                revisionHistory.replaceChildren();
+                revisionCount.textContent = '';
 
-                    document.getElementById('revisi-tenggat').textContent =
-                        fmtDateTime(revisionSubmit.deadline_revisi || t.deadline);
-                    document.getElementById('revisi-status').textContent =
-                        'Status: ' + (revisionSubmit.status_review || '-');
-                    document.getElementById('revisi-catatan').textContent = catatanRevisi;
+                if (revisions.length) {
+                    revisionCount.textContent = revisions.length + ' kali revisi';
 
-                    const revisionAttachmentContainer = document.getElementById('revisi-attachment-container');
-                    revisionAttachmentContainer.replaceChildren();
-                    if (revisionSubmit.file_revisi && revisionSubmit.file_revisi !== '-') {
-                        revisionAttachmentContainer.innerHTML = renderFileCard(
-                            revisionSubmit.file_revisi,
-                            'Lampiran revisi',
-                            {
-                                name: revisionSubmit.file_revisi_name,
-                                size: revisionSubmit.file_revisi_size,
-                            }
-                        );
-                    }
+                    revisions.forEach((revision, index) => {
+                        // Revisi terbaru tampil paling atas dengan nomor terbesar.
+                        const revisionNumber = revisions.length - index;
+
+                        const item = document.createElement('div');
+
+                        const headingRow = document.createElement('div');
+                        headingRow.className = 'flex items-center gap-2';
+
+                        const badge = document.createElement('span');
+                        badge.className = 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#E6F2F7] text-[12px] font-semibold text-[#146C94]';
+                        badge.textContent = String(revisionNumber);
+
+                        const heading = document.createElement('p');
+                        heading.className = 'text-[14px] font-semibold text-[#172B36]';
+                        heading.textContent = 'Catatan revisi';
+
+                        headingRow.append(badge, heading);
+                        item.appendChild(headingRow);
+
+                        const date = document.createElement('p');
+                        date.className = 'text-[13px] leading-5 text-[#4B5563]';
+                        date.textContent = fmtDateTime(revision.created_at || revision.tanggal_submit);
+                        item.appendChild(date);
+
+                        const note = document.createElement('p');
+                        note.className = 'mt-2 text-sm leading-[1.6] text-[#172B36]';
+                        note.textContent = revision.catatan_revisi;
+                        item.appendChild(note);
+
+                        if (revision.file_revisi && revision.file_revisi !== '-') {
+                            const attachment = document.createElement('div');
+                            attachment.className = 'mt-3 flex flex-col gap-3';
+                            attachment.innerHTML = renderFileCard(revision.file_revisi, 'Lampiran revisi', {
+                                name: revision.file_revisi_name,
+                                size: revision.file_revisi_size,
+                            });
+                            item.appendChild(attachment);
+                        }
+
+                        revisionHistory.appendChild(item);
+                    });
 
                     const revisiFileContainer = document.getElementById('revisi-file-container');
                     revisiFileContainer.innerHTML = '';
-                    if (lastSubmit?.file_hasil && lastSubmit.file_hasil !== '-') {
+                    const hasPreviousFile = Boolean(lastSubmit?.file_hasil && lastSubmit.file_hasil !== '-');
+                    if (hasPreviousFile) {
                         revisiFileContainer.innerHTML = renderFileCard(lastSubmit.file_hasil, 'Hasil sebelumnya', {
                             name: lastSubmit.file_hasil_name,
                             size: lastSubmit.file_hasil_size,
                         });
                     }
 
-                    const hasReferenceFiles = Boolean(
-                        (revisionSubmit.file_revisi && revisionSubmit.file_revisi !== '-')
-                        || (lastSubmit?.file_hasil && lastSubmit.file_hasil !== '-')
-                    );
-                    document.getElementById('referensi-revisi').classList.toggle('hidden', !hasReferenceFiles);
+                    document.getElementById('referensi-revisi').classList.toggle('hidden', !hasPreviousFile);
                     showRevisionSection();
                 } else {
                     document.getElementById('referensi-revisi').classList.add('hidden');
                 }
 
-                // Juga tampilkan pesan dari Kadiv di section revisi jika ada
+                // Pesan dari Kadiv ditampilkan terpisah dari riwayat revisi
+                const pesanSection = document.getElementById('section-pesan');
                 const pesanContainer = document.getElementById('revisi-pesan-container');
                 pesanContainer.replaceChildren();
-                if (t.pesans && t.pesans.length > 0) {
+
+                const hasMessages = Array.isArray(t.pesans) && t.pesans.length > 0;
+                pesanSection.classList.toggle('hidden', !hasMessages);
+                // Tanpa riwayat revisi, pesan tidak perlu jarak tambahan dari atas.
+                pesanSection.classList.toggle('mt-6', revisions.length > 0);
+
+                if (hasMessages) {
                     const pesanHtml = t.pesans.map(p => {
                         const tgl = p.created_at ? new Date(p.created_at).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) : '-';
                         const pengirim = p.pengirim ? p.pengirim.username : 'Kadiv';
@@ -489,7 +585,6 @@
                     }).join('');
 
                     pesanContainer.innerHTML = pesanHtml;
-                    showRevisionSection();
                 }
 
                 // === SUBMIT STATE ===
@@ -634,16 +729,8 @@
             submitButton.textContent = submitLabel;
         });
 
-        // Submit tugas
-        document.getElementById('form-submit-tugas').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            clearFormErrors();
-
-            if (!hasSubmissionInput()) {
-                showFormErrors(null, 'Lampirkan file hasil atau isi catatan pengumpulan.');
-                return;
-            }
-
+        // Kirim tugas ke server setelah dikonfirmasi
+        async function sendSubmission() {
             const token = sessionStorage.getItem('staff_token');
             if (!token) {
                 showFormErrors(null, 'Sesi habis, silakan login ulang.');
@@ -658,6 +745,7 @@
 
             submitButton.disabled = true;
             submitButton.textContent = 'Mengirim...';
+            if (confirmSubmitButton) confirmSubmitButton.disabled = true;
 
             try {
                 const res = await fetch('/api/staff/tugas/' + tugasId + '/submit', {
@@ -688,6 +776,37 @@
 
             submitButton.disabled = false;
             submitButton.textContent = submitLabel;
+            if (confirmSubmitButton) confirmSubmitButton.disabled = false;
+        }
+
+        // Tampilkan konfirmasi sebelum mengirim tugas
+        document.getElementById('form-submit-tugas').addEventListener('submit', function(e) {
+            e.preventDefault();
+            clearFormErrors();
+
+            if (!hasSubmissionInput()) {
+                showFormErrors(null, 'Lampirkan file hasil atau isi catatan pengumpulan.');
+                return;
+            }
+
+            if (!sessionStorage.getItem('staff_token')) {
+                showFormErrors(null, 'Sesi habis, silakan login ulang.');
+                return;
+            }
+
+            if (typeof window.setModal === 'function') {
+                window.setModal('modalKonfirmasiSubmit', true);
+                confirmSubmitButton?.focus();
+            } else {
+                sendSubmission();
+            }
+        });
+
+        confirmSubmitButton?.addEventListener('click', function() {
+            if (typeof window.setModal === 'function') {
+                window.setModal('modalKonfirmasiSubmit', false);
+            }
+            sendSubmission();
         });
     </script>
 

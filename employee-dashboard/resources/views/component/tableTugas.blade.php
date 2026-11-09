@@ -1,6 +1,5 @@
 @php
     $isCompact = $compact ?? false;
-    $cellPadding = $isCompact ? 'px-4 py-2' : 'px-6 py-4';
 @endphp
 
 @if ($isCompact)
@@ -32,65 +31,77 @@
     </div>
 @else
     <div class="flex flex-col gap-3">
-        <form id="staffTugasFilter" onsubmit="return false;"
-            class="flex flex-wrap items-end gap-4 bg-white border border-slate-200 rounded-xl shadow-sm p-5">
-            <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-                <label for="staffTugasSearch" class="text-xs font-bold text-slate-500">Cari Judul</label>
-                <input type="text" id="staffTugasSearch" placeholder="Judul tugas..."
-                    class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+        <div id="staffTugasFilter" class="flex flex-wrap items-center gap-2">
+            <div class="relative w-full sm:w-[280px]">
+                <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]"
+                    fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"></path>
+                </svg>
+                <input type="text" id="staffTugasSearch" placeholder="Cari judul tugas..." autocomplete="off"
+                    class="h-10 w-full rounded-lg border border-[#D5DEE3] bg-white pl-9 pr-3 text-sm text-[#172B36] outline-none transition placeholder:text-[#6B7280] focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]">
             </div>
-            <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
-                <label for="staffTugasStatus" class="text-xs font-bold text-slate-500">Status</label>
-                <select id="staffTugasStatus"
-                    class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
-                    <option value="">Semua</option>
-                    <option value="baru">Baru</option>
-                    <option value="berjalan">Berjalan</option>
-                    <option value="menunggu di-acc">Menunggu persetujuan</option>
-                    <option value="sudah di-acc">Disetujui</option>
-                    <option value="terlambat">Terlambat</option>
-                </select>
-            </div>
-            <div class="flex shrink-0 gap-2 sm:ml-auto">
-                <button type="button" id="staffTugasApply"
-                    class="h-10 inline-flex items-center px-4 bg-[#004A65] text-white text-sm font-medium rounded-md hover:bg-[#003347] transition">Terapkan</button>
-                <button type="button" id="staffTugasReset"
-                    class="h-10 inline-flex items-center px-4 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Reset</button>
-            </div>
-        </form>
+
+            <select id="staffTugasStatus"
+                class="h-10 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36] outline-none transition focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94] sm:w-auto">
+                <option value="">Semua status</option>
+                <option value="baru">Baru</option>
+                <option value="berjalan">Berjalan</option>
+                <option value="menunggu di-acc">Menunggu persetujuan</option>
+                <option value="sudah di-acc">Disetujui</option>
+                <option value="terlambat">Terlambat</option>
+            </select>
+
+            <button type="button" id="staffTugasReset"
+                class="hidden h-10 shrink-0 items-center gap-1 text-sm font-medium text-[#146C94] transition hover:text-[#0B4A66]">
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+                    aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+                </svg>
+                Reset
+            </button>
+        </div>
 
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm text-slate-600">
                     <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                         <tr>
-                            <th class="px-4 py-3 font-medium whitespace-nowrap">
+                            <th class="px-4 py-3 font-medium whitespace-nowrap text-left">
                                 <button type="button" onclick="setStaffTugasSort('judul')"
-                                    class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                    Judul Tugas <span data-sort-indicator="judul" class="text-slate-300">&#8597;</span>
+                                    class="inline-flex items-center gap-1 hover:text-[#146C94]">
+                                    Judul tugas <span data-sort-indicator="judul" class="text-slate-300">&#8597;</span>
                                 </button>
                             </th>
-                            <th class="px-4 py-3 font-medium whitespace-nowrap">
-                                <button type="button" onclick="setStaffTugasSort('tenggat')"
-                                    class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                    Tenggat Waktu <span data-sort-indicator="tenggat" class="text-slate-300">&#8597;</span>
-                                </button>
-                            </th>
-                            <th class="px-4 py-3 font-medium whitespace-nowrap">
+                            <th class="px-4 py-3 font-medium whitespace-nowrap text-left">
                                 <button type="button" onclick="setStaffTugasSort('status')"
-                                    class="inline-flex items-center gap-1 hover:text-[#004A65]">
+                                    class="inline-flex items-center gap-1 hover:text-[#146C94]">
                                     Status <span data-sort-indicator="status" class="text-slate-300">&#8597;</span>
                                 </button>
                             </th>
-                            <th class="px-4 py-3 font-medium whitespace-nowrap text-center">Aksi</th>
+                            <th class="px-4 py-3 font-medium whitespace-nowrap text-left">
+                                <button type="button" onclick="setStaffTugasSort('tenggat')"
+                                    class="inline-flex items-center gap-1 hover:text-[#146C94]">
+                                    Tenggat <span data-sort-indicator="tenggat" class="text-slate-300">&#8597;</span>
+                                </button>
+                            </th>
+                            <th class="w-12 px-4 py-3"></th>
                         </tr>
                     </thead>
-                    <tbody id="tbody-tugas" class="divide-y divide-slate-200">
+                    <tbody id="tbody-tugas" class="divide-y divide-[#EEF2F5]">
                         <tr id="tugas-loading">
-                            <td colspan="5" class="text-center py-6 text-slate-400">Memuat data tugas dari database...</td>
+                            <td colspan="4" class="text-center py-6 text-slate-400">Memuat data tugas dari database...</td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <div id="staffTugasFooter" class="hidden border-t border-[#EEF2F5] px-4 pt-4 pb-6">
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
+                    <p id="staffTugasCount" class="text-[12px] text-[#4B5563] sm:text-[13px]"></p>
+                    <div id="staffTugasPagination" class="flex flex-wrap justify-center gap-1.5"></div>
+                    <div class="hidden sm:block" aria-hidden="true"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -111,10 +122,27 @@
     const staffTugasIsCompact = {{ $isCompact ? 'true' : 'false' }};
     const staffTugasSearch = document.getElementById('staffTugasSearch');
     const staffTugasStatus = document.getElementById('staffTugasStatus');
+    const staffTugasReset = document.getElementById('staffTugasReset');
+    const staffTugasFooter = document.getElementById('staffTugasFooter');
+    const staffTugasCount = document.getElementById('staffTugasCount');
+    const staffTugasPagination = document.getElementById('staffTugasPagination');
+    const STAFF_TUGAS_PAGE_SIZE = 6;
     let staffTugasSort = staffTugasIsCompact ? 'tenggat' : null;
     let staffTugasDir = 'asc';
+    let staffTugasPage = 1;
+    let staffTugasFilterTimer = null;
     let staffTugasRequestId = 0;
     let staffTugasAbortController = null;
+
+    function staffEscapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+        }[character]));
+    }
 
     function staffStatusKey(status) {
         const value = String(status || '').toLowerCase().trim();
@@ -142,6 +170,19 @@
         return `<span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${highContrast}">${label}</span>`;
     }
 
+    function staffStatusCellHtml(task) {
+        const effectiveStatus = (task.status_efektif || task.status || 'baru').toLowerCase();
+        const storedStatus = String(task.status || '').toLowerCase();
+        const lateButAccepted = !!task.is_terlambat
+            && ['menunggu di-acc', 'sudah di-acc'].includes(storedStatus);
+
+        const statusPill = staffStatusBadgeHtml(effectiveStatus, false);
+
+        return lateButAccepted
+            ? `${statusPill}${staffStatusBadgeHtml('terlambat', false)}`
+            : statusPill;
+    }
+
     function formatStaffDeadline(value) {
         if (!value) return '-';
 
@@ -154,6 +195,129 @@
         }
 
         return date.toLocaleDateString('id-ID', options);
+    }
+
+    function formatStaffTugasDeadline(value) {
+        if (!value) return '-';
+
+        const date = new Date(String(value).replace(' ', 'T'));
+        if (Number.isNaN(date.getTime())) return '-';
+
+        const dateText = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+
+        if (hours === 17 && minutes === 0) return dateText;
+
+        return `${dateText}, ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+
+    function staffTugasStatusRank(status) {
+        const key = staffStatusKey(status);
+
+        if (key === 'terlambat') return 0;
+        if (key === 'disetujui') return 2;
+
+        return 1;
+    }
+
+    function staffTugasDeadlineTime(value) {
+        if (!value) return Number.POSITIVE_INFINITY;
+
+        const date = new Date(String(value).replace(' ', 'T'));
+
+        return Number.isNaN(date.getTime()) ? Number.POSITIVE_INFINITY : date.getTime();
+    }
+
+    function sortStaffTugasDefault(tasks) {
+        return tasks.slice().sort((a, b) => {
+            const rank = staffTugasStatusRank(a.status_efektif || a.status)
+                - staffTugasStatusRank(b.status_efektif || b.status);
+            if (rank !== 0) return rank;
+
+            const first = staffTugasDeadlineTime(a.deadline);
+            const second = staffTugasDeadlineTime(b.deadline);
+            if (first !== second) return first < second ? -1 : 1;
+
+            return String(a.judul_tugas || '').localeCompare(String(b.judul_tugas || ''), 'id');
+        });
+    }
+
+    function updateStaffTugasFilterStyles() {
+        const statusActive = !!staffTugasStatus && staffTugasStatus.value !== '';
+
+        if (staffTugasStatus) {
+            staffTugasStatus.classList.toggle('bg-[#E3F1F7]', statusActive);
+            staffTugasStatus.classList.toggle('border-[#146C94]', statusActive);
+            staffTugasStatus.classList.toggle('text-[#0B4A66]', statusActive);
+            staffTugasStatus.classList.toggle('font-medium', statusActive);
+            staffTugasStatus.classList.toggle('bg-white', !statusActive);
+            staffTugasStatus.classList.toggle('border-[#D5DEE3]', !statusActive);
+            staffTugasStatus.classList.toggle('text-[#172B36]', !statusActive);
+        }
+
+        const searchActive = !!staffTugasSearch && staffTugasSearch.value.trim() !== '';
+
+        if (staffTugasReset) {
+            staffTugasReset.classList.toggle('hidden', !statusActive && !searchActive);
+            staffTugasReset.classList.toggle('inline-flex', statusActive || searchActive);
+        }
+    }
+
+    function renderStaffTugasFooter(total) {
+        if (!staffTugasFooter) return;
+
+        if (total === 0) {
+            staffTugasFooter.classList.add('hidden');
+            return;
+        }
+
+        staffTugasFooter.classList.remove('hidden');
+
+        const totalPages = Math.max(1, Math.ceil(total / STAFF_TUGAS_PAGE_SIZE));
+        if (staffTugasPage > totalPages) staffTugasPage = totalPages;
+
+        const start = (staffTugasPage - 1) * STAFF_TUGAS_PAGE_SIZE + 1;
+        const end = Math.min(total, staffTugasPage * STAFF_TUGAS_PAGE_SIZE);
+
+        if (staffTugasCount) {
+            staffTugasCount.textContent = `Menampilkan ${start}-${end} dari ${total} tugas`;
+        }
+
+        if (!staffTugasPagination) return;
+
+        staffTugasPagination.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        const pages = totalPages > 7
+            ? [1, 2, 3, '...', totalPages]
+            : Array.from({ length: totalPages }, (_, index) => index + 1);
+
+        pages.forEach((page) => {
+            if (page === '...') {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'px-3 py-1.5 text-sm text-slate-400 select-none';
+                ellipsis.textContent = '\u2026';
+                staffTugasPagination.appendChild(ellipsis);
+                return;
+            }
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.page = String(page);
+            button.textContent = String(page);
+            button.className = page === staffTugasPage
+                ? 'min-w-9 rounded-md border border-[#004A65] bg-[#004A65] px-3 py-1.5 text-sm font-semibold text-white'
+                : 'min-w-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-600 transition hover:border-[#004A65] hover:text-[#004A65]';
+            button.setAttribute('aria-label', `Ke halaman ${page}`);
+
+            if (page === staffTugasPage) {
+                button.setAttribute('aria-current', 'page');
+            }
+
+            staffTugasPagination.appendChild(button);
+        });
     }
 
     function staffDeadlineHint(value, isLate) {
@@ -259,8 +423,15 @@
 
             tbody.innerHTML = '';
 
+            if (!staffTugasIsCompact) {
+                if (!staffTugasSort) {
+                    tugas = sortStaffTugasDefault(tugas);
+                }
+                renderStaffTugasFooter(tugas.length);
+            }
+
             if (!tugas || tugas.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${staffTugasIsCompact ? 4 : 5}" class="text-center py-6 text-[13px] text-[#4B5563]">Belum ada tugas yang ditugaskan kepada Anda.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-[13px] text-[#4B5563]">Belum ada tugas yang ditugaskan kepada Anda.</td></tr>`;
                 return;
             }
 
@@ -268,7 +439,11 @@
                 tugas = tugas.slice(0, 4);
             }
 
-            const rows = tugas.map(t => {
+            const visibleTugas = staffTugasIsCompact
+                ? tugas
+                : tugas.slice((staffTugasPage - 1) * STAFF_TUGAS_PAGE_SIZE, staffTugasPage * STAFF_TUGAS_PAGE_SIZE);
+
+            const rows = visibleTugas.map(t => {
                 const effectiveStatus = (t.status_efektif || t.status || 'baru').toLowerCase();
 
                 if (staffTugasIsCompact) {
@@ -296,27 +471,29 @@
                         </tr>`;
                 }
 
-                let deadline = '-';
-                if (t.deadline) {
-                    deadline = new Date(String(t.deadline).replace(' ', 'T'))
-                        .toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
-                        .replace(/\./g, ':');
-                }
+                const deadline = formatStaffTugasDeadline(t.deadline);
+                const judul = staffEscapeHtml(t.judul_tugas);
 
                 return `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="{{ $cellPadding }} font-medium text-slate-800 whitespace-nowrap">
-                            ${t.judul_tugas}
+                    <tr class="h-[52px] cursor-pointer hover:bg-[#F5FAFC] transition focus:bg-[#F5FAFC] focus:outline-none"
+                        data-href="/tugas/detail/${encodeURIComponent(t.id_tugas)}" tabindex="0" role="link">
+                        <td class="px-4 py-3">
+                            <span class="block truncate text-[14px] font-medium text-[#172B36]" title="${judul}">${judul}</span>
                         </td>
-                        <td class="{{ $cellPadding }} whitespace-nowrap text-slate-600">
-                            ${deadline}
+                        <td class="px-4 py-3">
+                            <div class="inline-flex flex-wrap items-center justify-start gap-1">
+                                ${staffStatusCellHtml(t)}
+                            </div>
                         </td>
-                        <td class="{{ $cellPadding }} whitespace-nowrap">
-                            ${staffStatusBadgeHtml(effectiveStatus, false)}
-                        </td>
-                        <td class="{{ $cellPadding }} whitespace-nowrap text-center">
-                            <a href="/tugas/detail/${encodeURIComponent(t.id_tugas)}" class="text-[#0097B2] hover:text-[#008199] font-medium hover:underline">
-                                Lihat
+                        <td class="px-4 py-3 whitespace-nowrap text-[14px] text-[#172B36]">${deadline}</td>
+                        <td class="px-4 py-3 text-right">
+                            <a href="/tugas/detail/${encodeURIComponent(t.id_tugas)}" onclick="event.stopPropagation()"
+                                aria-label="Buka tugas"
+                                class="inline-flex items-center justify-center text-[#5B6470] transition hover:text-[#146C94]">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
+                                </svg>
                             </a>
                         </td>
                     </tr>`;
@@ -343,7 +520,7 @@
             }
             console.error('Gagal meload tugas', error);
             if (requestId === staffTugasRequestId) {
-                tbody.innerHTML = `<tr><td colspan="${staffTugasIsCompact ? 4 : 5}" class="text-center py-6 text-[13px] text-red-500">Gagal mengambil data tugas</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-[13px] text-red-500">Gagal mengambil data tugas</td></tr>`;
             }
         }
     }
@@ -353,11 +530,11 @@
             if (el.dataset.sortIndicator === staffTugasSort) {
                 el.textContent = staffTugasDir === 'asc' ? '\u25B2' : '\u25BC';
                 el.classList.remove('text-slate-300');
-                el.classList.add('text-[#004A65]');
+                el.classList.add('text-[#146C94]');
             } else {
                 el.textContent = '\u2195';
                 el.classList.add('text-slate-300');
-                el.classList.remove('text-[#004A65]');
+                el.classList.remove('text-[#146C94]');
             }
         });
     }
@@ -369,19 +546,50 @@
             staffTugasSort = col;
             staffTugasDir = 'asc';
         }
+        staffTugasPage = 1;
         loadStaffTugas();
     };
 
     window.loadStaffTugas = loadStaffTugas;
 
     document.addEventListener('DOMContentLoaded', function () {
+        updateStaffTugasFilterStyles();
         loadStaffTugas();
-        document.getElementById('staffTugasApply')?.addEventListener('click', loadStaffTugas);
-        document.getElementById('staffTugasReset')?.addEventListener('click', () => {
+
+        if (staffTugasIsCompact) return;
+
+        staffTugasSearch?.addEventListener('input', () => {
+            updateStaffTugasFilterStyles();
+            clearTimeout(staffTugasFilterTimer);
+            staffTugasFilterTimer = setTimeout(() => {
+                staffTugasPage = 1;
+                loadStaffTugas();
+            }, 300);
+        });
+
+        staffTugasStatus?.addEventListener('change', () => {
+            clearTimeout(staffTugasFilterTimer);
+            updateStaffTugasFilterStyles();
+            staffTugasPage = 1;
+            loadStaffTugas();
+        });
+
+        staffTugasReset?.addEventListener('click', () => {
+            clearTimeout(staffTugasFilterTimer);
             if (staffTugasSearch) staffTugasSearch.value = '';
             if (staffTugasStatus) staffTugasStatus.value = '';
             staffTugasSort = null;
             staffTugasDir = 'asc';
+            staffTugasPage = 1;
+            updateStaffTugasFilterStyles();
+            loadStaffTugas();
+        });
+
+        staffTugasPagination?.addEventListener('click', (event) => {
+            const button = event.target.closest('button[data-page]');
+            if (!button) return;
+
+            staffTugasPage = Number(button.dataset.page) || 1;
             loadStaffTugas();
         });
     });
