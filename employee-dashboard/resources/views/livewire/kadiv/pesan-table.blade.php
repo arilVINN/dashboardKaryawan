@@ -160,49 +160,96 @@
 
     {{-- MODAL KIRIM PESAN --}}
     <div id="modalKirimPesan"
-        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-150">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" data-modal-close="modalKirimPesan"></div>
+        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(86,94,116,0.4)] backdrop-blur-sm transition-opacity duration-150 ease-in-out">
         <form wire:submit="sendMessage" data-modal-panel
-            class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transition-all duration-150">
-            <div class="flex items-center justify-between p-4 border-b border-dashed border-gray-300">
-                <h3 class="text-base font-bold text-slate-900">Kirim Pesan</h3>
+            class="relative flex max-h-[90vh] w-full max-w-[460px] flex-col overflow-hidden rounded-xl bg-white shadow-[0_8px_16px_rgba(0,0,0,0.12)] scale-95 translate-y-2 transition-all duration-150 ease-in-out">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC] rounded-t-xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-[#DCEEFE] text-[#2563EB] flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900">Kirim Pesan</h3>
+                </div>
                 <button type="button" data-modal-close="modalKirimPesan"
-                    class="text-slate-400 hover:text-red-500">&times;</button>
+                    class="text-[#565E74] hover:text-black text-2xl leading-none cursor-pointer">&times;</button>
             </div>
 
-            <div class="p-5 flex flex-col gap-4">
+            <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">PENERIMA</label>
-                    <select wire:model="recipientUserId"
-                        class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm text-slate-700 outline-none focus:border-[#004A65]">
-                        <option value="">-- Pilih Penerima --</option>
-                        @foreach ($recipients as $r)
-                            <option value="{{ $r->id_user }}">{{ $r->karyawan?->nama ?? $r->username }}</option>
+                    <label for="kadivPesanDivisi" class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">
+                        DIVISI
+                    </label>
+                    <select id="kadivPesanDivisi" wire:model.live="divisiId"
+                        class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] bg-white outline-none focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]">
+                        <option value="">Semua Divisi</option>
+                        @foreach ($divisis as $divisi)
+                            <option value="{{ $divisi->id_divisi }}">{{ $divisi->nama_divisi }}</option>
                         @endforeach
                     </select>
+                    @error('divisiId')
+                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="kadivPesanPenerima" class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">
+                        PENERIMA
+                    </label>
+                    <select id="kadivPesanPenerima" wire:model="recipientUserId"
+                        class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] bg-white outline-none focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]">
+                        <option value="">-- Pilih Penerima --</option>
+                        @foreach ($recipients as $recipient)
+                            <option value="{{ $recipient->id_user }}">
+                                {{ $recipient->karyawan?->nama ?? $recipient->username }}
+                                — {{ ucfirst($recipient->role?->nama_role ?? '') }} ({{ $recipient->karyawan?->divisi?->nama_divisi ?? 'Tanpa Divisi' }})
+                            </option>
+                        @endforeach
+                    </select>
+                    @if ($recipients->isEmpty())
+                        <p class="text-xs text-[#4B5563] mt-1">Belum ada penerima yang tersedia.</p>
+                    @endif
                     @error('recipientUserId')
                         <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">ISI PESAN</label>
-                    <textarea wire:model="isi" rows="4" placeholder="Tuliskan pesan..."
-                        class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]"></textarea>
+                    <label for="kadivPesanJudul" class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">
+                        TOPIK
+                    </label>
+                    <input id="kadivPesanJudul" type="text" wire:model="judul" maxlength="200"
+                        placeholder="Tulis topik pesan..."
+                        class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] bg-white outline-none focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]">
+                    @error('judul')
+                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="kadivPesanIsi" class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">
+                        ISI PESAN
+                    </label>
+                    <textarea id="kadivPesanIsi" wire:model="isi" rows="4" maxlength="5000"
+                        placeholder="Tuliskan pesan..."
+                        class="w-full rounded-lg border border-[#CBD5E1] px-3 py-2 text-sm text-[#283044] bg-white outline-none focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]"></textarea>
                     @error('isi')
                         <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
-            <div class="flex justify-between items-center px-5 py-4 border-t border-slate-100">
+            <div class="px-6 py-4 border-t border-[#E2E8F0] flex items-center justify-end gap-2">
                 <button type="button" data-modal-close="modalKirimPesan"
-                    class="px-5 py-1.5 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition">Batal</button>
-                <button type="submit"
-                    class="px-4 py-1.5 bg-[#004A65] text-white text-sm font-medium rounded-md hover:bg-[#003347] transition"
-                    wire:loading.attr="disabled">
-                    <span wire:loading.remove>Kirim</span>
-                    <span wire:loading>Mengirim...</span>
+                    class="h-10 px-4 rounded-lg bg-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-300 transition">
+                    Batal
+                </button>
+                <button type="submit" wire:loading.attr="disabled"
+                    class="h-10 px-4 rounded-lg bg-[#0097B2] text-white text-sm font-medium hover:bg-[#008199] transition disabled:opacity-50">
+                    <span wire:loading.remove wire:target="sendMessage">Kirim</span>
+                    <span wire:loading wire:target="sendMessage">Mengirim...</span>
                 </button>
             </div>
         </form>
