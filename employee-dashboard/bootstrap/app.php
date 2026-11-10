@@ -21,9 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'role' => \App\Http\Middleware\CheckRole::class,
+            'role'            => \App\Http\Middleware\CheckRole::class,
+            'kadiv.finance'   => \App\Http\Middleware\EnsureKadivFinance::class,
             'gateway.throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-            'gateway.format' => \App\Http\Middleware\ApiResponseFormatter::class,
+            'gateway.format'  => \App\Http\Middleware\ApiResponseFormatter::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

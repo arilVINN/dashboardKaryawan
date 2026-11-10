@@ -66,4 +66,33 @@ class User2 extends Authenticatable
             'id_user'
         );
     }
+
+    // ─── Keuangan Relations ───────────────────────────────────────────────────
+
+    public function alokasiDibuat()
+    {
+        return $this->hasMany(KeuanganAldiv::class, 'user_id_user', 'id_user');
+    }
+
+    public function pemasukan()
+    {
+        return $this->hasMany(KPemasukan::class, 'user_id_user', 'id_user');
+    }
+
+    public function laporanLabaRugi()
+    {
+        return $this->hasMany(KLabaRugi::class, 'user_id_user', 'id_user');
+    }
+
+    // ─── Keuangan Helpers ─────────────────────────────────────────────────────
+
+    /**
+     * Cek apakah user ini adalah Kepala Divisi Finance.
+     * Kriteria: role = 'kadiv' DAN divisi kode = 'FIN'
+     */
+    public function isKadivFinance(): bool
+    {
+        return strtolower($this->role?->nama_role ?? '') === 'kadiv'
+            && strtoupper($this->karyawan?->divisi?->kode_divisi ?? '') === 'FIN';
+    }
 }

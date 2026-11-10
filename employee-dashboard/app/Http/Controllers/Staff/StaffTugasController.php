@@ -8,23 +8,12 @@ use App\Models\SubmitTugas;
 use App\Models\Tugas;
 use App\Models\User2;
 use App\Queries\StaffTugasQuery;
-<<<<<<< HEAD
-<<<<<<< HEAD
-use App\Support\FileMetadata;
-use Illuminate\Support\Facades\Log;
-=======
-=======
 use App\Support\FileMetadata;
 use Illuminate\Http\Request;
->>>>>>> 836b8f440990db1100aa6dd63c29b9441194226d
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
-<<<<<<< HEAD
->>>>>>> 91a7df3ef54465de22a30f7c1b4fe653111049a2
-=======
->>>>>>> 836b8f440990db1100aa6dd63c29b9441194226d
 
 class StaffTugasController extends Controller
 {
@@ -143,10 +132,6 @@ class StaffTugasController extends Controller
         $filePath = '-'; // Default string '-' karena database Anda melarang NULL
         $fileOriginalName = null;
         if ($request->hasFile('file_hasil')) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 836b8f440990db1100aa6dd63c29b9441194226d
             $uploadedFile = $request->file('file_hasil');
             $filePath = $uploadedFile->store('submissions', 'public');
 
@@ -245,66 +230,5 @@ class StaffTugasController extends Controller
         } while (Notifikasi::where('id_notifikasi', $id)->exists());
 
         return $id;
-<<<<<<< HEAD
-=======
-            $filePath = $request->file('file_hasil')->store('submissions', 'public');
-
-            if (! $filePath) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'file_hasil' => 'File gagal disimpan. Silakan coba lagi.',
-                ]);
-            }
-        }
-
-        try {
-            DB::transaction(function () use ($tugas, $karyawanId, $filePath, $validated, $progress): void {
-                SubmitTugas::create([
-                    'id_submit_tugas' => $this->nextSubmitId(),
-                    'tugas_id_tugas' => $tugas->id_tugas,
-                    'tugas_karyawan_id_karyawan' => $karyawanId,
-                    'file_hasil' => $filePath,
-                    'link_submit' => $validated['link_submit'] ?? '-',
-                    'catatan_karyawan' => isset($validated['catatan_karyawan'])
-                        ? strip_tags($validated['catatan_karyawan'])
-                        : '-',
-                    'catatan_revisi' => '-',
-                    'tanggal_submit' => now(),
-                    'status_review' => 'submitted',
-                ]);
-
-                $tugas->update([
-                    'progress' => $progress,
-                    'status' => $progress == 100
-                        ? Tugas::STATUS_MENUNGGU_ACC
-                        : $tugas->status,
-                ]);
-            });
-        } catch (Throwable $exception) {
-            if ($filePath !== '-') {
-                Storage::disk('public')->delete($filePath);
-            }
-
-            throw $exception;
-        }
-
-        return response()->json(['message' => 'Hasil tugas berhasil dikirim', 'data' => $tugas]);
-    }
-
-    private function nextSubmitId(): string
-    {
-        $max = 0;
-
-        foreach (SubmitTugas::query()->lockForUpdate()->pluck('id_submit_tugas') as $id) {
-            if (preg_match('/^SB(\d+)$/', (string) $id, $matches)) {
-                $max = max($max, (int) $matches[1]);
-            }
-        }
-
-        return 'SB'.str_pad((string) ($max + 1), 3, '0', STR_PAD_LEFT);
->>>>>>> 91a7df3ef54465de22a30f7c1b4fe653111049a2
     }
 }
-=======
-    }
-}
->>>>>>> 836b8f440990db1100aa6dd63c29b9441194226d

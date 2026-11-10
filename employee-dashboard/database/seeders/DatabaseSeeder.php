@@ -301,6 +301,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('Berhasil Seed Database: 3 Role (staff, kadiv, hrd), 2 Divisi, 7 Karyawan!');
 
         $this->call([
+            FinanceSeeder::class,
             TugasSeeder::class,
             TowerDatabaseSeeder::class,
             PesanSeeder::class,

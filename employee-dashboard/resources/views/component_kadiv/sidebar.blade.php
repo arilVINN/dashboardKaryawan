@@ -95,6 +95,99 @@
             </svg>
             <span class="sidebar-text whitespace-nowrap transition-all duration-150">Pusat Data</span>
         </a>
+
+        {{-- Menu Keuangan (Kondisional: Kadiv Finance vs Kadiv Lain) --}}
+        @if (auth()->user()?->isKadivFinance())
+            <div class="pt-3 pb-1 border-t border-white/10">
+                <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-300/80 sidebar-text">Keuangan Perusahaan</p>
+            </div>
+
+            {{-- Ringkasan Keuangan --}}
+            <a href="{{ route('kadiv.keuangan') }}"
+                class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->routeIs('kadiv.keuangan') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="sidebar-text whitespace-nowrap transition-all duration-150">Ringkasan Keuangan</span>
+            </a>
+
+            {{-- Rekap Laba/Rugi Divisi --}}
+            <a href="{{ route('kadiv.keuangan.rekapDivisi') }}"
+                class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->routeIs('kadiv.keuangan.rekapDivisi*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span class="sidebar-text whitespace-nowrap transition-all duration-150">Rekap Laba/Rugi</span>
+            </a>
+
+            {{-- Alokasi Anggaran --}}
+            <a href="{{ route('kadiv.keuangan.alokasi') }}"
+                class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->routeIs('kadiv.keuangan.alokasi*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                </svg>
+                <span class="sidebar-text whitespace-nowrap transition-all duration-150">Alokasi Anggaran</span>
+            </a>
+
+            {{-- Permintaan Dana Masuk --}}
+            <a href="{{ route('kadiv.keuangan.permintaan') }}"
+                class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->routeIs('kadiv.keuangan.permintaan*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span class="sidebar-text whitespace-nowrap transition-all duration-150">Permintaan Dana</span>
+            </a>
+
+            {{-- Kas Masuk --}}
+            <a href="{{ route('kadiv.keuangan.pemasukan') }}"
+                class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->routeIs('kadiv.keuangan.pemasukan*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                </svg>
+                <span class="sidebar-text whitespace-nowrap transition-all duration-150">Kas Masuk</span>
+            </a>
+
+            {{-- Kas Keluar --}}
+            <a href="{{ route('kadiv.keuangan.pengeluaran') }}"
+                class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->routeIs('kadiv.keuangan.pengeluaran*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                </svg>
+                <span class="sidebar-text whitespace-nowrap transition-all duration-150">Kas Keluar</span>
+            </a>
+
+            {{-- Verifikasi Laporan L/R --}}
+            <a href="{{ route('kadiv.keuangan.laporan') }}"
+                class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->routeIs('kadiv.keuangan.laporan*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                <span class="sidebar-text whitespace-nowrap transition-all duration-150">Verifikasi Laporan L/R</span>
+            </a>
+        @else
+            <div class="pt-3 pb-1 border-t border-white/10">
+                <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-300/80 sidebar-text">Keuangan Divisi</p>
+            </div>
+
+            {{-- Pengajuan Dana --}}
+            <a href="{{ route('kadiv.pengajuanDana') }}"
+                class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->routeIs('kadiv.pengajuanDana*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span class="sidebar-text whitespace-nowrap transition-all duration-150">Pengajuan Dana</span>
+            </a>
+
+            {{-- Laporan Laba/Rugi Mingguan --}}
+            <a href="{{ route('kadiv.laporanLabaRugi') }}"
+                class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->routeIs('kadiv.laporanLabaRugi*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span class="sidebar-text whitespace-nowrap transition-all duration-150">Laporan Laba / Rugi</span>
+            </a>
+        @endif
     </nav>
 </aside>
 

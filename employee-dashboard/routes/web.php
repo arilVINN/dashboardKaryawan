@@ -16,6 +16,14 @@ use App\Http\Controllers\Staff\SuratIzinController;
 use App\Models\Carousel;
 use App\Models\Divisi;
 
+// ─── Finance Module Controllers ───────────────────────────────────────────────
+use App\Http\Controllers\Finance\KeuanganController;
+use App\Http\Controllers\Finance\PemasukanController;
+use App\Http\Controllers\Finance\AlokasiController;
+use App\Http\Controllers\Finance\PermintaanDanaController;
+use App\Http\Controllers\Finance\PengeluaranController;
+use App\Http\Controllers\Finance\LabaRugiController;
+
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
@@ -399,3 +407,78 @@ Route::fallback(function (Request $request) {
     return redirect()->route($dashboardRoute)
         ->with('error', 'Halaman tidak ditemukan. Anda telah diarahkan ke dashboard Anda.');
 });
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// MODUL KEUANGAN (FINANCE)
+// ═════════════════════════════════════════════════════════════════════════════
+
+// ── Khusus Kadiv Finance (harus kode_divisi = 'FIN') ─────────────────────────
+Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
+    ->prefix('kadiv/keuangan')
+    ->group(function () {
+
+        // Dashboard Keuangan
+        Route::get('/', [KeuanganController::class, 'index'])->name('kadiv.keuangan');
+        Route::get('/rekap-divisi', [KeuanganController::class, 'rekapDivisi'])->name('kadiv.keuangan.rekapDivisi');
+        Route::get('/rekap-divisi/export', [KeuanganController::class, 'export'])->name('kadiv.keuangan.exportRekapDivisi');
+
+        // Pemasukan Kas
+        Route::get('/pemasukan', [PemasukanController::class, 'index'])->name('kadiv.keuangan.pemasukan');
+        Route::post('/pemasukan', [PemasukanController::class, 'store'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.pemasukan.store');
+
+        // Alokasi Pagu Anggaran
+        Route::get('/alokasi', [AlokasiController::class, 'index'])->name('kadiv.keuangan.alokasi');
+        Route::post('/alokasi', [AlokasiController::class, 'store'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.alokasi.store');
+        Route::put('/alokasi/{id}', [AlokasiController::class, 'update'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.alokasi.update');
+
+        // Permintaan Dana — Lihat & Approve/Reject (Finance)
+        Route::get('/permintaan', [PermintaanDanaController::class, 'index'])->name('kadiv.keuangan.permintaan');
+        Route::get('/permintaan/{id}', [PermintaanDanaController::class, 'show'])->name('kadiv.keuangan.permintaan.show');
+        Route::post('/permintaan/{id}/approve', [PermintaanDanaController::class, 'approve'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.permintaan.approve');
+        Route::post('/permintaan/{id}/reject', [PermintaanDanaController::class, 'reject'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.permintaan.reject');
+
+        // Pengeluaran / Pencairan
+        Route::get('/pengeluaran', [PengeluaranController::class, 'index'])->name('kadiv.keuangan.pengeluaran');
+        Route::post('/pengeluaran', [PengeluaranController::class, 'store'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.pengeluaran.store');
+        Route::post('/pengeluaran/cairkan/{idKpd}', [PengeluaranController::class, 'cairkan'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.cairkan');
+
+        // Verifikasi Laporan Laba/Rugi (Finance)
+        Route::get('/laporan', [LabaRugiController::class, 'daftarLaporan'])->name('kadiv.keuangan.laporan');
+        Route::post('/laporan/{id}/verifikasi', [LabaRugiController::class, 'verifikasi'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.laporan.verifikasi');
+    });
+
+// ── Semua Kadiv: Pengajuan Dana & Laporan Laba/Rugi ──────────────────────────
+Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])
+    ->prefix('kadiv')
+    ->group(function () {
+        // Pengajuan Dana
+        Route::get('/pengajuan-dana', [PermintaanDanaController::class, 'create'])->name('kadiv.pengajuanDana');
+        Route::post('/pengajuan-dana', [PermintaanDanaController::class, 'store'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.pengajuanDana.store');
+        Route::get('/pengajuan-dana/riwayat', [PermintaanDanaController::class, 'riwayat'])->name('kadiv.pengajuanDana.riwayat');
+
+        // Laporan Laba/Rugi per Kadiv
+        Route::get('/laporan-laba-rugi', [LabaRugiController::class, 'index'])->name('kadiv.laporanLabaRugi');
+        Route::post('/laporan-laba-rugi', [LabaRugiController::class, 'store'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.laporanLabaRugi.store');
+    });
+
