@@ -23,6 +23,13 @@ Route::post('/login', [AuthController::class, 'login'])
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Shared public content calendar (all authenticated roles)
+Route::middleware(['auth', 'throttle:umum'])->group(function () {
+    Route::get('/kalender-konten', function () {
+        return view('kalender-konten');
+    })->name('kalender-konten');
+});
+
 // staff route (session auth + staff role)
 Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/', function () {
