@@ -84,7 +84,7 @@
         </template>
     </div>
 
-    {{-- Toolbar row 1: period navigation --}}
+    {{-- Toolbar --}}
     <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex min-w-0 flex-wrap items-center gap-3">
             <div class="inline-flex items-stretch overflow-hidden rounded-lg border border-[#E2E8EC] bg-white">
@@ -108,34 +108,33 @@
             <h2 class="truncate text-xl font-semibold text-[#172B36]">{{ $monthLabel }}</h2>
         </div>
 
-        <button type="button" id="content-add-event" wire:click="openCreate()" @click="remember($el)"
-            class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] focus-visible:ring-offset-2">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
-            </svg>
-            Tambah event
-        </button>
-    </div>
+        <div class="ml-auto flex flex-wrap items-center gap-2">
+            <select wire:model.live="division" aria-label="Filter divisi"
+                class="h-10 rounded-lg border border-[#E2E8EC] bg-white px-3 text-sm text-[#172B36] focus:border-[#0097B2] focus:outline-none focus:ring-2 focus:ring-[#0097B2]/20">
+                <option value="semua">Semua divisi</option>
+                <option value="umum">Umum</option>
+                @foreach ($divisionOptions as $divisionOption)
+                    <option value="{{ $divisionOption->id_divisi }}">{{ $divisionOption->nama_divisi }}</option>
+                @endforeach
+            </select>
 
-    {{-- Toolbar row 2: filters and view --}}
-    <div class="mt-3 flex flex-wrap items-center justify-end gap-2">
-        <select wire:model.live="division" aria-label="Filter divisi"
-            class="h-10 rounded-lg border border-[#E2E8EC] bg-white px-3 text-sm text-[#172B36] focus:border-[#0097B2] focus:outline-none focus:ring-2 focus:ring-[#0097B2]/20">
-            <option value="semua">Semua divisi</option>
-            <option value="umum">Umum</option>
-            @foreach ($divisionOptions as $divisionOption)
-                <option value="{{ $divisionOption->id_divisi }}">{{ $divisionOption->nama_divisi }}</option>
-            @endforeach
-        </select>
+            <div class="inline-flex rounded-lg border border-[#E2E8EC] bg-white p-0.5" role="group" aria-label="Tampilan kalender">
+                @foreach (['bulan' => 'Bulan', 'minggu' => 'Minggu', 'daftar' => 'Daftar'] as $key => $label)
+                    <button type="button" wire:click="setView('{{ $key }}')"
+                        aria-pressed="{{ $view === $key ? 'true' : 'false' }}"
+                        class="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] {{ $view === $key ? 'bg-[#146C94] text-white' : 'text-[#4B5563] hover:bg-slate-50' }}">
+                        {{ $label }}
+                    </button>
+                @endforeach
+            </div>
 
-        <div class="inline-flex rounded-lg border border-[#E2E8EC] bg-white p-0.5" role="group" aria-label="Tampilan kalender">
-            @foreach (['bulan' => 'Bulan', 'minggu' => 'Minggu', 'daftar' => 'Daftar'] as $key => $label)
-                <button type="button" wire:click="setView('{{ $key }}')"
-                    aria-pressed="{{ $view === $key ? 'true' : 'false' }}"
-                    class="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] {{ $view === $key ? 'bg-[#146C94] text-white' : 'text-[#4B5563] hover:bg-slate-50' }}">
-                    {{ $label }}
-                </button>
-            @endforeach
+            <button type="button" id="content-add-event" wire:click="openCreate()" @click="remember($el)"
+                class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] focus-visible:ring-offset-2">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
+                </svg>
+                Tambah event
+            </button>
         </div>
     </div>
 
