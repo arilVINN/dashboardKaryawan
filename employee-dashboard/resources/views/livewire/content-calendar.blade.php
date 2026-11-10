@@ -84,28 +84,41 @@
         </template>
     </div>
 
-    {{-- Toolbar --}}
-    <div class="flex flex-wrap items-center gap-2">
-        <button type="button" wire:click="previous" aria-label="Periode sebelumnya"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#E2E8EC] bg-white text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2]">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"></path>
-            </svg>
-        </button>
-        <button type="button" wire:click="next" aria-label="Periode berikutnya"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#E2E8EC] bg-white text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2]">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"></path>
-            </svg>
-        </button>
-        <h2 class="truncate text-xl font-semibold text-[#172B36]">{{ $monthLabel }}</h2>
-        <button type="button" wire:click="goToday"
-            class="inline-flex h-10 items-center rounded-lg border border-[#E2E8EC] bg-white px-3 text-sm font-medium text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2]">
-            Hari ini
-        </button>
+    {{-- Toolbar row 1: period navigation --}}
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex min-w-0 flex-wrap items-center gap-3">
+            <div class="inline-flex items-stretch overflow-hidden rounded-lg border border-[#E2E8EC] bg-white">
+                <button type="button" wire:click="previous" aria-label="Periode sebelumnya"
+                    class="inline-flex h-10 w-10 items-center justify-center border-r border-[#E2E8EC] text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0097B2]">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <button type="button" wire:click="next" aria-label="Periode berikutnya"
+                    class="inline-flex h-10 w-10 items-center justify-center border-r border-[#E2E8EC] text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0097B2]">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"></path>
+                    </svg>
+                </button>
+                <button type="button" wire:click="goToday"
+                    class="inline-flex h-10 items-center px-3 text-sm font-medium text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0097B2]">
+                    Hari ini
+                </button>
+            </div>
+            <h2 class="truncate text-xl font-semibold text-[#172B36]">{{ $monthLabel }}</h2>
+        </div>
 
-        <span class="mx-1 hidden h-6 w-px bg-[#E2E8EC] sm:block" aria-hidden="true"></span>
+        <button type="button" id="content-add-event" wire:click="openCreate()" @click="remember($el)"
+            class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] focus-visible:ring-offset-2">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
+            </svg>
+            Tambah event
+        </button>
+    </div>
 
+    {{-- Toolbar row 2: filters and view --}}
+    <div class="mt-3 flex flex-wrap items-center justify-end gap-2">
         <select wire:model.live="division" aria-label="Filter divisi"
             class="h-10 rounded-lg border border-[#E2E8EC] bg-white px-3 text-sm text-[#172B36] focus:border-[#0097B2] focus:outline-none focus:ring-2 focus:ring-[#0097B2]/20">
             <option value="semua">Semua divisi</option>
@@ -124,14 +137,6 @@
                 </button>
             @endforeach
         </div>
-
-        <button type="button" id="content-add-event" wire:click="openCreate()" @click="remember($el)"
-            class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] focus-visible:ring-offset-2">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
-            </svg>
-            Tambah event
-        </button>
     </div>
 
     <div class="mt-4 flex flex-col gap-4 min-[1100px]:flex-row min-[1100px]:items-start">
