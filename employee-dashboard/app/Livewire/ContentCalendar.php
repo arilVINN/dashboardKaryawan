@@ -29,10 +29,6 @@ class ContentCalendar extends Component
     #[Url]
     public string $division = 'semua';
 
-    public bool $showHolidays = true;
-
-    public bool $showInternal = true;
-
     /** Read-only side panel. */
     public bool $drawerOpen = false;
 
@@ -163,23 +159,9 @@ class ContentCalendar extends Component
         $this->popoverDate = null;
     }
 
-    public function toggleHolidays(): void
-    {
-        $this->showHolidays = ! $this->showHolidays;
-        $this->popoverDate = null;
-    }
-
-    public function toggleInternal(): void
-    {
-        $this->showInternal = ! $this->showInternal;
-        $this->popoverDate = null;
-    }
-
     public function resetFilters(): void
     {
         $this->division = 'semua';
-        $this->showHolidays = true;
-        $this->showInternal = true;
         $this->popoverDate = null;
     }
 
@@ -501,26 +483,22 @@ class ContentCalendar extends Component
                 $rangeEnd->year,
             ]);
 
-            if ($this->showInternal) {
-                $events = ContentEvent::query()
-                    ->with(['division', 'pic.karyawan', 'creator.karyawan'])
-                    ->overlapping($rangeStart, $rangeEnd)
-                    ->when($this->division === 'umum', fn ($query) => $query->whereNull('division_id'))
-                    ->when(! in_array($this->division, ['semua', 'umum'], true), fn ($query) => $query->where('division_id', $this->division))
-                    ->orderBy('start_date')
-                    ->orderBy('title')
-                    ->get();
-            }
+            $events = ContentEvent::query()
+                ->with(['division', 'pic.karyawan', 'creator.karyawan'])
+                ->overlapping($rangeStart, $rangeEnd)
+                ->when($this->division === 'umum', fn ($query) => $query->whereNull('division_id'))
+                ->when(! in_array($this->division, ['semua', 'umum'], true), fn ($query) => $query->where('division_id', $this->division))
+                ->orderBy('start_date')
+                ->orderBy('title')
+                ->get();
 
-            if ($this->showHolidays) {
-                $holidays = Holiday::query()
-                    ->whereDate('date', '>=', $rangeStart->toDateString())
-                    ->whereDate('date', '<=', $rangeEnd->toDateString())
-                    ->whereIn('type', Holiday::DAY_OFF_TYPES)
-                    ->orderBy('date')
-                    ->orderBy('name')
-                    ->get();
-            }
+            $holidays = Holiday::query()
+                ->whereDate('date', '>=', $rangeStart->toDateString())
+                ->whereDate('date', '<=', $rangeEnd->toDateString())
+                ->whereIn('type', Holiday::DAY_OFF_TYPES)
+                ->orderBy('date')
+                ->orderBy('name')
+                ->get();
 
             $canEdit = [];
 
@@ -1016,8 +994,6 @@ class ContentCalendar extends Component
 
     private function hasActiveFilters(): bool
     {
-        return $this->division !== 'semua'
-            || ! $this->showHolidays
-            || ! $this->showInternal;
+        return $this->division !== 'semua';
     }
 }

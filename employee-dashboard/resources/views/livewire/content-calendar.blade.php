@@ -84,51 +84,28 @@
         </template>
     </div>
 
-    {{-- Toolbar row 1 --}}
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="flex min-w-0 flex-wrap items-center gap-2">
-            <button type="button" wire:click="previous" aria-label="Periode sebelumnya"
-                class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#E2E8EC] bg-white text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2]">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"></path>
-                </svg>
-            </button>
-            <button type="button" wire:click="next" aria-label="Periode berikutnya"
-                class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#E2E8EC] bg-white text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2]">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"></path>
-                </svg>
-            </button>
-            <button type="button" wire:click="goToday"
-                class="inline-flex h-10 items-center rounded-lg border border-[#E2E8EC] bg-white px-3 text-sm font-medium text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2]">
-                Hari ini
-            </button>
-            <h2 class="ml-1 truncate text-xl font-semibold text-[#172B36]">{{ $monthLabel }}</h2>
-        </div>
+    {{-- Toolbar --}}
+    <div class="flex flex-wrap items-center gap-2">
+        <button type="button" wire:click="previous" aria-label="Periode sebelumnya"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#E2E8EC] bg-white text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2]">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"></path>
+            </svg>
+        </button>
+        <button type="button" wire:click="next" aria-label="Periode berikutnya"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#E2E8EC] bg-white text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2]">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"></path>
+            </svg>
+        </button>
+        <h2 class="truncate text-xl font-semibold text-[#172B36]">{{ $monthLabel }}</h2>
+        <button type="button" wire:click="goToday"
+            class="inline-flex h-10 items-center rounded-lg border border-[#E2E8EC] bg-white px-3 text-sm font-medium text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2]">
+            Hari ini
+        </button>
 
-        <div class="flex flex-wrap items-center gap-2">
-            <div class="inline-flex rounded-lg border border-[#E2E8EC] bg-white p-0.5" role="group" aria-label="Tampilan kalender">
-                @foreach (['bulan' => 'Bulan', 'minggu' => 'Minggu', 'daftar' => 'Daftar'] as $key => $label)
-                    <button type="button" wire:click="setView('{{ $key }}')"
-                        aria-pressed="{{ $view === $key ? 'true' : 'false' }}"
-                        class="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] {{ $view === $key ? 'bg-[#146C94] text-white' : 'text-[#4B5563] hover:bg-slate-50' }}">
-                        {{ $label }}
-                    </button>
-                @endforeach
-            </div>
+        <span class="mx-1 hidden h-6 w-px bg-[#E2E8EC] sm:block" aria-hidden="true"></span>
 
-            <button type="button" id="content-add-event" wire:click="openCreate()" @click="remember($el)"
-                class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] focus-visible:ring-offset-2">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
-                </svg>
-                Tambah event
-            </button>
-        </div>
-    </div>
-
-    {{-- Toolbar row 2 --}}
-    <div class="mt-3 flex flex-wrap items-center gap-2">
         <select wire:model.live="division" aria-label="Filter divisi"
             class="h-10 rounded-lg border border-[#E2E8EC] bg-white px-3 text-sm text-[#172B36] focus:border-[#0097B2] focus:outline-none focus:ring-2 focus:ring-[#0097B2]/20">
             <option value="semua">Semua divisi</option>
@@ -138,30 +115,23 @@
             @endforeach
         </select>
 
-        <div class="ml-auto flex flex-wrap items-center gap-1.5">
-            <button type="button" wire:click="toggleHolidays"
-                aria-pressed="{{ $showHolidays ? 'true' : 'false' }}"
-                class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] {{ $showHolidays ? 'border-[#E0D6A8] bg-[#F4F1E6] text-[#5C4D14]' : 'border-[#E2E8EC] bg-white text-[#4B5563] hover:bg-slate-50' }}">
-                <span class="h-1.5 w-1.5 rounded-full bg-[#A39161]"></span>
-                Hari Libur
-            </button>
-            <button type="button" wire:click="toggleInternal"
-                aria-pressed="{{ $showInternal ? 'true' : 'false' }}"
-                class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] {{ $showInternal ? 'border-[#B6DCE8] bg-[#E3F1F7] text-[#0B4A66]' : 'border-[#E2E8EC] bg-white text-[#4B5563] hover:bg-slate-50' }}">
-                <span class="h-1.5 w-1.5 rounded-full bg-[#0097B2]"></span>
-                Event Internal
-            </button>
-
-            @if ($hasActiveFilters)
-                <button type="button" wire:click="resetFilters"
-                    class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-[#4B5563] transition hover:text-[#172B36] hover:underline hover:underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2]">
-                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"></path>
-                    </svg>
-                    Reset filter
+        <div class="inline-flex rounded-lg border border-[#E2E8EC] bg-white p-0.5" role="group" aria-label="Tampilan kalender">
+            @foreach (['bulan' => 'Bulan', 'minggu' => 'Minggu', 'daftar' => 'Daftar'] as $key => $label)
+                <button type="button" wire:click="setView('{{ $key }}')"
+                    aria-pressed="{{ $view === $key ? 'true' : 'false' }}"
+                    class="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] {{ $view === $key ? 'bg-[#146C94] text-white' : 'text-[#4B5563] hover:bg-slate-50' }}">
+                    {{ $label }}
                 </button>
-            @endif
+            @endforeach
         </div>
+
+        <button type="button" id="content-add-event" wire:click="openCreate()" @click="remember($el)"
+            class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] focus-visible:ring-offset-2">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
+            </svg>
+            Tambah event
+        </button>
     </div>
 
     <div class="mt-4 flex flex-col gap-4 min-[1100px]:flex-row min-[1100px]:items-start">
@@ -184,7 +154,7 @@
                         </button>
                     </div>
                 @else
-                    <div wire:loading.delay wire:target="previous,next,goToday,setView,division,toggleHolidays,toggleInternal,resetFilters"
+                    <div wire:loading.delay wire:target="previous,next,goToday,setView,division,resetFilters"
                         class="p-4">
                         <div class="grid grid-cols-7 gap-px overflow-hidden rounded-lg bg-[#E2E8EC]">
                             @for ($i = 0; $i < 42; $i++)
@@ -197,7 +167,7 @@
                         </div>
                     </div>
 
-                    <div wire:loading.remove wire:target="previous,next,goToday,setView,division,toggleHolidays,toggleInternal,resetFilters">
+                    <div wire:loading.remove wire:target="previous,next,goToday,setView,division,resetFilters">
                         @if ($isEmpty && $view === 'daftar')
                             <div class="flex flex-col items-center justify-center px-6 py-16 text-center">
                                 <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E3F1F7] text-[#146C94]">
