@@ -65,6 +65,17 @@
             <span class="sidebar-text whitespace-nowrap transition-all duration-150">Kalender</span>
         </a>
 
+        {{-- Kalender Konten --}}
+        <a href="{{ url('/kalender-konten') }}"
+            class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('kalender-konten*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path d="M12 11.2l.85 1.95 1.95.85-1.95.85L12 16.8l-.85-1.95-1.95-.85 1.95-.85L12 11.2z" fill="currentColor" stroke="none"></path>
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Kalender Konten</span>
+        </a>
+
         {{-- Pesan --}}
         <a href="{{ url('/kadiv/pesan') }}"
             class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('kadiv/pesan*') || request()->is('kadiv/detailPesan*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">

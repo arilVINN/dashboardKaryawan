@@ -17,3 +17,7 @@ Schedule::command('tugas:remind-deadline')->hourly()->withoutOverlapping();
 // Catatan yang dibuat setelah jam 08:00 dengan pengingat hari ini dikirim
 // langsung oleh CalendarNoteController::store.
 Schedule::command('catatan:remind-email')->dailyAt('08:00')->withoutOverlapping();
+
+// Sinkronkan hari libur nasional dari API. Dijalankan mingguan agar data
+// tahun berjalan dan tahun berikutnya tetap mengikuti SKB 3 Menteri.
+Schedule::command('holidays:sync --years=2')->weeklyOn(1, '03:15')->withoutOverlapping();
