@@ -129,15 +129,6 @@
 
     {{-- Toolbar row 2 --}}
     <div class="mt-3 flex flex-wrap items-center gap-2">
-        <div class="relative w-full sm:w-64">
-            <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z"></path>
-            </svg>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari event..."
-                aria-label="Cari event"
-                class="h-10 w-full rounded-lg border border-[#E2E8EC] bg-white pl-9 pr-3 text-sm text-[#172B36] placeholder:text-[#94A3B8] focus:border-[#0097B2] focus:outline-none focus:ring-2 focus:ring-[#0097B2]/20">
-        </div>
-
         <select wire:model.live="division" aria-label="Filter divisi"
             class="h-10 rounded-lg border border-[#E2E8EC] bg-white px-3 text-sm text-[#172B36] focus:border-[#0097B2] focus:outline-none focus:ring-2 focus:ring-[#0097B2]/20">
             <option value="semua">Semua divisi</option>
@@ -147,21 +138,7 @@
             @endforeach
         </select>
 
-        <select wire:model.live="status" aria-label="Filter status"
-            class="h-10 rounded-lg border border-[#E2E8EC] bg-white px-3 text-sm text-[#172B36] focus:border-[#0097B2] focus:outline-none focus:ring-2 focus:ring-[#0097B2]/20">
-            <option value="semua">Semua status</option>
-            @foreach ($statusOptions as $key => $label)
-                <option value="{{ $key }}">{{ $label }}</option>
-            @endforeach
-        </select>
-
         <div class="ml-auto flex flex-wrap items-center gap-1.5">
-            <button type="button" wire:click="resetFilters"
-                aria-pressed="{{ $division === 'semua' ? 'true' : 'false' }}"
-                class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] {{ $division === 'semua' ? 'border-[#B6DCE8] bg-[#E3F1F7] text-[#0B4A66]' : 'border-[#E2E8EC] bg-white text-[#4B5563] hover:bg-slate-50' }}">
-                <span class="h-1.5 w-1.5 rounded-full bg-[#146C94]"></span>
-                Semua divisi
-            </button>
             <button type="button" wire:click="toggleHolidays"
                 aria-pressed="{{ $showHolidays ? 'true' : 'false' }}"
                 class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2] {{ $showHolidays ? 'border-[#E0D6A8] bg-[#F4F1E6] text-[#5C4D14]' : 'border-[#E2E8EC] bg-white text-[#4B5563] hover:bg-slate-50' }}">
@@ -174,6 +151,16 @@
                 <span class="h-1.5 w-1.5 rounded-full bg-[#0097B2]"></span>
                 Event Internal
             </button>
+
+            @if ($hasActiveFilters)
+                <button type="button" wire:click="resetFilters"
+                    class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-[#4B5563] transition hover:text-[#172B36] hover:underline hover:underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0097B2]">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"></path>
+                    </svg>
+                    Reset filter
+                </button>
+            @endif
         </div>
     </div>
 
@@ -197,7 +184,7 @@
                         </button>
                     </div>
                 @else
-                    <div wire:loading.delay wire:target="previous,next,goToday,setView,search,division,status,toggleHolidays,toggleInternal,resetFilters"
+                    <div wire:loading.delay wire:target="previous,next,goToday,setView,division,toggleHolidays,toggleInternal,resetFilters"
                         class="p-4">
                         <div class="grid grid-cols-7 gap-px overflow-hidden rounded-lg bg-[#E2E8EC]">
                             @for ($i = 0; $i < 42; $i++)
@@ -210,7 +197,7 @@
                         </div>
                     </div>
 
-                    <div wire:loading.remove wire:target="previous,next,goToday,setView,search,division,status,toggleHolidays,toggleInternal,resetFilters">
+                    <div wire:loading.remove wire:target="previous,next,goToday,setView,division,toggleHolidays,toggleInternal,resetFilters">
                         @if ($isEmpty && $view === 'daftar')
                             <div class="flex flex-col items-center justify-center px-6 py-16 text-center">
                                 <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E3F1F7] text-[#146C94]">

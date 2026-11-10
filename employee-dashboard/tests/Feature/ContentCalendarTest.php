@@ -444,7 +444,7 @@ class ContentCalendarTest extends TestCase
             ->assertDontSee('Hari Besar Lama');
     }
 
-    public function test_filters_apply_to_the_calendar_data(): void
+    public function test_division_filter_applies_to_the_calendar_data(): void
     {
         $this->event($this->staffIt, 'DV-IT', null, null, 'Event IT', 'baru');
         $this->event($this->hrd, 'DV-HR', null, null, 'Event HR', 'disetujui');
@@ -456,13 +456,8 @@ class ContentCalendarTest extends TestCase
             ->assertSee('Event HR')
             ->assertDontSee('Event IT')
             ->set('division', 'semua')
-            ->set('status', 'baru')
             ->assertSee('Event IT')
-            ->assertDontSee('Event HR')
-            ->set('search', 'Event HR')
-            ->set('status', 'semua')
-            ->assertSee('Event HR')
-            ->assertDontSee('Event IT');
+            ->assertSee('Event HR');
     }
 
     public function test_validation_rejects_an_unknown_division_or_pic(): void

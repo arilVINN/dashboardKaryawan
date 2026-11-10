@@ -27,13 +27,7 @@ class ContentCalendar extends Component
     public string $week = '';
 
     #[Url]
-    public string $search = '';
-
-    #[Url]
     public string $division = 'semua';
-
-    #[Url]
-    public string $status = 'semua';
 
     public bool $showHolidays = true;
 
@@ -102,10 +96,6 @@ class ContentCalendar extends Component
         } elseif (! Divisi::whereKey($this->division)->exists()) {
             $this->division = 'semua';
         }
-
-        if ($this->status !== 'semua' && ! array_key_exists($this->status, StatusPalette::selectable())) {
-            $this->status = 'semua';
-        }
     }
 
     public function updated(string $property): void
@@ -117,7 +107,7 @@ class ContentCalendar extends Component
             }
         }
 
-        if (in_array($property, ['month', 'view', 'search', 'division', 'status'], true)) {
+        if (in_array($property, ['month', 'view', 'division'], true)) {
             $this->popoverDate = null;
         }
     }
@@ -187,9 +177,7 @@ class ContentCalendar extends Component
 
     public function resetFilters(): void
     {
-        $this->search = '';
         $this->division = 'semua';
-        $this->status = 'semua';
         $this->showHolidays = true;
         $this->showInternal = true;
         $this->popoverDate = null;
@@ -517,17 +505,8 @@ class ContentCalendar extends Component
                 $events = ContentEvent::query()
                     ->with(['division', 'pic.karyawan', 'creator.karyawan'])
                     ->overlapping($rangeStart, $rangeEnd)
-                    ->when($this->search !== '', function ($query) {
-                        $term = '%'.str_replace(['%', '_'], ['\\%', '\\_'], trim($this->search)).'%';
-
-                        $query->where(function ($inner) use ($term) {
-                            $inner->where('title', 'like', $term)
-                                ->orWhere('description', 'like', $term);
-                        });
-                    })
                     ->when($this->division === 'umum', fn ($query) => $query->whereNull('division_id'))
                     ->when(! in_array($this->division, ['semua', 'umum'], true), fn ($query) => $query->where('division_id', $this->division))
-                    ->when($this->status !== 'semua', fn ($query) => $query->where('status', $this->status))
                     ->orderBy('start_date')
                     ->orderBy('title')
                     ->get();
@@ -1037,9 +1016,7 @@ class ContentCalendar extends Component
 
     private function hasActiveFilters(): bool
     {
-        return $this->search !== ''
-            || $this->division !== 'semua'
-            || $this->status !== 'semua'
+        return $this->division !== 'semua'
             || ! $this->showHolidays
             || ! $this->showInternal;
     }
