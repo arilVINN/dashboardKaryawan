@@ -13,6 +13,7 @@ use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
 use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Http\Controllers\Staff\SuratIzinController;
+use App\Models\Carousel;
 use App\Models\Divisi;
 
 
@@ -25,7 +26,30 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // staff route (session auth + staff role)
 Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/', function () {
-        return view('staff.dashboard');
+        $divisionId = auth()->user()?->karyawan?->divisi_id_divisi;
+        $carousels = Carousel::query()
+            ->with(['user.karyawan', 'divisi'])
+            ->where(function ($query) use ($divisionId) {
+                $query->whereRaw('LOWER(category) != ?', ['quotes']);
+
+                if ($divisionId) {
+                    $query->orWhere(function ($quotes) use ($divisionId) {
+                        $quotes->whereRaw('LOWER(category) = ?', ['quotes'])
+                            ->where('divisi_id_divisi', $divisionId);
+                    });
+                }
+
+                $query->orWhere(function ($hrdQuotes) {
+                    $hrdQuotes->whereRaw('LOWER(category) = ?', ['quotes'])
+                        ->whereHas('user.role', function ($roleQuery) {
+                            $roleQuery->whereRaw('LOWER(nama_role) = ?', ['hrd']);
+                        });
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('staff.dashboard', compact('carousels'));
     })->name('dashboard');
 
     Route::get('/tugas', function () {
@@ -80,7 +104,24 @@ Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->g
 Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->group(function () {
     // Dashboard
     Route::get('/dashboard', function () {
-        return view('kadiv.dashboard');
+        $user = auth()->user();
+        $divisiId = $user?->karyawan?->divisi_id_divisi;
+
+        $carousels = Carousel::query()
+            ->with(['user.karyawan', 'divisi'])
+            ->where(function ($query) use ($divisiId) {
+                if ($divisiId) {
+                    $query->where('divisi_id_divisi', $divisiId);
+                }
+
+                $query->orWhereHas('user.role', function ($roleQuery) {
+                    $roleQuery->whereRaw('LOWER(nama_role) = ?', ['hrd']);
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('kadiv.dashboard', compact('carousels'));
     })->name('kadiv.dashboard');
 
     // Manajemen Staff
@@ -163,6 +204,14 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     Route::get('/pusat-data', function () {
         return view('kadiv.pusatData');
     })->name('kadiv.pusatData');
+
+    // Carousel Konten Kegiatan / Informasi
+    Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])
+        ->middleware('throttle:submit-form')
+        ->name('carousel.store');
+    Route::delete('/carousel/{id}', [\App\Http\Controllers\CarouselController::class, 'destroy'])
+        ->middleware('throttle:submit-form')
+        ->name('carousel.destroy');
 });
 
 
@@ -294,6 +343,14 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     Route::get('/turnoverKaryawan', [HrdDashboardController::class, 'turnoverKaryawan'])
         ->middleware('throttle:pencarian')
         ->name('hrd.turnoverKaryawan');
+
+    // Carousel Konten Kegiatan / Informasi (HRD)
+    Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.carousel.store');
+    Route::delete('/carousel/{id}', [\App\Http\Controllers\CarouselController::class, 'destroy'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.carousel.destroy');
 });
 
 

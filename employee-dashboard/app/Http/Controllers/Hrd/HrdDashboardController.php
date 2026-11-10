@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Hrd;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\AuditLog;
+use App\Models\Carousel;
 use App\Models\Karyawan;
 use App\Models\Divisi;
 use App\Models\Tugas;
@@ -126,6 +127,11 @@ class HrdDashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $carousels = Carousel::query()
+            ->with(['user.karyawan', 'divisi'])
+            ->latest()
+            ->get();
+
         return view('hrd.dashboard', compact(
             'total',
             'tugasBuckets',
@@ -138,7 +144,8 @@ class HrdDashboardController extends Controller
             'divisiTerbesar',
             'totalKaryawanAktif',
             'totalKaryawanTidakAktif',
-            'totalKeluarTahunIni'
+            'totalKeluarTahunIni',
+            'carousels'
         ));
     }
 
