@@ -316,7 +316,7 @@
 
                                     <div class="pointer-events-none relative z-10 flex flex-col gap-1">
                                         <div class="flex justify-end">
-                                            <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-full px-1 text-[16px] font-medium {{ $numberClass }}">{{ $day['day'] }}</span>
+                                            <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-full px-1 text-[14px] font-medium {{ $numberClass }}">{{ $day['day'] }}</span>
                                         </div>
 
                                         <div class="flex flex-col gap-1" :class="draggingId ? 'pointer-events-none' : 'pointer-events-auto'">
@@ -367,7 +367,7 @@
                                 @dragleave="if (dragOver === '{{ $date }}') dragOver = null"
                                 @drop.prevent="if (draggingId) { const id = draggingId; draggingId = null; dragOver = null; $wire.moveEvent(id, '{{ $date }}'); }">
                                 <div class="flex items-center justify-end px-2 pb-1 pt-2">
-                                    <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-full px-1 text-[16px] font-medium {{ $numberClass }}">{{ $day['day'] }}</span>
+                                    <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-full px-1 text-[14px] font-medium {{ $numberClass }}">{{ $day['day'] }}</span>
                                 </div>
 
                                 <div class="space-y-2 p-2 pt-1">
@@ -660,6 +660,59 @@
                                 <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
                             @enderror
                         @endif
+                    </div>
+
+                    {{-- To-do --}}
+                    <div class="mt-5">
+                        <p class="mb-1.5 flex items-center gap-1.5 text-[14px] font-semibold text-[#172B36]">
+                            <svg class="h-4 w-4 text-[#4B5563]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"></path>
+                            </svg>
+                            To-do
+                        </p>
+
+                        @if (! empty($todos))
+                            <ul class="space-y-1" aria-label="Daftar to-do">
+                                @foreach ($todos as $index => $todo)
+                                    <li wire:key="content-todo-{{ $index }}" class="flex items-center gap-2">
+                                        @if ($readOnly)
+                                            <input type="checkbox" @checked($todo['done']) disabled
+                                                aria-label="{{ $todo['text'] }}"
+                                                class="h-4 w-4 shrink-0 rounded border-[#CBD5E1] text-[#146C94] opacity-100 disabled:cursor-default">
+                                            <span class="min-w-0 flex-1 py-1.5 text-sm {{ $todo['done'] ? 'text-[#8A96A3] line-through' : 'text-[#172B36]' }}">
+                                                {{ $todo['text'] }}
+                                            </span>
+                                        @else
+                                            <input type="checkbox" @checked($todo['done']) wire:click="toggleTodo({{ $index }})"
+                                                aria-label="Tandai {{ $todo['text'] }}"
+                                                class="h-4 w-4 shrink-0 cursor-pointer rounded border-[#CBD5E1] text-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+                                            <input type="text" wire:model.blur.live="todos.{{ $index }}.text"
+                                                maxlength="200" placeholder="Tulis to-do..."
+                                                aria-label="To-do {{ $index + 1 }}"
+                                                class="h-9 min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 text-sm transition placeholder:text-[#8A96A3] hover:border-[#E2E8EC] focus:border-[#D5DEE3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#146C94] {{ $todo['done'] ? 'text-[#8A96A3] line-through' : 'text-[#172B36]' }}">
+                                            <button type="button" wire:click="removeTodo({{ $index }})" aria-label="Hapus to-do"
+                                                class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#8A96A3] transition hover:bg-red-50 hover:text-[#B91C1C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"></path>
+                                                </svg>
+                                            </button>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @elseif ($readOnly)
+                            <p class="text-sm text-[#4B5563]">Belum ada to-do.</p>
+                        @endif
+
+                        @unless ($readOnly)
+                            <button type="button" wire:click="addTodo"
+                                class="mt-2 inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[12px] font-semibold text-[#146C94] transition hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
+                                </svg>
+                                Tambah to-do
+                            </button>
+                        @endunless
                     </div>
 
                     {{-- Link konten --}}

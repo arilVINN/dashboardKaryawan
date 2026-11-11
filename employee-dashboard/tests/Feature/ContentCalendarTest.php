@@ -104,7 +104,7 @@ class ContentCalendarTest extends TestCase
             'event_date' => '2026-11-10',
             'post_time' => '09:00',
             'content_type' => 'reels',
-            'status' => 'baru',
+            'status' => 'process',
             'description' => null,
             'content_url' => null,
             'created_by' => $creator->id_user,
@@ -132,7 +132,7 @@ class ContentCalendarTest extends TestCase
             ->call('openCreate', '2026-11-12')
             ->assertSet('formOpen', true)
             ->assertSet('event_date', '2026-11-12')
-            ->assertSet('formStatus', 'baru')
+            ->assertSet('formStatus', 'process')
             ->set('title', 'Kampanye Ramadan')
             ->set('post_time', '17:00')
             ->set('content_type', 'carousel')
@@ -149,7 +149,7 @@ class ContentCalendarTest extends TestCase
             'event_date' => '2026-11-12',
             'post_time' => '17:00',
             'content_type' => 'carousel',
-            'status' => 'baru',
+            'status' => 'process',
             'content_url' => 'https://example.test/konten',
             'created_by' => $this->staffIt->id_user,
         ]);
@@ -229,7 +229,7 @@ class ContentCalendarTest extends TestCase
             'event_date' => '2026-11-10',
             'post_time' => '17:00',
             'content_type' => 'carousel',
-            'status' => 'disetujui',
+            'status' => 'publish',
         ]);
 
         Livewire::actingAs($this->staffIt)
@@ -239,7 +239,8 @@ class ContentCalendarTest extends TestCase
             ->assertSee('10 Nov 2026')
             ->assertSee('17:00')
             ->assertSee('Carousel')
-            ->assertSee('Disetujui')
+            ->assertSee('Publish')
+            ->assertSee('background-color: #D9F5E5')
             ->assertSee('background-color: #FCE7F1')
             ->assertDontSee('11/10/2026');
     }
@@ -338,19 +339,19 @@ class ContentCalendarTest extends TestCase
 
     public function test_type_and_status_filters_apply_live(): void
     {
-        $this->event($this->staffIt, ['title' => 'Reels Baru', 'content_type' => 'reels', 'status' => 'baru']);
-        $this->event($this->staffIt, ['title' => 'Carousel Disetujui', 'content_type' => 'carousel', 'status' => 'disetujui']);
+        $this->event($this->staffIt, ['title' => 'Reels On Process', 'content_type' => 'reels', 'status' => 'process']);
+        $this->event($this->staffIt, ['title' => 'Carousel Publish', 'content_type' => 'carousel', 'status' => 'publish']);
 
         Livewire::actingAs($this->staffIt)
             ->test(ContentCalendar::class)
             ->set('month', '2026-11')
             ->set('typeFilter', 'carousel')
-            ->assertSee('Carousel Disetujui')
-            ->assertDontSee('Reels Baru')
+            ->assertSee('Carousel Publish')
+            ->assertDontSee('Reels On Process')
             ->set('typeFilter', 'semua')
-            ->set('statusFilter', 'baru')
-            ->assertSee('Reels Baru')
-            ->assertDontSee('Carousel Disetujui');
+            ->set('statusFilter', 'process')
+            ->assertSee('Reels On Process')
+            ->assertDontSee('Carousel Publish');
     }
 
     public function test_reset_only_appears_when_a_filter_is_active(): void
@@ -361,7 +362,7 @@ class ContentCalendarTest extends TestCase
             ->test(ContentCalendar::class)
             ->set('month', '2026-11')
             ->assertDontSee('Reset')
-            ->set('statusFilter', 'baru')
+            ->set('statusFilter', 'process')
             ->assertSee('Reset')
             ->call('resetFilters')
             ->assertSet('statusFilter', 'semua');
@@ -389,6 +390,104 @@ class ContentCalendarTest extends TestCase
             ->test(ContentCalendar::class)
             ->set('month', '2026-11')
             ->assertDontSee('Hari Libur Contoh');
+    }
+
+    public function test_status_options_use_the_content_workflow(): void
+    {
+        Livewire::actingAs($this->staffIt)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->assertSee('Revisi')
+            ->assertSee('Cancel')
+            ->assertSee('Approved')
+            ->assertSee('On process')
+            ->assertSee('Publish')
+            ->assertDontSee('Menunggu persetujuan');
+    }
+
+    public function test_legacy_status_values_are_rejected(): void
+    {
+        Livewire::actingAs($this->staffIt)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Event status lama')
+            ->set('content_type', 'reels')
+            ->set('formStatus', 'baru')
+            ->call('save')
+            ->assertHasErrors(['formStatus']);
+    }
+
+    public function test_todos_are_saved_with_a_new_event(): void
+    {
+        Livewire::actingAs($this->staffIt)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Event dengan to-do')
+            ->set('content_type', 'reels')
+            ->call('addTodo')
+            ->set('todos.0.text', 'Siapkan brief')
+            ->set('todos.0.done', true)
+            ->call('addTodo')
+            ->set('todos.1.text', 'Desain carousel')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $event = ContentEvent::where('title', 'Event dengan to-do')->firstOrFail();
+
+        $this->assertSame([
+            ['text' => 'Siapkan brief', 'done' => true],
+            ['text' => 'Desain carousel', 'done' => false],
+        ], $event->todos);
+    }
+
+    public function test_todos_are_toggled_and_removed_from_the_detail_modal(): void
+    {
+        $event = $this->event($this->staffIt, [
+            'todos' => [
+                ['text' => 'Siapkan brief', 'done' => false],
+                ['text' => 'Desain carousel', 'done' => true],
+            ],
+        ]);
+
+        Livewire::actingAs($this->staffIt)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSet('todos.0.text', 'Siapkan brief')
+            ->call('toggleTodo', 0)
+            ->set('todos.0.text', 'Brief final')
+            ->call('removeTodo', 1)
+            ->assertDispatched('content-saved');
+
+        $this->assertSame([
+            ['text' => 'Brief final', 'done' => true],
+        ], $event->fresh()->todos);
+    }
+
+    public function test_todo_text_is_limited_to_200_characters(): void
+    {
+        Livewire::actingAs($this->staffIt)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Event')
+            ->set('content_type', 'reels')
+            ->call('addTodo')
+            ->set('todos.0.text', str_repeat('a', 201))
+            ->call('save')
+            ->assertHasErrors(['todos.0.text']);
+    }
+
+    public function test_read_only_to_do_list_has_no_edit_controls(): void
+    {
+        $event = $this->event($this->staffIt, [
+            'todos' => [['text' => 'Siapkan brief', 'done' => false]],
+        ]);
+
+        Livewire::actingAs($this->otherStaffIt)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSee('Siapkan brief')
+            ->assertDontSeeHtml('wire:click="addTodo"')
+            ->assertDontSeeHtml('wire:click="toggleTodo(0)"');
     }
 
     public function test_read_only_detail_hides_editing_controls_for_other_staff(): void

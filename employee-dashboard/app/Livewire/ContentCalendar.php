@@ -54,9 +54,12 @@ class ContentCalendar extends Component
 
     public string $content_type = '';
 
-    public string $formStatus = 'baru';
+    public string $formStatus = 'process';
 
     public string $description = '';
+
+    /** @var array<int, array{text: string, done: bool}> */
+    public array $todos = [];
 
     public string $content_url = '';
 
@@ -86,6 +89,20 @@ class ContentCalendar extends Component
 
     public function updated(string $property): void
     {
+        if (str_starts_with($property, 'todos.')) {
+            if ($this->formOpen) {
+                $this->formDirty = true;
+
+                return;
+            }
+
+            if ($this->detailOpen && ! $this->readOnly) {
+                $this->persistTodos();
+            }
+
+            return;
+        }
+
         if ($this->formOpen) {
             if (in_array($property, ['title', 'event_date', 'post_time', 'content_type', 'formStatus', 'description', 'content_url'], true)) {
                 $this->formDirty = true;
@@ -190,8 +207,9 @@ class ContentCalendar extends Component
         $this->event_date = $date ?: now()->toDateString();
         $this->post_time = '';
         $this->content_type = '';
-        $this->formStatus = 'baru';
+        $this->formStatus = 'process';
         $this->description = '';
+        $this->todos = [];
         $this->content_url = '';
 
         $this->dispatch('content-focus-title');
@@ -218,6 +236,7 @@ class ContentCalendar extends Component
         $this->content_type = $event->content_type ?? '';
         $this->formStatus = $event->status;
         $this->description = $event->description ?? '';
+        $this->todos = $this->normalizeTodos($event->todos ?? []);
         $this->content_url = $event->content_url ?? '';
         $this->creatorName = $event->creator?->karyawan?->nama ?? $event->creator?->username ?? 'Pengguna';
         $this->creatorAgo = $event->created_at
@@ -240,9 +259,95 @@ class ContentCalendar extends Component
         $this->readOnly = false;
         $this->canDelete = false;
         $this->saveError = null;
+        $this->todos = [];
         $this->resetValidation();
 
         $this->dispatch('content-modal-closed');
+    }
+
+    public function addTodo(): void
+    {
+        $this->todos[] = ['text' => '', 'done' => false];
+
+        if ($this->formOpen) {
+            $this->formDirty = true;
+        }
+    }
+
+    public function removeTodo(int $index): void
+    {
+        if (! isset($this->todos[$index])) {
+            return;
+        }
+
+        unset($this->todos[$index]);
+        $this->todos = array_values($this->todos);
+
+        if ($this->formOpen) {
+            $this->formDirty = true;
+
+            return;
+        }
+
+        $this->persistTodos();
+    }
+
+    public function toggleTodo(int $index): void
+    {
+        if (! isset($this->todos[$index])) {
+            return;
+        }
+
+        $this->todos[$index]['done'] = ! ($this->todos[$index]['done'] ?? false);
+
+        if ($this->formOpen) {
+            $this->formDirty = true;
+
+            return;
+        }
+
+        $this->persistTodos();
+    }
+
+    private function persistTodos(): void
+    {
+        if (! $this->editingId || ! $this->detailOpen || $this->readOnly) {
+            return;
+        }
+
+        $event = ContentEvent::with(['creator.karyawan'])->findOrFail($this->editingId);
+
+        $this->authorize('update', $event);
+
+        try {
+            $event->update(['todos' => $this->normalizeTodos($this->todos)]);
+        } catch (Throwable $exception) {
+            report($exception);
+            $this->saveError = 'Perubahan gagal disimpan. Coba lagi.';
+
+            return;
+        }
+
+        $this->saveError = null;
+
+        $this->dispatch('content-saved');
+    }
+
+    /**
+     * @param  array<int, array{text?: string, done?: bool}>|null  $todos
+     * @return array<int, array{text: string, done: bool}>
+     */
+    private function normalizeTodos(?array $todos): array
+    {
+        return collect($todos ?? [])
+            ->map(fn (array $todo) => [
+                'text' => trim((string) ($todo['text'] ?? '')),
+                'done' => (bool) ($todo['done'] ?? false),
+            ])
+            ->filter(fn (array $todo) => $todo['text'] !== '')
+            ->take(50)
+            ->values()
+            ->all();
     }
 
     /**
@@ -293,8 +398,11 @@ class ContentCalendar extends Component
             'event_date' => ['required', 'date'],
             'post_time' => ['nullable', 'date_format:H:i'],
             'content_type' => ['required', Rule::exists('content_types', 'slug')],
-            'formStatus' => ['required', Rule::in(array_keys(StatusPalette::selectable()))],
+            'formStatus' => ['required', Rule::in(array_keys(StatusPalette::contentStatuses()))],
             'description' => ['nullable', 'string', 'max:5000'],
+            'todos' => ['array'],
+            'todos.*.text' => ['nullable', 'string', 'max:200'],
+            'todos.*.done' => ['boolean'],
             'content_url' => ['nullable', 'url:http,https', 'max:2048'],
         ], $this->messages());
 
@@ -305,6 +413,7 @@ class ContentCalendar extends Component
             'content_type' => $validated['content_type'],
             'status' => $validated['formStatus'],
             'description' => $validated['description'] ?: null,
+            'todos' => $this->normalizeTodos($this->todos),
             'content_url' => $validated['content_url'] ?: null,
         ];
 
@@ -386,7 +495,7 @@ class ContentCalendar extends Component
     public function render()
     {
         $contentTypes = $this->contentTypeOptions();
-        $statusOptions = StatusPalette::selectable();
+        $statusOptions = StatusPalette::contentStatuses();
 
         $events = collect();
         $days = [];
@@ -577,6 +686,7 @@ class ContentCalendar extends Component
             'description.max' => 'Deskripsi maksimal 5000 karakter.',
             'content_url.url' => 'Link konten harus berupa URL http atau https yang valid.',
             'content_url.max' => 'Link konten terlalu panjang.',
+            'todos.*.text.max' => 'Setiap to-do maksimal 200 karakter.',
         ];
     }
 
@@ -587,7 +697,7 @@ class ContentCalendar extends Component
             'event_date' => ['required', 'date'],
             'post_time' => ['nullable', 'date_format:H:i'],
             'content_type' => ['required', Rule::exists('content_types', 'slug')],
-            'formStatus' => ['required', Rule::in(array_keys(StatusPalette::selectable()))],
+            'formStatus' => ['required', Rule::in(array_keys(StatusPalette::contentStatuses()))],
             'description' => ['nullable', 'string', 'max:5000'],
             'content_url' => ['nullable', 'url:http,https', 'max:2048'],
         ];

@@ -18,12 +18,14 @@ class ContentEvent extends Model
         'content_type',
         'status',
         'description',
+        'todos',
         'content_url',
         'created_by',
     ];
 
     protected $casts = [
         'event_date' => 'date:Y-m-d',
+        'todos' => 'array',
     ];
 
     public function type(): BelongsTo
