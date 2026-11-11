@@ -19,6 +19,8 @@
             this.open ? this.close() : this.openList();
         },
         openList() {
+            // Measure first so the list never flashes at the default corner.
+            this.position();
             this.open = true;
             this.$nextTick(() => {
                 this.position();

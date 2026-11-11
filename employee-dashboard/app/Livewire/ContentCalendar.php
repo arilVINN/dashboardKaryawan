@@ -3,7 +3,9 @@
 namespace App\Livewire;
 
 use App\Models\ContentEvent;
+use App\Models\ContentEventComment;
 use App\Models\ContentType;
+use App\Support\ContentCalendarAccess;
 use App\Support\ContentTypePalette;
 use App\Support\StatusPalette;
 use Carbon\Carbon;
@@ -63,6 +65,8 @@ class ContentCalendar extends Component
 
     public string $content_url = '';
 
+    public string $commentBody = '';
+
     public ?string $saveError = null;
 
     public ?string $popoverDate = null;
@@ -71,6 +75,11 @@ class ContentCalendar extends Component
     public ?array $lastMove = null;
 
     public bool $loadError = false;
+
+    public function booted(): void
+    {
+        abort_unless(ContentCalendarAccess::allows(auth()->user()), 403);
+    }
 
     public function mount(): void
     {
@@ -211,6 +220,7 @@ class ContentCalendar extends Component
         $this->description = '';
         $this->todos = [];
         $this->content_url = '';
+        $this->commentBody = '';
 
         $this->dispatch('content-focus-title');
     }
@@ -238,6 +248,7 @@ class ContentCalendar extends Component
         $this->description = $event->description ?? '';
         $this->todos = $this->normalizeTodos($event->todos ?? []);
         $this->content_url = $event->content_url ?? '';
+        $this->commentBody = '';
         $this->creatorName = $event->creator?->karyawan?->nama ?? $event->creator?->username ?? 'Pengguna';
         $this->creatorAgo = $event->created_at
             ? $event->created_at->copy()->locale('id')->diffForHumans()
@@ -260,13 +271,53 @@ class ContentCalendar extends Component
         $this->canDelete = false;
         $this->saveError = null;
         $this->todos = [];
+        $this->commentBody = '';
         $this->resetValidation();
 
         $this->dispatch('content-modal-closed');
     }
 
+    public function addComment(): void
+    {
+        if (! $this->editingId || ! $this->detailOpen) {
+            return;
+        }
+
+        $event = ContentEvent::findOrFail($this->editingId);
+
+        $this->authorize('view', $event);
+
+        $validated = $this->validate([
+            'commentBody' => ['required', 'string', 'max:1000'],
+        ], $this->messages());
+
+        ContentEventComment::create([
+            'content_event_id' => $event->id,
+            'user_id_user' => auth()->id(),
+            'body' => $validated['commentBody'],
+        ]);
+
+        $this->commentBody = '';
+
+        $this->dispatch('content-toast', message: 'Komentar ditambahkan', type: 'success');
+    }
+
+    public function deleteComment(int $id): void
+    {
+        $comment = ContentEventComment::findOrFail($id);
+
+        abort_unless((int) $comment->content_event_id === (int) $this->editingId, 403);
+        abort_unless((string) $comment->user_id_user === (string) auth()->id(), 403);
+
+        $comment->delete();
+
+        $this->dispatch('content-toast', message: 'Komentar dihapus', type: 'success');
+    }
+
     public function addTodo(): void
     {
+        abort_if($this->detailOpen && $this->readOnly, 403);
+
         $this->todos[] = ['text' => '', 'done' => false];
 
         if ($this->formOpen) {
@@ -276,6 +327,8 @@ class ContentCalendar extends Component
 
     public function removeTodo(int $index): void
     {
+        abort_if($this->detailOpen && $this->readOnly, 403);
+
         if (! isset($this->todos[$index])) {
             return;
         }
@@ -294,19 +347,48 @@ class ContentCalendar extends Component
 
     public function toggleTodo(int $index): void
     {
-        if (! isset($this->todos[$index])) {
-            return;
-        }
-
-        $this->todos[$index]['done'] = ! ($this->todos[$index]['done'] ?? false);
-
         if ($this->formOpen) {
+            if (! isset($this->todos[$index])) {
+                return;
+            }
+
+            $this->todos[$index]['done'] = ! ($this->todos[$index]['done'] ?? false);
             $this->formDirty = true;
 
             return;
         }
 
-        $this->persistTodos();
+        if (! $this->editingId || ! $this->detailOpen) {
+            return;
+        }
+
+        $event = ContentEvent::with(['creator.karyawan'])->findOrFail($this->editingId);
+
+        // Everyone with calendar access may tick a to-do, even when the rest of
+        // the event is read-only for them.
+        $this->authorize('view', $event);
+
+        $todos = $this->normalizeTodos($event->todos ?? []);
+
+        if (! isset($todos[$index])) {
+            return;
+        }
+
+        $todos[$index]['done'] = ! $todos[$index]['done'];
+
+        try {
+            $event->update(['todos' => $todos]);
+        } catch (Throwable $exception) {
+            report($exception);
+            $this->saveError = 'Perubahan gagal disimpan. Coba lagi.';
+
+            return;
+        }
+
+        $this->todos = $todos;
+        $this->saveError = null;
+
+        $this->dispatch('content-saved');
     }
 
     private function persistTodos(): void
@@ -497,6 +579,25 @@ class ContentCalendar extends Component
         $contentTypes = $this->contentTypeOptions();
         $statusOptions = StatusPalette::contentStatuses();
 
+        $comments = [];
+
+        if ($this->detailOpen && $this->editingId) {
+            $comments = ContentEventComment::query()
+                ->with(['author.karyawan'])
+                ->where('content_event_id', $this->editingId)
+                ->orderBy('created_at')
+                ->orderBy('id')
+                ->get()
+                ->map(fn (ContentEventComment $comment) => [
+                    'id' => $comment->id,
+                    'body' => $comment->body,
+                    'author' => $comment->author?->karyawan?->nama ?? $comment->author?->username ?? 'Pengguna',
+                    'ago' => $comment->created_at?->copy()->locale('id')->diffForHumans() ?? '',
+                    'can_delete' => (string) $comment->user_id_user === (string) auth()->id(),
+                ])
+                ->all();
+        }
+
         $events = collect();
         $days = [];
         $monthWeeks = [];
@@ -544,6 +645,7 @@ class ContentCalendar extends Component
             'listGroups' => $listGroups,
             'popoverItems' => $popoverItems,
             'isEmpty' => $isEmpty,
+            'comments' => $comments,
             'monthLabel' => $this->periodLabel(),
             'hasActiveFilters' => $this->hasActiveFilters(),
         ]);
@@ -687,6 +789,8 @@ class ContentCalendar extends Component
             'content_url.url' => 'Link konten harus berupa URL http atau https yang valid.',
             'content_url.max' => 'Link konten terlalu panjang.',
             'todos.*.text.max' => 'Setiap to-do maksimal 200 karakter.',
+            'commentBody.required' => 'Komentar wajib diisi.',
+            'commentBody.max' => 'Komentar maksimal 1000 karakter.',
         ];
     }
 

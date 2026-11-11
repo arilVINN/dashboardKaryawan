@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContentEvent extends Model
 {
@@ -36,6 +37,11 @@ class ContentEvent extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User2::class, 'created_by', 'id_user');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(ContentEventComment::class)->orderBy('created_at');
     }
 
     public function scopeInRange(Builder $query, Carbon $start, Carbon $end): Builder

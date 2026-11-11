@@ -12,7 +12,7 @@
         : '';
 @endphp
 
-<div class="relative w-full"
+<div class="relative w-full" wire:key="content-date-picker-{{ $value }}"
     x-data="{
         open: false,
         top: 0,
@@ -36,6 +36,9 @@
             this.open ? this.close() : this.openList();
         },
         openList() {
+            // Position before showing, otherwise the popover is painted once at
+            // the default 0,0 corner before the nextTick measurement lands.
+            this.position();
             this.open = true;
             this.$nextTick(() => {
                 this.position();
@@ -82,8 +85,18 @@
             this.view = new Date(this.view.getFullYear(), this.view.getMonth() + delta, 1);
         },
         pick(day) {
-            this.$wire.set('{{ $model }}', day.iso);
+            // Hide the popover before the Livewire round-trip. The dynamic
+            // wire:key on the root makes Livewire replace this component with
+            // a fresh, closed one, so the old popover can never flash at the
+            // top-left corner while the modal is being re-rendered.
             this.close();
+
+            // Only notify Livewire when the date actually changes. Selecting the
+            // pre-filled date (usually today) must not mark the form dirty or
+            // leave the modal stuck behind a discard confirmation.
+            if (day.iso !== '{{ $value }}') {
+                this.$wire.set('{{ $model }}', day.iso);
+            }
         },
         pickToday() {
             this.pick({ iso: this.today() });
@@ -180,11 +193,11 @@
         </div>
 
         <div class="mt-2 flex items-center justify-between border-t border-[#E8EDF2] pt-2">
-            <button type="button" @click="pickToday()"
+            <button type="button" id="{{ $id }}-today" @click="pickToday()"
                 class="rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] transition hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
                 Hari ini
             </button>
-            <button type="button" @click="close()"
+            <button type="button" id="{{ $id }}-close" @click="close()"
                 class="rounded-md px-2 py-1 text-[12px] font-medium text-[#4B5563] transition hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
                 Tutup
             </button>

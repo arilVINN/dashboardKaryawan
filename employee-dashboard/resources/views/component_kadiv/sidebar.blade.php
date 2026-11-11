@@ -66,7 +66,8 @@
         </a>
 
         {{-- Kalender Konten --}}
-        <a href="{{ url('/kalender-konten') }}"
+        @if (\App\Support\ContentCalendarAccess::allows(auth()->user()))
+<a href="{{ url('/kalender-konten') }}"
             class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('kalender-konten*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -75,6 +76,7 @@
             </svg>
             <span class="sidebar-text whitespace-nowrap transition-all duration-150">Kalender Konten</span>
         </a>
+@endif
 
         {{-- Pesan --}}
         <a href="{{ url('/kadiv/pesan') }}"

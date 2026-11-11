@@ -676,9 +676,9 @@
                                 @foreach ($todos as $index => $todo)
                                     <li wire:key="content-todo-{{ $index }}" class="flex items-center gap-2">
                                         @if ($readOnly)
-                                            <input type="checkbox" @checked($todo['done']) disabled
-                                                aria-label="{{ $todo['text'] }}"
-                                                class="h-4 w-4 shrink-0 rounded border-[#CBD5E1] text-[#146C94] opacity-100 disabled:cursor-default">
+                                            <input type="checkbox" @checked($todo['done']) wire:click="toggleTodo({{ $index }})"
+                                                aria-label="{{ $todo['done'] ? 'Batalkan '.$todo['text'] : 'Tandai '.$todo['text'] }}"
+                                                class="h-4 w-4 shrink-0 cursor-pointer rounded border-[#CBD5E1] text-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
                                             <span class="min-w-0 flex-1 py-1.5 text-sm {{ $todo['done'] ? 'text-[#8A96A3] line-through' : 'text-[#172B36]' }}">
                                                 {{ $todo['text'] }}
                                             </span>
@@ -770,6 +770,64 @@
                             @enderror
                         @endif
                     </div>
+
+                    @if ($detailOpen)
+                        <div class="mt-5 border-t border-[#E8EDF2] pt-5">
+                            <p class="mb-3 flex items-center gap-1.5 text-[14px] font-semibold text-[#172B36]">
+                                <svg class="h-4 w-4 text-[#4B5563]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"></path>
+                                </svg>
+                                Komentar
+                                <span class="rounded-full bg-[#F1F5F9] px-1.5 py-0.5 text-[11px] font-medium text-[#4B5563]">{{ count($comments) }}</span>
+                            </p>
+
+                            @if (count($comments) > 0)
+                                <ul class="space-y-2" aria-label="Komentar event">
+                                    @foreach ($comments as $comment)
+                                        <li wire:key="content-comment-{{ $comment['id'] }}"
+                                            class="rounded-lg border border-[#E8EDF2] bg-[#F8FAFC] px-3 py-2.5">
+                                            <div class="flex items-start justify-between gap-2">
+                                                <div class="min-w-0">
+                                                    <p class="text-[13px] font-semibold text-[#172B36]">
+                                                        {{ $comment['author'] }}
+                                                        <span class="ml-1 text-[11px] font-normal text-[#4B5563]">{{ $comment['ago'] }}</span>
+                                                    </p>
+                                                    <p class="mt-1 whitespace-pre-line text-[14px] leading-relaxed text-[#172B36]">{{ $comment['body'] }}</p>
+                                                </div>
+                                                @if ($comment['can_delete'])
+                                                    <button type="button" wire:click="deleteComment({{ $comment['id'] }})"
+                                                        aria-label="Hapus komentar"
+                                                        class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#8A96A3] transition hover:bg-red-50 hover:text-[#B91C1C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"></path>
+                                                        </svg>
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <p class="text-sm text-[#4B5563]">Belum ada komentar.</p>
+                            @endif
+
+                            <div class="mt-3">
+                                <label for="content-comment" class="sr-only">Tulis komentar</label>
+                                <textarea id="content-comment" wire:model="commentBody" rows="2" maxlength="1000"
+                                    placeholder="Tulis komentar..."
+                                    class="min-h-[76px] w-full resize-y rounded-lg border border-[#D5DEE3] bg-white p-3 text-sm leading-relaxed text-[#172B36] placeholder:text-[#8A96A3] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]"></textarea>
+                                @error('commentBody')
+                                    <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
+                                @enderror
+                                <div class="mt-2 flex justify-end">
+                                    <button type="button" wire:click="addComment"
+                                        class="inline-flex h-9 items-center rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
+                                        Kirim
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
 
                     @if ($formOpen)
                         <div class="mt-5 flex items-start gap-2 rounded-lg bg-[#E3F1F7] px-3 py-2.5 text-[13px] leading-relaxed text-[#0B4A66]">
