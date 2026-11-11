@@ -393,15 +393,12 @@ class HrdStaffController extends Controller
             return response()->json(['message' => 'Staff tidak ditemukan'], 404);
         }
 
-<<<<<<< HEAD
         // 1 & 2. Proteksi penghapusan akun HRD & proteksi akun diri sendiri
         $authUser = auth()->user();
         if ($errorMsg = HrdProtectionService::validateDeletion($authUser, $karyawan)) {
             return response()->json(['message' => $errorMsg], 403);
         }
 
-=======
->>>>>>> 9f666a43d89aee6703c24bdf56fe645abd2a04d0
         if (ProjectTask::where('karyawan_id_karyawan', $karyawan->id_karyawan)->exists()) {
             return response()->json([
                 'message' => 'Karyawan tidak dapat dihapus karena masih memiliki task project.',
