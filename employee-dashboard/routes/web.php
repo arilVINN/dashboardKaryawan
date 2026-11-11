@@ -13,6 +13,7 @@ use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
 use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Http\Controllers\Staff\SuratIzinController;
+use App\Http\Controllers\BookingController;
 use App\Models\Carousel;
 use App\Models\Divisi;
 
@@ -368,6 +369,20 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
         ->name('hrd.carousel.destroy');
 });
 
+Route::post('/booking', [BookingController::class, 'store'])
+    ->middleware(['auth', 'role:staff,kadiv', 'throttle:submit-form'])
+    ->name('booking.store');
+
+Route::middleware(['auth', 'role:hrd,direksi', 'throttle:umum'])->prefix('hrd')->group(function () {
+    Route::get('/suratBooking', [BookingController::class, 'index'])->name('hrd.suratBooking');
+    Route::post('/suratBooking/{booking}/acc', [BookingController::class, 'approve'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.suratBooking.acc');
+    Route::post('/suratBooking/{booking}/tolak', [BookingController::class, 'reject'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.suratBooking.tolak');
+});
+
 
 // Surat Izin (Staff)
 Route::post('/surat-izin', [SuratIzinController::class, 'store'])
@@ -481,4 +496,3 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])
             ->middleware('throttle:submit-form')
             ->name('kadiv.laporanLabaRugi.store');
     });
-

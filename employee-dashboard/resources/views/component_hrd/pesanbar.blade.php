@@ -1,7 +1,7 @@
 @php
     $total = [
         'pesan' => $totalPesan ?? 0,
-        'masuk' => $pesanMasuk ?? 0,
+        'bookingMasuk' => $bookingMasuk ?? 0,
         'suratIzinMasuk' => $suratIzinMasuk ?? 0,
     ];
 @endphp
@@ -92,21 +92,29 @@
         </svg>
     </div>
 
-    <div class="rounded-xl drop-shadow-md bg-white p-4 flex items-center justify-between">
+    <a href="{{ route('hrd.suratBooking') }}"
+        class="surat-card rounded-xl drop-shadow-md bg-white p-4 flex items-center justify-between border border-transparent cursor-pointer gap-4">
         <div class="flex flex-col">
-            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Pesan Masuk</span>
-            <span class="text-2xl font-bold text-slate-900 leading-none mt-1">{{ $total['masuk'] }}</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Request Booking</span>
+            <span class="text-2xl font-bold text-slate-900 leading-none mt-1">{{ $total['bookingMasuk'] }}</span>
             <div class="flex justify-between items-center pt-0.5">
-                <span class="text-xs text-slate-400 mt-1">Semua Pesan yang Masuk</span>
+                <span class="surat-card-label mt-1 inline-flex items-center gap-1">
+                    Booking ruangan dan kendaraan
+                    <svg class="surat-card-arrow h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"></path>
+                    </svg>
+                </span>
             </div>
         </div>
-        <svg class="w-10 h-10 rounded-lg bg-green-100 text-green-600 p-2" fill="none" stroke="currentColor"
+        <svg class="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 p-2" fill="none" stroke="currentColor"
             stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
-                d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75">
+                d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z">
             </path>
         </svg>
-    </div>
+    </a>
+
 
     <a href="{{ route('hrd.suratIzin') }}"
         aria-label="Surat izin masuk: {{ $total['suratIzinMasuk'] }}. Lihat detail"
