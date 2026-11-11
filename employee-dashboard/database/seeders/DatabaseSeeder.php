@@ -305,6 +305,7 @@ class DatabaseSeeder extends Seeder
             TowerDatabaseSeeder::class,
             PesanSeeder::class,
             HolidaySeeder::class,
+            ContentTypeSeeder::class,
         ]);
     }
 }

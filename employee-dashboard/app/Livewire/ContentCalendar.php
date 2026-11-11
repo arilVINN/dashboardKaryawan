@@ -3,17 +3,15 @@
 namespace App\Livewire;
 
 use App\Models\ContentEvent;
-use App\Models\Divisi;
-use App\Models\Holiday;
-use App\Models\User2;
-use App\Services\NationalHolidayService;
-use App\Support\DivisionPalette;
+use App\Models\ContentType;
+use App\Support\ContentTypePalette;
 use App\Support\StatusPalette;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Throwable;
 
 class ContentCalendar extends Component
 {
@@ -26,45 +24,47 @@ class ContentCalendar extends Component
     #[Url]
     public string $week = '';
 
-    #[Url]
-    public string $division = 'semua';
+    public string $typeFilter = 'semua';
 
-    /** Read-only side panel. */
-    public bool $drawerOpen = false;
+    public string $statusFilter = 'semua';
 
-    /** Create/edit dialog. */
+    /** Detail modal for an existing event (edits autosave). */
+    public bool $detailOpen = false;
+
+    /** Create modal. */
     public bool $formOpen = false;
 
-    /** True once the user changed a field in the edit dialog. */
     public bool $formDirty = false;
 
     public ?int $editingId = null;
 
     public bool $readOnly = false;
 
+    public bool $canDelete = false;
+
+    public string $creatorName = '';
+
+    public string $creatorAgo = '';
+
     public string $title = '';
 
-    public string $start_date = '';
+    public string $event_date = '';
 
-    public string $start_time = '';
+    public string $post_time = '';
 
-    public string $end_date = '';
-
-    public string $end_time = '';
+    public string $content_type = '';
 
     public string $formStatus = 'baru';
 
-    public ?string $color = null;
-
-    public ?string $division_id = null;
-
-    public ?string $pic_user_id = null;
-
     public string $description = '';
+
+    public string $content_url = '';
+
+    public ?string $saveError = null;
 
     public ?string $popoverDate = null;
 
-    /** @var array{id: int, start: string, end: string|null}|null */
+    /** @var array{id: int, from: string}|null */
     public ?array $lastMove = null;
 
     public bool $loadError = false;
@@ -79,62 +79,59 @@ class ContentCalendar extends Component
             $this->view = 'bulan';
         }
 
-        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $this->week)) {
-            $this->week = '';
-        }
-
         if ($this->view === 'minggu' && $this->week === '') {
             $this->week = $this->defaultWeek()->toDateString();
-        }
-
-        if (in_array($this->division, ['semua', 'umum'], true)) {
-            // keep the sentinel values
-        } elseif (! Divisi::whereKey($this->division)->exists()) {
-            $this->division = 'semua';
         }
     }
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['title', 'start_date', 'start_time', 'end_date', 'end_time', 'formStatus', 'color', 'division_id', 'pic_user_id', 'description'], true)) {
-
-            if ($this->formOpen) {
+        if ($this->formOpen) {
+            if (in_array($property, ['title', 'event_date', 'post_time', 'content_type', 'formStatus', 'description', 'content_url'], true)) {
                 $this->formDirty = true;
             }
+
+            return;
         }
 
-        if (in_array($property, ['month', 'view', 'division'], true)) {
-            $this->popoverDate = null;
+        if ($this->detailOpen && ! $this->readOnly) {
+            $map = [
+                'title' => 'title',
+                'event_date' => 'event_date',
+                'post_time' => 'post_time',
+                'content_type' => 'content_type',
+                'formStatus' => 'status',
+                'description' => 'description',
+                'content_url' => 'content_url',
+            ];
+
+            if (isset($map[$property])) {
+                $this->saveField($property);
+            }
         }
     }
 
     public function previous(): void
     {
         if ($this->view === 'minggu') {
-            $start = $this->weekAnchor()->subWeek();
-            $this->week = $start->toDateString();
-            $this->month = $start->format('Y-m');
-            $this->popoverDate = null;
-
-            return;
+            $this->week = $this->weekAnchor()->subWeek()->toDateString();
+            $this->month = $this->weekAnchor()->format('Y-m');
+        } else {
+            $this->month = $this->anchor()->subMonthNoOverflow()->format('Y-m');
         }
 
-        $this->month = $this->anchor()->subMonth()->format('Y-m');
         $this->popoverDate = null;
     }
 
     public function next(): void
     {
         if ($this->view === 'minggu') {
-            $start = $this->weekAnchor()->addWeek();
-            $this->week = $start->toDateString();
-            $this->month = $start->format('Y-m');
-            $this->popoverDate = null;
-
-            return;
+            $this->week = $this->weekAnchor()->addWeek()->toDateString();
+            $this->month = $this->weekAnchor()->format('Y-m');
+        } else {
+            $this->month = $this->anchor()->addMonthNoOverflow()->format('Y-m');
         }
 
-        $this->month = $this->anchor()->addMonth()->format('Y-m');
         $this->popoverDate = null;
     }
 
@@ -161,7 +158,8 @@ class ContentCalendar extends Component
 
     public function resetFilters(): void
     {
-        $this->division = 'semua';
+        $this->typeFilter = 'semua';
+        $this->statusFilter = 'semua';
         $this->popoverDate = null;
     }
 
@@ -180,169 +178,141 @@ class ContentCalendar extends Component
         $this->authorize('create', ContentEvent::class);
 
         $this->resetValidation();
-        $this->drawerOpen = false;
+        $this->popoverDate = null;
+        $this->detailOpen = false;
         $this->formOpen = true;
         $this->formDirty = false;
         $this->editingId = null;
         $this->readOnly = false;
+        $this->canDelete = false;
+        $this->saveError = null;
         $this->title = '';
-        $this->start_date = $date ?: now()->toDateString();
-        $this->start_time = '';
-        $this->end_date = '';
-        $this->end_time = '';
+        $this->event_date = $date ?: now()->toDateString();
+        $this->post_time = '';
+        $this->content_type = '';
         $this->formStatus = 'baru';
-        $this->division_id = auth()->user()?->karyawan?->divisi_id_divisi;
-        $this->color = DivisionPalette::eventColorForDivision($this->division_id);
-        $this->pic_user_id = null;
         $this->description = '';
-        $this->popoverDate = null;
+        $this->content_url = '';
 
         $this->dispatch('content-focus-title');
     }
 
     public function openEvent(int $id): void
     {
-        $event = ContentEvent::with(['division', 'pic.karyawan', 'creator.karyawan'])->findOrFail($id);
+        $event = ContentEvent::with(['creator.karyawan'])->findOrFail($id);
 
         $this->authorize('view', $event);
 
         $this->resetValidation();
+        $this->popoverDate = null;
         $this->formOpen = false;
         $this->formDirty = false;
-        $this->drawerOpen = true;
+        $this->detailOpen = true;
         $this->editingId = $event->id;
         $this->readOnly = ! auth()->user()->can('update', $event);
+        $this->canDelete = auth()->user()->can('delete', $event);
+        $this->saveError = null;
         $this->title = $event->title;
-        $this->start_date = $event->start_date->toDateString();
-        $this->start_time = $event->startTimeLabel() ?? '';
-        $this->end_date = $event->end_date?->toDateString() ?? '';
-        $this->end_time = $event->endTimeLabel() ?? '';
+        $this->event_date = $event->event_date->toDateString();
+        $this->post_time = $event->timeLabel() ?? '';
+        $this->content_type = $event->content_type ?? '';
         $this->formStatus = $event->status;
-        $this->division_id = $event->division_id;
-        $this->color = $event->color ?: DivisionPalette::eventColorForDivision($event->division_id);
-        $this->pic_user_id = $event->pic_user_id;
         $this->description = $event->description ?? '';
-        $this->popoverDate = null;
+        $this->content_url = $event->content_url ?? '';
+        $this->creatorName = $event->creator?->karyawan?->nama ?? $event->creator?->username ?? 'Pengguna';
+        $this->creatorAgo = $event->created_at
+            ? $event->created_at->copy()->locale('id')->diffForHumans()
+            : '';
 
-        $this->dispatch('content-focus-drawer');
+        $this->dispatch('content-focus-modal');
     }
 
-    /**
-     * Move from the read-only panel into the edit dialog.
-     */
-    public function editEvent(): void
+    public function closeModal(bool $force = false): void
     {
-        if (! $this->editingId) {
+        if ($this->formOpen && $this->formDirty && ! $force) {
             return;
         }
 
-        $event = ContentEvent::findOrFail($this->editingId);
+        $this->detailOpen = false;
+        $this->formOpen = false;
+        $this->formDirty = false;
+        $this->editingId = null;
+        $this->readOnly = false;
+        $this->canDelete = false;
+        $this->saveError = null;
+        $this->resetValidation();
+
+        $this->dispatch('content-modal-closed');
+    }
+
+    /**
+     * Autosave a single field from the detail modal.
+     */
+    public function saveField(string $property): void
+    {
+        if (! $this->editingId || $this->readOnly || ! $this->detailOpen) {
+            return;
+        }
+
+        $event = ContentEvent::with(['creator.karyawan'])->findOrFail($this->editingId);
+
         $this->authorize('update', $event);
 
-        $this->resetValidation();
-        $this->readOnly = false;
-        $this->drawerOpen = false;
-        $this->formOpen = true;
-        $this->formDirty = false;
+        $rules = $this->fieldRules();
 
-        $this->dispatch('content-focus-title');
-    }
+        if (! isset($rules[$property])) {
+            return;
+        }
 
-    public function closeDrawer(): void
-    {
-        $this->drawerOpen = false;
-        $this->editingId = null;
-        $this->readOnly = false;
-        $this->resetValidation();
-        $this->dispatch('content-drawer-closed');
-    }
+        $this->validateOnly($property, [$property => $rules[$property]], $this->messages());
 
-    public function closeForm(): void
-    {
-        $this->formOpen = false;
-        $this->drawerOpen = false;
-        $this->formDirty = false;
-        $this->editingId = null;
-        $this->readOnly = false;
-        $this->resetValidation();
-        $this->dispatch('content-drawer-closed');
+        try {
+            $event->update([$this->columnFor($property) => $this->valueFor($property)]);
+        } catch (Throwable $exception) {
+            report($exception);
+            $this->saveError = 'Perubahan gagal disimpan. Coba lagi.';
+
+            return;
+        }
+
+        $this->saveError = null;
+
+        $this->dispatch('content-saved');
     }
 
     public function save(): void
     {
-        $this->title = trim($this->title);
-        $this->start_date = (string) $this->start_date;
-        $this->start_time = (string) $this->start_time;
-        $this->end_date = (string) $this->end_date;
-        $this->end_time = (string) $this->end_time;
-        $this->division_id = $this->division_id ?: null;
-        $this->pic_user_id = $this->pic_user_id ?: null;
-
-        $validated = $this->validate([
-            'title' => ['required', 'string', 'max:150'],
-            'start_date' => ['required', 'date'],
-            'start_time' => ['nullable', 'date_format:H:i'],
-            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'end_time' => [
-                'nullable',
-                'date_format:H:i',
-                function (string $attribute, mixed $value, \Closure $fail) {
-                    if ($value === null || $value === '') {
-                        return;
-                    }
-
-                    if ($this->start_time === '') {
-                        $fail('Isi jam mulai terlebih dahulu.');
-
-                        return;
-                    }
-
-                    $sameDay = $this->end_date === '' || $this->end_date === $this->start_date;
-
-                    if ($sameDay && $value < $this->start_time) {
-                        $fail('Jam selesai tidak boleh sebelum jam mulai.');
-                    }
-                },
-            ],
-            'formStatus' => ['required', Rule::in(array_keys(StatusPalette::selectable()))],
-            'color' => ['nullable', Rule::in(array_keys(DivisionPalette::EVENT_COLORS))],
-            'division_id' => ['nullable', Rule::exists('divisis', 'id_divisi')],
-            'pic_user_id' => ['nullable', Rule::exists('users2', 'id_user')],
-            'description' => ['nullable', 'string', 'max:5000'],
-        ]);
-
-        $payload = [
-            'title' => $validated['title'],
-            'start_date' => $validated['start_date'],
-            'start_time' => $validated['start_time'] ?: null,
-            'end_date' => $validated['end_date'] ?: null,
-            'end_time' => $validated['end_time'] ?: null,
-            'division_id' => $validated['division_id'] ?: null,
-            'status' => $validated['formStatus'],
-            'color' => $validated['color'] ?: null,
-            'pic_user_id' => $validated['pic_user_id'] ?: null,
-            'description' => $this->description !== '' ? $this->description : null,
-        ];
-
-        if ($this->editingId) {
-            $event = ContentEvent::findOrFail($this->editingId);
-            $this->authorize('update', $event);
-
-            $event->update($payload);
-            $this->closeForm();
-            $this->dispatch('content-toast', message: 'Perubahan disimpan', type: 'success');
-
+        if (! $this->formOpen) {
             return;
         }
 
         $this->authorize('create', ContentEvent::class);
 
-        ContentEvent::create($payload + [
-            'created_by' => auth()->id(),
-        ]);
+        $validated = $this->validate([
+            'title' => ['required', 'string', 'max:150'],
+            'event_date' => ['required', 'date'],
+            'post_time' => ['nullable', 'date_format:H:i'],
+            'content_type' => ['required', Rule::exists('content_types', 'slug')],
+            'formStatus' => ['required', Rule::in(array_keys(StatusPalette::selectable()))],
+            'description' => ['nullable', 'string', 'max:5000'],
+            'content_url' => ['nullable', 'url:http,https', 'max:2048'],
+        ], $this->messages());
 
-        $this->closeForm();
+        $payload = [
+            'title' => $validated['title'],
+            'event_date' => $validated['event_date'],
+            'post_time' => $validated['post_time'] ?: null,
+            'content_type' => $validated['content_type'],
+            'status' => $validated['formStatus'],
+            'description' => $validated['description'] ?: null,
+            'content_url' => $validated['content_url'] ?: null,
+        ];
+
+        ContentEvent::create($payload + ['created_by' => auth()->id()]);
+
         $this->dispatch('content-toast', message: 'Event ditambahkan', type: 'success');
+
+        $this->closeModal(true);
     }
 
     public function deleteEvent(): void
@@ -351,337 +321,164 @@ class ContentCalendar extends Component
             return;
         }
 
-        $event = ContentEvent::findOrFail($this->editingId);
+        $event = ContentEvent::with(['creator.karyawan'])->findOrFail($this->editingId);
+
         $this->authorize('delete', $event);
 
         $event->delete();
-        $this->lastMove = null;
-        $this->closeForm();
+
+        $this->closeModal(true);
         $this->dispatch('content-toast', message: 'Event dihapus', type: 'success');
     }
 
     public function moveEvent(int $id, string $date): void
     {
-        $event = ContentEvent::findOrFail($id);
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return;
+        }
+
+        $event = ContentEvent::with(['creator.karyawan'])->findOrFail($id);
+
         $this->authorize('update', $event);
 
-        try {
-            $target = Carbon::parse($date)->startOfDay();
-        } catch (\Throwable) {
+        $from = $event->event_date->toDateString();
+
+        if ($from === $date) {
             return;
         }
 
-        $delta = (int) round($event->start_date->diffInDays($target, false));
+        $event->update(['event_date' => $date]);
 
-        if ($delta === 0) {
-            return;
-        }
+        $this->lastMove = ['id' => $event->id, 'from' => $from];
 
-        $snapshot = [
-            'id' => $event->id,
-            'start' => $event->start_date->toDateString(),
-            'end' => $event->end_date?->toDateString(),
-        ];
-
-        try {
-            $event->start_date = $event->start_date->copy()->addDays($delta);
-            $event->end_date = $event->end_date?->copy()->addDays($delta);
-            $event->save();
-        } catch (\Throwable $exception) {
-            report($exception);
-            $this->dispatch('content-toast', message: 'Gagal memindahkan event. Coba lagi.', type: 'error');
-            $this->dispatch('content-calendar-refresh');
-
-            return;
-        }
-
-        $this->lastMove = $snapshot;
-        $this->dispatch('content-toast', message: 'Event dipindahkan', type: 'success', action: 'undo');
+        $this->dispatch(
+            'content-toast',
+            message: 'Event dipindahkan ke '.Carbon::parse($date)->locale('id')->translatedFormat('j M Y'),
+            type: 'success',
+            action: 'undo'
+        );
     }
 
     public function undoMove(): void
     {
-        if (! $this->lastMove || empty($this->lastMove['id'])) {
+        if (! $this->lastMove) {
             return;
         }
 
-        $event = ContentEvent::find($this->lastMove['id']);
+        $event = ContentEvent::with(['creator.karyawan'])->find($this->lastMove['id']);
 
         if ($event) {
-            try {
-                $this->authorize('update', $event);
-                $event->update([
-                    'start_date' => $this->lastMove['start'],
-                    'end_date' => $this->lastMove['end'],
-                ]);
-            } catch (\Throwable $exception) {
-                report($exception);
-                $this->dispatch('content-toast', message: 'Tidak dapat membatalkan perubahan.', type: 'error');
-                $this->lastMove = null;
-
-                return;
-            }
+            $this->authorize('update', $event);
+            $event->update(['event_date' => $this->lastMove['from']]);
         }
 
         $this->lastMove = null;
-        $this->dispatch('content-toast', message: 'Perubahan dibatalkan', type: 'success');
+
+        $this->dispatch('content-toast', message: 'Pemindahan dibatalkan', type: 'success');
     }
 
     public function retry(): void
     {
         $this->loadError = false;
+        $this->popoverDate = null;
     }
 
     public function render()
     {
-        $anchor = $this->anchor();
-
-        if ($this->view === 'minggu') {
-            [$weekStart, $weekEnd] = $this->range();
-            $monthLabel = $this->formatRange($weekStart, $weekEnd);
-        } else {
-            $monthLabel = $anchor->copy()->locale('id')->translatedFormat('F Y');
-        }
-
+        $contentTypes = $this->contentTypeOptions();
         $statusOptions = StatusPalette::selectable();
-        $eventColors = DivisionPalette::EVENT_COLORS;
-        $timeOptions = $this->timeOptions();
-        $selectedColorLabel = null;
 
-        $divisionOptions = collect();
-        $divisionColors = [];
-        $users = collect();
         $events = collect();
-        $holidays = collect();
         $days = [];
         $monthWeeks = [];
         $weekDays = [];
-        $listGroups = collect();
-        $isEmpty = true;
-        $drawerDateLabel = 'Belum dipilih';
-        $drawerTimeLabel = null;
-        $creatorName = null;
-        $createdHuman = null;
-        $selectedDivisionName = 'Umum';
-        $selectedPicName = null;
-        $selectedPicInitials = null;
+        $listGroups = [];
+        $popoverItems = [];
+        $isEmpty = false;
 
         try {
-            $divisionOptions = Divisi::query()->orderBy('id_divisi')->get();
-            $divisionColors = DivisionPalette::map();
-            $users = User2::query()
-                ->with('karyawan')
-                ->orderBy('username')
-                ->get()
-                ->sortBy(fn (User2 $user) => $user->karyawan?->nama ?? $user->username)
-                ->values();
-
             [$rangeStart, $rangeEnd] = $this->range();
 
-            app(NationalHolidayService::class)->ensureYears([
-                $rangeStart->year,
-                $rangeEnd->year,
-            ]);
-
             $events = ContentEvent::query()
-                ->with(['division', 'pic.karyawan', 'creator.karyawan'])
-                ->overlapping($rangeStart, $rangeEnd)
-                ->when($this->division === 'umum', fn ($query) => $query->whereNull('division_id'))
-                ->when(! in_array($this->division, ['semua', 'umum'], true), fn ($query) => $query->where('division_id', $this->division))
-                ->orderBy('start_date')
-                ->orderBy('title')
+                ->with(['creator.karyawan'])
+                ->inRange($rangeStart, $rangeEnd)
+                ->when($this->typeFilter !== 'semua', fn ($query) => $query->where('content_type', $this->typeFilter))
+                ->when($this->statusFilter !== 'semua', fn ($query) => $query->where('status', $this->statusFilter))
                 ->get();
 
-            $holidays = Holiday::query()
-                ->whereDate('date', '>=', $rangeStart->toDateString())
-                ->whereDate('date', '<=', $rangeEnd->toDateString())
-                ->whereIn('type', Holiday::DAY_OFF_TYPES)
-                ->orderBy('date')
-                ->orderBy('name')
-                ->get();
+            $sorted = $this->sortEvents($events);
 
-            $canEdit = [];
-
-            foreach ($events as $event) {
-                $canEdit[$event->id] = auth()->user()->can('update', $event);
-            }
-
-            if ($this->view === 'bulan' || $this->view === 'minggu') {
-                $days = $this->buildDays($rangeStart, $rangeEnd, $events, $holidays, $divisionColors, $canEdit);
-
-                if ($this->view === 'bulan') {
-                    $monthWeeks = array_chunk(array_values($days), 7);
-                } else {
-                    $weekDays = array_values($days);
-                }
-            }
-
-            $listGroups = $this->buildListGroups($events, $holidays, $divisionColors, $canEdit);
-
-            if ($this->view === 'daftar') {
-                $isEmpty = $listGroups->isEmpty();
+            if ($this->view === 'minggu') {
+                $weekDays = $this->buildDays($sorted, $rangeStart, $rangeEnd, $contentTypes, false);
             } else {
-                $isEmpty = collect($days)->every(fn (array $day) => $day['items'] === []);
+                $days = $this->buildDays($sorted, $rangeStart, $rangeEnd, $contentTypes, true);
+                $monthWeeks = array_chunk(array_values($days), 7);
             }
 
-            if ($this->drawerOpen && $this->start_date !== '') {
-                try {
-                    $start = Carbon::parse($this->start_date);
-                    $end = $this->end_date !== '' ? Carbon::parse($this->end_date) : null;
-                    $drawerDateLabel = $this->formatRange($start, $end);
-                } catch (\Throwable) {
-                    $drawerDateLabel = 'Belum dipilih';
-                }
+            $listGroups = $this->buildListGroups($sorted, $contentTypes);
 
-                $startTime = trim($this->start_time);
-
-                if ($startTime !== '') {
-                    $endTime = trim($this->end_time);
-                    $drawerTimeLabel = $endTime !== '' ? "{$startTime}–{$endTime}" : $startTime;
-                }
+            if ($this->popoverDate && isset($days[$this->popoverDate])) {
+                $popoverItems = $days[$this->popoverDate]['items'];
             }
 
-            $selectedDivision = $this->division_id
-                ? $divisionOptions->firstWhere('id_divisi', $this->division_id)
-                : null;
-            $selectedDivisionName = $selectedDivision?->nama_divisi ?? 'Umum';
-            $selectedColorLabel = $this->color && isset($eventColors[$this->color])
-                ? $eventColors[$this->color]['label']
-                : null;
-
-            $selectedUser = $this->pic_user_id
-                ? $users->firstWhere('id_user', $this->pic_user_id)
-                : null;
-            $selectedPicName = $selectedUser?->karyawan?->nama ?? $selectedUser?->username;
-            $selectedPicInitials = $selectedPicName ? $this->initials($selectedPicName) : null;
-
-            if ($this->editingId) {
-                $drawerEvent = ContentEvent::with(['creator.karyawan', 'creator'])->find($this->editingId);
-
-                if ($drawerEvent) {
-                    $creatorName = $drawerEvent->creator?->karyawan?->nama
-                        ?? $drawerEvent->creator?->username
-                        ?? 'Sistem';
-                    $createdHuman = $drawerEvent->created_at?->locale('id')->diffForHumans();
-                }
-            }
-        } catch (\Throwable $exception) {
+            $isEmpty = $sorted->isEmpty();
+        } catch (Throwable $exception) {
             report($exception);
             $this->loadError = true;
         }
 
-        $popoverItems = $this->popoverDate && isset($days[$this->popoverDate])
-            ? $days[$this->popoverDate]['items']
-            : [];
-
         return view('livewire.content-calendar', [
-            'anchor' => $anchor,
-            'monthLabel' => $monthLabel,
+            'contentTypes' => $contentTypes,
             'statusOptions' => $statusOptions,
-            'eventColors' => $eventColors,
-            'timeOptions' => $timeOptions,
-            'selectedColorLabel' => $selectedColorLabel,
-            'divisionOptions' => $divisionOptions,
-            'divisionColors' => $divisionColors,
-            'users' => $users,
-            'days' => $days,
             'monthWeeks' => $monthWeeks,
             'weekDays' => $weekDays,
             'listGroups' => $listGroups,
-            'isEmpty' => $isEmpty,
-            'hasActiveFilters' => $this->hasActiveFilters(),
-            'drawerDateLabel' => $drawerDateLabel,
-            'drawerTimeLabel' => $drawerTimeLabel,
-            'creatorName' => $creatorName,
-            'createdHuman' => $createdHuman,
-            'selectedDivisionName' => $selectedDivisionName,
-            'selectedPicName' => $selectedPicName,
-            'selectedPicInitials' => $selectedPicInitials,
             'popoverItems' => $popoverItems,
-            'today' => Carbon::today()->toDateString(),
-            'holidayColors' => DivisionPalette::HOLIDAY,
+            'isEmpty' => $isEmpty,
+            'monthLabel' => $this->periodLabel(),
+            'hasActiveFilters' => $this->hasActiveFilters(),
         ]);
     }
 
-    private function anchor(): Carbon
-    {
-        try {
-            return Carbon::createFromFormat('Y-m', $this->month)->startOfMonth();
-        } catch (\Throwable) {
-            $this->month = now()->format('Y-m');
-
-            return now()->startOfMonth();
-        }
-    }
-
     /**
-     * @return array{0: Carbon, 1: Carbon}
+     * @return array<string, array{slug: string, name: string, fill: string, border: string, text: string}>
      */
-    private function range(): array
+    private function contentTypeOptions(): array
     {
-        $anchor = $this->anchor();
+        $options = [];
 
-        if ($this->view === 'minggu') {
-            $start = $this->weekAnchor();
-
-            return [$start, $start->copy()->addDays(6)];
+        foreach (ContentType::ordered() as $index => $type) {
+            $options[$type->slug] = [
+                'slug' => $type->slug,
+                'name' => $type->name,
+            ] + ContentTypePalette::for($index);
         }
 
-        if ($this->view === 'daftar') {
-            return [$anchor->copy()->startOfMonth(), $anchor->copy()->endOfMonth()];
-        }
-
-        $start = $anchor->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY);
-
-        return [$start, $start->copy()->addDays(41)];
-    }
-
-    /**
-     * The Monday that anchors the week view.
-     */
-    private function weekAnchor(): Carbon
-    {
-        if ($this->week !== '') {
-            try {
-                return Carbon::parse($this->week)->startOfWeek(Carbon::MONDAY);
-            } catch (\Throwable) {
-                // fall through to the month anchor
-            }
-        }
-
-        return $this->defaultWeek();
-    }
-
-    /**
-     * Current week when browsing this month, otherwise the first week of the month.
-     */
-    private function defaultWeek(): Carbon
-    {
-        $anchor = $this->anchor();
-        $today = Carbon::today();
-
-        if ($anchor->isSameMonth($today)) {
-            return $today->copy()->startOfWeek(Carbon::MONDAY);
-        }
-
-        return $anchor->copy()->startOfWeek(Carbon::MONDAY);
+        return $options;
     }
 
     /**
      * @param  Collection<int, ContentEvent>  $events
-     * @param  Collection<int, Holiday>  $holidays
-     * @param  array<string, array{fill: string, border: string, dot: string}>  $divisionColors
-     * @param  array<int, bool>  $canEdit
-     * @return array<string, array{date: string, day: int, label: string, is_today: bool, is_other_month: bool, items: array<int, array<string, mixed>>}>
+     * @return Collection<int, ContentEvent>
      */
-    private function buildDays(
-        Carbon $rangeStart,
-        Carbon $rangeEnd,
-        $events,
-        $holidays,
-        array $divisionColors,
-        array $canEdit
-    ): array {
+    private function sortEvents(Collection $events): Collection
+    {
+        return $events
+            ->sortBy(fn (ContentEvent $event) => [
+                $event->post_time === null || $event->post_time === '' ? 1 : 0,
+                substr((string) $event->post_time, 0, 5),
+                mb_strtolower($event->title),
+            ])
+            ->values();
+    }
+
+    /**
+     * @param  Collection<int, ContentEvent>  $events
+     * @param  array<string, array{slug: string, name: string, fill: string, border: string, text: string}>  $contentTypes
+     * @return array<string, array<string, mixed>>
+     */
+    private function buildDays(Collection $events, Carbon $rangeStart, Carbon $rangeEnd, array $contentTypes, bool $markOtherMonth): array
+    {
         $anchor = $this->anchor();
         $today = Carbon::today()->toDateString();
         $days = [];
@@ -690,310 +487,211 @@ class ContentCalendar extends Component
 
         while ($cursor->lessThanOrEqualTo($rangeEnd)) {
             $date = $cursor->toDateString();
+
             $days[$date] = [
                 'date' => $date,
                 'day' => (int) $cursor->format('j'),
                 'label' => $cursor->copy()->locale('id')->translatedFormat('l, j F Y'),
                 'is_today' => $date === $today,
-                'is_other_month' => $this->view !== 'minggu'
+                'is_other_month' => $markOtherMonth
                     && ($cursor->month !== $anchor->month || $cursor->year !== $anchor->year),
+                'is_weekend' => in_array($cursor->dayOfWeekIso, [6, 7], true),
                 'items' => [],
             ];
+
             $cursor->addDay();
         }
 
         foreach ($events as $event) {
-            $base = $this->eventItem($event, $divisionColors, $canEdit);
-            $start = $event->start_date->copy();
-            $end = $event->effectiveEndDate();
+            $date = $event->event_date->toDateString();
 
-            $from = $start->lessThan($rangeStart) ? $rangeStart->copy() : $start->copy();
-            $to = $end->greaterThan($rangeEnd) ? $rangeEnd->copy() : $end->copy();
-
-            if ($from->greaterThan($to)) {
+            if (! isset($days[$date])) {
                 continue;
             }
 
-            $cursor = $from->copy();
-
-            while ($cursor->lessThanOrEqualTo($to)) {
-                $date = $cursor->toDateString();
-
-                if (isset($days[$date])) {
-                    $item = $base;
-                    $item['time_label'] = $this->eventDayTimeLabel($event, $cursor);
-                    $item['time_label_short'] = $this->eventDayTimeShortLabel($event, $cursor);
-                    $item['sort_time'] = $item['time_label_short'];
-
-                    $days[$date]['items'][] = $item + [
-                        'is_start' => $cursor->equalTo($start),
-                        'is_end' => $cursor->equalTo($end),
-                    ];
-                }
-
-                $cursor->addDay();
-            }
+            $days[$date]['items'][] = $this->eventItem($event, $contentTypes);
         }
-
-        foreach ($holidays as $holiday) {
-            $date = $holiday->date->toDateString();
-
-            if (isset($days[$date])) {
-                $days[$date]['items'][] = $this->holidayItem($holiday) + [
-                    'is_start' => true,
-                    'is_end' => true,
-                ];
-            }
-        }
-
-        foreach ($days as &$day) {
-            usort($day['items'], fn (array $a, array $b) => $this->compareItems($a, $b));
-        }
-        unset($day);
 
         return $days;
     }
 
     /**
      * @param  Collection<int, ContentEvent>  $events
-     * @param  Collection<int, Holiday>  $holidays
-     * @param  array<string, array{fill: string, border: string, dot: string}>  $divisionColors
-     * @param  array<int, bool>  $canEdit
+     * @param  array<string, array{slug: string, name: string, fill: string, border: string, text: string}>  $contentTypes
+     * @return array<int, array{date: string, label: string, items: array<int, array<string, mixed>>}>
      */
-    private function buildListGroups($events, $holidays, array $divisionColors, array $canEdit)
+    private function buildListGroups(Collection $events, array $contentTypes): array
     {
-        $items = [];
-
-        foreach ($events as $event) {
-            $items[] = $this->eventItem($event, $divisionColors, $canEdit) + [
-                'list_date' => $event->start_date->toDateString(),
-            ];
-        }
-
-        foreach ($holidays as $holiday) {
-            $items[] = $this->holidayItem($holiday) + [
-                'list_date' => $holiday->date->toDateString(),
-            ];
-        }
-
-        usort($items, function (array $a, array $b) {
-            $byDate = $a['list_date'] <=> $b['list_date'];
-
-            return $byDate !== 0 ? $byDate : $this->compareItems($a, $b);
-        });
-
-        return collect($items)
-            ->groupBy('list_date')
-            ->sortKeys()
-            ->map(function ($group, $date) {
+        return $events
+            ->sortBy(fn (ContentEvent $event) => $event->event_date->toDateString())
+            ->groupBy(fn (ContentEvent $event) => $event->event_date->toDateString())
+            ->map(function (Collection $group, string $date) use ($contentTypes) {
                 return [
                     'date' => $date,
                     'label' => Carbon::parse($date)->locale('id')->translatedFormat('l, j F Y'),
-                    'items' => $group->values()->all(),
+                    'items' => $group->map(fn (ContentEvent $event) => $this->eventItem($event, $contentTypes))->values()->all(),
                 ];
             })
-            ->values();
+            ->values()
+            ->all();
     }
 
     /**
-     * @param  array<string, array{fill: string, border: string, dot: string}>  $divisionColors
-     * @param  array<int, bool>  $canEdit
+     * @param  array<string, array{slug: string, name: string, fill: string, border: string, text: string}>  $contentTypes
      * @return array<string, mixed>
      */
-    private function eventItem(ContentEvent $event, array $divisionColors, array $canEdit): array
+    private function eventItem(ContentEvent $event, array $contentTypes): array
     {
-        $status = StatusPalette::content($event->status);
-        $picName = $event->pic?->karyawan?->nama ?? $event->pic?->username;
+        $type = $contentTypes[$event->content_type] ?? null;
 
         return [
-            'type' => 'event',
             'id' => $event->id,
             'title' => $event->title,
-            'start' => $event->start_date->toDateString(),
-            'end' => $event->effectiveEndDate()->toDateString(),
-            'date_label' => $this->formatRange($event->start_date, $event->end_date),
+            'date' => $event->event_date->toDateString(),
+            'date_label' => $event->dateLabel(),
             'time_label' => $event->timeLabel(),
-            'time_label_short' => $event->startTimeLabel(),
-            'sort_time' => $event->startTimeLabel(),
-            'end_time' => $event->endTimeLabel(),
-            'division_id' => $event->division_id,
-            'division_name' => $event->division?->nama_divisi ?? 'Umum',
-            'colors' => DivisionPalette::event($event->color) ?? DivisionPalette::for($event->division_id, $divisionColors),
-            'color' => $event->color,
+            'type_slug' => $event->content_type,
+            'type_name' => $type['name'] ?? 'Tanpa jenis',
+            'type_fill' => $type['fill'] ?? '#F1F5F9',
+            'type_border' => $type['border'] ?? '#CBD5E1',
             'status' => $event->status,
-            'status_label' => $status['label'] ?? $event->status,
-            'pic_name' => $picName,
-            'pic_initials' => $picName ? $this->initials($picName) : null,
-            'description' => $event->description,
-            'creator_name' => $event->creator?->karyawan?->nama
-                ?? $event->creator?->username
-                ?? 'Sistem',
-            'created_human' => $event->created_at?->locale('id')->diffForHumans() ?? '-',
-            'can_edit' => $canEdit[$event->id] ?? false,
+            'can_edit' => auth()->user()?->can('update', $event) ?? false,
         ];
     }
 
     /**
-     * Show the full time range on single-day events, but only the relevant
-     * start/end time on multi-day event pills.
+     * @return array<string, string>
      */
-    private function eventDayTimeLabel(ContentEvent $event, Carbon $date): ?string
-    {
-        if (! $event->isMultiDay()) {
-            return $event->timeLabel();
-        }
-
-        if ($date->isSameDay($event->start_date)) {
-            return $event->startTimeLabel();
-        }
-
-        if ($date->isSameDay($event->effectiveEndDate())) {
-            return $event->endTimeLabel();
-        }
-
-        return null;
-    }
-
-    /**
-     * Compact start/end time for month cells where space is limited.
-     */
-    private function eventDayTimeShortLabel(ContentEvent $event, Carbon $date): ?string
-    {
-        if (! $event->isMultiDay()) {
-            return $event->startTimeLabel();
-        }
-
-        if ($date->isSameDay($event->start_date)) {
-            return $event->startTimeLabel();
-        }
-
-        if ($date->isSameDay($event->effectiveEndDate())) {
-            return $event->endTimeLabel();
-        }
-
-        return null;
-    }
-
-    /**
-     * Shared shape for read-only holiday entries.
-     *
-     * @return array<string, mixed>
-     */
-    private function holidayItem(Holiday $holiday): array
+    private function messages(): array
     {
         return [
-            'type' => 'holiday',
-            'id' => 'holiday-'.$holiday->id,
-            'title' => $holiday->name,
-            'date' => $holiday->date->toDateString(),
-            'date_label' => $holiday->date->copy()->locale('id')->translatedFormat('j M Y'),
-            'holiday_type' => $holiday->type,
-            'colors' => DivisionPalette::HOLIDAY,
-            'can_edit' => false,
+            'title.required' => 'Judul event wajib diisi.',
+            'title.max' => 'Judul event maksimal 150 karakter.',
+            'event_date.required' => 'Tanggal wajib diisi.',
+            'event_date.date' => 'Tanggal tidak valid.',
+            'post_time.date_format' => 'Jam posting harus dalam format HH:MM.',
+            'content_type.required' => 'Jenis konten wajib dipilih.',
+            'content_type.exists' => 'Jenis konten tidak dikenal.',
+            'formStatus.required' => 'Status wajib dipilih.',
+            'formStatus.in' => 'Status tidak valid.',
+            'description.max' => 'Deskripsi maksimal 5000 karakter.',
+            'content_url.url' => 'Link konten harus berupa URL http atau https yang valid.',
+            'content_url.max' => 'Link konten terlalu panjang.',
         ];
     }
 
-    /**
-     * Shared ordering for month cells, week columns, the list, and the day
-     * popover: holidays first, then the untimed entries of the day, then the
-     * timed entries from earliest to latest.
-     *
-     * @param  array<string, mixed>  $a
-     * @param  array<string, mixed>  $b
-     */
-    private function compareItems(array $a, array $b): int
+    private function fieldRules(): array
     {
         return [
-            $this->itemGroup($a),
-            $a['sort_time'] ?? '',
-            $a['end_time'] ?? '',
-            mb_strtolower($a['title']),
-        ] <=> [
-            $this->itemGroup($b),
-            $b['sort_time'] ?? '',
-            $b['end_time'] ?? '',
-            mb_strtolower($b['title']),
+            'title' => ['required', 'string', 'max:150'],
+            'event_date' => ['required', 'date'],
+            'post_time' => ['nullable', 'date_format:H:i'],
+            'content_type' => ['required', Rule::exists('content_types', 'slug')],
+            'formStatus' => ['required', Rule::in(array_keys(StatusPalette::selectable()))],
+            'description' => ['nullable', 'string', 'max:5000'],
+            'content_url' => ['nullable', 'url:http,https', 'max:2048'],
         ];
     }
 
-    /**
-     * @param  array<string, mixed>  $item
-     */
-    private function itemGroup(array $item): int
+    private function columnFor(string $property): string
     {
-        if (($item['type'] ?? '') === 'holiday') {
-            return 0;
-        }
-
-        // Multi-day events only show a time on their first and last day, so the
-        // per-day time (not the event's start time) decides the row.
-        return empty($item['sort_time']) ? 1 : 2;
+        return match ($property) {
+            'formStatus' => 'status',
+            default => $property,
+        };
     }
 
-    private function formatRange(Carbon $start, ?Carbon $end): string
+    private function valueFor(string $property): ?string
     {
-        $start = $start->copy()->locale('id');
+        $value = match ($property) {
+            'formStatus' => $this->formStatus,
+            default => $this->{$property},
+        };
 
-        if (! $end || $end->equalTo($start)) {
-            return $start->translatedFormat('j M Y');
-        }
-
-        $end = $end->copy()->locale('id');
-
-        if ($start->year === $end->year && $start->month === $end->month) {
-            return $start->translatedFormat('j').'–'.$end->translatedFormat('j M Y');
-        }
-
-        if ($start->year === $end->year) {
-            return $start->translatedFormat('j M').' – '.$end->translatedFormat('j M Y');
-        }
-
-        return $start->translatedFormat('j M Y').' – '.$end->translatedFormat('j M Y');
-    }
-
-    private function initials(string $name): string
-    {
-        $parts = preg_split('/\s+/u', trim($name)) ?: [];
-        $parts = array_values(array_filter($parts, fn ($part) => $part !== ''));
-
-        if ($parts === []) {
-            return '?';
-        }
-
-        $first = mb_substr($parts[0], 0, 1);
-        $last = count($parts) > 1 ? mb_substr($parts[count($parts) - 1], 0, 1) : '';
-
-        return mb_strtoupper($first.$last);
+        return $value === '' ? null : $value;
     }
 
     /**
-     * 5-minute time options, keeping any off-grid value already stored.
-     *
-     * @return array<int, string>
+     * @return array{0: Carbon, 1: Carbon}
      */
-    private function timeOptions(): array
+    private function range(): array
     {
-        $options = [];
+        if ($this->view === 'minggu') {
+            $start = $this->weekAnchor();
 
-        for ($minutes = 0; $minutes < 24 * 60; $minutes += 5) {
-            $options[] = sprintf('%02d:%02d', intdiv($minutes, 60), $minutes % 60);
+            return [$start->copy(), $start->copy()->endOfWeek(Carbon::SUNDAY)];
         }
 
-        foreach ([$this->start_time, $this->end_time] as $value) {
-            if ($value !== ''
-                && preg_match('/^\d{2}:\d{2}$/', $value)
-                && ! in_array($value, $options, true)) {
-                $options[] = $value;
+        $start = $this->anchor()->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY);
+        $end = $this->anchor()->copy()->endOfMonth()->endOfWeek(Carbon::SUNDAY);
+
+        return [$start, $end];
+    }
+
+    private function anchor(): Carbon
+    {
+        return Carbon::createFromFormat('Y-m', $this->month)->startOfMonth();
+    }
+
+    private function weekAnchor(): Carbon
+    {
+        if ($this->week !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $this->week)) {
+            return Carbon::parse($this->week)->startOfWeek(Carbon::MONDAY);
+        }
+
+        return $this->defaultWeek();
+    }
+
+    private function defaultWeek(): Carbon
+    {
+        $anchor = now()->startOfWeek(Carbon::MONDAY);
+
+        if (! now()->isSameMonth($this->anchor())) {
+            return $this->anchor()->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY);
+        }
+
+        return $anchor;
+    }
+
+    private function periodLabel(): string
+    {
+        if ($this->view === 'minggu') {
+            $start = $this->weekAnchor();
+            $end = $start->copy()->endOfWeek(Carbon::SUNDAY);
+
+            if ($start->month === $end->month && $start->year === $end->year) {
+                return $start->format('j').'–'.$end->copy()->locale('id')->translatedFormat('j M Y');
             }
+
+            if ($start->year === $end->year) {
+                return $start->copy()->locale('id')->translatedFormat('j M').' – '.$end->copy()->locale('id')->translatedFormat('j M Y');
+            }
+
+            return $start->copy()->locale('id')->translatedFormat('j M Y').' – '.$end->copy()->locale('id')->translatedFormat('j M Y');
         }
 
-        sort($options);
-
-        return $options;
+        return $this->anchor()->copy()->locale('id')->translatedFormat('F Y');
     }
 
     private function hasActiveFilters(): bool
     {
-        return $this->division !== 'semua';
+        return $this->typeFilter !== 'semua'
+            || $this->statusFilter !== 'semua';
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function timeOptions(): array
+    {
+        $options = [];
+
+        for ($hour = 0; $hour < 24; $hour++) {
+            for ($minute = 0; $minute < 60; $minute += 5) {
+                $options[] = sprintf('%02d:%02d', $hour, $minute);
+            }
+        }
+
+        return $options;
     }
 }

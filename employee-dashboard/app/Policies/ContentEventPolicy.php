@@ -32,6 +32,11 @@ class ContentEventPolicy
         return $this->canManage($user, $event);
     }
 
+    /**
+     * The creator, the Kepala Divisi of the creator's division, and HRD may
+     * edit or delete. The event itself no longer stores a division, so the
+     * Kadiv check follows the creator's current division.
+     */
     private function canManage(User2 $user, ContentEvent $event): bool
     {
         if ((string) $event->created_by === (string) $user->id_user) {
@@ -49,9 +54,10 @@ class ContentEventPolicy
         }
 
         $divisionId = $user->karyawan?->divisi_id_divisi;
+        $creatorDivisionId = $event->creator?->karyawan?->divisi_id_divisi;
 
-        return $event->division_id !== null
-            && $divisionId !== null
-            && (string) $divisionId === (string) $event->division_id;
+        return $divisionId !== null
+            && $creatorDivisionId !== null
+            && (string) $divisionId === (string) $creatorDivisionId;
     }
 }
