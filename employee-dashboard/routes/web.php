@@ -359,6 +359,12 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
         Route::get('/rekap-divisi', [KeuanganController::class, 'rekapDivisi'])->name('kadiv.keuangan.rekapDivisi');
         Route::get('/rekap-divisi/export', [KeuanganController::class, 'export'])->name('kadiv.keuangan.exportRekapDivisi');
 
+        // Arus Kas (Gabungan Kas Masuk + Kas Keluar)
+        Route::get('/arus-kas', [KeuanganController::class, 'arusKas'])->name('kadiv.keuangan.arusKas');
+
+        // Manajemen Dana (Gabungan Permintaan Dana + Verifikasi Laporan L/R)
+        Route::get('/manajemen-dana', [KeuanganController::class, 'manajemenDana'])->name('kadiv.keuangan.manajemenDana');
+
         // Pemasukan Kas
         Route::get('/pemasukan', [PemasukanController::class, 'index'])->name('kadiv.keuangan.pemasukan');
         Route::post('/pemasukan', [PemasukanController::class, 'store'])

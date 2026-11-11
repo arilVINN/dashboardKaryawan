@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Divisi;
 use App\Models\KPemasukan;
 use App\Models\KPengeluaran;
+use App\Models\KLabaRugi;
 use App\Models\KPermintDana;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -90,6 +91,99 @@ class KeuanganController extends Controller
         });
 
         return view('finance.rekapDivisi', compact('periode', 'mingguKe', 'rekapDivisi'));
+    }
+
+    /**
+     * Halaman Arus Kas — gabungan Kas Masuk + Kas Keluar dengan tab.
+     */
+    public function arusKas(Request $request): \Illuminate\View\View
+    {
+        $tab     = $request->input('tab', 'masuk');
+        $periode = $request->input('periode', now()->format('Y-m'));
+        [$tahun, $bulan] = explode('-', $periode);
+
+        $divisiList   = Divisi::where('kode_divisi', '!=', 'FIN')->where('status_aktif', 'Aktif')->get();
+        $kategoriList = KPemasukan::KATEGORI_OPTIONS;
+
+        // Kas Masuk (always load for badge count)
+        $kategori = $request->input('kategori', '');
+        $qMasuk   = KPemasukan::with('divisi')
+            ->whereYear('tanggal_masuk', $tahun)
+            ->whereMonth('tanggal_masuk', $bulan);
+        if ($tab === 'masuk' && $kategori) {
+            $qMasuk->where('kategori_pemasukan', $kategori);
+        }
+        $pemasukan  = $qMasuk->latest('tanggal_masuk')->paginate(15)->withQueryString();
+        $totalMasuk = KPemasukan::whereYear('tanggal_masuk', $tahun)
+            ->whereMonth('tanggal_masuk', $bulan)->sum('nominal');
+
+        // Kas Keluar (always load for badge count)
+        $divisiId = $request->input('divisi_id_divisi', null);
+        $qKeluar  = KPengeluaran::with('divisi', 'permintaanDana')
+            ->whereYear('tanggal_cair', $tahun)
+            ->whereMonth('tanggal_cair', $bulan);
+        if ($tab === 'keluar' && $divisiId) {
+            $qKeluar->where('divisi_id_divisi', $divisiId);
+        }
+        $pengeluaran = $qKeluar->latest('tanggal_cair')->paginate(15)->withQueryString();
+        $totalKeluar = KPengeluaran::whereYear('tanggal_cair', $tahun)
+            ->whereMonth('tanggal_cair', $bulan)->sum('nominal');
+
+        $permintaanSiapCair = KPermintDana::with('divisi', 'diajukanOleh.karyawan')
+            ->where('status', KPermintDana::STATUS_DISETUJUI)
+            ->latest('tanggal_disetujui')
+            ->get();
+
+        return view('finance.arusKas.index', compact(
+            'tab', 'periode', 'pemasukan', 'pengeluaran',
+            'totalMasuk', 'totalKeluar', 'divisiList', 'kategoriList',
+            'permintaanSiapCair', 'kategori', 'divisiId',
+        ));
+    }
+
+    /**
+     * Halaman Manajemen Dana — gabungan Permintaan Dana + Verifikasi Laporan L/R.
+     */
+    public function manajemenDana(Request $request): \Illuminate\View\View
+    {
+        $tab      = $request->input('tab', 'permintaan');
+        $status   = $request->input('status', '');
+        $divisiId = $request->input('divisi_id', null);
+        $periode  = $request->input('periode', now()->format('Y-m'));
+
+        $divisiList = Divisi::where('kode_divisi', '!=', 'FIN')->where('status_aktif', 'Aktif')->get();
+
+        // Permintaan Dana
+        $qPerm = KPermintDana::with('divisi', 'diajukanOleh.karyawan');
+        if ($status && $tab === 'permintaan') {
+            $qPerm->where('status', $status);
+        }
+        if ($divisiId && $tab === 'permintaan') {
+            $qPerm->where('divisi_id_divisi', $divisiId);
+        }
+        $permintaan               = $qPerm->latest()->paginate(15)->withQueryString();
+        $jumlahMenungguPermintaan = KPermintDana::where('status', KPermintDana::STATUS_MENUNGGU)->count();
+
+        // Laporan L/R
+        $qLap = KLabaRugi::with('divisi', 'pengirim.karyawan', 'diverifikasiOleh');
+        if ($tab === 'laporan') {
+            [$tahun, $bulan] = explode('-', $periode);
+            $qLap->whereYear('created_at', $tahun)->whereMonth('created_at', $bulan);
+            if ($status) {
+                $qLap->where('status_verifikasi', $status);
+            }
+            if ($divisiId) {
+                $qLap->where('divisi_id_divisi', $divisiId);
+            }
+        }
+        $laporan               = $qLap->latest()->paginate(15)->withQueryString();
+        $jumlahMenungguLaporan = KLabaRugi::where('status_verifikasi', 'menunggu')->count();
+
+        return view('finance.manajemenDana.index', compact(
+            'tab', 'status', 'divisiId', 'periode',
+            'divisiList', 'permintaan', 'laporan',
+            'jumlahMenungguPermintaan', 'jumlahMenungguLaporan',
+        ));
     }
 
     /**
