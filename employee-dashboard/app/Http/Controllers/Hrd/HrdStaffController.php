@@ -5,14 +5,12 @@ namespace App\Http\Controllers\Hrd;
 use App\Actions\StoreKaryawanFoto;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\AuditLog;
 use App\Models\Karyawan;
 use App\Models\LampiranKaryawan;
 use App\Models\ProjectTask;
 use App\Models\User2;
 use App\Models\Divisi;
 use App\Models\Role;
-use App\Services\HrdProtectionService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -60,8 +58,6 @@ class HrdStaffController extends Controller
             'email' => 'nullable|email|max:100|unique:karyawans,email',
             'alamat' => 'nullable|string',
             'jabatan' => ['required', 'string', 'max:100', Rule::in(Karyawan::JABATAN_OPTIONS)],
-            'pendidikan' => 'nullable|string|max:50',
-            'job_level' => 'nullable|string|max:50',
             'status_aktif' => ['nullable', 'string', Rule::in(Karyawan::STATUS_OPTIONS)],
             'divisi_id_divisi' => 'required|string|max:20',
             // Data akun login
@@ -123,8 +119,6 @@ class HrdStaffController extends Controller
                 'email' => $request->email,
                 'alamat' => $request->alamat,
                 'jabatan' => $request->jabatan,
-                'pendidikan' => $request->pendidikan,
-                'job_level' => $request->job_level,
                 'status_aktif' => $request->status_aktif ?? 'Aktif',
                 'divisi_id_divisi' => $request->divisi_id_divisi,
             ]);
@@ -303,33 +297,7 @@ class HrdStaffController extends Controller
             return response()->json(['message' => 'Akun login staff tidak ditemukan'], 409);
         }
 
-        $authUser = $request->user() ?: auth()->user();
-
-        // 1 & 2. Proteksi role HRD jika ada perubahan role
-        if (isset($validated['role_id_role']) && $karyawan->user) {
-            if ($errorMsg = HrdProtectionService::validateRoleChange($authUser, $karyawan, $validated['role_id_role'])) {
-                return response()->json([
-                    'message' => $errorMsg,
-                    'errors'  => ['role_id_role' => [$errorMsg]],
-                ], 422);
-            }
-        }
-
-        // 1 & 2. Proteksi penonaktifan jika status diubah menjadi Tidak Aktif
-        if (isset($validated['status_aktif']) && $validated['status_aktif'] !== 'Aktif') {
-            if ($errorMsg = HrdProtectionService::validateDeactivation($authUser, $karyawan)) {
-                return response()->json([
-                    'message' => $errorMsg,
-                    'errors'  => ['status_aktif' => [$errorMsg]],
-                ], 422);
-            }
-        }
-
-        $oldRole = $karyawan->user?->role?->nama_role;
-        $roleChanged = false;
-        $newRoleName = null;
-
-        DB::transaction(function () use ($karyawan, $validated, $request, &$roleChanged, &$newRoleName): void {
+        DB::transaction(function () use ($karyawan, $validated, $request): void {
             $karyawanChanges = array_intersect_key($validated, array_flip([
                 'nama',
                 'jenis_kelamin',
@@ -371,32 +339,10 @@ class HrdStaffController extends Controller
                     $accountChanges['password'] = Hash::make($validated['password']);
                 }
                 if ($accountChanges) {
-                    if (isset($accountChanges['role_id_role']) && $accountChanges['role_id_role'] !== $karyawan->user->role_id_role) {
-                        $roleChanged = true;
-                        $newRole = Role::find($accountChanges['role_id_role']);
-                        $newRoleName = $newRole?->nama_role ?? $accountChanges['role_id_role'];
-                    }
                     $karyawan->user->update($accountChanges);
                 }
             }
         });
-
-        // 3. Catat audit log jika role berubah
-        if ($roleChanged) {
-            AuditLog::catat(
-                $authUser?->id_user,
-                'ubah_role',
-                'user',
-                $karyawan->user?->id_user,
-                [
-                    'id_karyawan' => $karyawan->id_karyawan,
-                    'nama'        => $karyawan->nama,
-                    'username'    => $karyawan->user?->username,
-                    'role_lama'   => $oldRole,
-                    'role_baru'   => $newRoleName,
-                ]
-            );
-        }
 
         return response()->json([
             'message' => 'Staff berhasil diubah',
@@ -441,23 +387,16 @@ class HrdStaffController extends Controller
 
     public function destroy($id)
     {
-        $karyawan = Karyawan::with(['user.role'])->where('id_karyawan', $id)->first();
+        $karyawan = Karyawan::with('user')->where('id_karyawan', $id)->first();
 
         if (!$karyawan) {
             return response()->json(['message' => 'Staff tidak ditemukan'], 404);
         }
 
-<<<<<<< HEAD
-        // 1 & 2. Proteksi penghapusan akun HRD & proteksi akun diri sendiri
-        $authUser = auth()->user();
-        if ($errorMsg = HrdProtectionService::validateDeletion($authUser, $karyawan)) {
-            return response()->json(['message' => $errorMsg], 403);
-=======
         if (ProjectTask::where('karyawan_id_karyawan', $karyawan->id_karyawan)->exists()) {
             return response()->json([
                 'message' => 'Karyawan tidak dapat dihapus karena masih memiliki task project.',
             ], 409);
->>>>>>> 91a7df3ef54465de22a30f7c1b4fe653111049a2
         }
 
         // Cek apakah ada tugas yang BELUM selesai (bukan sudah di-acc)
@@ -470,10 +409,6 @@ class HrdStaffController extends Controller
                 'message' => 'Karyawan tidak dapat dihapus karena masih memiliki tugas yang belum selesai (belum di-acc).',
             ], 409);
         }
-
-        $nama = $karyawan->nama;
-        $username = $karyawan->user?->username;
-        $roleName = $karyawan->user?->role?->nama_role;
 
         try {
             DB::transaction(function () use ($karyawan): void {
@@ -495,19 +430,6 @@ class HrdStaffController extends Controller
 
                 $karyawan->delete();
             });
-
-            // 3. Catat audit log penghapusan karyawan
-            AuditLog::catat(
-                $authUser?->id_user,
-                'hapus_karyawan',
-                'karyawan',
-                $id,
-                [
-                    'nama'     => $nama,
-                    'username' => $username,
-                    'role'     => $roleName,
-                ]
-            );
         } catch (QueryException $e) {
             report($e);
             return response()->json([
