@@ -11,21 +11,36 @@ class ProfileController extends Controller
 {
     public function show(Request $request)
     {
-        $user = $request->user()->load('karyawan.divisi');
-        $foto = $user->karyawan->foto ?? null;
+        $user = $request->user()->load(['karyawan.divisi', 'role']);
+        $karyawan = $user->karyawan;
+        $foto = $karyawan->foto ?? null;
+
+        $tglMasuk = $karyawan?->tanggal_masuk ?? $karyawan?->tanggal_rekrut;
+        $tglAkhirKontrak = $karyawan?->tanggal_akhir_kontrak;
+        $tglLahir = $karyawan?->tanggal_lahir;
 
         return response()->json([
             'message' => 'Data profil',
             'data' => [
-                'nama' => $user->karyawan->nama ?? $user->username,
-                'email' => $user->karyawan->email ?? '-',
-                'alamat' => $user->karyawan->alamat ?? '-',
-                'jabatan' => $user->karyawan->jabatan ?? '-',
-                'divisi' => $user->karyawan->divisi->nama_divisi ?? '-',
-                'no_telepon' => $user->karyawan->no_telepon ?? '-',
-                'tanggal_masuk' => $user->karyawan->tanggal_masuk ?? $user->karyawan->tanggal_rekrut ?? '-',
-                'tanggal_rekrut' => $user->karyawan->tanggal_masuk ?? $user->karyawan->tanggal_rekrut ?? '-',
-                'jenis_kelamin' => $user->karyawan->jenis_kelamin ?? '-',
+                'id_karyawan' => $karyawan?->id_karyawan ?? '-',
+                'nama' => $karyawan?->nama ?? $user->username,
+                'email' => $karyawan?->email ?? '-',
+                'alamat' => $karyawan?->alamat ?? '-',
+                'jabatan' => $karyawan?->jabatan ?? '-',
+                'job_level' => $karyawan?->job_level ?? '-',
+                'pendidikan' => $karyawan?->pendidikan ?? '-',
+                'status_karyawan' => $karyawan?->status_karyawan ?? ($tglAkhirKontrak ? 'Kontrak' : 'Tetap'),
+                'status_aktif' => $karyawan?->status_aktif ?? 'Aktif',
+                'divisi' => $karyawan?->divisi->nama_divisi ?? '-',
+                'no_telepon' => $karyawan?->no_telepon ?? '-',
+                'no_rekening' => $karyawan?->no_rekening ?? '-',
+                'tanggal_masuk' => $tglMasuk ? \Carbon\Carbon::parse($tglMasuk)->format('Y-m-d') : null,
+                'tanggal_masuk_label' => $tglMasuk ? \Carbon\Carbon::parse($tglMasuk)->format('d M Y') : '-',
+                'tanggal_rekrut' => $tglMasuk ? \Carbon\Carbon::parse($tglMasuk)->format('Y-m-d') : null,
+                'tanggal_akhir_kontrak' => $tglAkhirKontrak ? \Carbon\Carbon::parse($tglAkhirKontrak)->format('d M Y') : 'Karyawan Tetap / Tidak Ada',
+                'tanggal_lahir' => $tglLahir ? \Carbon\Carbon::parse($tglLahir)->format('d M Y') : '-',
+                'jenis_kelamin' => $karyawan?->jenis_kelamin ?? '-',
+                'tingkatan' => $user->role?->nama_role ? ucfirst($user->role->nama_role) : ($karyawan?->jabatan ?? 'Staff'),
                 'tanggal_dibuat' => $user->created_at ? $user->created_at->format('d F Y') : '-',
                 'foto_url' => $foto ? '/storage/'.$foto : null,
             ]
@@ -50,6 +65,7 @@ class ProfileController extends Controller
             ],
             'no_telepon' => 'required|string|max:20',
             'alamat' => 'required|string',
+            'no_rekening' => 'nullable|string|max:50',
         ]);
 
         $user->karyawan->update($validated);

@@ -35,18 +35,46 @@ U
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                         <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">Detail Karyawan</h2>
                         
-                        <div class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <p class="text-xs text-slate-400 mb-0.5">Tingkatan</p>
-                                <p class="text-sm font-semibold text-slate-900">Staff</p>
+                                <p class="text-xs text-slate-400 mb-0.5">ID Karyawan</p>
+                                <p id="prof-id" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Tingkatan / Jabatan</p>
+                                <p id="prof-jabatan" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Job Level</p>
+                                <p id="prof-job-level" class="text-sm font-semibold text-slate-900">-</p>
                             </div>
                             <div>
                                 <p class="text-xs text-slate-400 mb-0.5">Divisi</p>
                                 <p id="prof-divisi" class="text-sm font-semibold text-slate-900">-</p>
                             </div>
                             <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Pendidikan Terakhir</p>
+                                <p id="prof-pendidikan" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Jenis Kelamin</p>
+                                <p id="prof-gender" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Tanggal Lahir</p>
+                                <p id="prof-tgl-lahir" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
                                 <p class="text-xs text-slate-400 mb-0.5">Tanggal Masuk</p>
                                 <p id="prof-rekrut" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Status Karyawan</p>
+                                <p id="prof-status-karyawan" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Tanggal Akhir Kontrak</p>
+                                <p id="prof-akhir-kontrak" class="text-sm font-semibold text-slate-900">-</p>
                             </div>
                         </div>
                     </div>
@@ -88,6 +116,10 @@ U
                                 <p class="text-xs text-slate-400 mb-0.5">Nomor Telepon</p>
                                 <p id="prof-telepon" class="text-sm font-semibold text-slate-900">-</p>
                             </div>
+                            <div class="col-span-2">
+                                <p class="text-xs text-slate-400 mb-0.5">No. Rekening</p>
+                                <p id="prof-rekening" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
                         </div>
                     </div>
 
@@ -106,6 +138,10 @@ U
                             <div>
                                 <label class="block text-xs text-slate-500 mb-1">Nomor Telepon</label>
                                 <input type="text" id="input-telepon" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">No. Rekening</label>
+                                <input type="text" id="input-rekening" placeholder="Contoh: BCA 1234567890" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
                             </div>
                             <div>
                                 <label class="block text-xs text-slate-500 mb-1">Alamat</label>
@@ -187,28 +223,34 @@ U
                             inisial.classList.remove('hidden');
                         }
 
-                        // Kiri
-                        document.getElementById('prof-divisi').textContent = p.divisi;
-                        document.getElementById('prof-dibuat').textContent = p.tanggal_dibuat;
-                        
-                        let rekrut = p.tanggal_masuk || p.tanggal_rekrut;
-                        if (rekrut && rekrut !== '-') {
-                            const d = new Date(rekrut);
-                            rekrut = d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'][d.getMonth()] + ' ' + d.getFullYear();
-                        }
-                        document.getElementById('prof-rekrut').textContent = rekrut;
+                        // Kiri (Detail Karyawan Lengkap)
+                        document.getElementById('prof-id').textContent = p.id_karyawan || '-';
+                        document.getElementById('prof-jabatan').textContent = p.jabatan || p.tingkatan || '-';
+                        document.getElementById('prof-job-level').textContent = p.job_level || '-';
+                        document.getElementById('prof-divisi').textContent = p.divisi || '-';
+                        document.getElementById('prof-pendidikan').textContent = p.pendidikan || '-';
+                        document.getElementById('prof-gender').textContent = p.jenis_kelamin || '-';
+                        document.getElementById('prof-tgl-lahir').textContent = p.tanggal_lahir || '-';
+                        document.getElementById('prof-rekrut').textContent = p.tanggal_masuk_label || '-';
+                        document.getElementById('prof-status-karyawan').textContent = p.status_karyawan || '-';
+                        document.getElementById('prof-akhir-kontrak').textContent = p.tanggal_akhir_kontrak || '-';
 
-                        // Kanan View
-                        document.getElementById('prof-nama').textContent = p.nama;
-                        document.getElementById('prof-email').textContent = p.email;
-                        document.getElementById('prof-alamat').textContent = p.alamat;
-                        document.getElementById('prof-telepon').textContent = p.no_telepon;
+                        // Informasi Akun
+                        document.getElementById('prof-dibuat').textContent = p.tanggal_dibuat || '-';
 
-                        // Form Edit Values
-                        document.getElementById('input-nama').value = p.nama !== '-' ? p.nama : '';
-                        document.getElementById('input-email').value = p.email !== '-' ? p.email : '';
-                        document.getElementById('input-telepon').value = p.no_telepon !== '-' ? p.no_telepon : '';
-                        document.getElementById('input-alamat').value = p.alamat !== '-' ? p.alamat : '';
+                        // Informasi Pribadi
+                        document.getElementById('prof-nama').textContent = p.nama || '-';
+                        document.getElementById('prof-email').textContent = p.email || '-';
+                        document.getElementById('prof-alamat').textContent = p.alamat || '-';
+                        document.getElementById('prof-telepon').textContent = p.no_telepon || '-';
+                        document.getElementById('prof-rekening').textContent = p.no_rekening || '-';
+
+                        // Form Edit 
+                        document.getElementById('input-nama').value = p.nama && p.nama !== '-' ? p.nama : '';
+                        document.getElementById('input-email').value = p.email && p.email !== '-' ? p.email : '';
+                        document.getElementById('input-telepon').value = p.no_telepon && p.no_telepon !== '-' ? p.no_telepon : '';
+                        document.getElementById('input-rekening').value = p.no_rekening && p.no_rekening !== '-' ? p.no_rekening : '';
+                        document.getElementById('input-alamat').value = p.alamat && p.alamat !== '-' ? p.alamat : '';
                     }
                 } catch (e) {
                     console.error(e);
@@ -246,6 +288,7 @@ U
                             nama: document.getElementById('input-nama').value || '-',
                             email: document.getElementById('input-email').value || '-',
                             no_telepon: document.getElementById('input-telepon').value || '-',
+                            no_rekening: document.getElementById('input-rekening').value || null,
                             alamat: document.getElementById('input-alamat').value || '-',
                         })
                     });

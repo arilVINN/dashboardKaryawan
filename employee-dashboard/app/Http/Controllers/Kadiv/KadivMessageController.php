@@ -198,23 +198,19 @@ class KadivMessageController extends Controller
         ]);
 
         $recipient = User2::with(['role', 'karyawan'])->findOrFail($validated['penerima_id_user']);
-        $recipientRole = strtolower($recipient->role?->nama_role ?? '');
-        $sameDivisionStaff = $recipientRole === 'staff'
-            && $recipient->karyawan?->divisi_id_divisi === $user->karyawan->divisi_id_divisi;
 
-        if (! $sameDivisionStaff && $recipientRole !== 'hrd') {
+        if ($recipient->id_user === $user->id_user) {
             return response()->json([
-                'message' => 'Penerima harus Staff di divisi Anda atau HRD.',
+                'message' => 'Tidak dapat mengirim pesan ke diri sendiri.',
             ], 422);
         }
 
         $task = null;
         if (isset($validated['tugas_id_tugas'])) {
             $task = Tugas::with('karyawan')->find($validated['tugas_id_tugas']);
-            if ($task?->karyawan?->divisi_id_divisi !== $user->karyawan->divisi_id_divisi
-                || ($sameDivisionStaff && $task->karyawan_id_karyawan !== $recipient->karyawan_id_karyawan)) {
+            if ($task && $task->karyawan_id_karyawan !== $recipient->karyawan_id_karyawan) {
                 return response()->json([
-                    'message' => 'Tugas tidak sesuai dengan divisi atau Staff penerima.',
+                    'message' => 'Tugas tidak sesuai dengan Staff penerima.',
                 ], 422);
             }
         }
