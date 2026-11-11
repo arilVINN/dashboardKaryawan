@@ -69,37 +69,58 @@ class StatusPalette
     ];
 
     /**
-     * Lighter badge palette used by the public content calendar. The status
-     * keys and labels still come from STATUSES, so there is one status list.
+     * Content workflow statuses, separate from the task statuses in STATUSES so
+     * changing the content calendar never alters the rest of the app.
      *
-     * @var array<string, array{bg: string, border: string, dot: string, text: string}>
+     * @var array<string, array{label: string, bg: string, border: string, dot: string, text: string}>
      */
     public const CONTENT = [
-        'baru' => [
+        'revisi' => [
+            'label' => 'Revisi',
+            'bg' => '#F1F5F9',
+            'border' => '#CBD5E1',
+            'dot' => '#64748B',
+            'text' => '#172B36',
+        ],
+        'cancel' => [
+            'label' => 'Cancel',
+            'bg' => '#FEE2E2',
+            'border' => '#FCA5A5',
+            'dot' => '#B91C1C',
+            'text' => '#172B36',
+        ],
+        'approved' => [
+            'label' => 'Approved',
             'bg' => '#DCEEFE',
             'border' => '#93C5FD',
             'dot' => '#2563EB',
             'text' => '#172B36',
         ],
-        'berjalan' => [
-            'bg' => '#D9F5E5',
-            'border' => '#86D9AE',
-            'dot' => '#059669',
-            'text' => '#172B36',
-        ],
-        'menunggu' => [
+        'process' => [
+            'label' => 'On process',
             'bg' => '#FEF0C3',
             'border' => '#F5C85C',
             'dot' => '#D97706',
             'text' => '#172B36',
         ],
-        'disetujui' => [
-            'bg' => '#D5F3F0',
-            'border' => '#7DD3C8',
-            'dot' => '#0D9488',
+        'publish' => [
+            'label' => 'Publish',
+            'bg' => '#D9F5E5',
+            'border' => '#86D9AE',
+            'dot' => '#059669',
             'text' => '#172B36',
         ],
     ];
+
+    /**
+     * Content event statuses, in the order they appear in the form and filter.
+     *
+     * @return array<string, string>
+     */
+    public static function contentStatuses(): array
+    {
+        return array_map(fn (array $status) => $status['label'], self::CONTENT);
+    }
 
     public static function all(): array
     {
@@ -127,17 +148,27 @@ class StatusPalette
      */
     public static function content(?string $status): ?array
     {
-        $key = self::normalize($status);
+        $key = strtolower(trim((string) $status));
 
-        if (! $key || ! isset(self::CONTENT[$key])) {
+        if ($key === '') {
             return null;
         }
 
-        return self::CONTENT[$key] + ['label' => self::STATUSES[$key]['label']];
+        $key = match ($key) {
+            'baru', 'berjalan' => 'process',
+            'menunggu' => 'revisi',
+            'disetujui' => 'approved',
+            'terlambat' => 'cancel',
+            'on process', 'on-process', 'onprocess', 'on_progress', 'on progress' => 'process',
+            default => $key,
+        };
+
+        return self::CONTENT[$key] ?? null;
     }
 
     public static function normalize(?string $status): ?string
-    {        $status = strtolower(trim((string) $status));
+    {
+        $status = strtolower(trim((string) $status));
 
         if ($status === '') {
             return null;

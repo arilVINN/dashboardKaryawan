@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Staff\DashboardController;
 use App\Http\Controllers\Staff\NotifikasiController;
+use App\Http\Middleware\EnsureContentCalendarAccess;
 use App\Http\Middleware\EnsureStaffRole;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -32,8 +33,8 @@ Route::post('/login', [AuthController::class, 'login'])
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Shared public content calendar (all authenticated roles)
-Route::middleware(['auth', 'throttle:umum'])->group(function () {
+// Shared content calendar (HR and Marketing Communication only)
+Route::middleware(['auth', 'throttle:umum', EnsureContentCalendarAccess::class])->group(function () {
     Route::get('/kalender-konten', function () {
         return view('kalender-konten');
     })->name('kalender-konten');

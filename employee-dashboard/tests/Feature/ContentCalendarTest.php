@@ -4,16 +4,19 @@ namespace Tests\Feature;
 
 use App\Livewire\ContentCalendar;
 use App\Models\ContentEvent;
+use App\Models\ContentEventComment;
+use App\Models\ContentType;
 use App\Models\Divisi;
 use App\Models\Holiday;
 use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\User2;
+use App\Support\ContentCalendarAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class ContentCalendarTest extends TestCase
@@ -24,11 +27,15 @@ class ContentCalendarTest extends TestCase
 
     private Divisi $hr;
 
+    private Divisi $markom;
+
+    private User2 $staffHr;
+
+    private User2 $otherStaffHr;
+
+    private User2 $staffMarkom;
+
     private User2 $staffIt;
-
-    private User2 $otherStaffIt;
-
-    private User2 $kadivIt;
 
     private User2 $kadivHr;
 
@@ -58,11 +65,27 @@ class ContentCalendarTest extends TestCase
             'status_aktif' => 'Aktif',
         ]);
 
+        $this->markom = Divisi::create([
+            'id_divisi' => 'DV-MK',
+            'kode_divisi' => 'MK',
+            'nama_divisi' => 'Marketing Communication',
+            'status_aktif' => 'Aktif',
+        ]);
+
+        $this->staffHr = $this->makeUser('U-STAFF-HR', 'staffhr', 'Staff HR', 'Staff', $this->hr, 'RL-STAFF');
+        $this->otherStaffHr = $this->makeUser('U-STAFF-HR-2', 'staffhr2', 'Staff HR Lain', 'Staff', $this->hr, 'RL-STAFF');
+        $this->staffMarkom = $this->makeUser('U-STAFF-MK', 'staffmk', 'Staff MarKom', 'Staff', $this->markom, 'RL-STAFF');
         $this->staffIt = $this->makeUser('U-STAFF-IT', 'staffit', 'Staff IT', 'Staff', $this->it, 'RL-STAFF');
-        $this->otherStaffIt = $this->makeUser('U-STAFF-IT-2', 'staffit2', 'Staff IT Lain', 'Staff', $this->it, 'RL-STAFF');
-        $this->kadivIt = $this->makeUser('U-KADIV-IT', 'kadivit', 'Kadiv IT', 'Kepala Divisi IT', $this->it, 'RL-KADIV');
         $this->kadivHr = $this->makeUser('U-KADIV-HR', 'kadivhr', 'Kadiv HR', 'Kepala Divisi HR', $this->hr, 'RL-KADIV');
         $this->hrd = $this->makeUser('U-HRD', 'hrduser', 'HRD Manager', 'HRD Manager', $this->hr, 'RL-HRD');
+
+        ContentCalendarAccess::flush();
+
+        ContentType::insert([
+            ['slug' => 'reels', 'name' => 'Reels', 'sort_order' => 1],
+            ['slug' => 'single-image', 'name' => 'Single Image', 'sort_order' => 2],
+            ['slug' => 'carousel', 'name' => 'Carousel', 'sort_order' => 3],
+        ]);
     }
 
     private function makeUser(
@@ -91,513 +114,770 @@ class ContentCalendarTest extends TestCase
         ]);
     }
 
+    private function event(User2 $creator, array $overrides = []): ContentEvent
+    {
+        return ContentEvent::create($overrides + [
+            'title' => 'Event contoh',
+            'event_date' => '2026-11-10',
+            'post_time' => '09:00',
+            'content_type' => 'reels',
+            'status' => 'process',
+            'description' => null,
+            'content_url' => null,
+            'created_by' => $creator->id_user,
+        ]);
+    }
+
     public function test_page_renders_for_every_role(): void
     {
-        foreach ([$this->staffIt, $this->kadivIt, $this->hrd] as $user) {
+        foreach ([$this->staffHr, $this->staffMarkom, $this->kadivHr, $this->hrd] as $user) {
             $this->actingAs($user)
                 ->get('/kalender-konten')
                 ->assertOk()
                 ->assertSee('Kalender Konten')
-                ->assertSee('Tambah event');
+                ->assertSee('Tambah event')
+                ->assertSee('Semua jenis')
+                ->assertSee('Semua status');
         }
     }
 
-    public function test_staff_can_create_an_event_and_it_defaults_to_their_division(): void
+    public function test_staff_can_create_an_event(): void
     {
-        Livewire::actingAs($this->staffIt)
+        Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->set('month', '2026-11')
             ->call('openCreate', '2026-11-12')
             ->assertSet('formOpen', true)
-            ->assertSet('drawerOpen', false)
-            ->assertSet('division_id', 'DV-IT')
+            ->assertSet('event_date', '2026-11-12')
+            ->assertSet('formStatus', 'process')
             ->set('title', 'Kampanye Ramadan')
-            ->set('end_date', '2026-11-14')
-            ->set('description', 'Teaser, carousel, dan reels.')
+            ->set('post_time', '17:00')
+            ->set('content_type', 'carousel')
+            ->set('description', 'Teaser dan carousel.')
+            ->set('content_url', 'https://example.test/konten')
             ->call('save')
             ->assertHasNoErrors()
             ->assertSet('formOpen', false)
-            ->assertSet('editingId', null);
+            ->assertSet('editingId', null)
+            ->assertDispatched('content-toast');
 
-        $event = ContentEvent::firstOrFail();
-
-        $this->assertSame('Kampanye Ramadan', $event->title);
-        $this->assertSame('2026-11-12', $event->start_date->toDateString());
-        $this->assertSame('2026-11-14', $event->end_date->toDateString());
-        $this->assertSame('DV-IT', $event->division_id);
-        $this->assertSame('baru', $event->status);
-        $this->assertSame('U-STAFF-IT', $event->created_by);
+        $this->assertDatabaseHas('content_events', [
+            'title' => 'Kampanye Ramadan',
+            'event_date' => '2026-11-12',
+            'post_time' => '17:00',
+            'content_type' => 'carousel',
+            'status' => 'process',
+            'content_url' => 'https://example.test/konten',
+            'created_by' => $this->staffHr->id_user,
+        ]);
     }
 
-    public function test_event_times_are_saved_and_shown_on_pills(): void
+    public function test_create_requires_title_date_and_content_type(): void
     {
-        Livewire::actingAs($this->staffIt)
+        Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
             ->call('openCreate', '2026-11-12')
-            ->set('title', 'Webinar Produk')
-            ->set('start_time', '09:00')
-            ->set('end_time', '11:00')
+            ->set('title', '')
+            ->set('event_date', '')
+            ->set('content_type', '')
             ->call('save')
-            ->assertHasNoErrors();
-
-        $event = ContentEvent::firstOrFail();
-
-        $this->assertSame('09:00', $event->startTimeLabel());
-        $this->assertSame('11:00', $event->endTimeLabel());
-        $this->assertSame('09:00–11:00', $event->timeLabel());
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->assertSee('09:00');
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->set('view', 'daftar')
-            ->assertSee('09:00–11:00');
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->call('openEvent', $event->id)
-            ->assertSet('start_time', '09:00')
-            ->assertSet('end_time', '11:00');
+            ->assertHasErrors(['title', 'event_date', 'content_type']);
     }
 
-    public function test_end_time_cannot_be_before_start_time_on_the_same_day(): void
+    public function test_title_is_limited_to_150_characters(): void
     {
-        Livewire::actingAs($this->staffIt)
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', str_repeat('a', 151))
+            ->set('content_type', 'reels')
+            ->call('save')
+            ->assertHasErrors(['title']);
+    }
+
+    public function test_content_url_must_be_http_or_https(): void
+    {
+        Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->call('openCreate', '2026-11-12')
             ->set('title', 'Event')
-            ->set('start_time', '11:00')
-            ->set('end_time', '09:00')
+            ->set('content_type', 'reels')
+            ->set('content_url', 'bukan-url')
             ->call('save')
-            ->assertHasErrors(['end_time']);
+            ->assertHasErrors(['content_url']);
 
-        $this->assertDatabaseCount('content_events', 0);
-    }
-
-    public function test_end_time_requires_a_start_time(): void
-    {
-        Livewire::actingAs($this->staffIt)
+        Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->call('openCreate', '2026-11-12')
             ->set('title', 'Event')
-            ->set('end_time', '09:00')
+            ->set('content_type', 'reels')
+            ->set('content_url', 'ftp://example.test/file')
             ->call('save')
-            ->assertHasErrors(['end_time']);
-
-        $this->assertDatabaseCount('content_events', 0);
+            ->assertHasErrors(['content_url']);
     }
 
-    public function test_time_fields_use_a_scrollable_dropdown(): void
+    public function test_post_time_uses_24_hour_format(): void
     {
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->call('openCreate', '2026-11-12')
-            ->assertSet('formOpen', true)
-            ->assertSeeHtml('data-content-form')
-            ->assertSeeHtml('id="content-start-time"')
-            ->assertSeeHtml('id="content-end-time"')
-            ->assertSeeHtml('role="listbox"')
-            ->assertDontSeeHtml('type="time"');
-    }
-
-    public function test_event_color_can_be_chosen_and_is_rendered(): void
-    {
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->call('openCreate', '2026-11-12')
-            ->set('title', 'Event Merah')
-            ->set('color', 'red')
-            ->call('save')
-            ->assertHasNoErrors()
-            ->assertSet('formOpen', false);
-
-        $event = ContentEvent::firstOrFail();
-
-        $this->assertSame('red', $event->color);
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->assertSee('Event Merah')
-            ->assertSeeHtml('#FEE2E2');
-    }
-
-    public function test_event_color_must_come_from_the_palette(): void
-    {
-        Livewire::actingAs($this->staffIt)
+        Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->call('openCreate', '2026-11-12')
             ->set('title', 'Event')
-            ->set('color', 'pink')
+            ->set('content_type', 'reels')
+            ->set('post_time', '25:00')
             ->call('save')
-            ->assertHasErrors(['color']);
-
-        $this->assertDatabaseCount('content_events', 0);
+            ->assertHasErrors(['post_time']);
     }
 
-    public function test_title_and_start_date_are_required(): void
+    public function test_content_type_must_exist_in_the_managed_list(): void
     {
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->call('openCreate', '2026-11-12')
-            ->set('title', '   ')
-            ->set('start_date', '')
-            ->call('save')
-            ->assertHasErrors(['title', 'start_date']);
-
-        $this->assertDatabaseCount('content_events', 0);
-    }
-
-    public function test_end_date_cannot_be_before_start_date(): void
-    {
-        Livewire::actingAs($this->staffIt)
+        Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->call('openCreate', '2026-11-12')
             ->set('title', 'Event')
-            ->set('end_date', '2026-11-10')
+            ->set('content_type', 'podcast')
             ->call('save')
-            ->assertHasErrors(['end_date']);
+            ->assertHasErrors(['content_type']);
     }
 
-    public function test_creator_can_edit_and_delete_their_event(): void
+    public function test_card_shows_date_time_type_and_status(): void
     {
-        $event = $this->event($this->staffIt, 'DV-IT');
+        $this->event($this->staffHr, [
+            'title' => 'Reels Produk',
+            'event_date' => '2026-11-10',
+            'post_time' => '17:00',
+            'content_type' => 'carousel',
+            'status' => 'publish',
+        ]);
 
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->call('openEvent', $event->id)
-            ->assertSet('readOnly', false)
-            ->assertSet('drawerOpen', true)
-            ->assertSet('formOpen', false)
-            ->call('editEvent')
-            ->assertSet('drawerOpen', false)
-            ->assertSet('formOpen', true)
-            ->set('title', 'Judul baru')
-            ->call('save')
-            ->assertHasNoErrors()
-            ->assertSet('formOpen', false);
-
-        $this->assertSame('Judul baru', $event->fresh()->title);
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->call('openEvent', $event->id)
-            ->call('editEvent')
-            ->call('deleteEvent');
-
-        $this->assertDatabaseMissing('content_events', ['id' => $event->id]);
-    }
-
-    public function test_other_staff_sees_read_only_drawer_and_cannot_update(): void
-    {
-        $event = $this->event($this->staffIt, 'DV-IT');
-
-        Livewire::actingAs($this->otherStaffIt)
-            ->test(ContentCalendar::class)
-            ->call('openEvent', $event->id)
-            ->assertSet('readOnly', true)
-            ->assertDontSee('Simpan')
-            ->assertDontSee('Hapus');
-
-        $this->assertFalse($this->otherStaffIt->can('update', $event));
-        $this->assertFalse($this->otherStaffIt->can('delete', $event));
-    }
-
-    public function test_kadiv_can_manage_events_in_their_own_division_only(): void
-    {
-        $itEvent = $this->event($this->staffIt, 'DV-IT');
-        $hrEvent = $this->event($this->staffIt, 'DV-HR');
-
-        $this->assertTrue($this->kadivIt->can('update', $itEvent));
-        $this->assertTrue($this->kadivIt->can('delete', $itEvent));
-        $this->assertFalse($this->kadivIt->can('update', $hrEvent));
-
-        $this->assertTrue($this->kadivHr->can('update', $hrEvent));
-        $this->assertFalse($this->kadivHr->can('update', $itEvent));
-    }
-
-    public function test_hrd_can_manage_every_event(): void
-    {
-        $itEvent = $this->event($this->staffIt, 'DV-IT');
-        $umumEvent = $this->event($this->staffIt, null);
-
-        $this->assertTrue($this->hrd->can('update', $itEvent));
-        $this->assertTrue($this->hrd->can('delete', $itEvent));
-        $this->assertTrue($this->hrd->can('update', $umumEvent));
-    }
-
-    public function test_moving_an_event_shifts_start_and_end_and_can_be_undone(): void
-    {
-        $event = $this->event($this->staffIt, 'DV-IT', '2026-11-12', '2026-11-14');
-
-        $component = Livewire::actingAs($this->kadivIt)
+        Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->set('month', '2026-11')
-            ->call('moveEvent', $event->id, '2026-11-19');
-
-        $event->refresh();
-        $this->assertSame('2026-11-19', $event->start_date->toDateString());
-        $this->assertSame('2026-11-21', $event->end_date->toDateString());
-
-        $component->call('undoMove');
-
-        $event->refresh();
-        $this->assertSame('2026-11-12', $event->start_date->toDateString());
-        $this->assertSame('2026-11-14', $event->end_date->toDateString());
+            ->assertSee('Reels Produk')
+            ->assertSee('10 Nov 2026')
+            ->assertSee('17:00')
+            ->assertSee('Carousel')
+            ->assertSee('Publish')
+            ->assertSee('background-color: #D9F5E5')
+            ->assertSee('background-color: #FCE7F1')
+            ->assertDontSee('11/10/2026');
     }
 
-    public function test_week_view_renders_its_week_and_navigates_week_by_week(): void
+    public function test_card_hides_the_time_line_when_no_time_is_set(): void
     {
-        $this->event($this->staffIt, 'DV-IT', '2026-11-12', null, 'Event Minggu Kedua');
+        $this->event($this->staffHr, [
+            'title' => 'Tanpa Jam',
+            'event_date' => '2026-11-10',
+            'post_time' => null,
+        ]);
 
-        $component = Livewire::actingAs($this->staffIt)
+        $html = Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->set('month', '2026-11')
-            ->call('setView', 'minggu')
+            ->html();
+
+        $this->assertStringContainsString('Tanpa Jam', $html);
+        $this->assertStringNotContainsString('10 Nov 2026 · 00:00', $html);
+        $this->assertSame(0, substr_count($html, '00:00'));
+    }
+
+    public function test_week_view_hides_the_repeated_date_line(): void
+    {
+        $this->event($this->staffHr, [
+            'title' => 'Kartu Mingguan',
+            'event_date' => '2026-11-10',
+        ]);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('view', 'minggu')
             ->set('week', '2026-11-09')
-            ->assertSee('Event Minggu Kedua')
-            ->assertDontSee('Belum ada event bulan ini');
-
-        $component->call('next')
-            ->assertSet('week', '2026-11-16')
-            ->assertDontSee('Event Minggu Kedua');
-
-        $component->call('previous')
-            ->assertSet('week', '2026-11-09')
-            ->assertSee('Event Minggu Kedua');
+            ->assertSee('Kartu Mingguan')
+            ->assertDontSee('10 Nov 2026');
     }
 
-    public function test_month_and_week_views_keep_the_grid_visible_when_empty(): void
+    public function test_month_view_orders_cards_by_time_and_caps_at_two(): void
     {
-        foreach (['bulan' => 'Sen', 'minggu' => 'Tidak ada event'] as $view => $expected) {
-            Livewire::actingAs($this->staffIt)
-                ->test(ContentCalendar::class)
-                ->set('month', '2026-11')
-                ->set('view', $view)
-                ->assertDontSee('Belum ada event bulan ini')
-                ->assertSee($expected);
-        }
-    }
+        $this->event($this->staffHr, ['title' => 'Siang', 'event_date' => '2026-11-10', 'post_time' => '12:00']);
+        $this->event($this->staffHr, ['title' => 'Pagi', 'event_date' => '2026-11-10', 'post_time' => '08:00']);
+        $this->event($this->staffHr, ['title' => 'Sore', 'event_date' => '2026-11-10', 'post_time' => '17:00']);
 
-    public function test_calendar_fetches_holidays_for_the_visible_year(): void
-    {
-        config([
-            'services.holiday.auto_sync' => true,
-            'services.holiday.include_joint_leave' => false,
-        ]);
-        Cache::flush();
-
-        Http::fake([
-            '*data-libur*' => Http::response([
-                'libur_nasional' => [
-                    ['date' => '2026-08-17', 'name' => 'Hari Proklamasi Kemerdekaan RI'],
-                ],
-            ]),
-        ]);
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-08')
-            ->assertSee('Hari Proklamasi Kemerdekaan RI');
-
-        $this->assertDatabaseHas('holidays', [
-            'name' => 'Hari Proklamasi Kemerdekaan RI',
-            'source' => 'api',
-        ]);
-    }
-
-    public function test_holidays_are_rendered_as_read_only_entries(): void
-    {
-        Holiday::create(['date' => '2026-11-25', 'name' => 'Hari Libur Contoh']);
-
-        Livewire::actingAs($this->staffIt)
+        Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->set('month', '2026-11')
-            ->assertSee('Hari Libur Contoh');
-
-        $this->assertDatabaseCount('content_events', 0);
+            ->assertSeeInOrder(['Pagi', 'Siang'])
+            ->assertSee('+1 lainnya');
     }
 
-    public function test_only_day_off_row_types_are_rendered(): void
+    public function test_week_view_lists_every_card_sorted_by_time(): void
+    {
+        $this->event($this->staffHr, ['title' => 'Tanpa jam', 'event_date' => '2026-11-10', 'post_time' => null]);
+        $this->event($this->staffHr, ['title' => 'Sore', 'event_date' => '2026-11-10', 'post_time' => '17:00']);
+        $this->event($this->staffHr, ['title' => 'Pagi', 'event_date' => '2026-11-10', 'post_time' => '07:00']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('view', 'minggu')
+            ->set('week', '2026-11-09')
+            ->assertSeeInOrder(['Pagi', 'Sore', 'Tanpa jam']);
+    }
+
+    public function test_period_titles_use_indonesian_and_monday_first_weeks(): void
+    {
+        $this->event($this->staffHr, ['title' => 'Reels Produk']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('view', 'bulan')
+            ->set('month', '2026-11')
+            ->assertSee('November 2026')
+            ->assertSee('Sen')
+            ->assertSee('Min')
+            ->set('view', 'minggu')
+            ->set('week', '2026-11-09')
+            ->assertSee('9–15 Nov 2026');
+    }
+
+    public function test_previous_and_next_move_the_visible_period(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->call('previous')
+            ->assertSet('month', '2026-10')
+            ->call('next')
+            ->assertSet('month', '2026-11')
+            ->set('view', 'minggu')
+            ->set('week', '2026-11-09')
+            ->call('previous')
+            ->assertSet('week', '2026-11-02')
+            ->call('next')
+            ->assertSet('week', '2026-11-09');
+    }
+
+    public function test_type_and_status_filters_apply_live(): void
+    {
+        $this->event($this->staffHr, ['title' => 'Reels On Process', 'content_type' => 'reels', 'status' => 'process']);
+        $this->event($this->staffHr, ['title' => 'Carousel Publish', 'content_type' => 'carousel', 'status' => 'publish']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->set('typeFilter', 'carousel')
+            ->assertSee('Carousel Publish')
+            ->assertDontSee('Reels On Process')
+            ->set('typeFilter', 'semua')
+            ->set('statusFilter', 'process')
+            ->assertSee('Reels On Process')
+            ->assertDontSee('Carousel Publish');
+    }
+
+    public function test_reset_only_appears_when_a_filter_is_active(): void
+    {
+        $this->event($this->staffHr, ['title' => 'Reels Produk']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->assertDontSee('Reset')
+            ->set('statusFilter', 'process')
+            ->assertSee('Reset')
+            ->call('resetFilters')
+            ->assertSet('statusFilter', 'semua');
+    }
+
+    public function test_empty_state_is_shown_when_the_month_has_no_events(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-12')
+            ->assertSee('Belum ada event bulan ini');
+    }
+
+    public function test_national_holidays_are_not_rendered_on_the_content_calendar(): void
     {
         Holiday::create([
             'date' => '2026-11-25',
             'name' => 'Hari Libur Contoh',
             'type' => Holiday::TYPE_NATIONAL,
         ]);
-        Holiday::create([
-            'date' => '2026-11-25',
-            'name' => 'Hari Besar Lama',
-            'type' => 'hari_besar_nasional',
+
+        $this->event($this->staffHr, ['title' => 'Reels Produk']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->assertDontSee('Hari Libur Contoh');
+    }
+
+    public function test_status_options_use_the_content_workflow(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->assertSee('Revisi')
+            ->assertSee('Cancel')
+            ->assertSee('Approved')
+            ->assertSee('On process')
+            ->assertSee('Publish')
+            ->assertDontSee('Menunggu persetujuan');
+    }
+
+    public function test_legacy_status_values_are_rejected(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Event status lama')
+            ->set('content_type', 'reels')
+            ->set('formStatus', 'baru')
+            ->call('save')
+            ->assertHasErrors(['formStatus']);
+    }
+
+    public function test_todos_are_saved_with_a_new_event(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Event dengan to-do')
+            ->set('content_type', 'reels')
+            ->call('addTodo')
+            ->set('todos.0.text', 'Siapkan brief')
+            ->set('todos.0.done', true)
+            ->call('addTodo')
+            ->set('todos.1.text', 'Desain carousel')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $event = ContentEvent::where('title', 'Event dengan to-do')->firstOrFail();
+
+        $this->assertSame([
+            ['text' => 'Siapkan brief', 'done' => true],
+            ['text' => 'Desain carousel', 'done' => false],
+        ], $event->todos);
+    }
+
+    public function test_todos_are_toggled_and_removed_from_the_detail_modal(): void
+    {
+        $event = $this->event($this->staffHr, [
+            'todos' => [
+                ['text' => 'Siapkan brief', 'done' => false],
+                ['text' => 'Desain carousel', 'done' => true],
+            ],
         ]);
 
-        Livewire::actingAs($this->staffIt)
+        Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->assertSee('Hari Libur Contoh')
-            ->assertDontSee('Hari Besar Lama');
+            ->call('openEvent', $event->id)
+            ->assertSet('todos.0.text', 'Siapkan brief')
+            ->call('toggleTodo', 0)
+            ->set('todos.0.text', 'Brief final')
+            ->call('removeTodo', 1)
+            ->assertDispatched('content-saved');
+
+        $this->assertSame([
+            ['text' => 'Brief final', 'done' => true],
+        ], $event->fresh()->todos);
     }
 
-    public function test_division_filter_applies_to_the_calendar_data(): void
+    public function test_todo_text_is_limited_to_200_characters(): void
     {
-        $this->event($this->staffIt, 'DV-IT', null, null, 'Event IT', 'baru');
-        $this->event($this->hrd, 'DV-HR', null, null, 'Event HR', 'disetujui');
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->set('division', 'DV-HR')
-            ->assertSee('Event HR')
-            ->assertDontSee('Event IT')
-            ->set('division', 'semua')
-            ->assertSee('Event IT')
-            ->assertSee('Event HR');
-    }
-
-    public function test_validation_rejects_an_unknown_division_or_pic(): void
-    {
-        Livewire::actingAs($this->staffIt)
+        Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->call('openCreate', '2026-11-12')
             ->set('title', 'Event')
-            ->set('division_id', 'DV-NOPE')
-            ->set('pic_user_id', 'U-NOPE')
+            ->set('content_type', 'reels')
+            ->call('addTodo')
+            ->set('todos.0.text', str_repeat('a', 201))
             ->call('save')
-            ->assertHasErrors(['division_id', 'pic_user_id']);
+            ->assertHasErrors(['todos.0.text']);
     }
 
-    public function test_read_only_peek_has_no_edit_action(): void
+    public function test_read_only_users_can_tick_to_do_items_only(): void
     {
-        $event = $this->event($this->staffIt, 'DV-IT');
+        $event = $this->event($this->staffHr, [
+            'todos' => [['text' => 'Siapkan brief', 'done' => false]],
+        ]);
 
-        Livewire::actingAs($this->otherStaffIt)
+        Livewire::actingAs($this->otherStaffHr)
             ->test(ContentCalendar::class)
             ->call('openEvent', $event->id)
-            ->assertSet('drawerOpen', true)
-            ->assertSet('formOpen', false)
-            ->assertSee('Tutup')
-            ->assertDontSee('Edit')
-            ->assertDontSee('Simpan');
+            ->assertSee('Siapkan brief')
+            ->assertSeeHtml('wire:click="toggleTodo(0)"')
+            ->assertDontSeeHtml('wire:click="addTodo"')
+            ->assertDontSeeHtml('wire:click="removeTodo(0)"')
+            ->assertDontSeeHtml('wire:model.blur.live="todos.0.text"');
     }
 
-    public function test_edit_dialog_tracks_changes_and_resets_on_close(): void
+    public function test_non_creators_can_toggle_todos_but_cannot_edit_them(): void
     {
-        $event = $this->event($this->staffIt, 'DV-IT');
+        $event = $this->event($this->staffHr, [
+            'todos' => [
+                ['text' => 'Siapkan brief', 'done' => false],
+                ['text' => 'Desain carousel', 'done' => false],
+            ],
+        ]);
 
-        Livewire::actingAs($this->staffIt)
+        Livewire::actingAs($this->otherStaffHr)
             ->test(ContentCalendar::class)
             ->call('openEvent', $event->id)
-            ->call('editEvent')
-            ->assertSet('formDirty', false)
-            ->set('title', 'Judul berubah')
+            ->call('toggleTodo', 0)
+            ->assertDispatched('content-saved');
+
+        $this->assertTrue($event->fresh()->todos[0]['done']);
+
+        Livewire::actingAs($this->kadivHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->call('toggleTodo', 0);
+
+        $this->assertFalse($event->fresh()->todos[0]['done']);
+
+        Livewire::actingAs($this->hrd)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->call('toggleTodo', 0);
+
+        $this->assertTrue($event->fresh()->todos[0]['done']);
+
+        // Text edits, adding and removing stay creator-only.
+        Livewire::actingAs($this->otherStaffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->set('todos.0.text', 'Diubah orang lain');
+
+        $this->assertSame('Siapkan brief', $event->fresh()->todos[0]['text']);
+
+        Livewire::actingAs($this->otherStaffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->call('addTodo');
+
+        Livewire::actingAs($this->otherStaffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->call('removeTodo', 0);
+
+        $this->assertCount(2, $event->fresh()->todos);
+    }
+
+    public function test_only_hr_and_marketing_communication_can_open_the_calendar(): void
+    {
+        foreach ([$this->staffHr, $this->staffMarkom, $this->hrd] as $user) {
+            $this->actingAs($user)->get('/kalender-konten')->assertOk();
+        }
+
+        $this->actingAs($this->staffIt)->get('/kalender-konten')->assertForbidden();
+
+        $this->assertTrue(ContentCalendarAccess::allows($this->staffHr));
+        $this->assertTrue(ContentCalendarAccess::allows($this->staffMarkom));
+        $this->assertFalse(ContentCalendarAccess::allows($this->staffIt));
+    }
+
+    public function test_livewire_guard_rejects_other_divisions(): void
+    {
+        $this->actingAs($this->staffIt);
+
+        $this->expectException(HttpException::class);
+
+        (new ContentCalendar)->booted();
+    }
+
+    public function test_profile_dropdown_links_to_the_users_own_profile_on_the_shared_page(): void
+    {
+        $this->actingAs($this->kadivHr)
+            ->get('/kalender-konten')
+            ->assertOk()
+            ->assertSee('/kadiv/profile');
+
+        $this->actingAs($this->hrd)
+            ->get('/kalender-konten')
+            ->assertOk()
+            ->assertSee('/hrd/profile');
+    }
+
+    public function test_menu_link_is_hidden_outside_allowed_divisions(): void
+    {
+        $this->actingAs($this->staffHr)->get('/')->assertOk()->assertSee('Kalender Konten');
+        $this->actingAs($this->staffIt)->get('/')->assertOk()->assertDontSee('Kalender Konten');
+    }
+
+    public function test_allowed_employees_can_comment_on_an_event(): void
+    {
+        $event = $this->event($this->staffHr, ['title' => 'Event HR']);
+
+        foreach ([$this->staffHr, $this->otherStaffHr, $this->hrd, $this->staffMarkom] as $index => $user) {
+            Livewire::actingAs($user)
+                ->test(ContentCalendar::class)
+                ->call('openEvent', $event->id)
+                ->set('commentBody', 'Komentar '.$index)
+                ->call('addComment')
+                ->assertHasNoErrors();
+        }
+
+        $this->assertSame(4, ContentEventComment::where('content_event_id', $event->id)->count());
+
+        Livewire::actingAs($this->otherStaffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSee('Komentar 0')
+            ->assertSee('Komentar 3');
+    }
+
+    public function test_employees_can_only_delete_their_own_comments(): void
+    {
+        $event = $this->event($this->staffHr, ['title' => 'Event HR']);
+
+        $creatorComment = ContentEventComment::create([
+            'content_event_id' => $event->id,
+            'user_id_user' => $this->staffHr->id_user,
+            'body' => 'Komentar kreator',
+        ]);
+
+        $otherComment = ContentEventComment::create([
+            'content_event_id' => $event->id,
+            'user_id_user' => $this->otherStaffHr->id_user,
+            'body' => 'Komentar lain',
+        ]);
+
+        Livewire::actingAs($this->otherStaffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->call('deleteComment', $otherComment->id);
+
+        $this->assertDatabaseMissing('content_event_comments', ['id' => $otherComment->id]);
+
+        Livewire::actingAs($this->otherStaffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->call('deleteComment', $creatorComment->id);
+
+        $this->assertDatabaseHas('content_event_comments', ['id' => $creatorComment->id]);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->call('deleteComment', $creatorComment->id);
+
+        $this->assertDatabaseMissing('content_event_comments', ['id' => $creatorComment->id]);
+    }
+
+    public function test_comment_body_is_required_and_limited(): void
+    {
+        $event = $this->event($this->staffHr);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->set('commentBody', '')
+            ->call('addComment')
+            ->assertHasErrors(['commentBody']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->set('commentBody', str_repeat('a', 1001))
+            ->call('addComment')
+            ->assertHasErrors(['commentBody']);
+    }
+
+    public function test_comments_are_removed_with_the_event(): void
+    {
+        $event = $this->event($this->staffHr);
+
+        $comment = ContentEventComment::create([
+            'content_event_id' => $event->id,
+            'user_id_user' => $this->staffHr->id_user,
+            'body' => 'Komentar',
+        ]);
+
+        $event->delete();
+
+        $this->assertDatabaseMissing('content_event_comments', ['id' => $comment->id]);
+    }
+
+    public function test_read_only_detail_hides_editing_controls_for_other_staff(): void
+    {
+        $event = $this->event($this->staffHr, ['title' => 'Event Staff Lain']);
+
+        Livewire::actingAs($this->otherStaffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSet('readOnly', true)
+            ->assertSee('Event Staff Lain')
+            ->assertDontSee('content-date')
+            ->assertDontSee('content-url')
+            ->assertDontSeeHtml('wire:click="deleteEvent"');
+    }
+
+    public function test_creator_autosaves_a_field_and_shows_the_saved_indicator(): void
+    {
+        $event = $this->event($this->staffHr, ['title' => 'Judul Lama']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSet('readOnly', false)
+            ->set('title', 'Judul Baru')
+            ->call('saveField', 'title')
+            ->assertHasNoErrors()
+            ->assertDispatched('content-saved');
+
+        $this->assertDatabaseHas('content_events', ['id' => $event->id, 'title' => 'Judul Baru']);
+    }
+
+    public function test_autosave_rejects_an_invalid_value(): void
+    {
+        $event = $this->event($this->staffHr, ['title' => 'Judul Lama']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->set('title', '')
+            ->call('saveField', 'title')
+            ->assertHasErrors(['title']);
+
+        $this->assertDatabaseHas('content_events', ['id' => $event->id, 'title' => 'Judul Lama']);
+    }
+
+    public function test_only_the_creator_can_edit_delete_or_drag_an_event(): void
+    {
+        $event = $this->event($this->staffHr, ['title' => 'Event HR']);
+
+        $this->assertTrue(Gate::forUser($this->staffHr)->allows('update', $event));
+
+        foreach ([$this->otherStaffHr, $this->kadivHr, $this->hrd, $this->staffMarkom] as $user) {
+            $this->assertFalse(Gate::forUser($user)->allows('update', $event));
+            $this->assertFalse(Gate::forUser($user)->allows('delete', $event));
+        }
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSet('readOnly', false)
+            ->set('title', 'Diubah Kreator')
+            ->call('saveField', 'title')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('content_events', ['id' => $event->id, 'title' => 'Diubah Kreator']);
+
+        foreach ([$this->otherStaffHr, $this->kadivHr, $this->hrd] as $user) {
+            Livewire::actingAs($user)
+                ->test(ContentCalendar::class)
+                ->call('openEvent', $event->id)
+                ->assertSet('readOnly', true);
+
+            Livewire::actingAs($user)
+                ->test(ContentCalendar::class)
+                ->call('moveEvent', $event->id, '2026-11-20');
+
+            Livewire::actingAs($user)
+                ->test(ContentCalendar::class)
+                ->call('openEvent', $event->id)
+                ->call('deleteEvent');
+        }
+
+        $this->assertDatabaseHas('content_events', [
+            'id' => $event->id,
+            'title' => 'Diubah Kreator',
+            'event_date' => '2026-11-10',
+        ]);
+    }
+
+    public function test_hrd_can_view_and_comment_but_cannot_edit(): void
+    {
+        $event = $this->event($this->staffHr, ['title' => 'Event HR']);
+
+        Livewire::actingAs($this->hrd)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSet('readOnly', true)
+            ->assertSee('Komentar')
+            ->set('commentBody', 'Mohon cek brief')
+            ->call('addComment')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('content_event_comments', [
+            'content_event_id' => $event->id,
+            'user_id_user' => $this->hrd->id_user,
+            'body' => 'Mohon cek brief',
+        ]);
+
+        $this->assertDatabaseHas('content_events', ['id' => $event->id, 'title' => 'Event HR']);
+    }
+
+    public function test_other_staff_cannot_delete(): void
+    {
+        $event = $this->event($this->staffHr);
+
+        $this->assertFalse(Gate::forUser($this->otherStaffHr)->allows('delete', $event));
+
+        Livewire::actingAs($this->otherStaffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->call('deleteEvent');
+
+        $this->assertDatabaseHas('content_events', ['id' => $event->id]);
+    }
+
+    public function test_drag_moves_the_event_date_and_can_be_undone(): void
+    {
+        $event = $this->event($this->staffHr, ['event_date' => '2026-11-10']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->call('moveEvent', $event->id, '2026-11-12')
+            ->assertDispatched('content-toast')
+            ->call('undoMove');
+
+        $this->assertDatabaseHas('content_events', [
+            'id' => $event->id,
+            'event_date' => '2026-11-10',
+        ]);
+    }
+
+    public function test_week_cards_are_draggable_for_editors_only(): void
+    {
+        $event = $this->event($this->staffHr, ['event_date' => '2026-11-10']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('view', 'minggu')
+            ->set('week', '2026-11-09')
+            ->assertSeeHtml('draggable="true"');
+
+        Livewire::actingAs($this->otherStaffHr)
+            ->test(ContentCalendar::class)
+            ->set('view', 'minggu')
+            ->set('week', '2026-11-09')
+            ->assertSeeHtml('draggable="false"');
+    }
+
+    public function test_drag_is_forbidden_for_other_staff(): void
+    {
+        $event = $this->event($this->staffHr, ['event_date' => '2026-11-10']);
+
+        Livewire::actingAs($this->otherStaffHr)
+            ->test(ContentCalendar::class)
+            ->call('moveEvent', $event->id, '2026-11-12');
+
+        $this->assertDatabaseHas('content_events', [
+            'id' => $event->id,
+            'event_date' => '2026-11-10',
+        ]);
+    }
+
+    public function test_closing_a_dirty_create_modal_is_guarded_on_the_server(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Belum disimpan')
             ->assertSet('formDirty', true)
-            ->call('closeForm')
-            ->assertSet('formOpen', false)
-            ->assertSet('editingId', null)
-            ->assertSet('formDirty', false);
-    }
-
-    public function test_events_are_ordered_by_start_time_not_creation_order(): void
-    {
-        $this->timedEvent('Event Sore', '15:00');
-        $this->timedEvent('Event Pagi', '09:00');
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->assertSeeInOrder(['Event Pagi', 'Event Sore']);
-    }
-
-    public function test_all_day_events_sort_above_timed_events(): void
-    {
-        $this->timedEvent('Event Jam', '09:00');
-        $this->event($this->staffIt, 'DV-IT', null, null, 'Event Seharian');
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->assertSeeInOrder(['Event Seharian', 'Event Jam']);
-    }
-
-    public function test_holidays_and_multi_day_events_stay_above_single_day_items(): void
-    {
-        Holiday::create(['date' => '2026-11-13', 'name' => 'Libur Uji']);
-        $this->event($this->staffIt, 'DV-IT', '2026-11-13', '2026-11-14', 'Event Band');
-        $this->timedEvent('Event Jam', '08:00', '2026-11-14');
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->assertSeeInOrder(['Libur Uji', 'Event Band', 'Event Jam']);
-    }
-
-    public function test_month_cell_shows_three_pills_before_overflowing(): void
-    {
-        $this->timedEvent('Event Satu', '09:00');
-        $this->timedEvent('Event Dua', '10:00');
-        $this->timedEvent('Event Tiga', '11:00');
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->assertSeeInOrder(['Event Satu', 'Event Dua', 'Event Tiga'])
-            ->assertDontSee('lainnya');
-
-        $this->timedEvent('Event Empat', '12:00');
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->assertSee('+1 lainnya')
-            ->assertDontSee('Event Empat');
-    }
-
-    public function test_multi_day_events_are_ordered_by_time_on_their_start_day(): void
-    {
-        $long = $this->timedEvent('Event Panjang', '06:10', '2026-11-17');
-        $long->update(['end_date' => '2026-11-18']);
-        $this->timedEvent('Event Pendek', '02:30', '2026-11-17');
-
-        Livewire::actingAs($this->staffIt)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->assertSeeInOrder(['Event Pendek', 'Event Panjang']);
-    }
-
-    private function timedEvent(string $title, string $startTime, string $date = '2026-11-12'): ContentEvent
-    {
-        return ContentEvent::create([
-            'title' => $title,
-            'start_date' => $date,
-            'start_time' => $startTime,
-            'division_id' => 'DV-IT',
-            'status' => 'baru',
-            'created_by' => $this->staffIt->id_user,
-        ]);
-    }
-
-    private function event(
-        User2 $creator,
-        ?string $divisionId,
-        ?string $start = null,
-        ?string $end = null,
-        string $title = 'Event Konten',
-        string $status = 'baru'
-    ): ContentEvent {
-        return ContentEvent::create([
-            'title' => $title,
-            'start_date' => $start ?? '2026-11-12',
-            'end_date' => $end,
-            'division_id' => $divisionId,
-            'status' => $status,
-            'description' => 'Deskripsi event.',
-            'created_by' => $creator->id_user,
-        ]);
+            ->call('closeModal')
+            ->assertSet('formOpen', true)
+            ->call('closeModal', true)
+            ->assertSet('formOpen', false);
     }
 }

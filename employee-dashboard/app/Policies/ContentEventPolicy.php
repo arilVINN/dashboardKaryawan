@@ -4,54 +4,37 @@ namespace App\Policies;
 
 use App\Models\ContentEvent;
 use App\Models\User2;
+use App\Support\ContentCalendarAccess;
 
 class ContentEventPolicy
 {
     public function viewAny(User2 $user): bool
     {
-        return true;
+        return ContentCalendarAccess::allows($user);
     }
 
     public function view(User2 $user, ContentEvent $event): bool
     {
-        return true;
+        return ContentCalendarAccess::allows($user);
     }
 
     public function create(User2 $user): bool
     {
-        return true;
+        return ContentCalendarAccess::allows($user);
     }
 
+    /**
+     * Only the employee who created the event may edit it. Kadiv and HRD can
+     * view and comment, but not change the event.
+     */
     public function update(User2 $user, ContentEvent $event): bool
     {
-        return $this->canManage($user, $event);
+        return ContentCalendarAccess::allows($user)
+            && (string) $event->created_by === (string) $user->id_user;
     }
 
     public function delete(User2 $user, ContentEvent $event): bool
     {
-        return $this->canManage($user, $event);
-    }
-
-    private function canManage(User2 $user, ContentEvent $event): bool
-    {
-        if ((string) $event->created_by === (string) $user->id_user) {
-            return true;
-        }
-
-        $role = strtolower((string) $user->role?->nama_role);
-
-        if ($role === 'hrd') {
-            return true;
-        }
-
-        if ($role !== 'kadiv') {
-            return false;
-        }
-
-        $divisionId = $user->karyawan?->divisi_id_divisi;
-
-        return $event->division_id !== null
-            && $divisionId !== null
-            && (string) $divisionId === (string) $event->division_id;
+        return $this->update($user, $event);
     }
 }

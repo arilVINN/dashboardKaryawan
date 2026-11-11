@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ContentEvent extends Model
 {
@@ -13,31 +14,24 @@ class ContentEvent extends Model
 
     protected $fillable = [
         'title',
-        'start_date',
-        'start_time',
-        'end_date',
-        'end_time',
-        'division_id',
+        'event_date',
+        'post_time',
+        'content_type',
         'status',
-        'color',
-        'pic_user_id',
         'description',
+        'todos',
+        'content_url',
         'created_by',
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'event_date' => 'date:Y-m-d',
+        'todos' => 'array',
     ];
 
-    public function division(): BelongsTo
+    public function type(): BelongsTo
     {
-        return $this->belongsTo(Divisi::class, 'division_id', 'id_divisi');
-    }
-
-    public function pic(): BelongsTo
-    {
-        return $this->belongsTo(User2::class, 'pic_user_id', 'id_user');
+        return $this->belongsTo(ContentType::class, 'content_type', 'slug');
     }
 
     public function creator(): BelongsTo
@@ -45,52 +39,36 @@ class ContentEvent extends Model
         return $this->belongsTo(User2::class, 'created_by', 'id_user');
     }
 
+    public function comments(): HasMany
+    {
+        return $this->hasMany(ContentEventComment::class)->orderBy('created_at');
+    }
+
+    public function scopeInRange(Builder $query, Carbon $start, Carbon $end): Builder
+    {
+        return $query->whereBetween('event_date', [
+            $start->toDateString(),
+            $end->toDateString(),
+        ]);
+    }
+
     /**
-     * Events whose inclusive date span overlaps the given range.
+     * "10 Nov 2026" — never the numeric locale default.
      */
-    public function scopeOverlapping(Builder $query, Carbon $rangeStart, Carbon $rangeEnd): Builder
+    public function dateLabel(): string
     {
-        return $query
-            ->whereDate('start_date', '<=', $rangeEnd->toDateString())
-            ->where(function (Builder $inner) use ($rangeStart) {
-                $inner->whereDate('end_date', '>=', $rangeStart->toDateString())
-                    ->orWhere(function (Builder $singleDay) use ($rangeStart) {
-                        $singleDay->whereNull('end_date')
-                            ->whereDate('start_date', '>=', $rangeStart->toDateString());
-                    });
-            });
+        return $this->event_date->copy()->locale('id')->translatedFormat('j M Y');
     }
 
-    public function effectiveEndDate(): Carbon
-    {
-        return ($this->end_date ?? $this->start_date)->copy();
-    }
-
-    public function isMultiDay(): bool
-    {
-        return $this->end_date !== null && $this->end_date->greaterThan($this->start_date);
-    }
-
-    public function startTimeLabel(): ?string
-    {
-        return $this->start_time ? substr((string) $this->start_time, 0, 5) : null;
-    }
-
-    public function endTimeLabel(): ?string
-    {
-        return $this->end_time ? substr((string) $this->end_time, 0, 5) : null;
-    }
-
+    /**
+     * "17:00" — 24 hour, empty when no time was set.
+     */
     public function timeLabel(): ?string
     {
-        $start = $this->startTimeLabel();
-
-        if ($start === null) {
+        if ($this->post_time === null || $this->post_time === '') {
             return null;
         }
 
-        $end = $this->endTimeLabel();
-
-        return $end !== null ? "{$start}–{$end}" : $start;
+        return substr((string) $this->post_time, 0, 5);
     }
 }

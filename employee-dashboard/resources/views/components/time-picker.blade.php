@@ -4,6 +4,7 @@
     'model',
     'value' => '',
     'options' => [],
+    'placeholder' => 'Pilih jam',
 ])
 
 <div class="relative w-full"
@@ -18,6 +19,8 @@
             this.open ? this.close() : this.openList();
         },
         openList() {
+            // Measure first so the list never flashes at the default corner.
+            this.position();
             this.open = true;
             this.$nextTick(() => {
                 this.position();
@@ -81,8 +84,8 @@
         aria-haspopup="listbox" :aria-expanded="open ? 'true' : 'false'"
         :aria-activedescendant="open && active >= 0 ? '{{ $id }}-opt-' + active : null"
         aria-label="{{ $label }}"
-        class="flex h-10 w-full items-center justify-between gap-1 rounded-lg border border-[#E2E8EC] bg-white px-2.5 text-left text-sm text-[#172B36] focus:border-[#0097B2] focus:outline-none focus:ring-2 focus:ring-[#0097B2]/20">
-        <span class="{{ $value === '' ? 'text-[#94A3B8]' : '' }}">{{ $value !== '' ? $value : '--:--' }}</span>
+        class="flex h-[42px] w-full items-center justify-between gap-1 rounded-lg border border-[#D5DEE3] bg-white px-3 text-left text-sm text-[#172B36] transition hover:border-[#B9C6CE] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+        <span class="{{ $value === '' ? 'text-[#8A96A3]' : '' }}">{{ $value !== '' ? $value : $placeholder }}</span>
         <svg class="h-3.5 w-3.5 shrink-0 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"></path>
         </svg>
@@ -90,15 +93,15 @@
 
     <div x-ref="list" x-show="open" x-cloak
         :style="`top: ${top}px; left: ${left}px; width: ${width}px; max-height: ${listHeight}px;`"
-        class="fixed z-[70] overflow-y-auto rounded-lg border border-[#E2E8EC] bg-white py-1 shadow-xl"
+        class="fixed z-[95] overflow-y-auto rounded-lg border border-[#E2E8EC] bg-white py-1 shadow-xl"
         role="listbox" aria-label="{{ $label }}">
         <button type="button" role="option" id="{{ $id }}-opt-0"
             data-value="" data-selected="{{ $value === '' ? '1' : '0' }}"
             aria-selected="{{ $value === '' ? 'true' : 'false' }}"
             @click="choose($el)" @mouseenter="active = 0"
             :class="active === 0 ? 'bg-[#E3F1F7]' : ''"
-            class="block w-full px-2.5 py-1.5 text-left text-sm {{ $value === '' ? 'font-medium text-[#0B4A66]' : 'text-[#172B36]' }}">
-            --:--
+            class="block w-full px-2.5 py-1.5 text-left text-sm transition hover:bg-[#F1F5F9] {{ $value === '' ? 'font-medium text-[#0B4A66]' : 'text-[#172B36]' }}">
+            Tanpa jam
         </button>
         @foreach ($options as $option)
             <button type="button" role="option" id="{{ $id }}-opt-{{ $loop->index + 1 }}"
