@@ -133,6 +133,11 @@
                                 'Email' => $karyawan->email,
                                 'Alamat' => $karyawan->alamat,
                                 'No. Rekening' => $karyawan->no_rekening,
+                                'Pendidikan Terakhir' => in_array(strtoupper(trim((string) $karyawan->pendidikan)), ['SMK', 'SMA/SMK'], true)
+                                    ? 'SMK'
+                                    : $karyawan->pendidikan,
+                                'Job Level' => $karyawan->job_level,
+                                'Status Karyawan' => $karyawan->tanggal_akhir_kontrak ? 'Kontrak' : 'Tetap',
                                 'Tanggal Masuk' =>
                                     $karyawan->tanggal_masuk ?? $karyawan->tanggal_rekrut
                                         ? \Carbon\Carbon::parse(

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Hrd;
 
 use App\Http\Controllers\Controller;
 use App\Events\PesanDikirim;
+use App\Models\BookingRequest;
 use App\Models\Pesan;
 use App\Models\SuratIzin;
 use App\Models\User2;
@@ -20,6 +21,7 @@ class HrdPesanController extends Controller
         return view('hrd.pesan', [
             'totalPesan' => Pesan::count(),
             'pesanMasuk' => Pesan::where('penerima_id_user', $user->id_user)->count(),
+            'bookingMasuk' => BookingRequest::count(),
             'suratIzinMasuk' => SuratIzin::count(),
         ]);
     }
