@@ -56,6 +56,14 @@ class HrdListUiTest extends TestCase
 
     public function test_employee_analytics_classifies_contract_staff_as_non_permanent(): void
     {
+        Karyawan::whereKey('KRY-A')->update([
+            'pendidikan' => 'SMA/SMK',
+            'job_level' => 'junior',
+        ]);
+        Karyawan::whereKey('KRY-B')->update([
+            'pendidikan' => 'S3',
+            'job_level' => 'SENIOR',
+        ]);
         Karyawan::create([
             'id_karyawan' => 'KRY-CONTRACT',
             'nama' => 'Karyawan Kontrak',
@@ -64,6 +72,8 @@ class HrdListUiTest extends TestCase
             'tanggal_akhir_kontrak' => '2027-01-01',
             'jabatan' => 'Staff',
             'divisi_id_divisi' => 'DIV-IT',
+            'pendidikan' => 'SMK',
+            'job_level' => 'Manager',
         ]);
 
         $this->actingAs($this->hrd)
@@ -71,7 +81,16 @@ class HrdListUiTest extends TestCase
             ->assertOk()
             ->assertViewHas('statusKaryawan', function ($statusKaryawan): bool {
                 return (int) $statusKaryawan->get('Tetap') === 3
-                    && (int) $statusKaryawan->get('Tidak Tetap') === 1;
+                    && (int) $statusKaryawan->get('Kontrak') === 1;
+            })
+            ->assertViewHas('pendidikan', function ($pendidikan): bool {
+                return (int) $pendidikan->get('SMK') === 2
+                    && (int) $pendidikan->get('S3') === 1;
+            })
+            ->assertViewHas('jobLevel', function ($jobLevel): bool {
+                return (int) $jobLevel->get('Junior') === 1
+                    && (int) $jobLevel->get('Senior') === 1
+                    && (int) $jobLevel->get('Manager') === 1;
             });
     }
 

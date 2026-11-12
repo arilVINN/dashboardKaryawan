@@ -95,7 +95,7 @@
     <a href="{{ route('hrd.suratBooking') }}"
         class="surat-card rounded-xl drop-shadow-md bg-white p-4 flex items-center justify-between border border-transparent cursor-pointer gap-4">
         <div class="flex flex-col">
-            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Request Booking</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Request Booking Masuk</span>
             <span class="text-2xl font-bold text-slate-900 leading-none mt-1">{{ $total['bookingMasuk'] }}</span>
             <div class="flex justify-between items-center pt-0.5">
                 <span class="surat-card-label mt-1 inline-flex items-center gap-1">

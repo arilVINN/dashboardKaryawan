@@ -6,6 +6,7 @@ use App\Models\BookingRequest;
 use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Role;
+use App\Models\SuratIzin;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -153,6 +154,57 @@ class BookingRequestTest extends TestCase
             ->get('/kadiv/pesan')
             ->assertOk()
             ->assertSee('Permintaan booking berhasil dikirim dan menunggu persetujuan.');
+    }
+
+    public function test_staff_and_kadiv_message_pages_show_their_own_request_statuses(): void
+    {
+        $this->withoutVite();
+
+        SuratIzin::create([
+            'id_surat' => 'SRT001',
+            'karyawan_id_karyawan' => $this->staff->karyawan_id_karyawan,
+            'judul_surat' => 'Izin Staff',
+            'tanggal_izin' => now()->toDateString(),
+            'status' => 'Pending',
+        ]);
+        SuratIzin::create([
+            'id_surat' => 'SRT002',
+            'karyawan_id_karyawan' => $this->kadiv->karyawan_id_karyawan,
+            'judul_surat' => 'Izin Kadiv',
+            'tanggal_izin' => now()->toDateString(),
+            'status' => 'Disetujui',
+        ]);
+
+        BookingRequest::create([
+            ...$this->bookingData(),
+            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'pemohon_id_user' => $this->staff->id_user,
+            'status' => 'Pending',
+        ]);
+        BookingRequest::create([
+            ...$this->bookingData(['keperluan' => 'Booking Kadiv']),
+            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'pemohon_id_user' => $this->kadiv->id_user,
+            'status' => 'ACC',
+        ]);
+
+        $this->actingAs($this->staff)
+            ->get('/pesan')
+            ->assertOk()
+            ->assertSee('Status Surat Izin')
+            ->assertSee('Status Booking Kendaraan/Ruangan')
+            ->assertSee('Izin Staff')
+            ->assertSee('Rapat koordinasi')
+            ->assertDontSee('Izin Kadiv')
+            ->assertDontSee('Booking Kadiv');
+
+        $this->actingAs($this->kadiv)
+            ->get('/kadiv/pesan')
+            ->assertOk()
+            ->assertSee('Izin Kadiv')
+            ->assertSee('Booking Kadiv')
+            ->assertDontSee('Izin Staff')
+            ->assertDontSee('Rapat koordinasi');
     }
 
     private function createUser(string $suffix, string $roleId, string $name): User2

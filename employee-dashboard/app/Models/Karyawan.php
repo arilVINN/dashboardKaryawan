@@ -85,6 +85,21 @@ class Karyawan extends Model
         'Tidak Aktif',
     ];
 
+    public const PENDIDIKAN_OPTIONS = [
+        'SMK',
+        'D3',
+        'S1',
+        'S2',
+        'S3',
+    ];
+
+    public const JOB_LEVEL_OPTIONS = [
+        'Magang',
+        'Junior',
+        'Senior',
+        'Manager',
+    ];
+
     public function divisi(): BelongsTo
     {
         return $this->belongsTo(

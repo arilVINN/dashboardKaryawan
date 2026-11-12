@@ -68,6 +68,48 @@ class HrdManagementApiTest extends TestCase
         ]);
     }
 
+    public function test_hrd_can_create_staff_with_education_job_level_and_derived_employment_status(): void
+    {
+        $this->actingAs($this->hrd)
+            ->postJson('/api/hrd/staff', [
+                'nama' => 'Karyawan Baru',
+                'jenis_kelamin' => 'Perempuan',
+                'jabatan' => 'Staff',
+                'divisi_id_divisi' => 'DIV-IT',
+                'username' => 'karyawan.baru',
+                'password' => 'password',
+                'pendidikan' => 'S3',
+                'job_level' => 'Senior',
+                'tanggal_akhir_kontrak' => '2027-01-01',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.karyawan.pendidikan', 'S3')
+            ->assertJsonPath('data.karyawan.job_level', 'Senior')
+            ->assertJsonPath('data.karyawan.status_karyawan', 'Kontrak');
+
+        $this->assertDatabaseHas('karyawans', [
+            'nama' => 'Karyawan Baru',
+            'pendidikan' => 'S3',
+            'job_level' => 'Senior',
+            'status_karyawan' => 'Kontrak',
+        ]);
+    }
+
+    public function test_hrd_edit_derives_employment_status_from_contract_end_date(): void
+    {
+        $this->createAccount('EMP-STATUS', 'Staff Status', 'DIV-IT', 'ROLE-STAFF', 'staffstatus');
+
+        $this->actingAs($this->hrd)
+            ->putJson('/api/hrd/staff/EMP-STATUS', ['tanggal_akhir_kontrak' => '2027-01-01'])
+            ->assertOk()
+            ->assertJsonPath('data.status_karyawan', 'Kontrak');
+
+        $this->actingAs($this->hrd)
+            ->putJson('/api/hrd/staff/EMP-STATUS', ['tanggal_akhir_kontrak' => null])
+            ->assertOk()
+            ->assertJsonPath('data.status_karyawan', 'Tetap');
+    }
+
     public function test_hrd_manager_position_restores_hrd_account_role(): void
     {
         $staff = $this->createAccount('EMP-STAFF', 'Staff', 'DIV-IT', 'ROLE-STAFF', 'staff');

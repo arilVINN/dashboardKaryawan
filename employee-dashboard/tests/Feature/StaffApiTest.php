@@ -93,6 +93,22 @@ class StaffApiTest extends TestCase
             ->assertJsonPath('data.notifikasi_terbaru.0.id_notifikasi', 'NTF-DASH');
     }
 
+    public function test_staff_profile_includes_education_job_level_and_employment_status(): void
+    {
+        $this->staff->karyawan()->update([
+            'pendidikan' => 'S3',
+            'job_level' => 'senior',
+            'tanggal_akhir_kontrak' => '2027-01-01',
+        ]);
+
+        $this->actingAs($this->staff)
+            ->getJson('/api/staff/profile')
+            ->assertOk()
+            ->assertJsonPath('data.pendidikan', 'S3')
+            ->assertJsonPath('data.job_level', 'Senior')
+            ->assertJsonPath('data.status_karyawan', 'Kontrak');
+    }
+
     public function test_deadline_includes_time_when_determining_late_status(): void
     {
         $task = $this->createTask(

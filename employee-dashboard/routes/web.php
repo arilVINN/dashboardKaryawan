@@ -16,7 +16,9 @@ use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Http\Controllers\Staff\SuratIzinController;
 use App\Http\Controllers\BookingController;
 use App\Models\Carousel;
+use App\Models\BookingRequest;
 use App\Models\Divisi;
+use App\Models\SuratIzin;
 
 // ─── Finance Module Controllers ───────────────────────────────────────────────
 use App\Http\Controllers\Finance\KeuanganController;
@@ -74,7 +76,17 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     })->name('tugas');
 
     Route::get('/pesan', function () {
-        return view('staff.pesan');
+        $user = auth()->user();
+        $suratIzinStatus = SuratIzin::query()
+            ->where('karyawan_id_karyawan', $user->karyawan_id_karyawan)
+            ->latest()
+            ->get();
+        $bookingStatus = BookingRequest::query()
+            ->where('pemohon_id_user', $user->id_user)
+            ->latest()
+            ->get();
+
+        return view('staff.pesan', compact('suratIzinStatus', 'bookingStatus'));
     })->name('pesan');
 
     Route::get('/pesan/detail/{id?}', function ($id = null) {
@@ -198,7 +210,17 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
 
     // Pesan
     Route::get('/pesan', function () {
-        return view('kadiv.pesan');
+        $user = auth()->user();
+        $suratIzinStatus = SuratIzin::query()
+            ->where('karyawan_id_karyawan', $user->karyawan_id_karyawan)
+            ->latest()
+            ->get();
+        $bookingStatus = BookingRequest::query()
+            ->where('pemohon_id_user', $user->id_user)
+            ->latest()
+            ->get();
+
+        return view('kadiv.pesan', compact('suratIzinStatus', 'bookingStatus'));
     })->name('kadiv.pesan');
 
     Route::get('/detailPesan/{id}', function ($id) {
