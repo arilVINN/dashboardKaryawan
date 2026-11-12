@@ -11,6 +11,7 @@ use App\Support\ContentTypePalette;
 use App\Support\StatusPalette;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -80,6 +81,11 @@ class ContentCalendar extends Component
 
     public bool $loadError = false;
 
+    /** Add-account modal. */
+    public bool $accountFormOpen = false;
+
+    public string $accountName = '';
+
     public function booted(): void
     {
         abort_unless(ContentCalendarAccess::allows(auth()->user()), 403);
@@ -114,6 +120,76 @@ class ContentCalendar extends Component
         $this->popoverDate = null;
 
         $this->dispatch('content-account-changed', name: $account?->name ?? '');
+    }
+
+    public function openAccountForm(): void
+    {
+        $this->resetValidation();
+        $this->accountName = '';
+        $this->accountFormOpen = true;
+
+        $this->dispatch('content-focus-account-name');
+    }
+
+    public function closeAccountForm(): void
+    {
+        $this->accountFormOpen = false;
+        $this->accountName = '';
+        $this->resetValidation();
+    }
+
+    public function saveAccount(): void
+    {
+        $this->validate([
+            'accountName' => ['required', 'string', 'max:80'],
+        ], [
+            'accountName.required' => 'Nama akun wajib diisi.',
+            'accountName.max' => 'Nama akun maksimal 80 karakter.',
+        ]);
+
+        $name = trim($this->accountName);
+
+        $duplicate = ContentAccount::query()
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->exists();
+
+        if ($duplicate) {
+            $this->addError('accountName', 'Nama akun sudah dipakai.');
+
+            return;
+        }
+
+        $account = ContentAccount::create([
+            'slug' => $this->uniqueAccountSlug($name),
+            'name' => $name,
+            'sort_order' => (int) ContentAccount::query()->active()->max('sort_order') + 1,
+            'is_active' => true,
+        ]);
+
+        $this->account = $account->slug;
+        $this->popoverDate = null;
+        $this->accountFormOpen = false;
+        $this->accountName = '';
+        $this->resetValidation();
+
+        $this->dispatch('content-account-changed', name: $account->name);
+        $this->dispatch('content-toast', message: 'Akun ditambahkan', type: 'success');
+    }
+
+    private function uniqueAccountSlug(string $name): string
+    {
+        $base = rtrim(Str::slug($name), '-');
+        $base = $base !== '' ? substr($base, 0, 40) : 'akun';
+
+        $slug = $base;
+        $suffix = 2;
+
+        while (ContentAccount::query()->where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$suffix;
+            $suffix++;
+        }
+
+        return $slug;
     }
 
     public function updated(string $property): void

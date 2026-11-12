@@ -46,8 +46,8 @@
         closeDelete() {
             this.confirmOpen = false;
         },
-        trap(event) {
-            const panel = document.querySelector('[data-content-modal] [data-modal-panel]');
+        trap(event, selector = '[data-content-modal] [data-modal-panel]') {
+            const panel = document.querySelector(selector);
             if (!panel) return;
             const focusable = [...panel.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\'-1\'])')]
                 .filter((el) => el.offsetParent !== null);
@@ -109,8 +109,10 @@
     @content-modal-closed.window="restoreFocus()"
     @content-focus-title.window="dirty = false; $nextTick(() => $refs.titleInput?.focus())"
     @content-focus-modal.window="dirty = false; $nextTick(() => document.querySelector('[data-modal-panel]')?.focus())"
+    @content-focus-account-name.window="$nextTick(() => $refs.accountName?.focus())"
     @keydown.escape.window="
-        if (closeConfirm) { closeConfirm = false; }
+        if ($wire.get('accountFormOpen')) { $wire.closeAccountForm(); }
+        else if (closeConfirm) { closeConfirm = false; }
         else if (confirmOpen) { closeDelete(); }
         else if ($wire.get('popoverDate')) { $wire.closePopover(); }
         else if (modalOpen()) { requestClose(); }">
@@ -182,16 +184,28 @@
             <h2 class="truncate text-xl font-semibold text-[#172B36]">{{ $monthLabel }}</h2>
         </div>
 
-        <div class="ml-auto flex flex-wrap items-center gap-2">
-            @if ($accounts->isNotEmpty())
-                <select wire:model.live="account" aria-label="Pilih akun media sosial"
-                    class="h-10 w-[180px] rounded-lg border border-[#E2E8EC] bg-white px-2 text-sm text-[#172B36] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
-                    @foreach ($accounts as $availableAccount)
-                        <option value="{{ $availableAccount->slug }}">{{ $availableAccount->name }}</option>
-                    @endforeach
-                </select>
-            @endif
+    </div>
 
+    <div class="mt-2 flex flex-wrap items-center gap-2">
+        @if ($accounts->isNotEmpty())
+            <select wire:model.live="account" aria-label="Pilih akun media sosial"
+                class="h-10 w-[180px] rounded-lg border border-[#E2E8EC] bg-white px-2 text-sm text-[#172B36] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+                @foreach ($accounts as $availableAccount)
+                    <option value="{{ $availableAccount->slug }}">{{ $availableAccount->name }}</option>
+                @endforeach
+            </select>
+        @endif
+
+        <button type="button" id="content-add-account" wire:click="openAccountForm"
+            title="Tambah akun media sosial"
+            class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-[#0097B2] px-3 text-[13px] font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
+            </svg>
+            <span class="whitespace-nowrap">Tambah akun</span>
+        </button>
+
+        <div class="ml-auto flex flex-wrap items-center gap-2">
             <select wire:model.live="typeFilter" aria-label="Filter jenis konten"
                 class="h-10 w-[125px] rounded-lg border border-[#E2E8EC] bg-white px-2 text-sm text-[#172B36] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
                 <option value="semua">Semua jenis</option>
@@ -496,6 +510,7 @@
                     'fill' => $colors['bg'] ?? '#F1F5F9',
                     'border' => $colors['border'] ?? '#CBD5E1',
                     'dot' => $colors['dot'] ?? '#94A3B8',
+                    'text' => $colors['text'] ?? '#172B36',
                     'kind' => 'status',
                 ];
             })->values()->all();
@@ -933,5 +948,52 @@
             </div>
         </div>
     </div>
+    @endif
+
+    {{-- Add account --}}
+    @if ($accountFormOpen)
+        <div data-account-modal
+            class="fixed inset-0 flex items-center justify-center bg-slate-900/40 p-4"
+            style="z-index: 90;"
+            @click.self="$wire.closeAccountForm()">
+            <div data-account-panel role="dialog" aria-modal="true" aria-labelledby="content-account-modal-title"
+                tabindex="-1"
+                class="w-full max-w-md rounded-xl border border-[#E2E8EC] bg-white p-6 shadow-xl"
+                @keydown.tab="trap($event, '[data-account-modal] [data-account-panel]')">
+                <h3 id="content-account-modal-title" class="text-lg font-semibold text-[#172B36]">
+                    Tambah akun media sosial
+                </h3>
+                <p class="mt-1 text-sm text-[#4B5563]">
+                    Akun baru langsung dipakai untuk kalender konten ini.
+                </p>
+
+                <form wire:submit.prevent="saveAccount" class="mt-4">
+                    <label for="content-account-name" class="block text-[13px] font-medium text-[#4B5563]">
+                        Nama akun
+                    </label>
+                    <input id="content-account-name" x-ref="accountName" type="text"
+                        wire:model="accountName" maxlength="80" autocomplete="off"
+                        placeholder="Contoh: Citra Komunika"
+                        class="mt-1.5 h-[42px] w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36] placeholder:text-[#8A96A3] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+                    @error('accountName')
+                        <p class="mt-1.5 text-[12px] text-[#B91C1C]">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1.5 text-[11px] text-[#8A96A3]">
+                        Slug akan dibuat otomatis dari nama akun.
+                    </p>
+
+                    <div class="mt-5 flex justify-end gap-2">
+                        <button type="button" wire:click="closeAccountForm"
+                            class="inline-flex h-10 items-center rounded-lg border border-[#E2E8EC] bg-white px-4 text-sm font-medium text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="inline-flex h-10 items-center rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
+                            Simpan akun
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     @endif
 </div>
