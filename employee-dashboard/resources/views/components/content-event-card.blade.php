@@ -8,6 +8,20 @@
 
 @php
     $domId = 'content-event-'.$event['id'].($suffix !== '' ? '-'.$suffix : '');
+
+    $status = strtolower(trim((string) ($event['status'] ?? '')));
+    $palette = \App\Support\StatusPalette::content($status);
+    $isRevisi = in_array($status, ['revisi', 'menunggu'], true);
+
+    if ($isRevisi) {
+        // Revisi keeps a plain card with a soft dark grey outline instead of a
+        // status tint so it stands apart from the coloured workflow blocks.
+        $cardStyle = 'background-color: #FFFFFF; border-color: #94A3B8;';
+    } elseif ($palette) {
+        $cardStyle = 'background-color: '.$palette['bg'].'; border-color: '.$palette['border'].';';
+    } else {
+        $cardStyle = '';
+    }
 @endphp
 
 <button id="{{ $domId }}"
@@ -15,6 +29,8 @@
         'type' => 'button',
         'class' => 'flex w-full cursor-pointer flex-col gap-1 rounded-lg border border-[#DDE4EA] bg-white p-2 text-left shadow-[0_1px_2px_rgba(15,23,42,0.05)] transition hover:border-[#C3CFD9] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]',
     ]) }}
+    @if ($cardStyle !== '') style="{{ $cardStyle }}" @endif
+    data-status="{{ $event['status'] }}"
     @if ($openable) wire:click="openEvent({{ $event['id'] }})" @endif
     aria-label="Buka event {{ $event['title'] }}">
     <span class="text-[13px] font-semibold leading-snug text-[#172B36] {{ $lines > 1 ? 'line-clamp-2' : 'block truncate' }}">
@@ -30,7 +46,7 @@
     @endif
 
     <span class="mt-0.5 flex flex-col items-start gap-1">
-        <x-content-type-tag :name="$event['type_name']" :fill="$event['type_fill']" :border="$event['type_border']" />
-        <x-status-badge variant="content" dot :status="$event['status']" />
+        <x-content-type-tag :name="$event['type_name']" :fill="$event['type_fill']" :border="$event['type_border']" quiet />
+        <x-status-badge variant="content" dot solid :status="$event['status']" />
     </span>
 </button>

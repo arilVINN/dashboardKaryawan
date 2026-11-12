@@ -376,6 +376,67 @@ class ContentCalendarTest extends TestCase
             ->assertHasErrors(['post_time']);
     }
 
+    public function test_post_time_field_is_a_manual_text_input(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->assertSeeHtml('id="content-time" type="text"')
+            ->assertSeeHtml('wire:model.blur.live="post_time"');
+    }
+
+    public function test_manual_post_time_is_normalized_on_save(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Event jam manual')
+            ->set('content_type', 'reels')
+            ->set('post_time', '9:30')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('content_events', [
+            'title' => 'Event jam manual',
+            'post_time' => '09:30',
+        ]);
+    }
+
+    public function test_manual_post_time_accepts_compact_and_hour_only_input(): void
+    {
+        foreach (['1730' => '17:30', '930' => '09:30', '9' => '09:00'] as $input => $expected) {
+            Livewire::actingAs($this->staffHr)
+                ->test(ContentCalendar::class)
+                ->call('openCreate', '2026-11-12')
+                ->set('title', 'Event '.$input)
+                ->set('content_type', 'reels')
+                ->set('post_time', $input)
+                ->call('save')
+                ->assertHasNoErrors();
+
+            $this->assertDatabaseHas('content_events', [
+                'title' => 'Event '.$input,
+                'post_time' => $expected,
+            ]);
+        }
+    }
+
+    public function test_detail_post_time_autosave_normalizes_manual_input(): void
+    {
+        $event = $this->event($this->staffHr, ['post_time' => '09:00']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->set('post_time', '1730')
+            ->assertSet('post_time', '17:30');
+
+        $this->assertDatabaseHas('content_events', [
+            'id' => $event->id,
+            'post_time' => '17:30',
+        ]);
+    }
+
     public function test_content_type_must_exist_in_the_managed_list(): void
     {
         Livewire::actingAs($this->staffHr)
@@ -406,8 +467,85 @@ class ContentCalendarTest extends TestCase
             ->assertSee('Carousel')
             ->assertSee('Publish')
             ->assertSee('background-color: #D9F5E5')
-            ->assertSee('background-color: #FCE7F1')
+            ->assertSee('background-color: #F3A8C9; border-color: #F3A8C9; color: #172B36;')
             ->assertDontSee('11/10/2026');
+    }
+
+    public function test_event_card_type_tags_match_the_form_border_colour(): void
+    {
+        $this->event($this->staffHr, [
+            'title' => 'Reels Produk',
+            'content_type' => 'carousel',
+            'status' => 'publish',
+        ]);
+
+        $html = Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->html();
+
+        $this->assertStringContainsString(
+            'background-color: #F3A8C9; border-color: #F3A8C9; color: #172B36;',
+            $html
+        );
+
+        $formHtml = Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('content_type', 'carousel')
+            ->html();
+
+        $this->assertStringContainsString(
+            'background-color: #FCE7F1; border-color: #F3A8C9; color: #172B36;',
+            $formHtml
+        );
+    }
+
+    public function test_event_card_background_follows_status_except_revisi(): void
+    {
+        $this->event($this->staffHr, ['title' => 'Event Publish', 'event_date' => '2026-11-10', 'status' => 'publish']);
+        $this->event($this->staffHr, ['title' => 'Event Process', 'event_date' => '2026-11-11', 'status' => 'process']);
+        $this->event($this->staffHr, ['title' => 'Event Revisi', 'event_date' => '2026-11-12', 'status' => 'revisi']);
+
+        $html = Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->html();
+
+        $this->assertStringContainsString('data-status="publish"', $html);
+        $this->assertStringContainsString('background-color: #D9F5E5; border-color: #86D9AE;', $html);
+
+        $this->assertStringContainsString('data-status="process"', $html);
+        $this->assertStringContainsString('background-color: #FEF0C3; border-color: #F5C85C;', $html);
+
+        $this->assertStringContainsString('data-status="revisi"', $html);
+        $this->assertStringContainsString('background-color: #FFFFFF; border-color: #94A3B8;', $html);
+    }
+
+    public function test_event_card_status_pills_match_the_form_border_colour(): void
+    {
+        $this->event($this->staffHr, ['title' => 'Event Publish', 'status' => 'publish']);
+
+        $html = Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->html();
+
+        $this->assertStringContainsString(
+            'background-color: #86D9AE; border-color: #86D9AE; color: #172B36;',
+            $html
+        );
+
+        $formHtml = Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('formStatus', 'publish')
+            ->html();
+
+        $this->assertStringContainsString(
+            'background-color: #D9F5E5; border-color: #86D9AE; color: #172B36;',
+            $formHtml
+        );
     }
 
     public function test_card_hides_the_time_line_when_no_time_is_set(): void
@@ -428,7 +566,7 @@ class ContentCalendarTest extends TestCase
         $this->assertSame(0, substr_count($html, '00:00'));
     }
 
-    public function test_week_view_hides_the_repeated_date_line(): void
+    public function test_week_view_shows_the_date_line(): void
     {
         $this->event($this->staffHr, [
             'title' => 'Kartu Mingguan',
@@ -440,7 +578,7 @@ class ContentCalendarTest extends TestCase
             ->set('view', 'minggu')
             ->set('week', '2026-11-09')
             ->assertSee('Kartu Mingguan')
-            ->assertDontSee('10 Nov 2026');
+            ->assertSee('10 Nov 2026');
     }
 
     public function test_month_view_orders_cards_by_time_and_caps_at_two(): void

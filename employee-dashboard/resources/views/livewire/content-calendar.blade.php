@@ -381,7 +381,7 @@
 
                                 <div class="space-y-2 p-2 pt-1">
                                     @foreach ($day['items'] as $item)
-                                        <x-content-event-card :event="$item" :show-date="false" :lines="2"
+                                        <x-content-event-card :event="$item" :show-date="true" :lines="2"
                                             wire:key="week-card-{{ $item['id'] }}"
                                             :draggable="$item['can_edit'] ? 'true' : 'false'"
                                             @click="remember($el)"
@@ -434,10 +434,10 @@
                                                 @if (! empty($item['time_label']))
                                                     <span>· {{ $item['time_label'] }}</span>
                                                 @endif
-                                                <x-content-type-tag :name="$item['type_name']" :fill="$item['type_fill']" :border="$item['type_border']" />
+                                                <x-content-type-tag :name="$item['type_name']" :fill="$item['type_fill']" :border="$item['type_border']" quiet />
                                             </span>
                                         </span>
-                                        <x-status-badge variant="content" dot :status="$item['status']" />
+                                        <x-status-badge variant="content" dot solid :status="$item['status']" />
                                     </button>
                                 @endforeach
                             </div>
@@ -641,10 +641,14 @@
                                     {{ $post_time !== '' ? $post_time : '—' }}
                                 </div>
                             @else
-                                <x-time-picker id="content-time" label="Jam posting" model="post_time"
-                                    :value="$post_time" :options="$this->timeOptions()" placeholder="Pilih jam" />
+                                <input id="content-time" type="text" wire:model.blur.live="post_time"
+                                    maxlength="8" placeholder="HH:MM" autocomplete="off" inputmode="numeric"
+                                    aria-label="Jam posting"
+                                    class="h-[42px] w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36] transition placeholder:text-[#8A96A3] hover:border-[#B9C6CE] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
                                 @error('post_time')
                                     <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
+                                @else
+                                    <p class="mt-1 text-[11px] text-[#8A96A3]">Format 24 jam, mis. 17:30.</p>
                                 @enderror
                             @endif
                         </div>

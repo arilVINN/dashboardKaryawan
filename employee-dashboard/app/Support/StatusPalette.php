@@ -148,6 +148,41 @@ class StatusPalette
      */
     public static function content(?string $status): ?array
     {
+        $key = self::contentKey($status);
+
+        return $key ? self::CONTENT[$key] : null;
+    }
+
+    /**
+     * Calendar-card pill variant. It uses the form pill's border colour as the
+     * solid background with the same dark text used inside the form pill.
+     *
+     * @return array{label: string, bg: string, border: string, dot: string, text: string}|null
+     */
+    public static function contentSolid(?string $status): ?array
+    {
+        $key = self::contentKey($status);
+
+        if (! $key) {
+            return null;
+        }
+
+        $base = self::CONTENT[$key];
+
+        return [
+            'label' => $base['label'],
+            'bg' => $base['border'],
+            'border' => $base['border'],
+            'dot' => $base['dot'],
+            'text' => $base['text'],
+        ];
+    }
+
+    /**
+     * Normalize a raw content status to its CONTENT palette key.
+     */
+    public static function contentKey(?string $status): ?string
+    {
         $key = strtolower(trim((string) $status));
 
         if ($key === '') {
@@ -163,7 +198,7 @@ class StatusPalette
             default => $key,
         };
 
-        return self::CONTENT[$key] ?? null;
+        return isset(self::CONTENT[$key]) ? $key : null;
     }
 
     public static function normalize(?string $status): ?string

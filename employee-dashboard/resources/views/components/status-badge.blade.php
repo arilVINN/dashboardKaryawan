@@ -1,9 +1,11 @@
-@props(['status', 'label' => null, 'short' => false, 'variant' => 'default', 'dot' => false, 'size' => 'sm'])
+@props(['status', 'label' => null, 'short' => false, 'variant' => 'default', 'dot' => false, 'size' => 'sm', 'solid' => false])
 
 @php
-    $palette = $variant === 'content'
-        ? \App\Support\StatusPalette::content($status)
-        : \App\Support\StatusPalette::for($status);
+    $palette = match (true) {
+        $solid && $variant === 'content' => \App\Support\StatusPalette::contentSolid($status),
+        $variant === 'content' => \App\Support\StatusPalette::content($status),
+        default => \App\Support\StatusPalette::for($status),
+    };
 
     $text = $label ?? ($palette ? ($short ? ($palette['short'] ?? $palette['label']) : $palette['label']) : $status);
     $sizeClass = $size === 'md' ? 'text-xs' : 'text-[11px]';

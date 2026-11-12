@@ -118,6 +118,10 @@ class ContentCalendar extends Component
 
     public function updated(string $property): void
     {
+        if ($property === 'post_time') {
+            $this->post_time = $this->normalizeTime($this->post_time);
+        }
+
         if (str_starts_with($property, 'todos.')) {
             if ($this->formOpen) {
                 $this->formDirty = true;
@@ -471,6 +475,10 @@ class ContentCalendar extends Component
             return;
         }
 
+        if ($property === 'post_time') {
+            $this->post_time = $this->normalizeTime($this->post_time);
+        }
+
         $this->validateOnly($property, [$property => $rules[$property]], $this->messages());
 
         try {
@@ -494,6 +502,8 @@ class ContentCalendar extends Component
         }
 
         $this->authorize('create', ContentEvent::class);
+
+        $this->post_time = $this->normalizeTime($this->post_time);
 
         $validated = $this->validate([
             'title' => ['required', 'string', 'max:150'],
@@ -925,18 +935,35 @@ class ContentCalendar extends Component
     }
 
     /**
-     * @return array<int, string>
+     * Accept manual input such as "9:30", "930", "17.30" or "9" and normalize
+     * it to the HH:MM value the calendar uses for sorting.
      */
-    public function timeOptions(): array
+    private function normalizeTime(?string $value): string
     {
-        $options = [];
+        $value = trim((string) $value);
 
-        for ($hour = 0; $hour < 24; $hour++) {
-            for ($minute = 0; $minute < 60; $minute += 5) {
-                $options[] = sprintf('%02d:%02d', $hour, $minute);
-            }
+        if ($value === '') {
+            return '';
         }
 
-        return $options;
+        if (preg_match('/^(\d{1,2})[:.](\d{1,2})(?::\d{2})?$/', $value, $matches)) {
+            $hour = (int) $matches[1];
+            $minute = (int) $matches[2];
+        } elseif (preg_match('/^(\d{3,4})$/', $value, $matches)) {
+            $digits = str_pad($matches[1], 4, '0', STR_PAD_LEFT);
+            $hour = (int) substr($digits, 0, 2);
+            $minute = (int) substr($digits, 2, 2);
+        } elseif (preg_match('/^(\d{1,2})$/', $value, $matches)) {
+            $hour = (int) $matches[1];
+            $minute = 0;
+        } else {
+            return $value;
+        }
+
+        if ($hour > 23 || $minute > 59) {
+            return $value;
+        }
+
+        return sprintf('%02d:%02d', $hour, $minute);
     }
 }
