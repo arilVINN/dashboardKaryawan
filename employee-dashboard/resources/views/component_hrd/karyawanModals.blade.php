@@ -127,20 +127,18 @@
                             <label class="text-xs font-bold text-slate-500">PENDIDIKAN TERAKHIR</label>
                             <select name="pendidikan" class="{{ $formControl }}">
                                 <option value="">Pilih pendidikan</option>
-                                <option value="SMA/SMK">SMA/SMK</option>
-                                <option value="D3">D3</option>
-                                <option value="S1">S1</option>
-                                <option value="S2">S2</option>
+                                @foreach (\App\Models\Karyawan::PENDIDIKAN_OPTIONS as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">JOB LEVEL</label>
                             <select name="job_level" class="{{ $formControl }}">
                                 <option value="">Pilih job level</option>
-                                <option value="Magang">Magang</option>
-                                <option value="Junior">Junior</option>
-                                <option value="Senior">Senior</option>
-                                <option value="Manager">Manager</option>
+                                @foreach (\App\Models\Karyawan::JOB_LEVEL_OPTIONS as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="flex flex-col gap-1.5">
@@ -339,23 +337,20 @@
                             <label class="text-xs font-bold text-slate-500">PENDIDIKAN TERAKHIR</label>
                             <select name="pendidikan" class="{{ $formControl }}">
                                 <option value="">Pilih pendidikan</option>
-                                <option value="SMA/SMK">SMA/SMK</option>
-                                <option value="D3">D3</option>
-                                <option value="S1">S1</option>
-                                <option value="S2">S2</option>
+                                @foreach (\App\Models\Karyawan::PENDIDIKAN_OPTIONS as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">JOB LEVEL</label>
                             <select name="job_level" class="{{ $formControl }}">
                                 <option value="">Pilih job level</option>
-                                <option value="Magang">Magang</option>
-                                <option value="Junior">Junior</option>
-                                <option value="Senior">Senior</option>
-                                <option value="Manager">Manager</option>
+                                @foreach (\App\Models\Karyawan::JOB_LEVEL_OPTIONS as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
                             </select>
                         </div>
-
                         <div class="flex flex-col gap-1.5">
                             <label class="text-xs font-bold text-slate-500">STATUS</label>
                             <select name="status_aktif" id="edit_status_aktif" required class="{{ $formControl }}">
@@ -527,12 +522,15 @@
             form.elements['divisi_id_divisi'].value = button.dataset.divisi || '';
         }
         if (form.elements['pendidikan']) {
-            form.elements['pendidikan'].value = button.dataset.pendidikan || '';
+            const pendidikan = (button.dataset.pendidikan || '').trim().toUpperCase();
+            form.elements['pendidikan'].value = pendidikan === 'SMA/SMK' ? 'SMK' : pendidikan;
         }
         if (form.elements['job_level']) {
-            form.elements['job_level'].value = button.dataset.jobLevel || '';
+            const jobLevel = (button.dataset.jobLevel || '').trim();
+            form.elements['job_level'].value = jobLevel
+                ? jobLevel[0].toUpperCase() + jobLevel.slice(1).toLowerCase()
+                : '';
         }
-
         const statusSelect = form.elements['status_aktif'];
         if (statusSelect) {
             statusSelect.value = sudahKeluar ? 'Tidak Aktif' : (button.dataset.status || 'Aktif');

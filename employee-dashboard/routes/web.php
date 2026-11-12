@@ -14,7 +14,19 @@ use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
 use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Http\Controllers\Staff\SuratIzinController;
+use App\Http\Controllers\BookingController;
+use App\Models\Carousel;
+use App\Models\BookingRequest;
 use App\Models\Divisi;
+use App\Models\SuratIzin;
+
+// ─── Finance Module Controllers ───────────────────────────────────────────────
+use App\Http\Controllers\Finance\KeuanganController;
+use App\Http\Controllers\Finance\PemasukanController;
+use App\Http\Controllers\Finance\AlokasiController;
+use App\Http\Controllers\Finance\PermintaanDanaController;
+use App\Http\Controllers\Finance\PengeluaranController;
+use App\Http\Controllers\Finance\LabaRugiController;
 
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -33,7 +45,30 @@ Route::middleware(['auth', 'throttle:umum', EnsureContentCalendarAccess::class])
 // staff route (session auth + staff role)
 Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/', function () {
-        return view('staff.dashboard');
+        $divisionId = auth()->user()?->karyawan?->divisi_id_divisi;
+        $carousels = Carousel::query()
+            ->with(['user.karyawan', 'divisi'])
+            ->where(function ($query) use ($divisionId) {
+                $query->whereRaw('LOWER(category) != ?', ['quotes']);
+
+                if ($divisionId) {
+                    $query->orWhere(function ($quotes) use ($divisionId) {
+                        $quotes->whereRaw('LOWER(category) = ?', ['quotes'])
+                            ->where('divisi_id_divisi', $divisionId);
+                    });
+                }
+
+                $query->orWhere(function ($hrdQuotes) {
+                    $hrdQuotes->whereRaw('LOWER(category) = ?', ['quotes'])
+                        ->whereHas('user.role', function ($roleQuery) {
+                            $roleQuery->whereRaw('LOWER(nama_role) = ?', ['hrd']);
+                        });
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('staff.dashboard', compact('carousels'));
     })->name('dashboard');
 
     Route::get('/tugas', function () {
@@ -41,7 +76,17 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     })->name('tugas');
 
     Route::get('/pesan', function () {
-        return view('staff.pesan');
+        $user = auth()->user();
+        $suratIzinStatus = SuratIzin::query()
+            ->where('karyawan_id_karyawan', $user->karyawan_id_karyawan)
+            ->latest()
+            ->get();
+        $bookingStatus = BookingRequest::query()
+            ->where('pemohon_id_user', $user->id_user)
+            ->latest()
+            ->get();
+
+        return view('staff.pesan', compact('suratIzinStatus', 'bookingStatus'));
     })->name('pesan');
 
     Route::get('/pesan/detail/{id?}', function ($id = null) {
@@ -88,7 +133,24 @@ Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->g
 Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->group(function () {
     // Dashboard
     Route::get('/dashboard', function () {
-        return view('kadiv.dashboard');
+        $user = auth()->user();
+        $divisiId = $user?->karyawan?->divisi_id_divisi;
+
+        $carousels = Carousel::query()
+            ->with(['user.karyawan', 'divisi'])
+            ->where(function ($query) use ($divisiId) {
+                if ($divisiId) {
+                    $query->where('divisi_id_divisi', $divisiId);
+                }
+
+                $query->orWhereHas('user.role', function ($roleQuery) {
+                    $roleQuery->whereRaw('LOWER(nama_role) = ?', ['hrd']);
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('kadiv.dashboard', compact('carousels'));
     })->name('kadiv.dashboard');
 
     // Manajemen Staff
@@ -148,7 +210,17 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
 
     // Pesan
     Route::get('/pesan', function () {
-        return view('kadiv.pesan');
+        $user = auth()->user();
+        $suratIzinStatus = SuratIzin::query()
+            ->where('karyawan_id_karyawan', $user->karyawan_id_karyawan)
+            ->latest()
+            ->get();
+        $bookingStatus = BookingRequest::query()
+            ->where('pemohon_id_user', $user->id_user)
+            ->latest()
+            ->get();
+
+        return view('kadiv.pesan', compact('suratIzinStatus', 'bookingStatus'));
     })->name('kadiv.pesan');
 
     Route::get('/detailPesan/{id}', function ($id) {
@@ -171,6 +243,14 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     Route::get('/pusat-data', function () {
         return view('kadiv.pusatData');
     })->name('kadiv.pusatData');
+
+    // Carousel Konten Kegiatan / Informasi
+    Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])
+        ->middleware('throttle:submit-form')
+        ->name('carousel.store');
+    Route::delete('/carousel/{id}', [\App\Http\Controllers\CarouselController::class, 'destroy'])
+        ->middleware('throttle:submit-form')
+        ->name('carousel.destroy');
 });
 
 
@@ -302,6 +382,28 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     Route::get('/turnoverKaryawan', [HrdDashboardController::class, 'turnoverKaryawan'])
         ->middleware('throttle:pencarian')
         ->name('hrd.turnoverKaryawan');
+
+    // Carousel Konten Kegiatan / Informasi (HRD)
+    Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.carousel.store');
+    Route::delete('/carousel/{id}', [\App\Http\Controllers\CarouselController::class, 'destroy'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.carousel.destroy');
+});
+
+Route::post('/booking', [BookingController::class, 'store'])
+    ->middleware(['auth', 'role:staff,kadiv', 'throttle:submit-form'])
+    ->name('booking.store');
+
+Route::middleware(['auth', 'role:hrd,direksi', 'throttle:umum'])->prefix('hrd')->group(function () {
+    Route::get('/suratBooking', [BookingController::class, 'index'])->name('hrd.suratBooking');
+    Route::post('/suratBooking/{booking}/acc', [BookingController::class, 'approve'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.suratBooking.acc');
+    Route::post('/suratBooking/{booking}/tolak', [BookingController::class, 'reject'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.suratBooking.tolak');
 });
 
 
@@ -343,3 +445,77 @@ Route::fallback(function (Request $request) {
     return redirect()->route($dashboardRoute)
         ->with('error', 'Halaman tidak ditemukan. Anda telah diarahkan ke dashboard Anda.');
 });
+
+
+// ═════════════════════════════════════════════════════════════════════════════
+// MODUL KEUANGAN (FINANCE)
+// ═════════════════════════════════════════════════════════════════════════════
+
+// ── Khusus Kadiv Finance (harus kode_divisi = 'FIN') ─────────────────────────
+Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
+    ->prefix('kadiv/keuangan')
+    ->group(function () {
+
+        // Dashboard Keuangan
+        Route::get('/', [KeuanganController::class, 'index'])->name('kadiv.keuangan');
+        Route::get('/rekap-divisi', [KeuanganController::class, 'rekapDivisi'])->name('kadiv.keuangan.rekapDivisi');
+        Route::get('/rekap-divisi/export', [KeuanganController::class, 'export'])->name('kadiv.keuangan.exportRekapDivisi');
+
+        // Pemasukan Kas
+        Route::get('/pemasukan', [PemasukanController::class, 'index'])->name('kadiv.keuangan.pemasukan');
+        Route::post('/pemasukan', [PemasukanController::class, 'store'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.pemasukan.store');
+
+        // Alokasi Pagu Anggaran
+        Route::get('/alokasi', [AlokasiController::class, 'index'])->name('kadiv.keuangan.alokasi');
+        Route::post('/alokasi', [AlokasiController::class, 'store'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.alokasi.store');
+        Route::put('/alokasi/{id}', [AlokasiController::class, 'update'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.alokasi.update');
+
+        // Permintaan Dana — Lihat & Approve/Reject (Finance)
+        Route::get('/permintaan', [PermintaanDanaController::class, 'index'])->name('kadiv.keuangan.permintaan');
+        Route::get('/permintaan/{id}', [PermintaanDanaController::class, 'show'])->name('kadiv.keuangan.permintaan.show');
+        Route::post('/permintaan/{id}/approve', [PermintaanDanaController::class, 'approve'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.permintaan.approve');
+        Route::post('/permintaan/{id}/reject', [PermintaanDanaController::class, 'reject'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.permintaan.reject');
+
+        // Pengeluaran / Pencairan
+        Route::get('/pengeluaran', [PengeluaranController::class, 'index'])->name('kadiv.keuangan.pengeluaran');
+        Route::post('/pengeluaran', [PengeluaranController::class, 'store'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.pengeluaran.store');
+        Route::post('/pengeluaran/cairkan/{idKpd}', [PengeluaranController::class, 'cairkan'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.cairkan');
+
+        // Verifikasi Laporan Laba/Rugi (Finance)
+        Route::get('/laporan', [LabaRugiController::class, 'daftarLaporan'])->name('kadiv.keuangan.laporan');
+        Route::post('/laporan/{id}/verifikasi', [LabaRugiController::class, 'verifikasi'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.keuangan.laporan.verifikasi');
+    });
+
+// ── Semua Kadiv: Pengajuan Dana & Laporan Laba/Rugi ──────────────────────────
+Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])
+    ->prefix('kadiv')
+    ->group(function () {
+        // Pengajuan Dana
+        Route::get('/pengajuan-dana', [PermintaanDanaController::class, 'create'])->name('kadiv.pengajuanDana');
+        Route::post('/pengajuan-dana', [PermintaanDanaController::class, 'store'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.pengajuanDana.store');
+        Route::get('/pengajuan-dana/riwayat', [PermintaanDanaController::class, 'riwayat'])->name('kadiv.pengajuanDana.riwayat');
+
+        // Laporan Laba/Rugi per Kadiv
+        Route::get('/laporan-laba-rugi', [LabaRugiController::class, 'index'])->name('kadiv.laporanLabaRugi');
+        Route::post('/laporan-laba-rugi', [LabaRugiController::class, 'store'])
+            ->middleware('throttle:submit-form')
+            ->name('kadiv.laporanLabaRugi.store');
+    });

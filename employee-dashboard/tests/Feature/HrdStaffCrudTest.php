@@ -65,15 +65,33 @@ class HrdStaffCrudTest extends TestCase
         $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan')
             ->assertOk()
             ->assertSee('name="divisi_id_divisi"', false)
+            ->assertSee('value="SMK"', false)
+            ->assertSee('value="D3"', false)
+            ->assertSee('value="S1"', false)
+            ->assertSee('value="S2"', false)
+            ->assertSee('value="S3"', false)
+            ->assertDontSee('name="status_karyawan"', false)
             ->assertSee('Teknologi Informasi');
     }
 
 
     public function test_staff_detail_page_shows_profile_and_task_list(): void
     {
+        Karyawan::whereKey('KRY-1')->update([
+            'pendidikan' => 'S3',
+            'job_level' => 'Senior',
+            'tanggal_akhir_kontrak' => '2027-01-01',
+        ]);
+
         $this->actingAs($this->hrd)->get('/hrd/detailKaryawan/KRY-1')
             ->assertOk()
             ->assertSee('Andi Wijaya')
+            ->assertSee('Pendidikan Terakhir')
+            ->assertSee('Job Level')
+            ->assertSee('Status Karyawan')
+            ->assertSee('S3')
+            ->assertSee('Senior')
+            ->assertSee('Kontrak')
             ->assertSee('Teknologi Informasi')
             ->assertSee('Bikin API')
             ->assertSee('Tandai Karyawan Keluar')

@@ -85,6 +85,21 @@ class Karyawan extends Model
         'Tidak Aktif',
     ];
 
+    public const PENDIDIKAN_OPTIONS = [
+        'SMK',
+        'D3',
+        'S1',
+        'S2',
+        'S3',
+    ];
+
+    public const JOB_LEVEL_OPTIONS = [
+        'Magang',
+        'Junior',
+        'Senior',
+        'Manager',
+    ];
+
     public function divisi(): BelongsTo
     {
         return $this->belongsTo(
@@ -140,6 +155,22 @@ class Karyawan extends Model
     public function isStaff(): bool
     {
         return $this->hasRole('staff');
+    }
+
+    /**
+     * Cek apakah karyawan ini berada di divisi Finance (kode_divisi = 'FIN').
+     */
+    public function isFinance(): bool
+    {
+        return strtoupper($this->divisi?->kode_divisi ?? '') === 'FIN';
+    }
+
+    /**
+     * Cek apakah karyawan ini adalah Kepala Divisi Finance.
+     */
+    public function isKadivFinance(): bool
+    {
+        return $this->isKadiv() && $this->isFinance();
     }
 
     public function suratIzins(): HasMany

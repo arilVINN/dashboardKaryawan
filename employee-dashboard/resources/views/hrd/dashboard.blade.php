@@ -18,6 +18,7 @@
 
         <main class="flex-1 overflow-y-auto p-8 pt-6 pb-6">
             @include('component_hrd.statusbar')
+            @include('components.carousel')
 
             <div class="mt-6 grid grid-cols-1 items-start gap-6 min-[900px]:grid-cols-[1.5fr_1fr]">
                 @include('component_hrd.tabelDivisi')
