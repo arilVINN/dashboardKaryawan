@@ -183,6 +183,15 @@
         </div>
 
         <div class="ml-auto flex flex-wrap items-center gap-2">
+            @if ($accounts->isNotEmpty())
+                <select wire:model.live="account" aria-label="Pilih akun media sosial"
+                    class="h-10 w-[180px] rounded-lg border border-[#E2E8EC] bg-white px-2 text-sm text-[#172B36] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+                    @foreach ($accounts as $availableAccount)
+                        <option value="{{ $availableAccount->slug }}">{{ $availableAccount->name }}</option>
+                    @endforeach
+                </select>
+            @endif
+
             <select wire:model.live="typeFilter" aria-label="Filter jenis konten"
                 class="h-10 w-[125px] rounded-lg border border-[#E2E8EC] bg-white px-2 text-sm text-[#172B36] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
                 <option value="semua">Semua jenis</option>
@@ -230,7 +239,7 @@
     <div class="relative mt-4 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
 
         <div wire:loading.delay
-            wire:target="previous,next,goToday,setView,typeFilter,statusFilter,resetFilters"
+            wire:target="previous,next,goToday,setView,account,typeFilter,statusFilter,resetFilters"
             class="absolute inset-0 z-30 flex flex-col bg-white p-3">
             <div class="grid flex-1 grid-cols-7 gap-2">
                 @for ($i = 0; $i < 35; $i++)
@@ -265,7 +274,7 @@
                 <div>
                     <p class="text-sm font-semibold text-[#172B36]">Belum ada event bulan ini</p>
                     <p class="mt-1 text-xs text-[#4B5563]">
-                        {{ $hasActiveFilters ? 'Coba ubah filter atau tambahkan event baru.' : 'Tambahkan event pertama untuk '.$monthLabel.'.' }}
+                        {{ $hasActiveFilters ? 'Coba ubah filter atau tambahkan event baru.' : 'Tambahkan event pertama untuk '.($activeAccount?->name ?? 'akun ini').'.' }}
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center justify-center gap-2">
@@ -403,7 +412,7 @@
                         </span>
                         <p class="mt-4 text-sm font-semibold text-[#172B36]">Belum ada event bulan ini</p>
                         <p class="mt-1 text-xs text-[#4B5563]">
-                            {{ $hasActiveFilters ? 'Coba ubah filter atau tambahkan event baru.' : 'Tambahkan event pertama untuk '.$monthLabel.'.' }}
+                            {{ $hasActiveFilters ? 'Coba ubah filter atau tambahkan event baru.' : 'Tambahkan event pertama untuk '.($activeAccount?->name ?? 'akun ini').'.' }}
                         </p>
                     </div>
                 @else

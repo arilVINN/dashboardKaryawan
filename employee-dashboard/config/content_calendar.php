@@ -7,10 +7,9 @@ return [
     | Divisions that can open the content calendar
     |--------------------------------------------------------------------------
     |
-    | Employees in these divisions can view the calendar and comment on
-    | events. Editing stays limited to the event creator (see the policy).
-    | Matching is case-insensitive and accepts ids as well, so production
-    | can pin ids without renaming divisions.
+    | Employees in these divisions can view the calendar and edit or comment
+    | on its events. Matching is case-insensitive and accepts ids as well, so
+    | production can pin ids without renaming divisions.
     |
     */
 

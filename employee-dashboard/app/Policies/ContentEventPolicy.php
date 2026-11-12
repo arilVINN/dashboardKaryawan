@@ -24,13 +24,13 @@ class ContentEventPolicy
     }
 
     /**
-     * Only the employee who created the event may edit it. Kadiv and HRD can
-     * view and comment, but not change the event.
+     * Every employee with calendar access may edit any event. The calendar is
+     * shared between HR and Marketing Communication, so creators and viewers
+     * have the same editing rights.
      */
     public function update(User2 $user, ContentEvent $event): bool
     {
-        return ContentCalendarAccess::allows($user)
-            && (string) $event->created_by === (string) $user->id_user;
+        return ContentCalendarAccess::allows($user);
     }
 
     public function delete(User2 $user, ContentEvent $event): bool

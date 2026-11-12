@@ -17,6 +17,7 @@ class ContentEvent extends Model
         'event_date',
         'post_time',
         'content_type',
+        'content_account_id',
         'status',
         'description',
         'todos',
@@ -32,6 +33,11 @@ class ContentEvent extends Model
     public function type(): BelongsTo
     {
         return $this->belongsTo(ContentType::class, 'content_type', 'slug');
+    }
+
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(ContentAccount::class, 'content_account_id');
     }
 
     public function creator(): BelongsTo

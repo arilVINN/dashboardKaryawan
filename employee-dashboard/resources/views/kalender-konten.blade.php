@@ -10,6 +10,9 @@
         'kadiv' => url('/kadiv/dashboard'),
         default => url('/'),
     };
+
+    $activeAccount = \App\Models\ContentAccount::resolve(request()->query('account'));
+    $pageTitle = $activeAccount ? 'Kalender Konten - '.$activeAccount->name : 'Kalender Konten';
 @endphp
 
 <!DOCTYPE html>
@@ -18,7 +21,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalender Konten - PT Silindo</title>
+    <title>{{ $pageTitle }} - PT Silindo</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -39,7 +42,7 @@
             @include('component.breadcrumbs', [
                 'parentText' => 'Dashboard',
                 'parentUrl' => $dashboardUrl,
-                'currentPage' => 'Kalender Konten',
+                'currentPage' => $pageTitle,
                 'inline' => true,
             ])
 
@@ -51,7 +54,7 @@
                     </svg>
                 </span>
                 <div class="min-w-0">
-                    <h1 class="text-2xl font-bold text-[#172B36]">Kalender Konten</h1>
+                    <h1 class="text-2xl font-bold text-[#172B36]" data-page-title>{{ $pageTitle }}</h1>
                 </div>
             </div>
 
@@ -59,6 +62,26 @@
         </main>
 
     </div>
+
+    <script>
+        document.addEventListener('content-account-changed', function (event) {
+            const name = event.detail && event.detail.name ? event.detail.name : '';
+            const title = name ? 'Kalender Konten - ' + name : 'Kalender Konten';
+
+            const heading = document.querySelector('[data-page-title]');
+            if (heading) {
+                heading.textContent = title;
+            }
+
+            const crumb = document.querySelector('[data-breadcrumb-current]');
+            if (crumb) {
+                crumb.textContent = title;
+                crumb.setAttribute('data-breadcrumb-current', title);
+            }
+
+            document.title = title + ' - PT Silindo';
+        });
+    </script>
 
 </body>
 

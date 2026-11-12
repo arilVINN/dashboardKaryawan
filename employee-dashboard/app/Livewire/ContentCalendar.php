@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\ContentAccount;
 use App\Models\ContentEvent;
 use App\Models\ContentEventComment;
 use App\Models\ContentType;
@@ -25,6 +26,9 @@ class ContentCalendar extends Component
 
     #[Url]
     public string $week = '';
+
+    #[Url]
+    public string $account = '';
 
     public string $typeFilter = 'semua';
 
@@ -94,6 +98,22 @@ class ContentCalendar extends Component
         if ($this->view === 'minggu' && $this->week === '') {
             $this->week = $this->defaultWeek()->toDateString();
         }
+
+        $account = ContentAccount::resolve($this->account);
+        $this->account = $account?->slug ?? '';
+    }
+
+    public function updatedAccount(): void
+    {
+        $account = ContentAccount::resolve($this->account);
+
+        if ($account) {
+            $this->account = $account->slug;
+        }
+
+        $this->popoverDate = null;
+
+        $this->dispatch('content-account-changed', name: $account?->name ?? '');
     }
 
     public function updated(string $property): void
@@ -499,7 +519,12 @@ class ContentCalendar extends Component
             'content_url' => $validated['content_url'] ?: null,
         ];
 
-        ContentEvent::create($payload + ['created_by' => auth()->id()]);
+        $account = ContentAccount::resolve($this->account);
+
+        ContentEvent::create($payload + [
+            'content_account_id' => $account?->id,
+            'created_by' => auth()->id(),
+        ]);
 
         $this->dispatch('content-toast', message: 'Event ditambahkan', type: 'success');
 
@@ -598,6 +623,9 @@ class ContentCalendar extends Component
                 ->all();
         }
 
+        $accounts = ContentAccount::query()->active()->ordered()->get();
+        $activeAccount = $accounts->firstWhere('slug', $this->account) ?? $accounts->first();
+
         $events = collect();
         $days = [];
         $monthWeeks = [];
@@ -610,8 +638,9 @@ class ContentCalendar extends Component
             [$rangeStart, $rangeEnd] = $this->range();
 
             $events = ContentEvent::query()
-                ->with(['creator.karyawan'])
+                ->with(['creator.karyawan', 'account'])
                 ->inRange($rangeStart, $rangeEnd)
+                ->when($activeAccount, fn ($query) => $query->where('content_account_id', $activeAccount->id))
                 ->when($this->typeFilter !== 'semua', fn ($query) => $query->where('content_type', $this->typeFilter))
                 ->when($this->statusFilter !== 'semua', fn ($query) => $query->where('status', $this->statusFilter))
                 ->get();
@@ -638,6 +667,8 @@ class ContentCalendar extends Component
         }
 
         return view('livewire.content-calendar', [
+            'accounts' => $accounts,
+            'activeAccount' => $activeAccount,
             'contentTypes' => $contentTypes,
             'statusOptions' => $statusOptions,
             'monthWeeks' => $monthWeeks,
