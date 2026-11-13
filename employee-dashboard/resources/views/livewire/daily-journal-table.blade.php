@@ -320,20 +320,24 @@
                             {{-- 6. Aksi --}}
                             <td class="py-3.5 px-4 align-top text-center" onclick="event.stopPropagation()">
                                 <button type="button" wire:click="openDayModal('{{ $day['date'] }}')"
-                                        class="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-slate-200 bg-white hover:bg-[#146C94] hover:text-white hover:border-[#146C94] text-slate-700 transition shadow-2xs inline-flex items-center gap-1">
+                                        class="px-2.5 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-white hover:bg-[#146C94] hover:text-white hover:border-[#146C94] text-slate-700 transition shadow-2xs inline-flex items-center gap-1.5 group/btn">
                                     @if($day['count'] > 0)
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-3.5 h-3.5 text-slate-500 group-hover/btn:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                         <span>Detail</span>
                                     @else
                                         @if($viewMode === 'my')
-                                            <svg class="w-3.5 h-3.5 text-[#146C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                            <svg class="w-3.5 h-3.5 text-[#146C94] group-hover/btn:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                                             </svg>
-                                            <span>+ Isi</span>
+                                            <span>Isi</span>
                                         @else
+                                            <svg class="w-3.5 h-3.5 text-slate-500 group-hover/btn:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
                                             <span>Lihat</span>
                                         @endif
                                     @endif
