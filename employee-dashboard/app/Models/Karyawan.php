@@ -35,7 +35,6 @@ class Karyawan extends Model
         'tanggal_keluar',
         'foto',
         'divisi_id_divisi',
-        'atasan_id',
         'pendidikan',
         'job_level',
         'status_karyawan',
@@ -191,21 +190,5 @@ class Karyawan extends Model
             ->whereNotNull('tanggal_lahir')
             ->whereMonth('tanggal_lahir', now()->month)
             ->whereDay('tanggal_lahir', now()->day);
-    public function atasan(): BelongsTo
-    {
-        return $this->belongsTo(
-            Karyawan::class,
-            'atasan_id',
-            'id_karyawan'
-        );
-    }
-
-    public function bawahan(): HasMany
-    {
-        return $this->hasMany(
-            Karyawan::class,
-            'atasan_id',
-            'id_karyawan'
-        );
     }
 }
