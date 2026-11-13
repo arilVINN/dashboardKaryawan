@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Hrd;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\AuditLog;
+use App\Models\Carousel;
 use App\Models\Karyawan;
 use App\Models\Divisi;
 use App\Models\Tugas;
@@ -126,6 +127,11 @@ class HrdDashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $carousels = Carousel::query()
+            ->with(['user.karyawan', 'divisi'])
+            ->latest()
+            ->get();
+
         return view('hrd.dashboard', compact(
             'total',
             'tugasBuckets',
@@ -138,7 +144,8 @@ class HrdDashboardController extends Controller
             'divisiTerbesar',
             'totalKaryawanAktif',
             'totalKaryawanTidakAktif',
-            'totalKeluarTahunIni'
+            'totalKeluarTahunIni',
+            'carousels'
         ));
     }
 
@@ -238,27 +245,41 @@ class HrdDashboardController extends Controller
             ->groupBy('jenis_kelamin')
             ->pluck('jumlah', 'jenis_kelamin');
 
-        // Mengambil data pendidikan langsung dari kolom baru
+        // Normalize the legacy SMA/SMK label to SMK for the analytics breakdown.
         $pendidikan = Karyawan::where('aktif', true)
-            ->selectRaw('pendidikan, COUNT(*) as jumlah')
-            ->groupBy('pendidikan')
-            ->pluck('jumlah', 'pendidikan');
+            ->whereNotNull('pendidikan')
+            ->whereRaw("TRIM(pendidikan) != ''")
+            ->selectRaw("
+                CASE
+                    WHEN UPPER(TRIM(pendidikan)) IN ('SMK', 'SMA/SMK') THEN 'SMK'
+                    WHEN UPPER(TRIM(pendidikan)) IN ('D3', 'S1', 'S2', 'S3') THEN UPPER(TRIM(pendidikan))
+                    ELSE TRIM(pendidikan)
+                END as jenjang,
+                COUNT(*) as jumlah
+            ")
+            ->groupBy('jenjang')
+            ->pluck('jumlah', 'jenjang');
 
-        // Mengambil data job_level - hanya nilai valid (Magang, Junior, Senior, Manager).
-        // "Staff" dikecualikan karena itu adalah jabatan, bukan job level.
-        $validJobLevels = ['Magang', 'Junior', 'Senior', 'Manager'];
+        // "Staff" is a position, not a job level.
         $jobLevel = Karyawan::where('aktif', true)
-            ->whereIn('job_level', $validJobLevels)
-            ->selectRaw('job_level, COUNT(*) as jumlah')
-            ->groupBy('job_level')
-            ->pluck('jumlah', 'job_level');
+            ->whereRaw("UPPER(TRIM(COALESCE(job_level, ''))) IN ('MAGANG', 'JUNIOR', 'SENIOR', 'MANAGER')")
+            ->selectRaw("
+                CASE UPPER(TRIM(job_level))
+                    WHEN 'MAGANG' THEN 'Magang'
+                    WHEN 'JUNIOR' THEN 'Junior'
+                    WHEN 'SENIOR' THEN 'Senior'
+                    WHEN 'MANAGER' THEN 'Manager'
+                END as level_pekerjaan,
+                COUNT(*) as jumlah
+            ")
+            ->groupBy('level_pekerjaan')
+            ->pluck('jumlah', 'level_pekerjaan');
 
-        // Mengambil data status_karyawan: jika ada tanggal_akhir_kontrak atau status kontrak maka 'Tidak Tetap', selain itu 'Tetap'
+        // End dates and legacy status values both identify contract employees.
         $statusKaryawan = Karyawan::where('aktif', true)
             ->selectRaw("
                 CASE 
-                    WHEN tanggal_akhir_kontrak IS NOT NULL THEN 'Tidak Tetap'
-                    WHEN LOWER(status_karyawan) IN ('kontrak', 'tidak tetap') THEN 'Tidak Tetap'
+                    WHEN tanggal_akhir_kontrak IS NOT NULL THEN 'Kontrak'
                     ELSE 'Tetap'
                 END as status_hitung,
                 COUNT(*) as jumlah

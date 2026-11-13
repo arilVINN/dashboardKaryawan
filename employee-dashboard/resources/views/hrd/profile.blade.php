@@ -42,7 +42,7 @@
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <section class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
-                        <h2 class="mb-5 border-b border-slate-200 pb-3 text-lg font-bold">Detail Karyawan</h2>
+                        <h2 class="mb-5 border-b border-slate-200 pb-3 text-lg font-semibold">Detail Karyawan</h2>
                         <dl class="space-y-4 text-sm">
                             <div>
                                 <dt class="text-xs text-slate-500">Jabatan</dt>
@@ -60,7 +60,7 @@
                     </section>
 
                     <section class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
-                        <h2 class="mb-5 border-b border-slate-200 pb-3 text-lg font-bold">Informasi Akun</h2>
+                        <h2 class="mb-5 border-b border-slate-200 pb-3 text-lg font-semibold">Informasi Akun</h2>
                         <dl class="space-y-4 text-sm">
                             <div>
                                 <dt class="text-xs text-slate-500">Role</dt>
@@ -74,7 +74,7 @@
                     </section>
 
                     <section class="rounded-xl border border-slate-100 bg-white p-6 shadow-sm md:col-span-2">
-                        <h2 class="mb-5 border-b border-slate-200 pb-3 text-lg font-bold">Informasi Pribadi</h2>
+                        <h2 class="mb-5 border-b border-slate-200 pb-3 text-lg font-semibold">Informasi Pribadi</h2>
                         <dl class="grid grid-cols-1 gap-5 text-sm sm:grid-cols-2">
                             <div>
                                 <dt class="text-xs text-slate-500">Nama</dt>

@@ -5,14 +5,12 @@ namespace App\Http\Controllers\Hrd;
 use App\Actions\StoreKaryawanFoto;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\AuditLog;
 use App\Models\Karyawan;
 use App\Models\LampiranKaryawan;
 use App\Models\ProjectTask;
 use App\Models\User2;
 use App\Models\Divisi;
 use App\Models\Role;
-use App\Services\HrdProtectionService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -48,7 +46,7 @@ class HrdStaffController extends Controller
             $request->merge(['tanggal_masuk' => $request->tanggal_rekrut]);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'nama' => 'required|string|max:100',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'tanggal_lahir' => 'nullable|date',
@@ -60,9 +58,9 @@ class HrdStaffController extends Controller
             'email' => 'nullable|email|max:100|unique:karyawans,email',
             'alamat' => 'nullable|string',
             'jabatan' => ['required', 'string', 'max:100', Rule::in(Karyawan::JABATAN_OPTIONS)],
-            'pendidikan' => 'nullable|string|max:50',
-            'job_level' => 'nullable|string|max:50',
             'status_aktif' => ['nullable', 'string', Rule::in(Karyawan::STATUS_OPTIONS)],
+            'pendidikan' => ['nullable', 'string', Rule::in(Karyawan::PENDIDIKAN_OPTIONS)],
+            'job_level' => ['nullable', 'string', Rule::in(Karyawan::JOB_LEVEL_OPTIONS)],
             'divisi_id_divisi' => 'required|string|max:20',
             // Data akun login
             'username' => 'required|string|max:50|unique:users2,username',
@@ -108,25 +106,27 @@ class HrdStaffController extends Controller
                 ? 'KR' . str_pad(intval(substr($lastKaryawan->id_karyawan, 2)) + 1, 3, '0', STR_PAD_LEFT)
                 : 'KR001';
 
-            $tanggalMasuk = $request->tanggal_masuk ?? $request->tanggal_rekrut ?? now()->toDateString();
+            $tanggalMasuk = $validated['tanggal_masuk'] ?? $validated['tanggal_rekrut'] ?? now()->toDateString();
+            $tanggalAkhirKontrak = $validated['tanggal_akhir_kontrak'] ?? null;
 
             // 2. Buat Karyawan
             $karyawan = Karyawan::create([
                 'id_karyawan' => $newKaryawanId,
-                'nama' => $request->nama,
-                'jenis_kelamin' => $request->jenis_kelamin,
-                'tanggal_lahir' => $request->tanggal_lahir,
+                'nama' => $validated['nama'],
+                'jenis_kelamin' => $validated['jenis_kelamin'],
+                'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
                 'tanggal_masuk' => $tanggalMasuk,
-                'tanggal_akhir_kontrak' => $request->tanggal_akhir_kontrak,
-                'no_rekening' => $request->no_rekening,
-                'no_telepon' => $request->no_telepon,
-                'email' => $request->email,
-                'alamat' => $request->alamat,
-                'jabatan' => $request->jabatan,
-                'pendidikan' => $request->pendidikan,
-                'job_level' => $request->job_level,
-                'status_aktif' => $request->status_aktif ?? 'Aktif',
-                'divisi_id_divisi' => $request->divisi_id_divisi,
+                'tanggal_akhir_kontrak' => $tanggalAkhirKontrak,
+                'no_rekening' => $validated['no_rekening'] ?? null,
+                'no_telepon' => $validated['no_telepon'] ?? null,
+                'email' => $validated['email'] ?? null,
+                'alamat' => $validated['alamat'] ?? null,
+                'jabatan' => $validated['jabatan'],
+                'status_aktif' => $validated['status_aktif'] ?? 'Aktif',
+                'divisi_id_divisi' => $validated['divisi_id_divisi'],
+                'pendidikan' => $validated['pendidikan'] ?? null,
+                'job_level' => $validated['job_level'] ?? null,
+                'status_karyawan' => $tanggalAkhirKontrak ? 'Kontrak' : 'Tetap',
             ]);
 
             // Simpan lampiran (jika ada)
@@ -238,9 +238,8 @@ class HrdStaffController extends Controller
             'jabatan' => ['sometimes', 'required', 'string', 'max:100', Rule::in(Karyawan::JABATAN_OPTIONS)],
             'status_aktif' => ['sometimes', 'required', 'string', Rule::in(Karyawan::STATUS_OPTIONS)],
             'divisi_id_divisi' => 'sometimes|required|string|max:20|exists:divisis,id_divisi',
-            'pendidikan' => 'sometimes|nullable|string|max:50',
-            'job_level' => 'sometimes|nullable|string|max:50',
-            'status_karyawan' => 'sometimes|nullable|string|max:20',
+            'pendidikan' => ['sometimes', 'nullable', 'string', Rule::in(Karyawan::PENDIDIKAN_OPTIONS)],
+            'job_level' => ['sometimes', 'nullable', 'string', Rule::in(Karyawan::JOB_LEVEL_OPTIONS)],
 
             'username' => [
                 'sometimes',
@@ -303,33 +302,7 @@ class HrdStaffController extends Controller
             return response()->json(['message' => 'Akun login staff tidak ditemukan'], 409);
         }
 
-        $authUser = $request->user() ?: auth()->user();
-
-        // 1 & 2. Proteksi role HRD jika ada perubahan role
-        if (isset($validated['role_id_role']) && $karyawan->user) {
-            if ($errorMsg = HrdProtectionService::validateRoleChange($authUser, $karyawan, $validated['role_id_role'])) {
-                return response()->json([
-                    'message' => $errorMsg,
-                    'errors'  => ['role_id_role' => [$errorMsg]],
-                ], 422);
-            }
-        }
-
-        // 1 & 2. Proteksi penonaktifan jika status diubah menjadi Tidak Aktif
-        if (isset($validated['status_aktif']) && $validated['status_aktif'] !== 'Aktif') {
-            if ($errorMsg = HrdProtectionService::validateDeactivation($authUser, $karyawan)) {
-                return response()->json([
-                    'message' => $errorMsg,
-                    'errors'  => ['status_aktif' => [$errorMsg]],
-                ], 422);
-            }
-        }
-
-        $oldRole = $karyawan->user?->role?->nama_role;
-        $roleChanged = false;
-        $newRoleName = null;
-
-        DB::transaction(function () use ($karyawan, $validated, $request, &$roleChanged, &$newRoleName): void {
+        DB::transaction(function () use ($karyawan, $validated, $request): void {
             $karyawanChanges = array_intersect_key($validated, array_flip([
                 'nama',
                 'jenis_kelamin',
@@ -346,13 +319,17 @@ class HrdStaffController extends Controller
                 'divisi_id_divisi',
                 'pendidikan',      // <-- Pastikan ini ada
                 'job_level',
-                'status_karyawan',       // <-- Pastikan ini ada
             ]));
 
             if (isset($karyawanChanges['tanggal_rekrut']) && !isset($karyawanChanges['tanggal_masuk'])) {
                 $karyawanChanges['tanggal_masuk'] = $karyawanChanges['tanggal_rekrut'];
             }
             unset($karyawanChanges['tanggal_rekrut']);
+
+            $tanggalAkhirKontrak = array_key_exists('tanggal_akhir_kontrak', $karyawanChanges)
+                ? $karyawanChanges['tanggal_akhir_kontrak']
+                : $karyawan->tanggal_akhir_kontrak;
+            $karyawanChanges['status_karyawan'] = $tanggalAkhirKontrak ? 'Kontrak' : 'Tetap';
 
             if (array_key_exists('status_aktif', $karyawanChanges) && $karyawan->tanggal_keluar === null) {
                 $isActive = $karyawanChanges['status_aktif'] === 'Aktif';
@@ -371,32 +348,10 @@ class HrdStaffController extends Controller
                     $accountChanges['password'] = Hash::make($validated['password']);
                 }
                 if ($accountChanges) {
-                    if (isset($accountChanges['role_id_role']) && $accountChanges['role_id_role'] !== $karyawan->user->role_id_role) {
-                        $roleChanged = true;
-                        $newRole = Role::find($accountChanges['role_id_role']);
-                        $newRoleName = $newRole?->nama_role ?? $accountChanges['role_id_role'];
-                    }
                     $karyawan->user->update($accountChanges);
                 }
             }
         });
-
-        // 3. Catat audit log jika role berubah
-        if ($roleChanged) {
-            AuditLog::catat(
-                $authUser?->id_user,
-                'ubah_role',
-                'user',
-                $karyawan->user?->id_user,
-                [
-                    'id_karyawan' => $karyawan->id_karyawan,
-                    'nama'        => $karyawan->nama,
-                    'username'    => $karyawan->user?->username,
-                    'role_lama'   => $oldRole,
-                    'role_baru'   => $newRoleName,
-                ]
-            );
-        }
 
         return response()->json([
             'message' => 'Staff berhasil diubah',
@@ -441,7 +396,7 @@ class HrdStaffController extends Controller
 
     public function destroy($id)
     {
-        $karyawan = Karyawan::with(['user.role'])->where('id_karyawan', $id)->first();
+        $karyawan = Karyawan::with('user')->where('id_karyawan', $id)->first();
 
         if (!$karyawan) {
             return response()->json(['message' => 'Staff tidak ditemukan'], 404);
@@ -470,10 +425,6 @@ class HrdStaffController extends Controller
             ], 409);
         }
 
-        $nama = $karyawan->nama;
-        $username = $karyawan->user?->username;
-        $roleName = $karyawan->user?->role?->nama_role;
-
         try {
             DB::transaction(function () use ($karyawan): void {
                 // Hapus semua submit_tugas terkait
@@ -494,19 +445,6 @@ class HrdStaffController extends Controller
 
                 $karyawan->delete();
             });
-
-            // 3. Catat audit log penghapusan karyawan
-            AuditLog::catat(
-                $authUser?->id_user,
-                'hapus_karyawan',
-                'karyawan',
-                $id,
-                [
-                    'nama'     => $nama,
-                    'username' => $username,
-                    'role'     => $roleName,
-                ]
-            );
         } catch (QueryException $e) {
             report($e);
             return response()->json([

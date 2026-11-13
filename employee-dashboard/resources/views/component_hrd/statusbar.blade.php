@@ -63,7 +63,7 @@
                 </svg>
             </span>
         </div>
-        <div>
+        <div> 
             <p class="text-2xl font-bold text-slate-900 leading-none" data-dashboard-metric="total-staff">
                 {{ $totalStaff }}<span class="text-sm font-medium text-slate-900 ml-1">staff</span>
             </p>

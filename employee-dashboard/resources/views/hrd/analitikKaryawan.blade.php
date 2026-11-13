@@ -114,10 +114,12 @@
                                                 default => 'bg-[#0097B2]',
                                             },
                                             'Pendidikan' => match (strtolower((string) $label)) {
+                                                'smk' => 'bg-blue-500',
                                                 'sma/smk' => 'bg-blue-500',
                                                 'd3' => 'bg-blue-500',
                                                 's1' => 'bg-blue-500',
                                                 's2' => 'bg-blue-500',
+                                                's3' => 'bg-blue-500',
                                                 default => 'bg-[#0097B2]',
                                             },
                                             'JobLevel' => match (strtolower((string) $label)) {
@@ -170,8 +172,9 @@
                         $jmlPerempuan = $karyawanAktifDivisi->where('jenis_kelamin', 'Perempuan')->count();
 
                         // Hitung status (Tetap / Kontrak)
-                        $jmlTetap = $karyawanAktifDivisi->whereNull('tanggal_akhir_kontrak')->count();
-                        $jmlKontrak = $karyawanAktifDivisi->whereNotNull('tanggal_akhir_kontrak')->count();
+                        $isKontrak = fn ($k) => $k->tanggal_akhir_kontrak !== null;
+                        $jmlKontrak = $karyawanAktifDivisi->filter($isKontrak)->count();
+                        $jmlTetap = $totalAktif - $jmlKontrak;
                     @endphp
 
                     {{-- KARTU & TABEL UNTUK MASING-MASING DIVISI --}}
@@ -207,15 +210,15 @@
                                             <td class="px-5 py-3 font-medium text-slate-900">{{ $k->nama }}</td>
                                             <td class="px-5 py-3 text-slate-600">{{ $k->jabatan ?? '-' }}</td>
                                             <td class="px-5 py-3 text-slate-600">{{ $k->jenis_kelamin ?? '-' }}</td>
-                                            <td class="px-5 py-3 text-slate-600">{{ $k->pendidikan ?? '-' }}</td>
+                                            <td class="px-5 py-3 text-slate-600">{{ in_array(strtoupper(trim((string) $k->pendidikan)), ['SMK', 'SMA/SMK'], true) ? 'SMK' : ($k->pendidikan ?? '-') }}</td>
                                             <td class="px-5 py-3 text-slate-600">{{ $k->job_level ?? '-' }}</td>
                                             <td class="px-5 py-3">
-                                                @if (empty($k->tanggal_akhir_kontrak))
-                                                    <span
-                                                        class="px-2 py-0.5 text-xs font-semibold border border-emerald-500 bg-emerald-100 text-emerald-700 rounded">Tetap</span>
-                                                @else
+                                                @if ($isKontrak($k))
                                                     <span
                                                         class="px-2 py-0.5 text-xs font-semibold border border-amber-500 bg-amber-100 text-amber-700 rounded">Kontrak</span>
+                                                @else
+                                                    <span
+                                                        class="px-2 py-0.5 text-xs font-semibold border border-emerald-500 bg-emerald-100 text-emerald-700 rounded">Tetap</span>
                                                 @endif
                                             </td>
                                         </tr>

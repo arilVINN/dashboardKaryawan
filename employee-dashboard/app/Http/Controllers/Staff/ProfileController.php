@@ -18,6 +18,12 @@ class ProfileController extends Controller
         $tglMasuk = $karyawan?->tanggal_masuk ?? $karyawan?->tanggal_rekrut;
         $tglAkhirKontrak = $karyawan?->tanggal_akhir_kontrak;
         $tglLahir = $karyawan?->tanggal_lahir;
+        $pendidikan = strtoupper(trim((string) $karyawan?->pendidikan));
+        $jobLevel = ucfirst(strtolower(trim((string) $karyawan?->job_level)));
+
+        if ($pendidikan === 'SMA/SMK') {
+            $pendidikan = 'SMK';
+        }
 
         return response()->json([
             'message' => 'Data profil',
@@ -27,9 +33,9 @@ class ProfileController extends Controller
                 'email' => $karyawan?->email ?? '-',
                 'alamat' => $karyawan?->alamat ?? '-',
                 'jabatan' => $karyawan?->jabatan ?? '-',
-                'job_level' => $karyawan?->job_level ?? '-',
-                'pendidikan' => $karyawan?->pendidikan ?? '-',
-                'status_karyawan' => $karyawan?->status_karyawan ?? ($tglAkhirKontrak ? 'Kontrak' : 'Tetap'),
+                'job_level' => $jobLevel !== '' ? $jobLevel : '-',
+                'pendidikan' => $pendidikan !== '' ? $pendidikan : '-',
+                'status_karyawan' => $karyawan ? ($tglAkhirKontrak ? 'Kontrak' : 'Tetap') : '-',
                 'status_aktif' => $karyawan?->status_aktif ?? 'Aktif',
                 'divisi' => $karyawan?->divisi->nama_divisi ?? '-',
                 'no_telepon' => $karyawan?->no_telepon ?? '-',

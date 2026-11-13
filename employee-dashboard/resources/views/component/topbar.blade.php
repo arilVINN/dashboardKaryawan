@@ -1,7 +1,14 @@
 @php
     $topbarUser = auth()->user();
     $topbarEmployee = $topbarUser?->karyawan;
-    $pageRole = request()->is('hrd/*') ? 'hrd' : (request()->is('kadiv/*') ? 'kadiv' : 'staff');
+    // The shared Kalender Konten page is not under /hrd or /kadiv, so derive the
+    // role from the account instead of the URL; otherwise the profile dropdown
+    // never initialises for Kadiv and profile links fall back to the staff route.
+    $pageRole = match (strtolower((string) $topbarUser?->role?->nama_role)) {
+        'hrd' => 'hrd',
+        'kadiv' => 'kadiv',
+        default => 'staff',
+    };
     $topbarNama = $topbarEmployee?->nama ?? $topbarUser?->username ?? 'Guest';
     $topbarDivisi = $topbarEmployee?->divisi?->nama_divisi ?? $topbarUser?->role?->nama_role ?? ucfirst($pageRole);
     $topbarRole = $topbarUser?->role?->nama_role ?? $pageRole;

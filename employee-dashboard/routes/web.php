@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Staff\DashboardController;
 use App\Http\Controllers\Staff\NotifikasiController;
+use App\Http\Middleware\EnsureContentCalendarAccess;
 use App\Http\Middleware\EnsureStaffRole;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -13,7 +14,11 @@ use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
 use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Http\Controllers\Staff\SuratIzinController;
+use App\Http\Controllers\BookingController;
+use App\Models\Carousel;
+use App\Models\BookingRequest;
 use App\Models\Divisi;
+use App\Models\SuratIzin;
 
 // ─── Finance Module Controllers ───────────────────────────────────────────────
 use App\Http\Controllers\Finance\KeuanganController;
@@ -30,10 +35,40 @@ Route::post('/login', [AuthController::class, 'login'])
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Shared content calendar (HR and Marketing Communication only)
+Route::middleware(['auth', 'throttle:umum', EnsureContentCalendarAccess::class])->group(function () {
+    Route::get('/kalender-konten', function () {
+        return view('kalender-konten');
+    })->name('kalender-konten');
+});
+
 // staff route (session auth + staff role)
 Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/', function () {
-        return view('staff.dashboard');
+        $divisionId = auth()->user()?->karyawan?->divisi_id_divisi;
+        $carousels = Carousel::query()
+            ->with(['user.karyawan', 'divisi'])
+            ->where(function ($query) use ($divisionId) {
+                $query->whereRaw('LOWER(category) != ?', ['quotes']);
+
+                if ($divisionId) {
+                    $query->orWhere(function ($quotes) use ($divisionId) {
+                        $quotes->whereRaw('LOWER(category) = ?', ['quotes'])
+                            ->where('divisi_id_divisi', $divisionId);
+                    });
+                }
+
+                $query->orWhere(function ($hrdQuotes) {
+                    $hrdQuotes->whereRaw('LOWER(category) = ?', ['quotes'])
+                        ->whereHas('user.role', function ($roleQuery) {
+                            $roleQuery->whereRaw('LOWER(nama_role) = ?', ['hrd']);
+                        });
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('staff.dashboard', compact('carousels'));
     })->name('dashboard');
 
     Route::get('/tugas', function () {
@@ -41,7 +76,17 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     })->name('tugas');
 
     Route::get('/pesan', function () {
-        return view('staff.pesan');
+        $user = auth()->user();
+        $suratIzinStatus = SuratIzin::query()
+            ->where('karyawan_id_karyawan', $user->karyawan_id_karyawan)
+            ->latest()
+            ->get();
+        $bookingStatus = BookingRequest::query()
+            ->where('pemohon_id_user', $user->id_user)
+            ->latest()
+            ->get();
+
+        return view('staff.pesan', compact('suratIzinStatus', 'bookingStatus'));
     })->name('pesan');
 
     Route::get('/pesan/detail/{id?}', function ($id = null) {
@@ -92,7 +137,24 @@ Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->g
 Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->group(function () {
     // Dashboard
     Route::get('/dashboard', function () {
-        return view('kadiv.dashboard');
+        $user = auth()->user();
+        $divisiId = $user?->karyawan?->divisi_id_divisi;
+
+        $carousels = Carousel::query()
+            ->with(['user.karyawan', 'divisi'])
+            ->where(function ($query) use ($divisiId) {
+                if ($divisiId) {
+                    $query->where('divisi_id_divisi', $divisiId);
+                }
+
+                $query->orWhereHas('user.role', function ($roleQuery) {
+                    $roleQuery->whereRaw('LOWER(nama_role) = ?', ['hrd']);
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('kadiv.dashboard', compact('carousels'));
     })->name('kadiv.dashboard');
 
     // Manajemen Staff
@@ -152,7 +214,17 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
 
     // Pesan
     Route::get('/pesan', function () {
-        return view('kadiv.pesan');
+        $user = auth()->user();
+        $suratIzinStatus = SuratIzin::query()
+            ->where('karyawan_id_karyawan', $user->karyawan_id_karyawan)
+            ->latest()
+            ->get();
+        $bookingStatus = BookingRequest::query()
+            ->where('pemohon_id_user', $user->id_user)
+            ->latest()
+            ->get();
+
+        return view('kadiv.pesan', compact('suratIzinStatus', 'bookingStatus'));
     })->name('kadiv.pesan');
 
     Route::get('/detailPesan/{id}', function ($id) {
@@ -179,6 +251,14 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     // Bagan Struktur Organisasi (Kadiv)
     Route::get('/struktur-organisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('kadiv.struktur-organisasi');
     Route::get('/struktur-organisasi/data', [\App\Http\Controllers\StrukturOrganisasiController::class, 'getTreeData'])->name('kadiv.struktur-organisasi.data');
+
+    // Carousel Konten Kegiatan / Informasi
+    Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])
+        ->middleware('throttle:submit-form')
+        ->name('carousel.store');
+    Route::delete('/carousel/{id}', [\App\Http\Controllers\CarouselController::class, 'destroy'])
+        ->middleware('throttle:submit-form')
+        ->name('carousel.destroy');
 });
 
 
@@ -320,6 +400,28 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     Route::post('/struktur-organisasi/assign-vacant', [\App\Http\Controllers\StrukturOrganisasiController::class, 'assignVacant'])
         ->middleware('throttle:submit-form')
         ->name('hrd.struktur-organisasi.assign-vacant');
+
+    // Carousel Konten Kegiatan / Informasi (HRD)
+    Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.carousel.store');
+    Route::delete('/carousel/{id}', [\App\Http\Controllers\CarouselController::class, 'destroy'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.carousel.destroy');
+});
+
+Route::post('/booking', [BookingController::class, 'store'])
+    ->middleware(['auth', 'role:staff,kadiv', 'throttle:submit-form'])
+    ->name('booking.store');
+
+Route::middleware(['auth', 'role:hrd,direksi', 'throttle:umum'])->prefix('hrd')->group(function () {
+    Route::get('/suratBooking', [BookingController::class, 'index'])->name('hrd.suratBooking');
+    Route::post('/suratBooking/{booking}/acc', [BookingController::class, 'approve'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.suratBooking.acc');
+    Route::post('/suratBooking/{booking}/tolak', [BookingController::class, 'reject'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.suratBooking.tolak');
 });
 
 
@@ -441,4 +543,3 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])
             ->middleware('throttle:submit-form')
             ->name('kadiv.laporanLabaRugi.store');
     });
-

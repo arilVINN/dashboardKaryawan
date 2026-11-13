@@ -48,10 +48,11 @@
 
                 <div class="flex items-center gap-3">
                     @if ($karyawan->tanggal_keluar)
-                        <button type="button" disabled title="Karyawan yang sudah keluar tidak dapat diedit"
+                        <button type="button" disabled
+                            title="Karyawan yang sudah keluar tidak dapat diedit"
                             class="px-4 py-2 bg-slate-200 text-slate-400 cursor-not-allowed text-sm font-semibold rounded-md flex items-center gap-1.5 shadow-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                                stroke="currentColor" class="w-4 h-4">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                             </svg>
@@ -60,8 +61,7 @@
 
                         <div class="text-sm text-slate-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-md">
                             Tanggal keluar:
-                            <span
-                                class="font-semibold text-slate-900">{{ $karyawan->tanggal_keluar->format('d M Y') }}</span>
+                            <span class="font-semibold text-slate-900">{{ $karyawan->tanggal_keluar->format('d M Y') }}</span>
                         </div>
                     @else
                         <button type="button" onclick="bukaEditKaryawan(this)" data-id="{{ $karyawan->id_karyawan }}"
@@ -75,18 +75,12 @@
                             data-telepon="{{ $karyawan->no_telepon }}" data-jabatan="{{ $karyawan->jabatan }}"
                             data-status="{{ $karyawan->status_aktif }}"
                             data-tanggal-keluar="{{ $karyawan->tanggal_keluar ? \Carbon\Carbon::parse($karyawan->tanggal_keluar)->format('Y-m-d') : '' }}"
-                            data-divisi="{{ $karyawan->divisi_id_divisi }}"
-                            data-pendidikan="{{ $karyawan->pendidikan }}" data-job-level="{{ $karyawan->job_level }}"
+                            data-divisi="{{ $karyawan->divisi_id_divisi }}" data-pendidikan="{{ $karyawan->pendidikan }}"
+                            data-job-level="{{ $karyawan->job_level }}"
                             data-username="{{ $karyawan->user->username ?? '' }}"
-<<<<<<< HEAD
-                            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-md transition flex items-center gap-1.5 shadow-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
-=======
                             class="px-4 py-2 bg-[#FACC15] hover:bg-[#EAB308] text-[#422006] text-sm font-semibold rounded-md transition flex items-center gap-1.5 shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
                                 stroke="currentColor" class="w-4 h-4">
->>>>>>> 816bd466e2fa71e82899a8692bccda636dca2d22
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                             </svg>
@@ -139,6 +133,11 @@
                                 'Email' => $karyawan->email,
                                 'Alamat' => $karyawan->alamat,
                                 'No. Rekening' => $karyawan->no_rekening,
+                                'Pendidikan Terakhir' => in_array(strtoupper(trim((string) $karyawan->pendidikan)), ['SMK', 'SMA/SMK'], true)
+                                    ? 'SMK'
+                                    : $karyawan->pendidikan,
+                                'Job Level' => $karyawan->job_level,
+                                'Status Karyawan' => $karyawan->tanggal_akhir_kontrak ? 'Kontrak' : 'Tetap',
                                 'Tanggal Masuk' =>
                                     $karyawan->tanggal_masuk ?? $karyawan->tanggal_rekrut
                                         ? \Carbon\Carbon::parse(
@@ -148,8 +147,6 @@
                                 'Tanggal Akhir Kontrak' => $karyawan->tanggal_akhir_kontrak
                                     ? \Carbon\Carbon::parse($karyawan->tanggal_akhir_kontrak)->format('d M Y')
                                     : 'Karyawan Tetap / Tidak Ada',
-                                'Job Level' => $karyawan->job_level,
-                                'Pendidikan' => $karyawan->pendidikan,
                             ];
                         @endphp
                         @foreach ($info as $label => $nilai)
@@ -196,8 +193,7 @@
                 <div class="flex items-center justify-between pb-4 border-b border-slate-200 mb-5">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Lampiran Dokumen</h2>
-                        <p class="text-xs text-slate-500">Berkas dan dokumen data diri karyawan yang telah diunggah.
-                        </p>
+                        <p class="text-xs text-slate-500">Berkas dan dokumen data diri karyawan yang telah diunggah.</p>
                     </div>
                     <span class="px-3 py-1 bg-blue-50 text-[#0097B2] rounded-full text-xs font-semibold">
                         {{ $karyawan->lampiran ? $karyawan->lampiran->count() : 0 }} Dokumen
