@@ -63,6 +63,8 @@ class ContentCalendar extends Component
 
     public string $formStatus = 'process';
 
+    public string $caption = '';
+
     public string $description = '';
 
     /** @var array<int, array{text: string, done: bool}> */
@@ -213,7 +215,7 @@ class ContentCalendar extends Component
         }
 
         if ($this->formOpen) {
-            if (in_array($property, ['title', 'event_date', 'post_time', 'content_type', 'formStatus', 'description', 'content_url'], true)) {
+            if (in_array($property, ['title', 'event_date', 'post_time', 'content_type', 'formStatus', 'caption', 'description', 'content_url'], true)) {
                 $this->formDirty = true;
             }
 
@@ -227,6 +229,7 @@ class ContentCalendar extends Component
                 'post_time' => 'post_time',
                 'content_type' => 'content_type',
                 'formStatus' => 'status',
+                'caption' => 'caption',
                 'description' => 'description',
                 'content_url' => 'content_url',
             ];
@@ -317,6 +320,7 @@ class ContentCalendar extends Component
         $this->post_time = '';
         $this->content_type = '';
         $this->formStatus = 'process';
+        $this->caption = '';
         $this->description = '';
         $this->todos = [];
         $this->content_url = '';
@@ -345,6 +349,7 @@ class ContentCalendar extends Component
         $this->post_time = $event->timeLabel() ?? '';
         $this->content_type = $event->content_type ?? '';
         $this->formStatus = $event->status;
+        $this->caption = $event->caption ?? '';
         $this->description = $event->description ?? '';
         $this->todos = $this->normalizeTodos($event->todos ?? []);
         $this->content_url = $event->content_url ?? '';
@@ -587,6 +592,7 @@ class ContentCalendar extends Component
             'post_time' => ['nullable', 'date_format:H:i'],
             'content_type' => ['required', Rule::exists('content_types', 'slug')],
             'formStatus' => ['required', Rule::in(array_keys(StatusPalette::contentStatuses()))],
+            'caption' => ['nullable', 'string', 'max:5000'],
             'description' => ['nullable', 'string', 'max:5000'],
             'todos' => ['array'],
             'todos.*.text' => ['nullable', 'string', 'max:200'],
@@ -600,6 +606,7 @@ class ContentCalendar extends Component
             'post_time' => $validated['post_time'] ?: null,
             'content_type' => $validated['content_type'],
             'status' => $validated['formStatus'],
+            'caption' => $validated['caption'] ?: null,
             'description' => $validated['description'] ?: null,
             'todos' => $this->normalizeTodos($this->todos),
             'content_url' => $validated['content_url'] ?: null,
@@ -902,6 +909,7 @@ class ContentCalendar extends Component
             'content_type.exists' => 'Jenis konten tidak dikenal.',
             'formStatus.required' => 'Status wajib dipilih.',
             'formStatus.in' => 'Status tidak valid.',
+            'caption.max' => 'Caption maksimal 5000 karakter.',
             'description.max' => 'Deskripsi maksimal 5000 karakter.',
             'content_url.url' => 'Link konten harus berupa URL http atau https yang valid.',
             'content_url.max' => 'Link konten terlalu panjang.',
@@ -919,6 +927,7 @@ class ContentCalendar extends Component
             'post_time' => ['nullable', 'date_format:H:i'],
             'content_type' => ['required', Rule::exists('content_types', 'slug')],
             'formStatus' => ['required', Rule::in(array_keys(StatusPalette::contentStatuses()))],
+            'caption' => ['nullable', 'string', 'max:5000'],
             'description' => ['nullable', 'string', 'max:5000'],
             'content_url' => ['nullable', 'url:http,https', 'max:2048'],
         ];

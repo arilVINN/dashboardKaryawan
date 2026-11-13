@@ -331,7 +331,7 @@ class ContentCalendarTest extends TestCase
             ->set('accountName', 'MeiRa Kost')
             ->call('saveAccount')
             ->assertSee('MeiRa Kost')
-            ->assertSee('Belum ada event bulan ini')
+            ->assertSee('content-day-2026-11-01')
             ->assertDontSee('Event Official');
     }
 
@@ -409,6 +409,7 @@ class ContentCalendarTest extends TestCase
             ->set('title', 'Kampanye Ramadan')
             ->set('post_time', '17:00')
             ->set('content_type', 'carousel')
+            ->set('caption', 'Caption kampanye Ramadan')
             ->set('description', 'Teaser dan carousel.')
             ->set('content_url', 'https://example.test/konten')
             ->call('save')
@@ -425,6 +426,7 @@ class ContentCalendarTest extends TestCase
             'content_account_id' => $this->defaultAccount->id,
             'status' => 'process',
             'content_url' => 'https://example.test/konten',
+            'caption' => 'Caption kampanye Ramadan',
             'created_by' => $this->staffHr->id_user,
         ]);
     }
@@ -730,6 +732,32 @@ class ContentCalendarTest extends TestCase
             ->assertSee('10 Nov 2026');
     }
 
+    public function test_day_popover_uses_compact_rows_with_inline_pills(): void
+    {
+        $event = $this->event($this->staffHr, [
+            'title' => 'Reels Popover',
+            'event_date' => '2026-11-10',
+            'post_time' => '17:00',
+            'content_type' => 'carousel',
+            'status' => 'process',
+        ]);
+
+        $html = Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->call('openDay', '2026-11-10')
+            ->html();
+
+        $this->assertStringContainsString('id="content-event-'.$event->id.'-popover"', $html);
+        $this->assertStringContainsString('content-event-row', $html);
+        $this->assertStringContainsString('data-status="process"', $html);
+        $this->assertStringContainsString('Reels Popover', $html);
+        $this->assertStringContainsString('17:00', $html);
+        $this->assertStringContainsString('Carousel', $html);
+        $this->assertStringContainsString('On process', $html);
+        $this->assertStringContainsString('flex flex-wrap items-center gap-1.5', $html);
+    }
+
     public function test_month_view_orders_cards_by_time_and_caps_at_two(): void
     {
         $this->event($this->staffHr, ['title' => 'Siang', 'event_date' => '2026-11-10', 'post_time' => '12:00']);
@@ -820,12 +848,25 @@ class ContentCalendarTest extends TestCase
             ->assertSet('statusFilter', 'semua');
     }
 
-    public function test_empty_state_is_shown_when_the_month_has_no_events(): void
+    public function test_month_view_shows_an_empty_grid_when_the_month_has_no_events(): void
     {
         Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->set('month', '2026-12')
-            ->assertSee('Belum ada event bulan ini');
+            ->assertSee('Sen')
+            ->assertSee('content-day-2026-12-01')
+            ->assertDontSee('Belum ada event bulan ini');
+    }
+
+    public function test_week_view_shows_an_empty_grid_when_the_week_has_no_events(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('view', 'minggu')
+            ->set('week', '2026-12-07')
+            ->assertSee('Sen')
+            ->assertSee('week-day-2026-12-07')
+            ->assertDontSee('Belum ada event bulan ini');
     }
 
     public function test_national_holidays_are_not_rendered_on_the_content_calendar(): void
@@ -1149,6 +1190,37 @@ class ContentCalendarTest extends TestCase
             ->assertDispatched('content-saved');
 
         $this->assertDatabaseHas('content_events', ['id' => $event->id, 'title' => 'Judul Baru']);
+    }
+
+    public function test_caption_is_autosaved_from_the_detail_modal(): void
+    {
+        $event = $this->event($this->staffHr, ['title' => 'Event Caption']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSet('caption', '')
+            ->set('caption', 'Caption baru')
+            ->call('saveField', 'caption')
+            ->assertHasNoErrors()
+            ->assertDispatched('content-saved');
+
+        $this->assertDatabaseHas('content_events', ['id' => $event->id, 'caption' => 'Caption baru']);
+    }
+
+    public function test_caption_field_sits_above_the_description_field(): void
+    {
+        $html = Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->html();
+
+        $this->assertStringContainsString('id="content-caption"', $html);
+        $this->assertStringContainsString('id="content-description"', $html);
+        $this->assertLessThan(
+            strpos($html, 'id="content-description"'),
+            strpos($html, 'id="content-caption"')
+        );
     }
 
     public function test_autosave_rejects_an_invalid_value(): void

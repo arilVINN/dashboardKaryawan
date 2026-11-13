@@ -278,35 +278,6 @@
                     Coba lagi
                 </button>
             </div>
-        @elseif ($isEmpty && $view !== 'daftar')
-            <div class="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-                <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E3F1F7] text-[#146C94]">
-                    <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z"></path>
-                    </svg>
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-[#172B36]">Belum ada event bulan ini</p>
-                    <p class="mt-1 text-xs text-[#4B5563]">
-                        {{ $hasActiveFilters ? 'Coba ubah filter atau tambahkan event baru.' : 'Tambahkan event pertama untuk '.($activeAccount?->name ?? 'akun ini').'.' }}
-                    </p>
-                </div>
-                <div class="flex flex-wrap items-center justify-center gap-2">
-                    <button type="button" id="content-add-event-empty" wire:click="openCreate()" @click="remember($el)"
-                        class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white hover:bg-[#0086A0]">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
-                        </svg>
-                        Tambah event
-                    </button>
-                    @if ($hasActiveFilters)
-                        <button type="button" wire:click="resetFilters"
-                            class="inline-flex h-10 items-center rounded-lg border border-[#E2E8EC] bg-white px-4 text-sm font-medium text-[#4B5563] hover:bg-slate-50">
-                            Reset filter
-                        </button>
-                    @endif
-                </div>
-            </div>
         @elseif ($view === 'bulan')
             <div class="overflow-x-auto">
                 <div class="min-w-[760px]">
@@ -480,9 +451,8 @@
                 </div>
                 <div class="flex-1 space-y-2 overflow-y-auto p-4">
                     @foreach ($popoverItems as $item)
-                        <x-content-event-card :event="$item" :show-date="false" :lines="2"
+                        <x-content-event-row :event="$item" suffix="popover"
                             wire:key="popover-card-{{ $item['id'] }}"
-                            suffix="popover"
                             @click="remember($el)" />
                     @endforeach
                 </div>
@@ -673,17 +643,34 @@
                         <p class="mt-3 text-[12px] font-medium text-[#B91C1C]">{{ $saveError }}</p>
                     @endif
 
+                    {{-- Caption --}}
+                    <div class="mt-6 border-t border-[#E8EDF2] pt-5">
+                        <label for="content-caption" class="block text-[14px] font-semibold text-[#172B36]">Caption</label>
+                        @if ($readOnly)
+                            <p class="mt-2 whitespace-pre-line text-[15px] leading-[1.7] {{ $caption !== '' ? 'text-[#172B36]' : 'text-[#4B5563]' }}">
+                                {{ $caption !== '' ? $caption : 'Belum ada caption.' }}
+                            </p>
+                        @else
+                            <input id="content-caption" type="text" wire:model.blur.live="caption"
+                                maxlength="5000" placeholder="Tulis caption untuk postingan..."
+                                class="mt-2 h-[42px] w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[15px] text-[#172B36] transition placeholder:text-[#8A96A3] hover:border-[#B9C6CE] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+                            @error('caption')
+                                <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
+                            @enderror
+                        @endif
+                    </div>
+
                     {{-- Description --}}
                     <div class="mt-6 border-t border-[#E8EDF2] pt-5">
                         <label for="content-description" class="block text-[14px] font-semibold text-[#172B36]">Deskripsi</label>
                         @if ($readOnly)
-                            <p class="mt-2 max-w-[820px] whitespace-pre-line text-[15px] leading-[1.7] {{ $description !== '' ? 'text-[#172B36]' : 'text-[#4B5563]' }}">
+                            <p class="mt-2 w-full whitespace-pre-line text-[15px] leading-[1.7] {{ $description !== '' ? 'text-[#172B36]' : 'text-[#4B5563]' }}">
                                 {{ $description !== '' ? $description : 'Belum ada deskripsi.' }}
                             </p>
                         @else
                             <textarea id="content-description" wire:model.blur.live="description" rows="4"
                                 placeholder="Tulis tujuan konten, pesan utama, dan brief visual..."
-                                class="mt-2 w-full max-w-[820px] resize-y rounded-lg border border-[#D5DEE3] bg-white p-3 text-[15px] leading-[1.7] text-[#172B36] placeholder:text-[#8A96A3] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94] {{ $formOpen ? 'min-h-[150px]' : 'min-h-[120px]' }}"></textarea>
+                                class="mt-2 w-full resize-y rounded-lg border border-[#D5DEE3] bg-white p-3 text-[15px] leading-[1.7] text-[#172B36] placeholder:text-[#8A96A3] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94] {{ $formOpen ? 'min-h-[150px]' : 'min-h-[120px]' }}"></textarea>
                             @error('description')
                                 <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
                             @enderror
@@ -863,7 +850,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.04 12.32a1 1 0 0 1 0-.64C3.42 7.51 7.36 4.5 12 4.5s8.58 3.01 9.96 7.18a1 1 0 0 1 0 .64C20.58 16.49 16.64 19.5 12 19.5S3.42 16.49 2.04 12.32Z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
                             </svg>
-                            <span>Event ini akan terlihat oleh semua karyawan.</span>
+                            <span>Event ini akan terlihat oleh semua karyawan Divisi Markom & Manajemen.</span>
                         </div>
                     @endif
                 </div>
@@ -978,10 +965,6 @@
                     @error('accountName')
                         <p class="mt-1.5 text-[12px] text-[#B91C1C]">{{ $message }}</p>
                     @enderror
-                    <p class="mt-1.5 text-[11px] text-[#8A96A3]">
-                        Slug akan dibuat otomatis dari nama akun.
-                    </p>
-
                     <div class="mt-5 flex justify-end gap-2">
                         <button type="button" wire:click="closeAccountForm"
                             class="inline-flex h-10 items-center rounded-lg border border-[#E2E8EC] bg-white px-4 text-sm font-medium text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
