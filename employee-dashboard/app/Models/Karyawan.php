@@ -34,6 +34,7 @@ class Karyawan extends Model
         'tanggal_keluar',
         'foto',
         'divisi_id_divisi',
+        'atasan_id',
         'pendidikan',
         'job_level',
         'status_karyawan',
@@ -163,6 +164,24 @@ class Karyawan extends Model
         return $this->hasMany(
             SuratIzin::class,
             'karyawan_id_karyawan',
+            'id_karyawan'
+        );
+    }
+
+    public function atasan(): BelongsTo
+    {
+        return $this->belongsTo(
+            Karyawan::class,
+            'atasan_id',
+            'id_karyawan'
+        );
+    }
+
+    public function bawahan(): HasMany
+    {
+        return $this->hasMany(
+            Karyawan::class,
+            'atasan_id',
             'id_karyawan'
         );
     }

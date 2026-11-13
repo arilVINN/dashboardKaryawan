@@ -43,6 +43,15 @@
             <span class="sidebar-text whitespace-nowrap transition-all duration-150">Manajemen Divisi</span>
         </a>
 
+        <a href="{{ url('/hrd/struktur-organisasi') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('hrd/struktur-organisasi*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15M8.25 9.75h7.5m-7.5 4.5h7.5" />
+                <rect x="3" y="3" width="18" height="18" rx="3" />
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Bagan Organisasi</span>
+        </a>
+
         <a href="{{ url('/hrd/kalender') }}"
            class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('hrd/kalender*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

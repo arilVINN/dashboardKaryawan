@@ -75,6 +75,10 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/pusat-data', function () {
         return view('staff.pusatData');
     })->name('staff.pusatData');
+
+    // Bagan Struktur Organisasi (Staff)
+    Route::get('/struktur-organisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('struktur-organisasi');
+    Route::get('/struktur-organisasi/data', [\App\Http\Controllers\StrukturOrganisasiController::class, 'getTreeData'])->name('struktur-organisasi.data');
 });
 
 Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->group(function () {
@@ -171,6 +175,10 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     Route::get('/pusat-data', function () {
         return view('kadiv.pusatData');
     })->name('kadiv.pusatData');
+
+    // Bagan Struktur Organisasi (Kadiv)
+    Route::get('/struktur-organisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('kadiv.struktur-organisasi');
+    Route::get('/struktur-organisasi/data', [\App\Http\Controllers\StrukturOrganisasiController::class, 'getTreeData'])->name('kadiv.struktur-organisasi.data');
 });
 
 
@@ -302,6 +310,16 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     Route::get('/turnoverKaryawan', [HrdDashboardController::class, 'turnoverKaryawan'])
         ->middleware('throttle:pencarian')
         ->name('hrd.turnoverKaryawan');
+
+    // Bagan Struktur Organisasi (HRD)
+    Route::get('/struktur-organisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('hrd.struktur-organisasi');
+    Route::get('/struktur-organisasi/data', [\App\Http\Controllers\StrukturOrganisasiController::class, 'getTreeData'])->name('hrd.struktur-organisasi.data');
+    Route::post('/struktur-organisasi/update-atasan', [\App\Http\Controllers\StrukturOrganisasiController::class, 'updateAtasan'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.struktur-organisasi.update-atasan');
+    Route::post('/struktur-organisasi/assign-vacant', [\App\Http\Controllers\StrukturOrganisasiController::class, 'assignVacant'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.struktur-organisasi.assign-vacant');
 });
 
 
