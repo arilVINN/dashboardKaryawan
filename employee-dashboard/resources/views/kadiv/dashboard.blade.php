@@ -18,6 +18,7 @@
 
         <main class="flex-1 overflow-y-auto p-8 pb-6">
             @include('component_kadiv.statusbar')
+            @include('components.birthday-popup')
             @include('components.carousel')
             
 

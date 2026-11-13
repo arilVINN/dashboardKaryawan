@@ -24,6 +24,7 @@ class NotifikasiController extends Controller
 
         $query = Notifikasi::query()
             ->where('user_id_user', $user->id_user)
+            ->withoutExpiredBirthdays()
             ->orderBy('created_at', 'desc');
 
         $notifikasi = $query->get();

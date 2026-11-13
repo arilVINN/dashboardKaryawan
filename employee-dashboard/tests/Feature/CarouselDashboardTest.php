@@ -8,6 +8,7 @@ use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -190,6 +191,77 @@ class CarouselDashboardTest extends TestCase
             ->assertSessionHas('error', 'Anda tidak dapat menghapus konten yang dibuat oleh orang lain.');
 
         $this->assertDatabaseHas('carousels', ['id' => $otherUserCarousel->id]);
+    }
+
+    public function test_birthday_popup_is_shown_on_the_day_and_saved_as_a_notification_not_a_carousel_slide(): void
+    {
+        Carbon::setTestNow('2026-11-12 10:00:00');
+        try {
+            $birthdayEmployee = $this->createUser('USR-BIRTHDAY', 'ROLE-STAFF', 'DIV-IT');
+            $birthdayEmployee->karyawan()->update([
+                'nama' => 'Karyawan Ulang Tahun',
+                'tanggal_lahir' => '1995-11-12',
+                'foto' => 'profiles/birthday.png',
+            ]);
+
+            $upcomingBirthday = $this->createUser('USR-UPCOMING', 'ROLE-STAFF', 'DIV-IT');
+            $upcomingBirthday->karyawan()->update([
+                'nama' => 'Ulang Tahun Besok',
+                'tanggal_lahir' => '1995-11-13',
+            ]);
+
+            Carousel::query()->delete();
+
+            $this->actingAs($this->staff)->get('/')
+                ->assertOk()
+                ->assertViewHas('birthdayEmployees', fn ($employees) => $employees->pluck('nama')->all() === ['Karyawan Ulang Tahun'])
+                ->assertSee('id="birthday-popup"', false)
+                ->assertSee('Ada yang berulang tahun!')
+                ->assertSee('Karyawan Ulang Tahun')
+                ->assertSee('storage/profiles/birthday.png')
+                ->assertDontSee('Selamat Ulang Tahun!')
+                ->assertDontSee('Ulang Tahun Besok');
+
+            $this->assertDatabaseHas('notifikasis', [
+                'judul_notifikasi' => 'Selamat Ulang Tahun!',
+                'user_id_user' => $this->staff->id_user,
+                'tanggal_notifikasi' => '2026-11-12',
+            ]);
+
+            $this->actingAs($this->staff)
+                ->getJson('/api/staff/dashboard')
+                ->assertOk()
+                ->assertJsonFragment([
+                    'judul_notifikasi' => 'Selamat Ulang Tahun!',
+                    'isi_notif' => 'Hari ini Karyawan Ulang Tahun dari divisi Teknologi Informasi berulang tahun.',
+                ]);
+
+            Carbon::setTestNow('2026-11-13 00:01:00');
+
+            $this->actingAs($this->staff)->get('/')
+                ->assertOk()
+                ->assertViewHas('birthdayEmployees', fn ($employees) => $employees->pluck('nama')->all() === ['Ulang Tahun Besok'])
+                ->assertDontSee('Karyawan Ulang Tahun')
+                ->assertSee('Ulang Tahun Besok')
+                ->assertSee('Ada yang berulang tahun!')
+                ->assertDontSee('Selamat Ulang Tahun!');
+
+            $this->actingAs($this->staff)
+                ->getJson('/api/staff/dashboard')
+                ->assertOk()
+                ->assertJsonMissing([
+                    'isi_notif' => 'Hari ini Karyawan Ulang Tahun dari divisi Teknologi Informasi berulang tahun.',
+                ]);
+
+            $this->actingAs($this->staff)
+                ->getJson('/api/staff/notifikasi')
+                ->assertOk()
+                ->assertJsonMissing([
+                    'isi_notif' => 'Hari ini Karyawan Ulang Tahun dari divisi Teknologi Informasi berulang tahun.',
+                ]);
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
     private function createUser(string $id, string $roleId, string $divisionId): User2

@@ -93,7 +93,7 @@
         <div class="swiper myKadivSwiper pb-10">
             <div class="swiper-wrapper">
                 @foreach ($carousels as $item)
-                    @php    
+                    @php
                         $bgColors = match (strtolower($item->category ?? '')) {
                             'event' => ['bg' => 'from-emerald-600 to-emerald-800', 'badge' => 'bg-emerald-900'],
                             'quotes' => ['bg' => 'from-blue-500 to-blue-700', 'badge' => 'bg-blue-900'],
@@ -181,8 +181,8 @@
                                         <button type="submit"
                                             class="p-2 bg-white/90 hover:bg-white text-rose-600 rounded-full shadow transition cursor-pointer"
                                             title="Hapus Konten">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
-                                                viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                stroke-width="2" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
                                                     d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0">
                                                 </path>
@@ -224,82 +224,83 @@
 
 <!-- MODAL POP-UP FORM TAMBAH KONTEN -->
 @if ($isAuthorized)
-<div id="carouselModal"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
-    <div
-        class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden transform transition-all m-4 border border-slate-100">
+    <div id="carouselModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+        <div
+            class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden transform transition-all m-4 border border-slate-100">
 
-        <!-- Header Modal -->
-        <div class="flex justify-between items-center px-6 py-4 border-b border-slate-100">
-            <h3 class="text-base font-bold text-slate-800">Tambah Konten / Kegiatan Baru</h3>
-            <button type="button" onclick="closeCarouselModal()"
-                class="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-        </div>
-
-        <!-- Form Modal -->
-        <form action="{{ route($storeRoute) }}" method="POST" enctype="multipart/form-data"
-            class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-            @csrf
-
-            <!-- Pilihan Kategori -->
-            <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kategori Konten</label>
-                <select name="category"
-                    class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                    required>
-                    <option value="Event">Event / Kegiatan</option>
-                    <option value="Quotes">Quotes Pagi / Motivasi</option>
-                    <option value="Pengumuman">Pengumuman Penting</option>
-                </select>
-            </div>
-
-            <!-- Judul / Keterangan -->
-            <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keterangan/Isi</label>
-                <input type="text" name="title" placeholder="Contoh: Event A/ Selamat pagi/ Pengumuman penting"
-                    class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                    required>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tanggal</label>
-                <input type="date" name="date" value="{{ date('Y-m-d') }}"
-                    class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                    required>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Upload Foto / Gambar Background
-                    <span class="ml-1 font-normal text-slate-400 normal-case">(Opsional · maks. 5 MB)</span>
-                </label>
-                <div
-                    class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:bg-slate-50 transition cursor-pointer">
-                    <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/jpg"
-                        class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer">
-                </div>
-                <p class="text-xs text-slate-400 mt-1">Kosongkan jika konten berupa teks/quotes saja.</p>
-            </div>
-
-            <!-- Footer Modal / Tombol Aksi -->
-            <div class="flex justify-end space-x-3 pt-4 border-t border-slate-100">
+            <!-- Header Modal -->
+            <div class="flex justify-between items-center px-6 py-4 border-b border-slate-100">
+                <h3 class="text-base font-bold text-slate-800">Tambah Konten / Kegiatan Baru</h3>
                 <button type="button" onclick="closeCarouselModal()"
-                    class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-semibold rounded-xl transition cursor-pointer">
-                    Batal
-                </button>
-                <button type="submit"
-                    class="px-5 py-2 bg-[#0284c7] hover:bg-sky-700 text-white text-sm font-semibold rounded-xl transition shadow cursor-pointer">
-                    Simpan Konten
+                    class="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
                 </button>
             </div>
-        </form>
 
+            <!-- Form Modal -->
+            <form action="{{ route($storeRoute) }}" method="POST" enctype="multipart/form-data"
+                class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                @csrf
+
+                <!-- Pilihan Kategori -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kategori Konten</label>
+                    <select name="category"
+                        class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        required>
+                        <option value="Event">Event / Kegiatan</option>
+                        <option value="Quotes">Quotes Pagi / Motivasi</option>
+                        <option value="Pengumuman">Pengumuman Penting</option>
+                    </select>
+                </div>
+
+                <!-- Judul / Keterangan -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keterangan/Isi</label>
+                    <input type="text" name="title"
+                        placeholder="Contoh: Event A/ Selamat pagi/ Pengumuman penting"
+                        class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        required>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tanggal</label>
+                    <input type="date" name="date" value="{{ date('Y-m-d') }}"
+                        class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        required>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                        Upload Foto / Gambar Background
+                        <span class="ml-1 font-normal text-slate-400 normal-case">(Opsional · maks. 5 MB)</span>
+                    </label>
+                    <div
+                        class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:bg-slate-50 transition cursor-pointer">
+                        <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/jpg"
+                            class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer">
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Kosongkan jika konten berupa teks/quotes saja.</p>
+                </div>
+
+                <!-- Footer Modal / Tombol Aksi -->
+                <div class="flex justify-end space-x-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeCarouselModal()"
+                        class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-semibold rounded-xl transition cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2 bg-[#0284c7] hover:bg-sky-700 text-white text-sm font-semibold rounded-xl transition shadow cursor-pointer">
+                        Simpan Konten
+                    </button>
+                </div>
+            </form>
+
+        </div>
     </div>
-</div>
 @endif
 
 <!-- SCRIPT SWIPER & MODAL -->

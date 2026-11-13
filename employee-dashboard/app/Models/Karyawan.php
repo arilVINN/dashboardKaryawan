@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -180,5 +181,14 @@ class Karyawan extends Model
             'karyawan_id_karyawan',
             'id_karyawan'
         );
+    }
+
+    public function scopeBirthdayToday(Builder $query): Builder
+    {
+        return $query
+            ->where('aktif', true)
+            ->whereNotNull('tanggal_lahir')
+            ->whereMonth('tanggal_lahir', now()->month)
+            ->whereDay('tanggal_lahir', now()->day);
     }
 }

@@ -67,6 +67,15 @@
                 };
             }
 
+            if (lower.includes('ulang tahun')) {
+                return {
+                    title: 'Ulang tahun karyawan',
+                    iconClass: 'bg-sky-100 text-sky-600',
+                    linkUrl: '/kadiv/dashboard',
+                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16v5.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V12Z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 14.5c1.3 0 1.3 1.2 2.6 1.2s1.3-1.2 2.6-1.2 1.3 1.2 2.6 1.2 1.3-1.2 2.6-1.2 1.3 1.2 2.6 1.2 1.3-1.2 2.6-1.2 1.3 1.2 2.6 1.2M8 9V5m4 4V3m4 6V5" /><circle cx="8" cy="3.5" r=".8" fill="currentColor" stroke="none" /><circle cx="12" cy="1.8" r=".8" fill="currentColor" stroke="none" /><circle cx="16" cy="3.5" r=".8" fill="currentColor" stroke="none" />`
+                };
+            }
+
             if (lower.includes('revisi')) {
                 return {
                     title: 'Revisi tugas',

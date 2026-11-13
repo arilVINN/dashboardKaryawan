@@ -19,6 +19,7 @@ use App\Models\Carousel;
 use App\Models\BookingRequest;
 use App\Models\Divisi;
 use App\Models\SuratIzin;
+use App\Services\BirthdayNotificationService;
 
 // ─── Finance Module Controllers ───────────────────────────────────────────────
 use App\Http\Controllers\Finance\KeuanganController;
@@ -44,7 +45,8 @@ Route::middleware(['auth', 'throttle:umum', EnsureContentCalendarAccess::class])
 
 // staff route (session auth + staff role)
 Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
-    Route::get('/', function () {
+    Route::get('/', function (BirthdayNotificationService $birthdayNotifications) {
+        $user = auth()->user();
         $divisionId = auth()->user()?->karyawan?->divisi_id_divisi;
         $carousels = Carousel::query()
             ->with(['user.karyawan', 'divisi'])
@@ -67,8 +69,9 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
             })
             ->latest()
             ->get();
+        $birthdayEmployees = $birthdayNotifications->forUser($user);
 
-        return view('staff.dashboard', compact('carousels'));
+        return view('staff.dashboard', compact('carousels', 'birthdayEmployees'));
     })->name('dashboard');
 
     Route::get('/tugas', function () {
@@ -132,7 +135,7 @@ Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->g
 // ================= KADIV (auth + role) ================= //
 Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->group(function () {
     // Dashboard
-    Route::get('/dashboard', function () {
+    Route::get('/dashboard', function (BirthdayNotificationService $birthdayNotifications) {
         $user = auth()->user();
         $divisiId = $user?->karyawan?->divisi_id_divisi;
 
@@ -149,8 +152,9 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
             })
             ->latest()
             ->get();
+        $birthdayEmployees = $birthdayNotifications->forUser($user);
 
-        return view('kadiv.dashboard', compact('carousels'));
+        return view('kadiv.dashboard', compact('carousels', 'birthdayEmployees'));
     })->name('kadiv.dashboard');
 
     // Manajemen Staff
@@ -293,6 +297,7 @@ Route::post('/profile', function (Request $request) {
 //route hrd
 Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
+    Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('hrd.strukturOrganisasi');
 
     // Kalender
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexHrd'])->name('hrd.kalender');

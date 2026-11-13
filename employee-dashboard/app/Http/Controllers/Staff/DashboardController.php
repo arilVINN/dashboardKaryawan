@@ -72,6 +72,7 @@ class DashboardController extends Controller
 
         $notifikasiTerbaru = Notifikasi::query()
             ->where('user_id_user', $user->id_user)
+            ->withoutExpiredBirthdays()
             ->latest('created_at')
             ->limit(5)
             ->get();
