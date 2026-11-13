@@ -116,6 +116,11 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::post('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'store'])->name('kalender.notes.store')->middleware('throttle:submit-form');
     Route::delete('/kalender/notes/{id}', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'destroy'])->name('kalender.notes.destroy')->middleware('throttle:submit-form');
 
+    // Jurnal Harian (Staff)
+    Route::get('/jurnal', function () {
+        return view('staff.jurnal');
+    })->name('jurnal');
+
     // Pusat Data & Arsip
     Route::get('/pusat-data', function () {
         return view('staff.pusatData');
@@ -243,6 +248,11 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     Route::post('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'store'])->name('kadiv.kalender.notes.store')->middleware('throttle:submit-form');
     Route::delete('/kalender/notes/{id}', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'destroy'])->name('kadiv.kalender.notes.destroy')->middleware('throttle:submit-form');
 
+    // Jurnal Harian (Kadiv)
+    Route::get('/jurnal', function () {
+        return view('kadiv.jurnal');
+    })->name('kadiv.jurnal');
+
     // Pusat Data & Arsip
     Route::get('/pusat-data', function () {
         return view('kadiv.pusatData');
@@ -312,6 +322,11 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     Route::get('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'index'])->name('hrd.kalender.notes.index');
     Route::post('/kalender/notes', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'store'])->name('hrd.kalender.notes.store')->middleware('throttle:submit-form');
     Route::delete('/kalender/notes/{id}', [\App\Http\Controllers\Staff\CalendarNoteController::class, 'destroy'])->name('hrd.kalender.notes.destroy')->middleware('throttle:submit-form');
+
+    // Jurnal Harian (HRD)
+    Route::get('/jurnal', function () {
+        return view('hrd.jurnal');
+    })->name('hrd.jurnal');
 
     // Pusat Data & Arsip
     Route::get('/pusat-data', function () {
