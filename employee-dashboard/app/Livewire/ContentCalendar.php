@@ -11,6 +11,7 @@ use App\Support\ContentTypePalette;
 use App\Support\StatusPalette;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -62,6 +63,8 @@ class ContentCalendar extends Component
 
     public string $formStatus = 'process';
 
+    public string $caption = '';
+
     public string $description = '';
 
     /** @var array<int, array{text: string, done: bool}> */
@@ -79,6 +82,11 @@ class ContentCalendar extends Component
     public ?array $lastMove = null;
 
     public bool $loadError = false;
+
+    /** Add-account modal. */
+    public bool $accountFormOpen = false;
+
+    public string $accountName = '';
 
     public function booted(): void
     {
@@ -116,6 +124,76 @@ class ContentCalendar extends Component
         $this->dispatch('content-account-changed', name: $account?->name ?? '');
     }
 
+    public function openAccountForm(): void
+    {
+        $this->resetValidation();
+        $this->accountName = '';
+        $this->accountFormOpen = true;
+
+        $this->dispatch('content-focus-account-name');
+    }
+
+    public function closeAccountForm(): void
+    {
+        $this->accountFormOpen = false;
+        $this->accountName = '';
+        $this->resetValidation();
+    }
+
+    public function saveAccount(): void
+    {
+        $this->validate([
+            'accountName' => ['required', 'string', 'max:80'],
+        ], [
+            'accountName.required' => 'Nama akun wajib diisi.',
+            'accountName.max' => 'Nama akun maksimal 80 karakter.',
+        ]);
+
+        $name = trim($this->accountName);
+
+        $duplicate = ContentAccount::query()
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->exists();
+
+        if ($duplicate) {
+            $this->addError('accountName', 'Nama akun sudah dipakai.');
+
+            return;
+        }
+
+        $account = ContentAccount::create([
+            'slug' => $this->uniqueAccountSlug($name),
+            'name' => $name,
+            'sort_order' => (int) ContentAccount::query()->active()->max('sort_order') + 1,
+            'is_active' => true,
+        ]);
+
+        $this->account = $account->slug;
+        $this->popoverDate = null;
+        $this->accountFormOpen = false;
+        $this->accountName = '';
+        $this->resetValidation();
+
+        $this->dispatch('content-account-changed', name: $account->name);
+        $this->dispatch('content-toast', message: 'Akun ditambahkan', type: 'success');
+    }
+
+    private function uniqueAccountSlug(string $name): string
+    {
+        $base = rtrim(Str::slug($name), '-');
+        $base = $base !== '' ? substr($base, 0, 40) : 'akun';
+
+        $slug = $base;
+        $suffix = 2;
+
+        while (ContentAccount::query()->where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$suffix;
+            $suffix++;
+        }
+
+        return $slug;
+    }
+
     public function updated(string $property): void
     {
         if ($property === 'post_time') {
@@ -137,7 +215,7 @@ class ContentCalendar extends Component
         }
 
         if ($this->formOpen) {
-            if (in_array($property, ['title', 'event_date', 'post_time', 'content_type', 'formStatus', 'description', 'content_url'], true)) {
+            if (in_array($property, ['title', 'event_date', 'post_time', 'content_type', 'formStatus', 'caption', 'description', 'content_url'], true)) {
                 $this->formDirty = true;
             }
 
@@ -151,6 +229,7 @@ class ContentCalendar extends Component
                 'post_time' => 'post_time',
                 'content_type' => 'content_type',
                 'formStatus' => 'status',
+                'caption' => 'caption',
                 'description' => 'description',
                 'content_url' => 'content_url',
             ];
@@ -241,6 +320,7 @@ class ContentCalendar extends Component
         $this->post_time = '';
         $this->content_type = '';
         $this->formStatus = 'process';
+        $this->caption = '';
         $this->description = '';
         $this->todos = [];
         $this->content_url = '';
@@ -269,6 +349,7 @@ class ContentCalendar extends Component
         $this->post_time = $event->timeLabel() ?? '';
         $this->content_type = $event->content_type ?? '';
         $this->formStatus = $event->status;
+        $this->caption = $event->caption ?? '';
         $this->description = $event->description ?? '';
         $this->todos = $this->normalizeTodos($event->todos ?? []);
         $this->content_url = $event->content_url ?? '';
@@ -511,6 +592,7 @@ class ContentCalendar extends Component
             'post_time' => ['nullable', 'date_format:H:i'],
             'content_type' => ['required', Rule::exists('content_types', 'slug')],
             'formStatus' => ['required', Rule::in(array_keys(StatusPalette::contentStatuses()))],
+            'caption' => ['nullable', 'string', 'max:5000'],
             'description' => ['nullable', 'string', 'max:5000'],
             'todos' => ['array'],
             'todos.*.text' => ['nullable', 'string', 'max:200'],
@@ -524,6 +606,7 @@ class ContentCalendar extends Component
             'post_time' => $validated['post_time'] ?: null,
             'content_type' => $validated['content_type'],
             'status' => $validated['formStatus'],
+            'caption' => $validated['caption'] ?: null,
             'description' => $validated['description'] ?: null,
             'todos' => $this->normalizeTodos($this->todos),
             'content_url' => $validated['content_url'] ?: null,
@@ -826,6 +909,7 @@ class ContentCalendar extends Component
             'content_type.exists' => 'Jenis konten tidak dikenal.',
             'formStatus.required' => 'Status wajib dipilih.',
             'formStatus.in' => 'Status tidak valid.',
+            'caption.max' => 'Caption maksimal 5000 karakter.',
             'description.max' => 'Deskripsi maksimal 5000 karakter.',
             'content_url.url' => 'Link konten harus berupa URL http atau https yang valid.',
             'content_url.max' => 'Link konten terlalu panjang.',
@@ -843,6 +927,7 @@ class ContentCalendar extends Component
             'post_time' => ['nullable', 'date_format:H:i'],
             'content_type' => ['required', Rule::exists('content_types', 'slug')],
             'formStatus' => ['required', Rule::in(array_keys(StatusPalette::contentStatuses()))],
+            'caption' => ['nullable', 'string', 'max:5000'],
             'description' => ['nullable', 'string', 'max:5000'],
             'content_url' => ['nullable', 'url:http,https', 'max:2048'],
         ];

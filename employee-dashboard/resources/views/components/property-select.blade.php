@@ -83,7 +83,7 @@
                 </span>
             @elseif (($selected['kind'] ?? 'plain') === 'status')
                 <span class="inline-flex h-[22px] items-center gap-1.5 rounded-full border px-2 text-[11px] font-semibold"
-                    style="background-color: {{ $selected['fill'] }}; border-color: {{ $selected['border'] }}; color: #172B36;">
+                    style="background-color: {{ $selected['fill'] }}; border-color: {{ $selected['border'] }}; color: {{ $selected['text'] ?? '#172B36' }};">
                     <span class="h-[7px] w-[7px] shrink-0 rounded-full" style="background-color: {{ $selected['dot'] }};" aria-hidden="true"></span>
                     {{ $selected['label'] }}
                 </span>
@@ -119,7 +119,7 @@
                     </span>
                 @elseif (($option['kind'] ?? 'plain') === 'status')
                     <span class="inline-flex h-[22px] items-center gap-1.5 rounded-full border px-2 text-[11px] font-semibold"
-                        style="background-color: {{ $option['fill'] }}; border-color: {{ $option['border'] }}; color: #172B36;">
+                        style="background-color: {{ $option['fill'] }}; border-color: {{ $option['border'] }}; color: {{ $option['text'] ?? '#172B36' }};">
                         <span class="h-[7px] w-[7px] shrink-0 rounded-full" style="background-color: {{ $option['dot'] }};" aria-hidden="true"></span>
                         {{ $option['label'] }}
                     </span>
