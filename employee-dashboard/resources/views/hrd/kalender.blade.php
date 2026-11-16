@@ -94,7 +94,7 @@
             display: flex !important;
             flex-direction: column !important;
             justify-content: flex-start !important;
-            min-height: 112px !important;
+            min-height: 96px !important;
         }
         .fc-daygrid-day-top {
             display: flex !important;
@@ -135,7 +135,7 @@
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            height: 48px !important;
+            height: 32px !important;
             padding: 0 4px !important;
             color: #475569 !important;
             font-weight: 600 !important;
@@ -351,22 +351,6 @@
         /* Sembunyikan dot/bullet bawaan FullCalendar */
         .fc-daygrid-event-dot {
             display: none !important;
-        }
-        /* Grid bulan penuh di dalam card, mengikuti layout Kalender Konten */
-        .calendar-card .fc-scrollgrid,
-        .calendar-card .fc-theme-standard .fc-scrollgrid {
-            border: none !important;
-            border-radius: 0 !important;
-        }
-        /* Chip bulan: pill sedikit lebih besar agar seragam dengan Kalender Konten */
-        .fc-dayGridMonth-view .fc-daygrid-event,
-        .fc-dayGridMonth-view .fc-daygrid-block-event {
-            border-radius: 8px !important;
-            padding: 3px 6px !important;
-            margin: 2px 2px !important;
-        }
-        .fc-dayGridMonth-view .fc-daygrid-day-events {
-            padding: 2px 6px 6px !important;
         }
 
         /* Popover "+X lainnya": header tetap, hanya daftar yang scroll */
@@ -916,12 +900,12 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            height: 40px;
+            height: 34px;
             padding: 0 0.75rem;
-            border: 1px solid #E2E8EC;
+            border: 1px solid #CBD5E1;
             border-radius: 0.5rem;
             background-color: #FFFFFF;
-            color: #4B5563;
+            color: #334155;
             font-size: 13px;
             font-weight: 500;
             line-height: 1;
@@ -932,83 +916,105 @@
         }
         .cal-btn:hover {
             background-color: #F8FAFC;
-            border-color: #B9C6CE;
-            color: #172B36;
+            border-color: #94A3B8;
+            color: #1E293B;
         }
-        /* Grup navigasi < > Hari ini */
-        .cal-nav-group {
-            display: inline-flex;
-            align-items: stretch;
-            overflow: hidden;
-            border: 1px solid #E2E8EC;
-            border-radius: 0.5rem;
-            background-color: #FFFFFF;
+        .cal-btn.cal-nav {
+            color: #146C94;
+            padding-left: 0.6rem;
+            padding-right: 0.6rem;
         }
-        .cal-nav-group .cal-btn {
-            height: 40px;
-            border: 0;
-            border-right: 1px solid #E2E8EC;
-            border-radius: 0;
+        .cal-btn.cal-nav:hover {
+            color: #0F4F6D;
         }
-        .cal-nav-group .cal-btn:last-child {
-            border-right: 0;
+        .cal-btn.is-active {
+            background-color: #146C94;
+            border-color: #146C94;
+            color: #FFFFFF;
         }
-        .cal-nav-group .cal-btn.cal-nav {
-            width: 40px;
-            padding: 0;
-            color: #4B5563;
+        .cal-btn.is-today {
+            background-color: #798592;
+            border-color: #798592;
+            color: #FFFFFF;
         }
-        .cal-nav-group .cal-btn.cal-nav:hover {
-            background-color: #F8FAFC;
-            color: #172B36;
-        }
-        /* Pemilih tampilan Bulan/Minggu/Daftar */
-        .cal-view-group {
+        .cal-btn-group {
             display: inline-flex;
             align-items: center;
-            padding: 2px;
-            border: 1px solid #E2E8EC;
-            border-radius: 0.5rem;
-            background-color: #FFFFFF;
         }
-        .cal-view-group .cal-btn {
-            height: 36px;
-            padding: 0 0.5rem;
-            border: 0;
-            border-radius: 0.375rem;
-            background-color: transparent;
-            font-size: 13px;
-            font-weight: 500;
+        .cal-btn-group .cal-btn {
+            border-radius: 0;
         }
-        .cal-view-group .cal-btn:hover {
-            background-color: #F8FAFC;
-            color: #172B36;
+        .cal-btn-group .cal-btn + .cal-btn {
+            margin-left: -1px;
         }
-        .cal-view-group .cal-btn.is-active {
-            background-color: #146C94;
-            color: #FFFFFF;
+        .cal-btn-group .cal-btn:first-child {
+            border-top-left-radius: 0.5rem;
+            border-bottom-left-radius: 0.5rem;
         }
-        .cal-view-group .cal-btn.is-active:hover {
-            background-color: #146C94;
-            color: #FFFFFF;
+        .cal-btn-group .cal-btn:last-child {
+            border-top-right-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+        }
+        .cal-btn-group .cal-btn.is-active {
+            position: relative;
+            z-index: 1;
+        }
+        /* Header kalender: navigasi + judul di kiri, aksi di kanan */
+        .cal-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+        .cal-head-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+        .cal-head-title {
+            margin: 0;
+            font-size: 1.25rem;
+            line-height: 1.3;
+            font-weight: 600;
+            color: #1E293B;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .cal-note-btn {
             flex: 0 0 auto;
             display: inline-flex;
             align-items: center;
             gap: 0.375rem;
-            height: 40px;
-            padding: 0 0.75rem;
+            height: 34px;
+            padding: 0 0.875rem;
             border-radius: 0.5rem;
             background-color: #0097B2;
             color: #FFFFFF;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: 700;
             box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.08);
             transition: background-color 0.12s ease;
         }
         .cal-note-btn:hover {
-            background-color: #0086A0;
+            background-color: #008199;
+        }
+        /* Baris filter + legenda + pemilih tampilan */
+        .cal-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .cal-toolbar-left {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
         }
         .cal-legend {
             position: relative;
@@ -1063,12 +1069,15 @@
             flex: 0 0 auto;
         }
         @media (max-width: 900px) {
+            .cal-head-title {
+                font-size: 1.05rem;
+            }
             .cal-select {
                 max-width: 140px;
             }
         }
         .cal-select {
-            height: 40px;
+            height: 34px;
             max-width: 160px;
             font-size: 13px;
             border-radius: 0.5rem;
@@ -1190,37 +1199,39 @@
                 <x-page-heading title="Kalender Tugas Divisi" icon="calendar" />
             </div>
 
-            <!-- Toolbar: navigasi + periode + tambah catatan -->
-            <div class="flex flex-wrap items-center justify-between gap-2">
-                <div class="flex min-w-0 flex-wrap items-center gap-3">
-                    <div class="cal-nav-group">
-                        <button type="button" id="calendar-prev" class="cal-btn cal-nav" aria-label="Sebelumnya">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                            </svg>
-                        </button>
-                        <button type="button" id="calendar-next" class="cal-btn cal-nav" aria-label="Berikutnya">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </button>
-                        <button type="button" id="calendar-today" class="cal-btn">Hari ini</button>
+            <!-- Calendar Card -->
+            <div class="calendar-card bg-white p-4 rounded-xl shadow-sm border border-[#E2E8EC] flex flex-col">
+                <!-- Header kalender: navigasi + judul + tambah catatan -->
+                <div class="cal-head flex-none mb-3">
+                    <div class="cal-head-left">
+                        <div class="cal-nav-group cal-btn-group flex items-center">
+                            <button type="button" id="calendar-prev" class="cal-btn cal-nav" aria-label="Sebelumnya">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <button type="button" id="calendar-next" class="cal-btn cal-nav" aria-label="Berikutnya">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                            <button type="button" id="calendar-today" class="cal-btn">Hari ini</button>
+                        </div>
+                        <h2 id="calendar-title" class="cal-head-title"></h2>
                     </div>
-                    <h2 id="calendar-title" class="truncate text-xl font-semibold text-[#172B36]"></h2>
+                    <button type="button" onclick="openModalNote()" class="cal-note-btn">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Tambah catatan
+                    </button>
                 </div>
-                <button type="button" onclick="openModalNote()" class="cal-note-btn">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Tambah catatan
-                </button>
-            </div>
 
-            <!-- Toolbar: filter, legenda, dan pemilih tampilan -->
-            <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
-                <div class="flex min-w-0 flex-wrap items-center gap-2">
+                <!-- Toolbar kalender: filter, legenda, pemilih tampilan -->
+                <div class="cal-toolbar flex-none mb-4">
+                    <div class="cal-toolbar-left">
                     <!-- Filter Divisi -->
-                    <select id="hrdDivisiFilter" class="cal-select h-10 max-w-full text-sm bg-white border border-[#E2E8EC] rounded-lg px-2 font-medium text-slate-700 outline-none focus:border-[#146C94]">
+                    <select id="hrdDivisiFilter" class="cal-select h-[30px] max-w-full text-[13px] bg-white border border-slate-300 rounded-lg px-2.5 font-medium text-slate-700 outline-none focus:border-[#146C94]">
                         <option value="">Semua divisi</option>
                         @isset($divisiList)
                             @foreach($divisiList as $divisi)
@@ -1230,7 +1241,7 @@
                     </select>
 
                     <!-- Filter Penerima (Staff) -->
-                    <select id="hrdStaffFilter" class="cal-select cal-select-wide h-10 max-w-full text-sm bg-white border border-[#E2E8EC] rounded-lg px-2 font-medium text-slate-700 outline-none focus:border-[#146C94]">
+                    <select id="hrdStaffFilter" class="cal-select cal-select-wide h-[30px] max-w-full text-[13px] bg-white border border-slate-300 rounded-lg px-2.5 font-medium text-slate-700 outline-none focus:border-[#146C94]">
                         <option value="">Semua karyawan</option>
                         @isset($staffList)
                             @foreach($staffList as $staff)
@@ -1242,7 +1253,7 @@
                     </select>
 
                     <!-- Filter Status -->
-                    <select id="hrdStatusFilter" class="cal-select h-10 max-w-full text-sm bg-white border border-[#E2E8EC] rounded-lg px-2 font-medium text-slate-700 outline-none focus:border-[#146C94]">
+                    <select id="hrdStatusFilter" class="cal-select h-[30px] max-w-full text-[13px] bg-white border border-slate-300 rounded-lg px-2.5 font-medium text-slate-700 outline-none focus:border-[#146C94]">
                         <option value="">Semua status</option>
                         <option value="baru">Baru</option>
                         <option value="berjalan">Berjalan</option>
@@ -1263,17 +1274,16 @@
                             <div class="cal-legend-item"><span class="cal-legend-swatch" style="background-color: #DC2626"></span> Terlambat</div>
                             </div>
                         </details>
+                    </div>
+                    <div class="cal-btn-group inline-flex items-center">
+                        <button type="button" class="cal-btn cal-view-btn is-active" data-view="dayGridMonth" aria-pressed="true">Bulan</button>
+                        <button type="button" class="cal-btn cal-view-btn" data-view="timeGridWeek" aria-pressed="false">Minggu</button>
+                        <button type="button" class="cal-btn cal-view-btn" data-view="listMonth" aria-pressed="false">Daftar</button>
+                    </div>
                 </div>
-                <div class="cal-view-group" role="group" aria-label="Tampilan kalender">
-                    <button type="button" class="cal-btn cal-view-btn is-active" data-view="dayGridMonth" aria-pressed="true">Bulan</button>
-                    <button type="button" class="cal-btn cal-view-btn" data-view="timeGridWeek" aria-pressed="false">Minggu</button>
-                    <button type="button" class="cal-btn cal-view-btn" data-view="listMonth" aria-pressed="false">Daftar</button>
-                </div>
-            </div>
 
-            <!-- Calendar Card -->
-            <div class="calendar-card relative mt-4 flex flex-col overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
                 <div id="calendar" class="w-full"></div>
+
             </div>
 
         </main>
@@ -2558,10 +2568,17 @@
                     // Alur penugasan: pemberi tugas -> penerima tugas
                     const flowText = `${pengirimNama} → ${staffName}`;
 
+                    // Tampilkan jam mulai (HH:MM) kecuali 17:00
                     const startAt = arg.event.start;
-                    const startTime = startAt && !arg.event.allDay
-                        ? `${String(startAt.getHours()).padStart(2, '0')}:${String(startAt.getMinutes()).padStart(2, '0')}`
-                        : '';
+                    let time = '';
+                    if (startAt && !arg.event.allDay) {
+                        const pad = (n) => String(n).padStart(2, '0');
+                        const hh = pad(startAt.getHours());
+                        const mm = pad(startAt.getMinutes());
+                        if (!(hh === '17' && mm === '00')) {
+                            time = `${hh}:${mm}`;
+                        }
+                    }
 
                     if (isList) {
                         // List view: badge divisi + alur penugasan (Dari -> Kepada) + judul
@@ -2602,23 +2619,22 @@
                                     </span>
                                 </div>
                                 <div class="text-[9.5px] ${flowColor} font-medium truncate leading-tight min-w-0">
-                                    ${startTime ? escapeHtml(startTime) + ' · ' : ''}${escapeHtml(flowText)}
+                                    ${escapeHtml(flowText)}
                                 </div>
                             `;
                         }
                     } else {
-                        // Bulan view: ringkas - judul + jam + alur penugasan
-                        el.className = 'w-full py-0 leading-tight flex flex-col justify-center gap-0.5 overflow-hidden min-w-0';
+                        // Bulan view: ringkas — judul + alur penugasan (divisi/jam tidak ditampilkan)
+                        el.className = 'w-full px-0.5 py-0 leading-tight flex flex-col justify-center gap-0 overflow-hidden min-w-0';
                         el.innerHTML = `
                             <div class="flex items-center gap-1 min-w-0 overflow-hidden">
-                                <span class="w-[7px] h-[7px] rounded-full shrink-0"
+                                <span class="w-1.5 h-1.5 rounded-full shrink-0"
                                       style="background-color: var(--tugas-accent, ${escapeHtml(dotColor)});"></span>
-                                <span class="flex-1 min-w-0 truncate text-[12px] font-semibold leading-tight ${titleColor}">
+                                <span class="font-semibold text-[11px] truncate leading-tight ${titleColor} min-w-0">
                                     ${escapeHtml(title)}
                                 </span>
-                                ${startTime ? `<span class="shrink-0 text-[10px] ${flowColor} font-semibold leading-tight tabular-nums">${escapeHtml(startTime)}</span>` : ''}
                             </div>
-                            <div class="text-[11px] ${flowColor} font-medium truncate leading-tight min-w-0">
+                            <div class="text-[10px] ${flowColor} font-medium truncate leading-tight min-w-0">
                                 ${escapeHtml(flowText)}
                             </div>
                         `;

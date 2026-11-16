@@ -56,11 +56,11 @@ class AllRolesPagesRenderTest extends TestCase
 
     public function test_organisation_chart_has_breadcrumbs_and_heading(): void
     {
-        $this->actingAs($this->hrd)->get('/hrd/struktur-organisasi')
+        $this->actingAs($this->hrd)->get('/hrd/strukturOrganisasi')
             ->assertOk()
             ->assertSee('data-breadcrumb-parent="Dashboard"', false)
-            ->assertSee('data-breadcrumb-current="Bagan Struktur Organisasi"', false)
-            ->assertSee('Bagan Struktur Organisasi')
+            ->assertSee('data-breadcrumb-current="Struktur Organisasi"', false)
+            ->assertSee('Struktur Organisasi')
             ->assertSee('<h1', false);
     }
 

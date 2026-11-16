@@ -99,7 +99,7 @@ class DirekturRoleTest extends TestCase
             '/',
             '/hrd/daftarKaryawan',
             '/hrd/manajemenDivisi',
-            '/hrd/struktur-organisasi',
+            '/hrd/strukturOrganisasi',
             '/suratIzin',
             '/kadiv/tugas',
             '/kadiv/keuangan',

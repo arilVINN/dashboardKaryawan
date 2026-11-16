@@ -41,7 +41,7 @@
             || request()->is('hrd/detailKaryawan*')
             || request()->is('hrd/manajemenDivisi*')
             || request()->is('hrd/detailDivisi*')
-            || request()->is('hrd/struktur-organisasi*')
+            || request()->is('hrd/strukturOrganisasi*')
             || request()->is('hrd/analitikKaryawan*')
             || request()->is('hrd/turnoverKaryawan*');
 
@@ -130,8 +130,8 @@
                     class="block px-3.5 py-2 rounded-lg transition {{ request()->is('hrd/manajemenDivisi*') || request()->is('hrd/detailDivisi*') ? $activeClass : $idleClass }}">
                     Manajemen Divisi
                 </a>
-                <a href="{{ url('/hrd/struktur-organisasi') }}"
-                    class="block px-3.5 py-2 rounded-lg transition {{ request()->is('hrd/struktur-organisasi*') ? $activeClass : $idleClass }}">
+                <a href="{{ url('/hrd/strukturOrganisasi') }}"
+                    class="block px-3.5 py-2 rounded-lg transition {{ request()->is('hrd/strukturOrganisasi*') ? $activeClass : $idleClass }}">
                     Bagan Organisasi
                 </a>
                 <a href="{{ url('/hrd/analitikKaryawan') }}"

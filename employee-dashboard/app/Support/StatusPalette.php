@@ -75,19 +75,12 @@ class StatusPalette
      * @var array<string, array{label: string, bg: string, border: string, dot: string, text: string}>
      */
     public const CONTENT = [
-        'plan' => [
-            'label' => 'Plan',
-            'bg' => '#FFFFFF',
-            'border' => '#94A3B8',
-            'dot' => '#64748B',
-            'text' => '#172B36',
-        ],
         'revisi' => [
             'label' => 'Revisi',
-            'bg' => '#4B5563',
-            'border' => '#6B7280',
-            'dot' => '#F3F4F6',
-            'text' => '#FFFFFF',
+            'bg' => '#F1F5F9',
+            'border' => '#CBD5E1',
+            'dot' => '#64748B',
+            'text' => '#172B36',
         ],
         'cancel' => [
             'label' => 'Cancel',
@@ -162,7 +155,7 @@ class StatusPalette
 
     /**
      * Calendar-card pill variant. It uses the form pill's border colour as the
-     * solid background and the same text colour as the form pill.
+     * solid background with the same dark text used inside the form pill.
      *
      * @return array{label: string, bg: string, border: string, dot: string, text: string}|null
      */
