@@ -71,6 +71,16 @@
             <span class="sidebar-text whitespace-nowrap transition-all duration-150">Pusat Arsip & Data</span>
         </a>
 
+        <a href="{{ url('/strukturOrganisasi') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('strukturOrganisasi*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21">
+                </path>
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Struktur Organisasi</span>
+        </a>
+
     </nav>
 </aside>
 

@@ -1,6 +1,6 @@
 @php
     $birthdayEmployees = collect($birthdayEmployees ?? []);
-    $birthdayPopupKey = 'birthday-popup:' . (auth()->user()?->id_user ?? 'user') . ':' . now()->toDateString();
+    $birthdayPopupKey = 'birthday-popup:v2:' . (auth()->user()?->id_user ?? 'user') . ':' . now()->toDateString();
     $roleName = strtolower(auth()->user()?->role?->nama_role ?? '');
     $messageUrl = $roleName === 'hrd'
         ? route('hrd.pesan')

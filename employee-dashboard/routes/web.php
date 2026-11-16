@@ -123,6 +123,9 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/pusat-data', function () {
         return view('staff.pusatData');
     })->name('staff.pusatData');
+
+    // Struktur Organisasi (staff)
+    Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('staff.strukturOrganisasi');
 });
 
 Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->group(function () {
@@ -247,6 +250,9 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     Route::get('/pusat-data', function () {
         return view('kadiv.pusatData');
     })->name('kadiv.pusatData');
+
+    // Struktur Organisasi (kadiv)
+    Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('kadiv.strukturOrganisasi');
 
     // Carousel Konten Kegiatan / Informasi
     Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])

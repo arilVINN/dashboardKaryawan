@@ -1,3 +1,16 @@
+@php
+    $role = strtolower(auth()->user()?->role?->nama_role ?? 'hrd');
+    $sidebar = match ($role) {
+        'kadiv' => 'component_kadiv.sidebar',
+        'staff' => 'component.sidebar',
+        default => 'component_hrd.sidebar',
+    };
+    $dashboardUrl = match ($role) {
+        'kadiv' => route('kadiv.dashboard'),
+        'staff' => url('/'),
+        default => route('hrd.dashboard'),
+    };
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 
@@ -42,11 +55,37 @@
         /* Connector Lines */
         .v-line { width: 1.5px; background: #475569; }
         .h-line { height: 1.5px; background: #475569; }
+
+        /* Division Header Badge */
+        .org-division-header {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+            border: 1.5px solid #cbd5e1;
+            border-top: 3px solid #02527a;
+            padding: 8px 6px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.04em;
+            color: #0f172a;
+            text-transform: uppercase;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+        .org-division-header:hover {
+            border-color: #0284c7;
+            box-shadow: 0 6px 16px rgba(2, 132, 199, 0.12);
+        }
     </style>
 </head>
 
 <body class="flex h-screen overflow-hidden bg-slate-50">
-    @include('component_hrd.sidebar')
+    @include($sidebar)
 
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
         @include('component.topbar')
@@ -54,7 +93,7 @@
         <main class="flex-1 overflow-y-auto p-8 pt-6">
             @include('component.breadcrumbs', [
                 'parentText' => 'Dashboard',
-                'parentUrl'  => route('hrd.dashboard'),
+                'parentUrl'  => $dashboardUrl,
                 'currentPage'=> 'Struktur Organisasi',
                 'inline'     => true,
             ])
@@ -108,10 +147,10 @@
                             <div class="v-line" style="position: absolute; left: 600px; top: 0; height: 250px;"></div>
 
                             {{-- 2. Kotak Direktur Operasional diletakkan secara absolute menimpa garis tengah --}}
-                            <div style="position: absolute; left: 450px; top: 44px; width: 300px; z-index: 2;">
+                            <div style="position: absolute; left: 480px; top: 44px; width: 240px; z-index: 2;">
                                 <div class="org-card"
                                      data-employee='{"nama":"Jeffry R., S.E., M.H.","jabatan":"Direktur Operasional","divisi":"Operasional","tanggal_lahir":"10 Desember 1982","email":"jeffry@silindo.co.id","foto":""}'>
-                                    <div class="org-card-photo">J</div>
+                                    <div class="org-card-photo" style="width: 48px; height: 48px; font-size: 16px;">J</div>
                                     <div class="min-w-0">
                                         <h4 class="text-xs font-bold text-slate-900 truncate">Jeffry R., S.E., M.H.</h4>
                                         <p class="text-[11px] text-slate-500 font-medium truncate mt-0.5">Direktur Operasional</p>
@@ -119,10 +158,11 @@
                                 </div>
                             </div>
 
-                            {{-- Director branch: Legal and Personal Assistant, then Operations Director. --}}
-                            <div class="h-line" style="position: absolute; left: 160px; width: 440px; top: 24px;"></div>
-                            <div class="v-line" style="position: absolute; left: 160px; top: 24px; height: 192px;"></div>
-                            <div class="v-line" style="position: absolute; left: 380px; top: 24px; height: 192px;"></div>
+                            {{-- Director branch: Legal, Personal Assistant, dan Writer. --}}
+                            <div class="h-line" style="position: absolute; left: 100px; width: 500px; top: 24px;"></div>
+                            <div class="v-line" style="position: absolute; left: 100px; top: 24px; height: 192px;"></div>
+                            <div class="v-line" style="position: absolute; left: 260px; top: 24px; height: 192px;"></div>
+                            <div class="v-line" style="position: absolute; left: 420px; top: 24px; height: 192px;"></div>
 
                             {{-- Operations branch: Finance & Accounting and HR & GA. --}}
                             <div class="h-line" style="position: absolute; left: 600px; width: 440px; top: 130px;"></div>
@@ -131,32 +171,60 @@
                         </div>
 
                         {{-- ============================================================ --}}
-                        {{-- LEVEL PENDUKUNG: LEGAL, PA, FINANCE, & HR (Sejajar)          --}}
+                        {{-- LEVEL PENDUKUNG: LEGAL, PA, WRITER, FINANCE, & HR (Sejajar)  --}}
                         {{-- ============================================================ --}}
-                        <div style="position: relative; width: 1200px; height: 75px; margin-top: -34px;">
-                            <div class="v-line" style="position: absolute; left: 600px; top: 0; height: 85px;"></div>
+                        <div style="position: relative; width: 1200px; height: 190px; margin-top: -34px;">
+                            <div class="v-line" style="position: absolute; left: 600px; top: 0; height: 200px;"></div>
 
                             {{-- 1. LEGAL --}}
-                            <div class="org-card" style="position: absolute; left: 75px; top: 0; width: 170px;"
+                            <div class="org-card" style="position: absolute; left: 25px; top: 0; width: 150px; padding: 8px;"
                                  data-employee='{"nama":"Yemima N.P., S.H.","jabatan":"Legal","divisi":"Legal &amp; Compliance","tanggal_lahir":"15 Maret 1992","email":"yemima@silindo.co.id","foto":""}'>
-                                <div class="org-card-photo" style="width: 42px; height: 42px; font-size: 14px;">Y</div>
+                                <div class="org-card-photo" style="width: 38px; height: 38px; font-size: 13px;">Y</div>
                                 <div class="min-w-0">
                                     <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Yemima N.P.</h4>
-                                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">Legal</p>
+                                    <p class="text-[9.5px] text-slate-500 font-medium mt-0.5">Legal</p>
                                 </div>
                             </div>
 
                             {{-- 2. PERSONAL ASSISTANT --}}
-                            <div class="org-card" style="position: absolute; left: 295px; top: 0; width: 170px;"
+                            <div class="org-card" style="position: absolute; left: 185px; top: 0; width: 150px; padding: 8px;"
                                  data-employee='{"nama":"Setianingsih, S.Pd.","jabatan":"Personal Assistant","divisi":"Direksi","tanggal_lahir":"05 November 1990","email":"setianingsih@silindo.co.id","foto":""}'>
-                                <div class="org-card-photo" style="width: 42px; height: 42px; font-size: 14px;">S</div>
+                                <div class="org-card-photo" style="width: 38px; height: 38px; font-size: 13px;">S</div>
                                 <div class="min-w-0">
                                     <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Setianingsih</h4>
-                                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">Personal Asst.</p>
+                                    <p class="text-[9.5px] text-slate-500 font-medium mt-0.5">Personal Asst.</p>
                                 </div>
                             </div>
 
-                            {{-- 3. FINANCE & ACCOUNTING --}}
+                            {{-- 3. WRITER (Divisi + 1 per 1 orang di bawahnya seperti Kreatif Digital) --}}
+                            <div class="flex flex-col items-center" style="position: absolute; left: 345px; top: 0; width: 150px;">
+                                <div class="org-division-header" style="min-height: 42px; padding: 6px;">
+                                    <span>Writer</span>
+                                </div>
+                                <div class="v-line" style="height: 12px;"></div>
+                                <div class="flex flex-col gap-2 w-full">
+                                    {{-- Writer 1 --}}
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Cihuyyy.","jabatan":"Content Writer","divisi":"Writer","tanggal_lahir":"14 Mei 1994","email":"rian@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 38px; height: 38px; font-size: 13px;">R</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Cihuyy</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Content Writer</p>
+                                        </div>
+                                    </div>
+                                    {{-- Writer 2 --}}
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Prabowo sb, S.Pd.","jabatan":"Copywriter","divisi":"Writer","tanggal_lahir":"22 Oktober 1995","email":"dina@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 38px; height: 38px; font-size: 13px;">D</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Prabowo sb</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Copywriter</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- 4. FINANCE & ACCOUNTING --}}
                             <div class="org-card" style="position: absolute; left: 735px; top: 0; width: 170px;"
                                  data-employee='{"nama":"Jeffry R., S.E., M.H.","jabatan":"Finance &amp; Accounting","divisi":"Finance","tanggal_lahir":"10 Desember 1982","email":"finance@silindo.co.id","foto":""}'>
                                 <div class="org-card-photo" style="width: 42px; height: 42px; font-size: 14px;">J</div>
@@ -166,7 +234,7 @@
                                 </div>
                             </div>
 
-                            {{-- 4. HR & GA --}}
+                            {{-- 5. HR & GA --}}
                             <div class="org-card" style="position: absolute; left: 955px; top: 0; width: 170px;"
                                  data-employee='{"nama":"Agnes Galih C.R., M.Si.","jabatan":"HR &amp; GA","divisi":"HR &amp; GA","tanggal_lahir":"25 Juni 1988","email":"agnes@silindo.co.id","foto":""}'>
                                 <div class="org-card-photo" style="width: 42px; height: 42px; font-size: 14px;">A</div>
@@ -181,7 +249,7 @@
                         {{-- ============================================================ --}}
                         {{-- GARIS T LEVEL 4: 6 DEPARTEMEN                                --}}
                         {{-- ============================================================ --}}
-                        <div style="position: relative; width: 1200px; height: 32px; margin-top: 10px;">
+                        <div style="position: relative; width: 1200px; height: 32px; margin-top: 15px;">
                             <div class="h-line" style="position: absolute; left: 110px; width: 980px; top: 0;"></div>
                             @foreach ([110, 306, 502, 698, 894, 1090] as $colX)
                                 <div class="v-line" style="position: absolute; left: {{ $colX }}px; top: 0; height: 32px;"></div>
@@ -189,131 +257,171 @@
                         </div>
 
                         {{-- ============================================================ --}}
-                        {{-- LEVEL 4: 6 KOTAK DEPARTEMEN                                  --}}
+                        {{-- LEVEL 4: 6 KOTAK DEPARTEMEN DENGAN JUDUL DIVISI DI ATASNYA  --}}
                         {{-- ============================================================ --}}
                         <div style="display: grid; grid-template-columns: repeat(6, 180px); justify-content: center; gap: 16px; width: 1200px;">
 
                             {{-- 1. KELAS KERJASAMA --}}
-                            <div class="org-card self-start" style="padding: 8px;"
-                                 data-employee='{"nama":"Siti Z.B., S.Pd., M.A.","jabatan":"Admin Kerjasama","divisi":"Kelas Kerjasama","tanggal_lahir":"10 Januari 1993","email":"siti@silindo.co.id","foto":""}'>
-                                <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">S</div>
-                                <div class="min-w-0">
-                                    <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Siti Z.B.</h4>
-                                    <p class="text-[9.5px] text-slate-500 mt-0.5">Admin Kerjasama</p>
+                            <div class="flex flex-col items-center w-full">
+                                <div class="org-division-header">
+                                    <span>Kelas Kerjasama</span>
+                                </div>
+                                <div class="v-line" style="height: 12px;"></div>
+                                <div class="w-full">
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Siti Z.B., S.Pd., M.A.","jabatan":"Admin Kerjasama","divisi":"Kelas Kerjasama","tanggal_lahir":"10 Januari 1993","email":"siti@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">S</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Siti Z.B.</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Admin Kerjasama</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             {{-- 2. PUBLIKASI BUKU --}}
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <div class="org-card" style="padding: 8px;"
-                                     data-employee='{"nama":"Durotur Rohma, S.Sos.","jabatan":"Koord. Buku","divisi":"Publikasi Buku","tanggal_lahir":"12 April 1991","email":"durotur@silindo.co.id","foto":""}'>
-                                    <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">D</div>
-                                    <div class="min-w-0">
-                                        <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Durotur R.</h4>
-                                        <p class="text-[9.5px] text-slate-500 mt-0.5">Koord. Buku</p>
-                                    </div>
+                            <div class="flex flex-col items-center w-full">
+                                <div class="org-division-header">
+                                    <span>Publikasi Buku</span>
                                 </div>
-                                <div class="org-card" style="padding: 8px;"
-                                     data-employee='{"nama":"Cindy Reta Q., S.S.","jabatan":"Admin Buku","divisi":"Publikasi Buku","tanggal_lahir":"18 September 1995","email":"cindy@silindo.co.id","foto":""}'>
-                                    <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">C</div>
-                                    <div class="min-w-0">
-                                        <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Cindy Reta</h4>
-                                        <p class="text-[9.5px] text-slate-500 mt-0.5">Admin Buku</p>
+                                <div class="v-line" style="height: 12px;"></div>
+                                <div class="flex flex-col gap-2 w-full">
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Durotur Rohma, S.Sos.","jabatan":"Koord. Buku","divisi":"Publikasi Buku","tanggal_lahir":"12 April 1991","email":"durotur@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">D</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Durotur R.</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Koord. Buku</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="org-card" style="padding: 8px;"
-                                     data-employee='{"nama":"Vega Rossy D.P., S.E.","jabatan":"Marcom Buku","divisi":"Publikasi Buku","tanggal_lahir":"04 Juli 1994","email":"vega@silindo.co.id","foto":""}'>
-                                    <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">V</div>
-                                    <div class="min-w-0">
-                                        <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Vega Rossy</h4>
-                                        <p class="text-[9.5px] text-slate-500 mt-0.5">Marcom Buku</p>
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Cindy Reta Q., S.S.","jabatan":"Admin Buku","divisi":"Publikasi Buku","tanggal_lahir":"18 September 1995","email":"cindy@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">C</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Cindy Reta</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Admin Buku</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="org-card" style="padding: 8px;"
-                                     data-employee='{"nama":"Argha Y.P., M.Hum.","jabatan":"Layouter","divisi":"Publikasi Buku","tanggal_lahir":"22 Februari 1992","email":"argha@silindo.co.id","foto":""}'>
-                                    <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">A</div>
-                                    <div class="min-w-0">
-                                        <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Argha Y.P.</h4>
-                                        <p class="text-[9.5px] text-slate-500 mt-0.5">Layouter</p>
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Vega Rossy D.P., S.E.","jabatan":"Marcom Buku","divisi":"Publikasi Buku","tanggal_lahir":"04 Juli 1994","email":"vega@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">V</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Vega Rossy</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Marcom Buku</p>
+                                        </div>
+                                    </div>
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Argha Y.P., M.Hum.","jabatan":"Layouter","divisi":"Publikasi Buku","tanggal_lahir":"22 Februari 1992","email":"argha@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">A</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Argha Y.P.</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Layouter</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             {{-- 3. PUBLIKASI JURNAL --}}
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <div class="org-card" style="padding: 8px;"
-                                     data-employee='{"nama":"Vini A., S.P., M.P.","jabatan":"Koord. Jurnal","divisi":"Publikasi Jurnal","tanggal_lahir":"30 Juli 1989","email":"vini@silindo.co.id","foto":""}'>
-                                    <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">V</div>
-                                    <div class="min-w-0">
-                                        <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Vini A.</h4>
-                                        <p class="text-[9.5px] text-slate-500 mt-0.5">Koord. Jurnal</p>
-                                    </div>
+                            <div class="flex flex-col items-center w-full">
+                                <div class="org-division-header">
+                                    <span>Publikasi Jurnal</span>
                                 </div>
-                                <div class="org-card" style="padding: 8px;"
-                                     data-employee='{"nama":"Yovita A., S.Tp., M.P.","jabatan":"Staff Operasional","divisi":"Publikasi Jurnal","tanggal_lahir":"19 Mei 1992","email":"yovita@silindo.co.id","foto":""}'>
-                                    <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">Y</div>
-                                    <div class="min-w-0">
-                                        <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Yovita A.</h4>
-                                        <p class="text-[9.5px] text-slate-500 mt-0.5">Staff Operasional</p>
+                                <div class="v-line" style="height: 12px;"></div>
+                                <div class="flex flex-col gap-2 w-full">
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Vini A., S.P., M.P.","jabatan":"Koord. Jurnal","divisi":"Publikasi Jurnal","tanggal_lahir":"30 Juli 1989","email":"vini@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">V</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Vini A.</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Koord. Jurnal</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="org-card" style="padding: 8px;"
-                                     data-employee='{"nama":"Annisa S.F., S.Pd., M.P.","jabatan":"Admin Jurnal","divisi":"Publikasi Jurnal","tanggal_lahir":"14 Agustus 1994","email":"annisa@silindo.co.id","foto":""}'>
-                                    <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">A</div>
-                                    <div class="min-w-0">
-                                        <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Annisa S.F.</h4>
-                                        <p class="text-[9.5px] text-slate-500 mt-0.5">Admin Jurnal</p>
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Yovita A., S.Tp., M.P.","jabatan":"Staff Operasional","divisi":"Publikasi Jurnal","tanggal_lahir":"19 Mei 1992","email":"yovita@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">Y</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Yovita A.</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Staff Operasional</p>
+                                        </div>
+                                    </div>
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Annisa S.F., S.Pd., M.P.","jabatan":"Admin Jurnal","divisi":"Publikasi Jurnal","tanggal_lahir":"14 Agustus 1994","email":"annisa@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">A</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Annisa S.F.</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Admin Jurnal</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             {{-- 4. ACADEMIC EVENT --}}
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <div class="org-card" style="padding: 8px;"
-                                     data-employee='{"nama":"Puntoadji P., M.A.B.","jabatan":"Koord. AE","divisi":"Academic Event","tanggal_lahir":"14 Februari 1987","email":"puntoadji@silindo.co.id","foto":""}'>
-                                    <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">P</div>
-                                    <div class="min-w-0">
-                                        <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Puntoadji P.</h4>
-                                        <p class="text-[9.5px] text-slate-500 mt-0.5">Koord. AE</p>
-                                    </div>
+                            <div class="flex flex-col items-center w-full">
+                                <div class="org-division-header">
+                                    <span>Academic Event</span>
                                 </div>
-                                <div class="org-card" style="padding: 8px;"
-                                     data-employee='{"nama":"Grace Juliana Leu, S.H.","jabatan":"Admin AE","divisi":"Academic Event","tanggal_lahir":"09 Oktober 1995","email":"grace@silindo.co.id","foto":""}'>
-                                    <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">G</div>
-                                    <div class="min-w-0">
-                                        <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Grace Juliana</h4>
-                                        <p class="text-[9.5px] text-slate-500 mt-0.5">Admin AE</p>
+                                <div class="v-line" style="height: 12px;"></div>
+                                <div class="flex flex-col gap-2 w-full">
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Puntoadji P., M.A.B.","jabatan":"Koord. AE","divisi":"Academic Event","tanggal_lahir":"14 Februari 1987","email":"puntoadji@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">P</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Puntoadji P.</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Koord. AE</p>
+                                        </div>
+                                    </div>
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Grace Juliana Leu, S.H.","jabatan":"Admin AE","divisi":"Academic Event","tanggal_lahir":"09 Oktober 1995","email":"grace@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">G</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Grace Juliana</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Admin AE</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             {{-- 5. KREATIF DIGITAL --}}
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <div class="org-card" style="padding: 8px;"
-                                     data-employee='{"nama":"Muhammad M., S.Or.","jabatan":"Digital Marketing","divisi":"Kreatif Digital","tanggal_lahir":"01 Oktober 1994","email":"muhammad@silindo.co.id","foto":""}'>
-                                    <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">M</div>
-                                    <div class="min-w-0">
-                                        <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Muhammad M.</h4>
-                                        <p class="text-[9.5px] text-slate-500 mt-0.5">Digital Mkg.</p>
-                                    </div>
+                            <div class="flex flex-col items-center w-full">
+                                <div class="org-division-header">
+                                    <span>Kreatif Digital</span>
                                 </div>
-                                <div class="org-card" style="padding: 8px;"
-                                     data-employee='{"nama":"Eko Rustanto, S.Ds.","jabatan":"Desain Grafis","divisi":"Kreatif Digital","tanggal_lahir":"27 November 1993","email":"eko@silindo.co.id","foto":""}'>
-                                    <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">E</div>
-                                    <div class="min-w-0">
-                                        <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Eko Rustanto</h4>
-                                        <p class="text-[9.5px] text-slate-500 mt-0.5">Desain Grafis</p>
+                                <div class="v-line" style="height: 12px;"></div>
+                                <div class="flex flex-col gap-2 w-full">
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Muhammad M., S.Or.","jabatan":"Digital Marketing","divisi":"Kreatif Digital","tanggal_lahir":"01 Oktober 1994","email":"muhammad@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">M</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Muhammad M.</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Digital Mkg.</p>
+                                        </div>
+                                    </div>
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Eko Rustanto, S.Ds.","jabatan":"Desain Grafis","divisi":"Kreatif Digital","tanggal_lahir":"27 November 1993","email":"eko@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">E</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Eko Rustanto</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">Desain Grafis</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             {{-- 6. IT --}}
-                            <div class="org-card self-start" style="padding: 8px;"
-                                 data-employee='{"nama":"Wardi, S.Kom., M.Pd.","jabatan":"IT Support","divisi":"IT","tanggal_lahir":"05 Desember 1992","email":"wardi@silindo.co.id","foto":""}'>
-                                <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">W</div>
-                                <div class="min-w-0">
-                                    <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Wardi, S.Kom.</h4>
-                                    <p class="text-[9.5px] text-slate-500 mt-0.5">IT Support</p>
+                            <div class="flex flex-col items-center w-full">
+                                <div class="org-division-header">
+                                    <span>IT</span>
+                                </div>
+                                <div class="v-line" style="height: 12px;"></div>
+                                <div class="w-full">
+                                    <div class="org-card" style="padding: 8px;"
+                                         data-employee='{"nama":"Wardi, S.Kom., M.Pd.","jabatan":"IT Support","divisi":"IT","tanggal_lahir":"05 Desember 1992","email":"wardi@silindo.co.id","foto":""}'>
+                                        <div class="org-card-photo" style="width: 40px; height: 40px; font-size: 14px;">W</div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-[11px] font-bold text-slate-900 leading-tight">Wardi, S.Kom.</h4>
+                                            <p class="text-[9.5px] text-slate-500 mt-0.5">IT Support</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

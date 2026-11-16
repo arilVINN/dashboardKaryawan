@@ -216,6 +216,7 @@ class CarouselDashboardTest extends TestCase
                 ->assertOk()
                 ->assertViewHas('birthdayEmployees', fn ($employees) => $employees->pluck('nama')->all() === ['Karyawan Ulang Tahun'])
                 ->assertSee('id="birthday-popup"', false)
+                ->assertSee('data-dismiss-key="birthday-popup:v2:USR-STAFF:2026-11-12"', false)
                 ->assertSee('Ada yang berulang tahun!')
                 ->assertSee('Karyawan Ulang Tahun')
                 ->assertSee('storage/profiles/birthday.png')
@@ -235,6 +236,30 @@ class CarouselDashboardTest extends TestCase
                     'judul_notifikasi' => 'Selamat Ulang Tahun!',
                     'isi_notif' => 'Hari ini Karyawan Ulang Tahun dari divisi Teknologi Informasi berulang tahun.',
                 ]);
+
+            $additionalBirthday = $this->createUser('USR-BIRTHDAY-2', 'ROLE-STAFF', 'DIV-IT');
+            $additionalBirthday->karyawan()->update([
+                'nama' => 'Tambahan Ulang Tahun',
+                'tanggal_lahir' => '1990-11-12',
+            ]);
+
+            $this->actingAs($this->staff)->get('/')
+                ->assertOk()
+                ->assertSee('Karyawan Ulang Tahun')
+                ->assertSee('Tambahan Ulang Tahun');
+
+            $this->actingAs($this->staff)
+                ->getJson('/api/staff/dashboard')
+                ->assertOk()
+                ->assertJsonFragment([
+                    'judul_notifikasi' => 'Selamat Ulang Tahun!',
+                    'isi_notif' => 'Hari ini Karyawan Ulang Tahun, Tambahan Ulang Tahun dari divisi Teknologi Informasi berulang tahun.',
+                ]);
+
+            $this->assertDatabaseHas('notifikasis', [
+                'id_notifikasi' => 'BD'.substr(hash('sha256', $this->staff->id_user.'|2026-11-12'), 0, 18),
+                'isi_notif' => 'Hari ini Karyawan Ulang Tahun, Tambahan Ulang Tahun dari divisi Teknologi Informasi berulang tahun.',
+            ]);
 
             Carbon::setTestNow('2026-11-13 00:01:00');
 

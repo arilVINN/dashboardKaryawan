@@ -32,7 +32,7 @@ class BirthdayNotificationService
             ? " dari divisi {$divisions[0]}"
             : '';
 
-        Notifikasi::query()->firstOrCreate(
+        Notifikasi::query()->updateOrCreate(
             [
                 'id_notifikasi' => 'BD'.substr(hash('sha256', $user->id_user.'|'.now()->toDateString()), 0, 18),
             ],

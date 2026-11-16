@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\Rule;
+use App\Services\HrdProtectionService;
 
 class HrdStaffController extends Controller
 {
@@ -300,6 +301,32 @@ class HrdStaffController extends Controller
 
         if (array_intersect(['username', 'password', 'role_id_role'], array_keys($validated)) && !$karyawan->user) {
             return response()->json(['message' => 'Akun login staff tidak ditemukan'], 409);
+        }
+
+        // === Proteksi HRD: cegah demosi/deaktivasi HRD terakhir ===
+        $authUser = $request->user() ?: auth()->user();
+
+        // 1. Proteksi perubahan status_aktif (deaktivasi)
+        if (isset($validated['status_aktif']) && $validated['status_aktif'] !== 'Aktif') {
+            if ($errorMsg = HrdProtectionService::validateDeactivation($authUser, $karyawan)) {
+                return response()->json([
+                    'message' => $errorMsg,
+                    'errors'  => ['status_aktif' => [$errorMsg]],
+                ], 422);
+            }
+        }
+
+        // 2. Proteksi perubahan role/jabatan (demosi HRD)
+        if (isset($validated['role_id_role']) && $karyawan->user) {
+            if ($errorMsg = HrdProtectionService::validateRoleChange($authUser, $karyawan, $validated['role_id_role'])) {
+                return response()->json([
+                    'message' => $errorMsg,
+                    'errors'  => [
+                        'jabatan'      => [$errorMsg],
+                        'role_id_role' => [$errorMsg],
+                    ],
+                ], 422);
+            }
         }
 
         DB::transaction(function () use ($karyawan, $validated, $request): void {
