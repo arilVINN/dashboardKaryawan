@@ -411,7 +411,7 @@ class ContentCalendarTest extends TestCase
             ->set('content_type', 'carousel')
             ->set('caption', 'Caption kampanye Ramadan')
             ->set('description', 'Teaser dan carousel.')
-            ->set('content_url', 'https://example.test/konten')
+            ->set('contentLinks', ['https://example.test/konten', 'https://example.test/konten-2'])
             ->call('save')
             ->assertHasNoErrors()
             ->assertSet('formOpen', false)
@@ -429,6 +429,13 @@ class ContentCalendarTest extends TestCase
             'caption' => 'Caption kampanye Ramadan',
             'created_by' => $this->staffHr->id_user,
         ]);
+
+        $event = ContentEvent::where('title', 'Kampanye Ramadan')->firstOrFail();
+
+        $this->assertSame(
+            ['https://example.test/konten', 'https://example.test/konten-2'],
+            $event->content_links
+        );
     }
 
     public function test_create_requires_title_date_and_content_type(): void
@@ -454,25 +461,105 @@ class ContentCalendarTest extends TestCase
             ->assertHasErrors(['title']);
     }
 
-    public function test_content_url_must_be_http_or_https(): void
+    public function test_every_content_link_must_be_http_or_https(): void
     {
         Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->call('openCreate', '2026-11-12')
             ->set('title', 'Event')
             ->set('content_type', 'reels')
-            ->set('content_url', 'bukan-url')
+            ->set('contentLinks', ['https://example.test/ok', 'bukan-url'])
             ->call('save')
-            ->assertHasErrors(['content_url']);
+            ->assertHasErrors(['contentLinks.1']);
 
         Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->call('openCreate', '2026-11-12')
             ->set('title', 'Event')
             ->set('content_type', 'reels')
-            ->set('content_url', 'ftp://example.test/file')
+            ->set('contentLinks', ['ftp://example.test/file'])
             ->call('save')
-            ->assertHasErrors(['content_url']);
+            ->assertHasErrors(['contentLinks.0']);
+    }
+
+    public function test_multiple_links_are_saved_and_loaded_again(): void
+    {
+        $event = $this->event($this->staffHr, [
+            'title' => 'Event Multi Link',
+            'event_date' => '2026-11-12',
+            'content_links' => ['https://example.test/satu', 'https://example.test/dua'],
+            'content_url' => 'https://example.test/satu',
+        ]);
+
+        $this->assertSame(
+            ['https://example.test/satu', 'https://example.test/dua'],
+            $event->fresh()->content_links
+        );
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSet('contentLinks', ['https://example.test/satu', 'https://example.test/dua']);
+    }
+
+    public function test_links_can_be_added_and_removed_in_the_form(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Event Link')
+            ->set('content_type', 'reels')
+            ->set('contentLinks', ['https://example.test/satu'])
+            ->call('addLink')
+            ->assertCount('contentLinks', 2)
+            ->set('contentLinks.1', 'https://example.test/dua')
+            ->call('addLink')
+            ->set('contentLinks.2', 'https://example.test/tiga')
+            ->call('removeLink', 1)
+            ->assertSet('contentLinks', ['https://example.test/satu', 'https://example.test/tiga'])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $event = ContentEvent::where('title', 'Event Link')->firstOrFail();
+
+        $this->assertSame(
+            ['https://example.test/satu', 'https://example.test/tiga'],
+            $event->content_links
+        );
+        $this->assertSame('https://example.test/satu', $event->content_url);
+    }
+
+    public function test_link_changes_autosave_in_the_detail_modal(): void
+    {
+        $event = $this->event($this->staffHr, [
+            'title' => 'Event Link Autosave',
+            'content_links' => ['https://example.test/satu'],
+            'content_url' => 'https://example.test/satu',
+        ]);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->set('contentLinks.1', 'https://example.test/dua')
+            ->assertHasNoErrors()
+            ->assertDispatched('content-saved');
+
+        $this->assertSame(
+            ['https://example.test/satu', 'https://example.test/dua'],
+            $event->fresh()->content_links
+        );
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->call('removeLink', 0)
+            ->assertDispatched('content-saved');
+
+        $this->assertSame(
+            ['https://example.test/dua'],
+            $event->fresh()->content_links
+        );
+        $this->assertSame('https://example.test/dua', $event->fresh()->content_url);
     }
 
     public function test_post_time_uses_24_hour_format(): void
@@ -1171,7 +1258,7 @@ class ContentCalendarTest extends TestCase
             ->assertSet('readOnly', false)
             ->assertSee('Event Staff Lain')
             ->assertSee('content-date')
-            ->assertSee('content-url')
+            ->assertSee('content-link-0')
             ->assertSeeHtml('wire:click="deleteEvent"');
     }
 

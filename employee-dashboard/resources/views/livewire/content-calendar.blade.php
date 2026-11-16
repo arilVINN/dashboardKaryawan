@@ -516,8 +516,9 @@
                                 </svg>
                                 Tersimpan
                             </span>
-                            @if ($content_url !== '')
-                                <button type="button" @click="copyText($refs.modalLink?.value ?? $refs.modalLinkText?.textContent)"
+                            @php $primaryLink = collect($contentLinks)->first(fn ($link) => trim((string) $link) !== ''); @endphp
+                            @if ($primaryLink)
+                                <button type="button" @click='copyText(@js($primaryLink))'
                                     aria-label="Salin link konten"
                                     class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#64748B] transition hover:bg-slate-100 hover:text-[#172B36] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -740,49 +741,79 @@
                         </p>
 
                         @if ($readOnly)
-                            <div class="flex h-[46px] items-center gap-2 rounded-lg border border-[#E8EDF2] bg-white px-3">
-                                <svg class="h-4 w-4 shrink-0 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.5 6H18a3 3 0 0 1 0 6h-2M10.5 18H6a3 3 0 0 1 0-6h2M9 12h6"></path>
-                                </svg>
-                                @if ($content_url !== '')
-                                    <a x-ref="modalLinkText" href="{{ $content_url }}" target="_blank" rel="noopener noreferrer"
-                                        class="min-w-0 flex-1 truncate text-sm text-[#146C94] hover:underline">{{ $content_url }}</a>
-                                    <button type="button" @click="copyText('{{ $content_url }}')"
-                                        class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
-                                        <span x-show="!copied">Salin</span>
-                                        <span x-show="copied" x-cloak>Tersalin</span>
-                                    </button>
-                                    <a href="{{ $content_url }}" target="_blank" rel="noopener noreferrer"
-                                        class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
-                                        Buka
-                                    </a>
-                                @else
+                            @php $savedLinks = collect($contentLinks)->filter(fn ($link) => trim((string) $link) !== '')->values(); @endphp
+                            @if ($savedLinks->isEmpty())
+                                <div class="flex h-[46px] items-center gap-2 rounded-lg border border-[#E8EDF2] bg-white px-3">
+                                    <svg class="h-4 w-4 shrink-0 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.5 6H18a3 3 0 0 1 0 6h-2M10.5 18H6a3 3 0 0 1 0-6h2M9 12h6"></path>
+                                    </svg>
                                     <span class="text-sm text-[#4B5563]">Belum ada link</span>
-                                @endif
-                            </div>
+                                </div>
+                            @else
+                                <div class="space-y-2">
+                                    @foreach ($savedLinks as $index => $link)
+                                        <div wire:key="content-link-view-{{ $index }}"
+                                            class="flex h-[46px] items-center gap-2 rounded-lg border border-[#E8EDF2] bg-white px-3">
+                                            <svg class="h-4 w-4 shrink-0 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.5 6H18a3 3 0 0 1 0 6h-2M10.5 18H6a3 3 0 0 1 0-6h2M9 12h6"></path>
+                                            </svg>
+                                            <a href="{{ $link }}" target="_blank" rel="noopener noreferrer"
+                                                class="min-w-0 flex-1 truncate text-sm text-[#146C94] hover:underline">{{ $link }}</a>
+                                            <button type="button" @click='copyText(@js($link))'
+                                                class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                                <span x-show="!copied">Salin</span>
+                                                <span x-show="copied" x-cloak>Tersalin</span>
+                                            </button>
+                                            <a href="{{ $link }}" target="_blank" rel="noopener noreferrer"
+                                                class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                                Buka
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                         @else
-                            <div class="flex h-[46px] items-center gap-2 rounded-lg border border-[#D5DEE3] bg-white px-3 focus-within:border-[#146C94] focus-within:ring-2 focus-within:ring-[#146C94]">
-                                <svg class="h-4 w-4 shrink-0 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.5 6H18a3 3 0 0 1 0 6h-2M10.5 18H6a3 3 0 0 1 0-6h2M9 12h6"></path>
-                                </svg>
-                                <input id="content-url" x-ref="modalLink" type="url" wire:model.blur.live="content_url"
-                                    placeholder="https://" autocomplete="off"
-                                    class="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-[#172B36] placeholder:text-[#8A96A3] focus:outline-none focus:ring-0">
-                                @if ($content_url !== '')
-                                    <button type="button" @click="copyText($refs.modalLink?.value)"
-                                        class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
-                                        <span x-show="!copied">Salin</span>
-                                        <span x-show="copied" x-cloak>Tersalin</span>
-                                    </button>
-                                    <a href="{{ $content_url }}" target="_blank" rel="noopener noreferrer"
-                                        class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
-                                        Buka
-                                    </a>
-                                @endif
+                            <div class="space-y-2">
+                                @foreach ($contentLinks as $index => $link)
+                                    <div wire:key="content-link-{{ $index }}" class="flex items-center gap-2">
+                                        <div class="flex h-[46px] min-w-0 flex-1 items-center gap-2 rounded-lg border border-[#D5DEE3] bg-white px-3 focus-within:border-[#146C94] focus-within:ring-2 focus-within:ring-[#146C94]">
+                                            <svg class="h-4 w-4 shrink-0 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.5 6H18a3 3 0 0 1 0 6h-2M10.5 18H6a3 3 0 0 1 0-6h2M9 12h6"></path>
+                                            </svg>
+                                            <input id="content-link-{{ $index }}" type="url" wire:model.blur.live="contentLinks.{{ $index }}"
+                                                placeholder="https://" autocomplete="off"
+                                                class="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-[#172B36] placeholder:text-[#8A96A3] focus:outline-none focus:ring-0">
+                                            @if (trim((string) $link) !== '')
+                                                <button type="button" @click='copyText(@js($link))'
+                                                    class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                                    <span x-show="!copied">Salin</span>
+                                                    <span x-show="copied" x-cloak>Tersalin</span>
+                                                </button>
+                                                <a href="{{ $link }}" target="_blank" rel="noopener noreferrer"
+                                                    class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                                    Buka
+                                                </a>
+                                            @endif
+                                        </div>
+                                        <button type="button" wire:click="removeLink({{ $index }})" aria-label="Hapus link"
+                                            class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#8A96A3] transition hover:bg-red-50 hover:text-[#B91C1C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    @error('contentLinks.'.$index)
+                                        <p class="text-[12px] text-[#B91C1C]">{{ $message }}</p>
+                                    @enderror
+                                @endforeach
                             </div>
-                            @error('content_url')
-                                <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
-                            @enderror
+                            <button type="button" wire:click="addLink"
+                                class="mt-2 inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[12px] font-semibold text-[#146C94] transition hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
+                                </svg>
+                                Tambah link
+                            </button>
                         @endif
                     </div>
 
