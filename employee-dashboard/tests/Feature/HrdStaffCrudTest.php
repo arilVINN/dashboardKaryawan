@@ -1,0 +1,191 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Divisi;
+use App\Models\Karyawan;
+use App\Models\Role;
+use App\Models\Tugas;
+use App\Models\User2;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Tests\TestCase;
+
+class HrdStaffCrudTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User2 $hrd;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Role::insert([
+            ['id_role' => 'ROLE-HRD', 'nama_role' => 'HRD'],
+            ['id_role' => 'ROLE-STAFF', 'nama_role' => 'Staff'],
+        ]);
+
+        Divisi::create(['id_divisi' => 'DIV-IT', 'kode_divisi' => 'IT', 'nama_divisi' => 'Teknologi Informasi', 'status_aktif' => 'Aktif']);
+
+        Karyawan::create(['id_karyawan' => 'KRY-1', 'nama' => 'Andi Wijaya', 'jenis_kelamin' => 'Laki-laki', 'tanggal_lahir' => '1995-05-05', 'tanggal_masuk' => '2026-01-01', 'no_telepon' => '081234567890', 'email' => 'andi@example.test', 'jabatan' => 'Engineer', 'divisi_id_divisi' => 'DIV-IT']);
+        User2::create(['id_user' => 'USR-1', 'username' => 'andi', 'password' => Hash::make('pass123'), 'role_id_role' => 'ROLE-STAFF', 'karyawan_id_karyawan' => 'KRY-1']);
+
+        Karyawan::create(['id_karyawan' => 'KRY-HRD', 'nama' => 'HRD User', 'jenis_kelamin' => 'Perempuan', 'tanggal_lahir' => '1990-01-01', 'tanggal_masuk' => '2020-01-01', 'no_telepon' => '0812', 'jabatan' => 'HRD', 'divisi_id_divisi' => 'DIV-IT']);
+        $this->hrd = User2::create(['id_user' => 'USR-HRD', 'username' => 'hrduser', 'password' => Hash::make('pass123'), 'role_id_role' => 'ROLE-HRD', 'karyawan_id_karyawan' => 'KRY-HRD']);
+
+        Tugas::create([
+            'id_tugas' => 'TG-1',
+            'karyawan_id_karyawan' => 'KRY-1',
+            'judul_tugas' => 'Bikin API',
+            'deskripsi' => 'Buat backend.',
+            'deadline' => now()->addDays(5)->toDateString(),
+            'progress' => '50',
+            'status' => Tugas::STATUS_BERJALAN,
+            'tanggal_dibuat' => now(),
+            'tanggal_update' => now(),
+        ]);
+    }
+
+
+    public function test_karyawan_list_shows_crud_controls_and_endpoints(): void
+    {
+        $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan')
+            ->assertOk()
+            ->assertSee('data-staff-create', false)
+            ->assertSee('data-staff-edit', false)
+            ->assertSee('data-staff-delete', false)
+            ->assertSee('data-staff-modal="create"', false)
+            ->assertSee('data-staff-modal="edit"', false)
+            ->assertSee(url('/hrd/staff'), false);
+    }
+
+    public function test_karyawan_create_modal_has_a_divisi_select(): void
+    {
+        $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan')
+            ->assertOk()
+            ->assertSee('name="divisi_id_divisi"', false)
+            ->assertSee('value="SMK"', false)
+            ->assertSee('value="D3"', false)
+            ->assertSee('value="S1"', false)
+            ->assertSee('value="S2"', false)
+            ->assertSee('value="S3"', false)
+            ->assertDontSee('name="status_karyawan"', false)
+            ->assertSee('Teknologi Informasi');
+    }
+
+
+    public function test_staff_detail_page_shows_profile_and_task_list(): void
+    {
+        Karyawan::whereKey('KRY-1')->update([
+            'pendidikan' => 'S3',
+            'job_level' => 'Senior',
+            'tanggal_akhir_kontrak' => '2027-01-01',
+        ]);
+
+        $this->actingAs($this->hrd)->get('/hrd/detailKaryawan/KRY-1')
+            ->assertOk()
+            ->assertSee('Andi Wijaya')
+            ->assertSee('Pendidikan Terakhir')
+            ->assertSee('Job Level')
+            ->assertSee('Status Karyawan')
+            ->assertSee('S3')
+            ->assertSee('Senior')
+            ->assertSee('Kontrak')
+            ->assertSee('Teknologi Informasi')
+            ->assertSee('Bikin API')
+            ->assertSee('Tandai Karyawan Keluar')
+            ->assertSee('data-breadcrumb-parent="Manajemen Karyawan"', false)
+            ->assertSee('data-breadcrumb-current="Andi Wijaya"', false);
+    }
+
+    public function test_hrd_can_mark_employee_as_departed_without_deleting_task_history(): void
+    {
+        $tanggalKeluar = now()->subDay()->toDateString();
+
+        $this->actingAs($this->hrd)
+            ->patch('/hrd/detailKaryawan/KRY-1/keluar', ['tanggal_keluar' => $tanggalKeluar])
+            ->assertRedirect('/hrd/detailKaryawan/KRY-1')
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('karyawans', [
+            'id_karyawan' => 'KRY-1',
+            'tanggal_keluar' => $tanggalKeluar,
+            'status_aktif' => 'Tidak Aktif',
+            'aktif' => false,
+        ]);
+        $this->assertDatabaseHas('users2', ['id_user' => 'USR-1']);
+        $this->assertDatabaseHas('tugas', [
+            'id_tugas' => 'TG-1',
+            'karyawan_id_karyawan' => 'KRY-1',
+        ]);
+        $this->postJson('/api/login', [
+            'username' => 'andi',
+            'password' => 'pass123',
+        ])->assertForbidden();
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/turnoverKaryawan')
+            ->assertOk()
+            ->assertSee('Andi Wijaya')
+            ->assertSee('Teknologi Informasi');
+
+        $this->actingAs($this->hrd)
+            ->get('/hrd/detailKaryawan/KRY-1')
+            ->assertOk()
+            ->assertSee('Tanggal keluar:')
+            ->assertDontSee('Tandai Karyawan Keluar');
+    }
+
+    public function test_departure_date_cannot_be_in_the_future(): void
+    {
+        $this->actingAs($this->hrd)
+            ->from('/hrd/detailKaryawan/KRY-1')
+            ->patch('/hrd/detailKaryawan/KRY-1/keluar', [
+                'tanggal_keluar' => now()->addDay()->toDateString(),
+            ])
+            ->assertRedirect('/hrd/detailKaryawan/KRY-1')
+            ->assertSessionHasErrors('tanggal_keluar');
+
+        $this->assertDatabaseHas('karyawans', [
+            'id_karyawan' => 'KRY-1',
+            'status_aktif' => 'Aktif',
+            'aktif' => true,
+        ]);
+        $this->assertDatabaseMissing('karyawans', [
+            'id_karyawan' => 'KRY-1',
+            'tanggal_keluar' => now()->addDay()->toDateString(),
+        ]);
+    }
+
+    public function test_hrd_cannot_reactivate_departed_employee_from_edit(): void
+    {
+        $tanggalKeluar = now()->subDay()->toDateString();
+
+        $this->actingAs($this->hrd)
+            ->patch('/hrd/detailKaryawan/KRY-1/keluar', ['tanggal_keluar' => $tanggalKeluar])
+            ->assertRedirect();
+
+        $this->actingAs($this->hrd)
+            ->putJson('/hrd/staff/KRY-1', ['status_aktif' => 'Aktif'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('status_aktif');
+
+        $this->assertDatabaseHas('karyawans', [
+            'id_karyawan' => 'KRY-1',
+            'status_aktif' => 'Tidak Aktif',
+            'aktif' => false,
+            'tanggal_keluar' => $tanggalKeluar,
+        ]);
+    }
+
+    public function test_staff_detail_page_returns_404_for_unknown_id(): void
+    {
+        $this->actingAs($this->hrd)->get('/hrd/detailKaryawan/NOPE')->assertNotFound();
+    }
+
+    public function test_staff_detail_page_requires_authentication(): void
+    {
+        $this->get('/hrd/detailKaryawan/KRY-1')->assertRedirect('/login');
+    }
+}

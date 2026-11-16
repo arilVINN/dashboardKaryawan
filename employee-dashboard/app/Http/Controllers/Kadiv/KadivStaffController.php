@@ -9,7 +9,7 @@ use App\Models\Karyawan;
 class KadivStaffController extends Controller
 {
     /**
-     * GET /api/v1/kadiv/staff
+    * GET /api/kadiv/staff
      * Mengambil daftar seluruh karyawan di divisi Kadiv.
      */
     public function index(Request $request)
@@ -24,8 +24,7 @@ class KadivStaffController extends Controller
         // tapi sesuai requirement, ambil semua staff di divisi.
         $staffs = Karyawan::with('user.role')
             ->where('divisi_id_divisi', $divisiId)
-            // Opsional: mengecualikan diri sendiri (Kadiv) 
-            ->where('id_karyawan', '!=', $userKadiv->karyawan_id_karyawan)
+            ->whereHas('user.role', fn ($query) => $query->whereRaw('LOWER(nama_role) = ?', ['staff']))
             ->get();
 
         return response()->json([
@@ -35,7 +34,7 @@ class KadivStaffController extends Controller
     }
 
     /**
-     * GET /api/v1/kadiv/staff/{id}
+    * GET /api/kadiv/staff/{id}
      * Detail profil staff + daftar tugas yang sedang dikerjakan staff tersebut.
      */
     public function show(Request $request, $id)
@@ -44,12 +43,13 @@ class KadivStaffController extends Controller
         $divisiId = $userKadiv->karyawan->divisi_id_divisi;
 
         // Pastikan staff tersebut ada dan berada di divisi yang sama dengan Kadiv
-        $staff = Karyawan::with(['tugas' => function($query) {
+        $staff = Karyawan::with(['user.role', 'tugas' => function($query) {
             // Urutkan tugas terbaru atau status
             $query->orderBy('tanggal_dibuat', 'desc');
         }])
         ->where('id_karyawan', $id)
         ->where('divisi_id_divisi', $divisiId)
+        ->whereHas('user.role', fn ($query) => $query->whereRaw('LOWER(nama_role) = ?', ['staff']))
         ->first();
 
         if (!$staff) {

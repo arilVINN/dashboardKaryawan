@@ -9,12 +9,23 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use App\Models\User2;
 use App\Models\Tugas;
+use App\Models\SubmitTugas;
+use App\Models\Notifikasi;
+use Illuminate\Support\Facades\DB;
 
 class TugasApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $seeder = \database\Seeders\DatabaseSeeder::class;
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Seed explicitly: the $seeder property only runs during migrate:fresh,
+        // which happens at most once per test process (other test classes may
+        // migrate first), so depending on it makes this test order-dependent.
+        $this->seed(\Database\Seeders\DatabaseSeeder::class);
+    }
 
     #[Test]
     public function staff_bisa_login_menggunakan_username()
@@ -62,9 +73,390 @@ class TugasApiTest extends TestCase
             'tugas_id_tugas' => $tugas->id_tugas,
             'catatan_revisi' => '-', 
             'link_submit' => '-',
+            'file_hasil_name' => 'dokumen.pdf',
             'status_review' => 'submitted'
         ]);
+
+        // Submit 100% → tugas berpindah ke status "menunggu di-acc"
+        $this->assertDatabaseHas('tugas', [
+            'id_tugas' => $tugas->id_tugas,
+            'status' => Tugas::STATUS_MENUNGGU_ACC,
+        ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson("/api/staff/tugas/{$tugas->id_tugas}")
+            ->assertOk()
+            ->assertJsonPath('data.submit_tugas.0.file_hasil_name', 'dokumen.pdf');
     }
+
+    #[Test]
+    public function staff_submit_creates_kadiv_notification()
+    {
+        $user = User2::where('username', 'budist')->firstOrFail();
+        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
+        $tugas = Tugas::where('karyawan_id_karyawan', $user->karyawan_id_karyawan)
+            ->where('status', '!=', Tugas::STATUS_SUDAH_ACC)
+            ->firstOrFail();
+
+        Storage::fake('public');
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'file_hasil' => UploadedFile::fake()->create('dokumen.pdf', 10),
+                'catatan_karyawan' => 'Selesai',
+                'progress' => 100,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('notifikasis', [
+            'user_id_user' => $kadiv->id_user,
+            'judul_notifikasi' => 'Pengumpulan Tugas',
+            'tugas_id_tugas' => $tugas->id_tugas,
+        ]);
+    }
+
+    #[Test]
+    public function staff_revision_submit_creates_revision_notification()
+    {
+        $user = User2::where('username', 'budist')->firstOrFail();
+        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
+        $tugas = Tugas::where('karyawan_id_karyawan', $user->karyawan_id_karyawan)
+            ->where('status', '!=', Tugas::STATUS_SUDAH_ACC)
+            ->firstOrFail();
+
+        Storage::fake('public');
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'file_hasil' => UploadedFile::fake()->create('awal.pdf', 10),
+                'catatan_karyawan' => 'Pengumpulan awal',
+                'progress' => 100,
+            ])
+            ->assertOk();
+
+        SubmitTugas::where('tugas_id_tugas', $tugas->id_tugas)
+            ->latest('created_at')
+            ->firstOrFail()
+            ->update([
+                'status_review' => 'revisi',
+                'catatan_revisi' => 'Perbaiki dokumen.',
+            ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'file_hasil' => UploadedFile::fake()->create('revisi.pdf', 10),
+                'catatan_karyawan' => 'Sudah diperbaiki',
+                'progress' => 100,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('notifikasis', [
+            'user_id_user' => $kadiv->id_user,
+            'judul_notifikasi' => 'Pengumpulan Revisi',
+            'tugas_id_tugas' => $tugas->id_tugas,
+        ]);
+    }
+
+    #[Test]
+    public function staff_submit_membuat_id_unik_walau_ada_id_legacy()
+    {
+        $user = User2::where('username', 'budist')->firstOrFail();
+        $tugas = Tugas::where('karyawan_id_karyawan', $user->karyawan_id_karyawan)->firstOrFail();
+
+        $base = [
+            'tugas_id_tugas' => $tugas->id_tugas,
+            'tugas_karyawan_id_karyawan' => $user->karyawan_id_karyawan,
+            'file_hasil' => '-',
+            'link_submit' => '-',
+            'catatan_karyawan' => '-',
+            'catatan_revisi' => '-',
+            'tanggal_submit' => now()->toDateString(),
+            'status_review' => 'acc',
+        ];
+
+        // Seeded/legacy identifiers used to sort after "SB001" and reset the
+        // counter, causing a duplicate primary key on the next submission.
+        SubmitTugas::create(['id_submit_tugas' => 'SB001'] + $base);
+        SubmitTugas::create(['id_submit_tugas' => 'SUB-OLDB-KR001'] + $base);
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'catatan_karyawan' => 'Pengumpulan pertama',
+                'progress' => 100,
+            ])
+            ->assertOk();
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'catatan_karyawan' => 'Pengumpulan kedua',
+                'progress' => 100,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('submit_tugas', ['id_submit_tugas' => 'SB002']);
+        $this->assertDatabaseHas('submit_tugas', ['id_submit_tugas' => 'SB003']);
+    }
+
+    #[Test]
+    public function submit_id_generation_handles_four_digit_suffixes(): void
+    {
+        $user = User2::where('username', 'budist')->firstOrFail();
+        $tugas = Tugas::where('karyawan_id_karyawan', $user->karyawan_id_karyawan)->firstOrFail();
+
+        foreach (['SB999', 'SB1000'] as $id) {
+            DB::table('submit_tugas')->insert([
+                'id_submit_tugas' => $id,
+                'link_submit' => '-',
+                'file_hasil' => '-',
+                'catatan_karyawan' => 'Riwayat',
+                'catatan_revisi' => '-',
+                'tanggal_submit' => now()->toDateString(),
+                'status_review' => 'submitted',
+                'tugas_id_tugas' => $tugas->id_tugas,
+                'tugas_karyawan_id_karyawan' => $user->karyawan_id_karyawan,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'catatan_karyawan' => 'Pengumpulan berikutnya',
+                'progress' => 100,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('submit_tugas', [
+            'id_submit_tugas' => 'SB1001',
+            'tugas_id_tugas' => $tugas->id_tugas,
+        ]);
+    }
+
+    #[Test]
+    public function submit_selesai_setelah_deadline_memiliki_status_selesai_dan_terlambat_terpisah()
+    {
+        $staff = User2::where('username', 'budist')->firstOrFail();
+        $tugas = Tugas::where('karyawan_id_karyawan', $staff->karyawan_id_karyawan)->firstOrFail();
+        $tugas->update(['deadline' => now()->subMinute()]);
+
+        $response = $this->actingAs($staff, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'catatan_karyawan' => 'Tugas selesai setelah tenggat.',
+                'progress' => 100,
+            ])
+            ->assertOk()
+            ->assertJsonPath('data.status', Tugas::STATUS_MENUNGGU_ACC)
+            ->assertJsonPath('data.status_efektif', Tugas::STATUS_MENUNGGU_ACC)
+            ->assertJsonPath('data.is_terlambat', true);
+
+        $this->assertTrue($tugas->fresh()->isTelat());
+        $this->assertDatabaseHas('tugas', [
+            'id_tugas' => $tugas->id_tugas,
+            'status' => Tugas::STATUS_MENUNGGU_ACC,
+        ]);
+
+        $this->actingAs($staff, 'sanctum')
+            ->getJson("/api/staff/tugas/{$tugas->id_tugas}")
+            ->assertOk()
+            ->assertJsonPath('data.status_efektif', Tugas::STATUS_MENUNGGU_ACC)
+            ->assertJsonPath('data.is_terlambat', true);
+
+        $this->actingAs($staff, 'sanctum')
+            ->getJson('/api/staff/tugas?status=telat')
+            ->assertOk()
+            ->assertJsonFragment(['id_tugas' => $tugas->id_tugas]);
+
+        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
+        $this->actingAs($kadiv, 'sanctum')
+            ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", ['status_review' => 'acc'])
+            ->assertOk();
+
+        $this->actingAs($staff, 'sanctum')
+            ->getJson("/api/staff/tugas/{$tugas->id_tugas}")
+            ->assertOk()
+            ->assertJsonPath('data.status', Tugas::STATUS_SUDAH_ACC)
+            ->assertJsonPath('data.status_efektif', Tugas::STATUS_SUDAH_ACC)
+            ->assertJsonPath('data.is_terlambat', true);
+    }
+
+    #[Test]
+    public function staff_tidak_bisa_submit_tugas_tanpa_file_atau_catatan()
+    {
+        $user = User2::where('username', 'budist')->first();
+        $tugas = Tugas::where('karyawan_id_karyawan', $user->karyawan_id_karyawan)->first();
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'progress' => 100,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonStructure([
+                'data' => ['file_hasil', 'catatan_karyawan'],
+                'errors' => ['file_hasil', 'catatan_karyawan'],
+            ]);
+
+        $this->assertDatabaseCount('submit_tugas', 0);
+    }
+
+    #[Test]
+    public function kadiv_bisa_acc_tugas_dan_tidak_bisa_acc_dua_kali()
+    {
+        $staff = User2::where('username', 'budist')->first();
+        $kadiv = User2::where('username', 'tonokd')->first();
+        $tugas = Tugas::where('karyawan_id_karyawan', $staff->karyawan_id_karyawan)->first();
+
+        // Staff submit dulu agar ada yang direview
+        $this->actingAs($staff, 'sanctum')
+             ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                 'catatan_karyawan' => 'Siap direview',
+                 'progress' => 100,
+             ])
+             ->assertStatus(200);
+
+        // ACC pertama → status "sudah di-acc"
+        $this->actingAs($kadiv, 'sanctum')
+             ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", [
+                 'status_review' => 'acc',
+             ])
+             ->assertStatus(200);
+
+        $this->assertDatabaseHas('tugas', [
+            'id_tugas' => $tugas->id_tugas,
+            'status' => Tugas::STATUS_SUDAH_ACC,
+        ]);
+
+        // ACC kedua → ditolak (guard dobel-ACC)
+        $this->actingAs($kadiv, 'sanctum')
+             ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", [
+                 'status_review' => 'acc',
+             ])
+             ->assertStatus(403);
+    }
+
+    #[Test]
+    public function kadiv_revisi_mengembalikan_tugas_ke_berjalan()
+    {
+        $staff = User2::where('username', 'budist')->first();
+        $kadiv = User2::where('username', 'tonokd')->first();
+        $tugas = Tugas::where('karyawan_id_karyawan', $staff->karyawan_id_karyawan)->first();
+        $deadline = now()->addDays(7)->setTime(16, 0)->format('Y-m-d\TH:i');
+        $notificationsBefore = Notifikasi::where('user_id_user', $staff->id_user)->count();
+
+        Storage::fake('public');
+
+        $this->actingAs($staff, 'sanctum')
+             ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                 'catatan_karyawan' => 'Revisi dulu',
+                 'progress' => 100,
+             ])
+             ->assertStatus(200);
+
+        // Revisi → tugas kembali "berjalan"
+        $this->actingAs($kadiv, 'sanctum')
+             ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", [
+                 'status_review' => 'revisi',
+                 'catatan_revisi' => 'Perbaiki bagian ini',
+                 'deadline' => $deadline,
+                 'file_revisi' => UploadedFile::fake()->create('catatan-revisi.pdf', 20, 'application/pdf'),
+             ])
+             ->assertStatus(200);
+
+        $this->assertDatabaseHas('submit_tugas', [
+            'tugas_id_tugas' => $tugas->id_tugas,
+            'file_revisi_name' => 'catatan-revisi.pdf',
+        ]);
+
+        $this->assertDatabaseHas('tugas', [
+            'id_tugas' => $tugas->id_tugas,
+            'status' => Tugas::STATUS_BERJALAN,
+            'deadline' => \Illuminate\Support\Carbon::parse($deadline)->format('Y-m-d H:i:s'),
+        ]);
+        $this->assertSame(
+            $notificationsBefore + 1,
+            Notifikasi::where('user_id_user', $staff->id_user)->count()
+        );
+        $this->assertDatabaseHas('notifikasis', [
+            'judul_notifikasi' => 'Revisi Tugas',
+            'isi_notif' => 'Tugas "'.$tugas->judul_tugas.'" mendapat revisi baru: Perbaiki bagian ini',
+            'user_id_user' => $staff->id_user,
+        ]);
+
+        $this->travel(1)->seconds();
+
+        $this->actingAs($staff, 'sanctum')
+            ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                'catatan_karyawan' => 'Sudah diperbaiki',
+                'progress' => 100,
+            ])
+            ->assertOk();
+
+        $this->actingAs($kadiv, 'sanctum')
+            ->postJson("/api/kadiv/tugas/{$tugas->id_tugas}/review", [
+                'status_review' => 'revisi',
+                'catatan_revisi' => 'Perbaiki bagian berikutnya',
+                'deadline' => now()->addDays(10)->setTime(16, 0)->format('Y-m-d\TH:i'),
+            ])
+            ->assertOk();
+
+        $this->assertSame(
+            $notificationsBefore + 2,
+            Notifikasi::where('user_id_user', $staff->id_user)->count()
+        );
+    }
+
+    #[Test]
+    public function kadiv_bisa_membuat_tugas_dengan_deadline_tanggal_dan_jam()
+    {
+        $staff = User2::where('username', 'budist')->firstOrFail();
+        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
+
+        $this->actingAs($kadiv, 'sanctum')
+            ->postJson('/api/kadiv/tugas', [
+                'karyawan_id_karyawan' => $staff->karyawan_id_karyawan,
+                'judul_tugas' => 'Tugas dengan deadline jam',
+                'deskripsi' => 'Uji penyimpanan tanggal dan jam deadline.',
+                'deadline' => '2026-10-09T16:00',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.deadline', '2026-10-09 16:00:00');
+    }
+
+    #[Test]
+    public function kadiv_menyimpan_nama_asli_file_pendukung()
+    {
+        Storage::fake('public');
+
+        $staff = User2::where('username', 'budist')->firstOrFail();
+        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
+
+        $this->actingAs($kadiv, 'sanctum')
+            ->post('/api/kadiv/tugas', [
+                'karyawan_id_karyawan' => $staff->karyawan_id_karyawan,
+                'judul_tugas' => 'Tugas dengan lampiran',
+                'deskripsi' => 'Uji penyimpanan nama asli lampiran.',
+                'deadline' => '2026-11-20T16:00',
+                'file_pendukung' => UploadedFile::fake()->create('brief-desain.pdf', 15, 'application/pdf'),
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.file_pendukung_name', 'brief-desain.pdf');
+    }
+
+    #[Test]
+    public function staff_bisa_submit_tugas_tanpa_mengirim_progress()
+    {
+        $user = User2::where('username', 'budist')->first();
+        $tugas = Tugas::where('karyawan_id_karyawan', $user->karyawan_id_karyawan)->first();
+        $progressAwal = $tugas->progress;
+
+        $response = $this->actingAs($user, 'sanctum')
+                         ->postJson("/api/staff/tugas/{$tugas->id_tugas}/submit", [
+                             'catatan_karyawan' => 'Sedang dikerjakan',
+                         ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals($progressAwal, $tugas->fresh()->progress);
+    }
+
         #[Test]
     public function staff_hanya_bisa_melihat_tugas_sendiri()
     {
@@ -74,18 +466,17 @@ class TugasApiTest extends TestCase
 
         // 2. Kita buat Staff B yang SATU DIVISI dengan Budi
         $karyawanB = \App\Models\Karyawan::create([
-            'id_karyawan' => 'KR002',
+            'id_karyawan' => 'KR902',
             'nama' => 'Joko (Teman Divisi)',
             'jenis_kelamin' => 'Laki-laki',
             'tanggal_lahir' => '1996-01-01',
-            'tanggal_rekrut' => '2023-01-10',
+            'tanggal_masuk' => '2023-01-10',
             'no_telepon' => '08111',
-            'email' => 'joko@mail.com',
             'jabatan' => 'Frontend',
             'divisi_id_divisi' => $staffA->karyawan->divisi_id_divisi, // Satu divisi!
         ]);
         $staffB = User2::create([
-            'id_user' => 'US002',
+            'id_user' => 'US902',
             'username' => 'jokost',
             'password' => 'pass123',
             'role_id_role' => $staffA->role_id_role,

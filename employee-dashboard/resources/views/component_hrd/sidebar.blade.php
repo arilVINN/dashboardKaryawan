@@ -1,0 +1,144 @@
+<aside id="sidebar"
+       class="w-64 flex flex-col h-screen shrink-0 bg-gradient-to-b from-[#044564] from-50% to-[#19A7CE] transition-all duration-150 ease-in-out">
+
+    <div class="h-16 flex items-center justify-between px-4 bg-white rounded-bl-3xl border-b border-r border-slate-200 shrink-0 box-border overflow-hidden">
+
+        <div class="sidebar-text flex items-center gap-2.5 overflow-hidden transition-all duration-150">
+            <img src="{{ asset('gambar/silindo.png') }}" alt="Logo" class="w-10 h-10 object-contain shrink-0">
+            <div class="flex flex-col leading-tight whitespace-nowrap">
+                <h1 class="text-sm font-bold text-[#2A4B6A] tracking-wide">PT SILINDO</h1>
+                <p class="text-[9px] font-medium text-[#1CA4BA] tracking-tight">PT SINERGI ILMIAH INDONESIA</p>
+            </div>
+        </div>
+
+        <button type="button" id="btn-sidebar-toggle" class="p-1.5 text-[#2A4B6A] hover:bg-slate-100 rounded-lg transition shrink-0 cursor-pointer mx-auto">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+    </div>
+
+    <nav class="flex-1 p-3 space-y-2 overflow-y-auto">
+        <a href="{{ url('/hrd/dashboard') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ (request()->is('/') || request()->is('hrd/dashboard*')) ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Dashboard</span>
+        </a>
+
+        <a href="{{ url('/hrd/daftarKaryawan') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('hrd/daftarKaryawan*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Manajemen Karyawan</span>
+        </a>
+
+        <a href="{{ url('/hrd/manajemenDivisi') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('hrd/manajemenDivisi*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/>
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Manajemen Divisi</span>
+        </a>
+
+        <a href="{{ url('/hrd/struktur-organisasi') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('hrd/struktur-organisasi*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15M8.25 9.75h7.5m-7.5 4.5h7.5" />
+                <rect x="3" y="3" width="18" height="18" rx="3" />
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Bagan Organisasi</span>
+        </a>
+
+        <a href="{{ url('/hrd/kalender') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('hrd/kalender*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Kalender</span>
+        </a>
+
+        <a href="{{ url('/hrd/jurnal') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('hrd/jurnal*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Jurnal Harian</span>
+        </a>
+
+        @if (\App\Support\ContentCalendarAccess::allows(auth()->user()))
+<a href="{{ url('/kalender-konten') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('kalender-konten*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path d="M12 11.2l.85 1.95 1.95.85-1.95.85L12 16.8l-.85-1.95-1.95-.85 1.95-.85L12 11.2z" fill="currentColor" stroke="none"></path>
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Kalender Konten</span>
+        </a>
+@endif
+
+        <a href="{{ url('/hrd/pesan') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('hrd/pesan*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"></path>
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Pesan & Informasi</span>
+        </a>
+
+        <a href="{{ url('/hrd/pusat-data') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('hrd/pusat-data*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Arsip & Pusat Data</span>
+        </a>
+    </nav>
+</aside>
+
+<script>
+(function () {
+    const sidebar = document.getElementById('sidebar');
+    const btnToggle = document.getElementById('btn-sidebar-toggle');
+    const texts = document.querySelectorAll('.sidebar-text');
+    const sidebarStorageKey = 'sidebar-collapsed';
+
+    function setSidebarCollapsed(collapsed) {
+        sidebar.classList.toggle('w-64', !collapsed);
+        sidebar.classList.toggle('w-20', collapsed);
+        texts.forEach(el => el.classList.toggle('hidden', collapsed));
+    }
+
+    if (btnToggle && sidebar) {
+        setSidebarCollapsed(localStorage.getItem(sidebarStorageKey) === 'true');
+
+        btnToggle.addEventListener('click', function () {
+            const collapsed = !sidebar.classList.contains('w-20');
+            setSidebarCollapsed(collapsed);
+            localStorage.setItem(sidebarStorageKey, String(collapsed));
+        });
+    }
+})();
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const profileBtn = document.getElementById('profile-dropdown-btn');
+        const profileMenu = document.getElementById('profile-dropdown-menu');
+        const dropdownArrow = document.getElementById('dropdown-arrow');
+
+        if (profileBtn && profileMenu) {
+            profileBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                profileMenu.classList.toggle('hidden');
+                if (dropdownArrow) dropdownArrow.classList.toggle('rotate-180');
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
+                    profileMenu.classList.add('hidden');
+                    if (dropdownArrow) dropdownArrow.classList.remove('rotate-180');
+                }
+            });
+        }
+    });
+</script>

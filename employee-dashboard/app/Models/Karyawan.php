@@ -22,11 +22,83 @@ class Karyawan extends Model
         'nama',
         'jenis_kelamin',
         'tanggal_lahir',
+        'tanggal_masuk',
         'tanggal_rekrut',
+        'tanggal_akhir_kontrak',
+        'no_rekening',
         'no_telepon',
         'email',
+        'alamat',
         'jabatan',
+        'status_aktif',
+        'tanggal_keluar',
+        'foto',
         'divisi_id_divisi',
+        'atasan_id',
+        'pendidikan',
+        'job_level',
+        'status_karyawan',
+        'aktif',
+    ];
+
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+        'tanggal_masuk' => 'date',
+        'tanggal_akhir_kontrak' => 'date',
+        'tanggal_keluar' => 'date',
+        'aktif' => 'boolean',
+    ];
+
+    public function getTanggalRekrutAttribute()
+    {
+        return $this->attributes['tanggal_masuk'] ?? null;
+    }
+
+    public function setTanggalRekrutAttribute($value): void
+    {
+        $this->attributes['tanggal_masuk'] = $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null;
+    }
+
+    public function setAttribute($key, $value)
+    {
+        if (in_array($key, ['tanggal_masuk', 'tanggal_lahir', 'tanggal_akhir_kontrak', 'tanggal_keluar'], true)) {
+            $this->attributes[$key] = $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null;
+            return $this;
+        }
+
+        return parent::setAttribute($key, $value);
+    }
+
+    /**
+     * Jabatan titles without division qualifiers. The division is stored
+     * separately in divisi_id_divisi; the forms offer these as a select and
+     * the staff API validates against this list.
+     */
+    public const JABATAN_OPTIONS = [
+        'Kepala Divisi',
+        'Wakil Kepala Divisi',
+        'Staff',
+        'HRD Manager',
+    ];
+
+    public const STATUS_OPTIONS = [
+        'Aktif',
+        'Tidak Aktif',
+    ];
+
+    public const PENDIDIKAN_OPTIONS = [
+        'SMK',
+        'D3',
+        'S1',
+        'S2',
+        'S3',
+    ];
+
+    public const JOB_LEVEL_OPTIONS = [
+        'Magang',
+        'Junior',
+        'Senior',
+        'Manager',
     ];
 
     public function divisi(): BelongsTo
@@ -52,6 +124,79 @@ class Karyawan extends Model
         return $this->hasMany(
             Tugas::class,
             'karyawan_id_karyawan',
+            'id_karyawan'
+        );
+    }
+
+    public function lampiran(): HasMany
+    {
+        return $this->hasMany(
+            LampiranKaryawan::class,
+            'karyawan_id_karyawan',
+            'id_karyawan'
+        );
+    }
+
+    public function lampiranKaryawan(): HasMany
+    {
+        return $this->lampiran();
+    }
+
+    public function hasRole(string $roleName): bool
+    {
+        return strtolower($this->user?->role?->nama_role ?? '') === strtolower($roleName);
+    }
+
+    public function isKadiv(): bool
+    {
+        return $this->hasRole('kadiv')
+            || preg_match('/^kepala\s+divisi(?:\s|$)/i', trim($this->jabatan ?? '')) === 1;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->hasRole('staff');
+    }
+
+    /**
+     * Cek apakah karyawan ini berada di divisi Finance (kode_divisi = 'FIN').
+     */
+    public function isFinance(): bool
+    {
+        return strtoupper($this->divisi?->kode_divisi ?? '') === 'FIN';
+    }
+
+    /**
+     * Cek apakah karyawan ini adalah Kepala Divisi Finance.
+     */
+    public function isKadivFinance(): bool
+    {
+        return $this->isKadiv() && $this->isFinance();
+    }
+
+    public function suratIzins(): HasMany
+    {
+        return $this->hasMany(
+            SuratIzin::class,
+            'karyawan_id_karyawan',
+            'id_karyawan'
+        );
+    }
+
+    public function atasan(): BelongsTo
+    {
+        return $this->belongsTo(
+            Karyawan::class,
+            'atasan_id',
+            'id_karyawan'
+        );
+    }
+
+    public function bawahan(): HasMany
+    {
+        return $this->hasMany(
+            Karyawan::class,
+            'atasan_id',
             'id_karyawan'
         );
     }

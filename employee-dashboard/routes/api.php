@@ -1,53 +1,111 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Hrd\HrdDivisiController;
+use App\Http\Controllers\Hrd\HrdPesanController;
+use App\Http\Controllers\Hrd\HrdStaffController;
+use App\Http\Controllers\Kadiv\KadivDashboardController;
+use App\Http\Controllers\Kadiv\KadivMessageController;
+use App\Http\Controllers\Kadiv\KadivStaffController;
+use App\Http\Controllers\Kadiv\KadivTaskController;
+use App\Http\Controllers\Staff\PesanController;
+use App\Http\Controllers\Staff\ProjectController;
 use App\Http\Controllers\Staff\StaffTugasController;
+use Illuminate\Support\Facades\Route;
 
-// Public – login (no token required)
-Route::post('/login', [AuthController::class, 'login']);
+// Public – login (no token required, throttled against brute-force)
+Route::middleware('gateway.throttle:5,1')->post('/login', [AuthController::class, 'login']);
 
-// Protected – centralized auth, throttling, global response format
+// Protected – token auth + throttling for every authenticated endpoint
 Route::middleware([
-        'gateway.throttle:60,1',   // 60 req/min per user/IP
-        'auth:sanctum',            // Sanctum guard
-        'gateway.format'           // JSON formatter
-    ])->group(function () {
+    'gateway.throttle:60,1',   // 60 req/min per user/IP
+    'auth:sanctum',            // Sanctum guard
+])->group(function () {
     // Logout (needs token)
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    // Kadiv dashboard & messaging endpoints
+    Route::middleware('role:kadiv')->prefix('kadiv')->group(function (): void {
+        Route::get('/dashboard', [KadivDashboardController::class, 'index']);
+        Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
+        Route::put('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update']);
+        Route::put('/profile/password', [\App\Http\Controllers\Staff\ProfileController::class, 'updatePassword']);
+        Route::post('/profile/foto', [\App\Http\Controllers\Staff\ProfileController::class, 'updateFoto']);
+        Route::get('/pesan', [KadivMessageController::class, 'index']);
+        Route::get('/pesan/{id_pesan}', [KadivMessageController::class, 'show']);
+        Route::post('/pesan/{id_pesan}/balas', [KadivMessageController::class, 'balas']);
+        Route::post('/pesan', [KadivMessageController::class, 'store']);
+    });
+
     // Staff‑only routes (role middleware registered as "role")
     Route::middleware('role:staff')->prefix('staff')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Staff\DashboardController::class, 'index']);
+        Route::get('/notifikasi', [\App\Http\Controllers\Staff\NotifikasiController::class, 'index']);
         Route::get('/tugas', [StaffTugasController::class, 'index']);
+        Route::get('/overview', [\App\Http\Controllers\Staff\ProjectController::class, 'overview']);
         Route::get('/tugas/{id}', [StaffTugasController::class, 'show']);
+        Route::patch('/tugas/{id}/toggle-checklist', [StaffTugasController::class, 'toggleChecklist']);
         Route::post('/tugas/{id}/submit', [StaffTugasController::class, 'submit']);
+        Route::get('/projects', [ProjectController::class, 'index']);
+        Route::get('/projects/{id}', [ProjectController::class, 'show']);
+        Route::patch('/projects/task/{id}/toggle', [ProjectController::class, 'toggleTask']);
+        Route::post('/projects/task/{id}/submit', [ProjectController::class, 'submitTask']);
+        Route::get('/pesan', [PesanController::class, 'index']);
+        Route::get('/pesan/{id_pesan}', [PesanController::class, 'show']);
+        Route::post('/pesan/{id_pesan}/balas', [PesanController::class, 'balas']);
+        Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
+        Route::put('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update']);
+        Route::put('/profile/password', [\App\Http\Controllers\Staff\ProfileController::class, 'updatePassword']);
+        Route::post('/profile/foto', [\App\Http\Controllers\Staff\ProfileController::class, 'updateFoto']);
+        Route::get('/kalender-events', [\App\Http\Controllers\Staff\KalenderController::class, 'events']);
     });
 
     // Kadiv‑only routes
     Route::middleware('role:kadiv')->prefix('kadiv')->group(function () {
         // Manajemen Staff
-        Route::get('/staff', [\App\Http\Controllers\Kadiv\KadivStaffController::class, 'index']);
-        Route::get('/staff/{id}', [\App\Http\Controllers\Kadiv\KadivStaffController::class, 'show']);
+        Route::get('/staff', [KadivStaffController::class, 'index']);
+        Route::get('/staff/{id}', [KadivStaffController::class, 'show']);
 
         // Manajemen Tugas
-        Route::get('/tugas', [\App\Http\Controllers\Kadiv\KadivTaskController::class, 'index']);
-        Route::post('/tugas', [\App\Http\Controllers\Kadiv\KadivTaskController::class, 'store']);
-        Route::post('/tugas/{id}', [\App\Http\Controllers\Kadiv\KadivTaskController::class, 'update']); // Some clients use POST for PUT when uploading files, but we'll stick to PUT
-        Route::put('/tugas/{id}', [\App\Http\Controllers\Kadiv\KadivTaskController::class, 'update']);
-        Route::delete('/tugas/{id}', [\App\Http\Controllers\Kadiv\KadivTaskController::class, 'destroy']);
-        Route::post('/tugas/{id}/review', [\App\Http\Controllers\Kadiv\KadivTaskController::class, 'review']);
+        Route::get('/tugas', [KadivTaskController::class, 'index']);
+        Route::get('/tugas/{id}', [KadivTaskController::class, 'show']);
+        Route::post('/tugas', [KadivTaskController::class, 'store']);
+        Route::post('/tugas/{id}', [KadivTaskController::class, 'update']); // Some clients use POST for PUT when uploading files
+        Route::put('/tugas/{id}', [KadivTaskController::class, 'update']);
+        Route::delete('/tugas/{id}', [KadivTaskController::class, 'destroy']);
+        Route::post('/tugas/{id}/review', [KadivTaskController::class, 'review']);
+        Route::get('/kalender-events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsKadiv']);
     });
 
     // HRD‑only routes
     Route::middleware('role:hrd')->prefix('hrd')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Hrd\HrdDashboardController::class, 'index']);
+        Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
+        Route::post('/profile/foto', [\App\Http\Controllers\Staff\ProfileController::class, 'updateFoto']);
+        
+        Route::get('/pesan', [HrdPesanController::class, 'index']);
+        Route::post('/pesan', [HrdPesanController::class, 'store']);
+        Route::get('/pesan/{id_pesan}', [HrdPesanController::class, 'show']);
+        Route::post('/pesan/{id_pesan}/balas', [HrdPesanController::class, 'balas']);
+
         // Manajemen Divisi
-        Route::get('/divisi', [\App\Http\Controllers\Hrd\HrdDivisiController::class, 'index']);
-        Route::post('/divisi', [\App\Http\Controllers\Hrd\HrdDivisiController::class, 'store']);
-        Route::get('/divisi/{id}', [\App\Http\Controllers\Hrd\HrdDivisiController::class, 'show']);
+        Route::get('/divisi', [HrdDivisiController::class, 'index']);
+        Route::post('/divisi', [HrdDivisiController::class, 'store']);
+        Route::get('/divisi/{id}', [HrdDivisiController::class, 'show']);
+        Route::put('/divisi/{id}', [HrdDivisiController::class, 'update']);
+        Route::patch('/divisi/{id}', [HrdDivisiController::class, 'update']);
+        Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy']);
+
+        // Kalender
+        Route::get('/kalender-events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsHrd']);
 
         // Manajemen Staff
-        Route::get('/staff', [\App\Http\Controllers\Hrd\HrdStaffController::class, 'index']);
-        Route::post('/staff', [\App\Http\Controllers\Hrd\HrdStaffController::class, 'store']);
-        Route::get('/staff/{id}', [\App\Http\Controllers\Hrd\HrdStaffController::class, 'show']);
+        Route::get('/staff', [HrdStaffController::class, 'index']);
+        Route::post('/staff', [HrdStaffController::class, 'store']);
+        Route::get('/staff/{id}', [HrdStaffController::class, 'show']);
+        Route::put('/staff/{id}', [HrdStaffController::class, 'update']);
+        Route::patch('/staff/{id}', [HrdStaffController::class, 'update']);
+        Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
     });
+    
 });

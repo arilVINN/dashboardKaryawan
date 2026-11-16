@@ -42,6 +42,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'sanctum' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
     ],
 
     /*
@@ -113,18 +118,6 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Api Guard
-    |--------------------------------------------------------------------------
-    |
-    | This option defines the default authentication "guard" for your API.
-    */
-    'api' => [
-           'driver' => 'sanctum',
-           'provider' => 'users',
-   ],
 
 
 ];

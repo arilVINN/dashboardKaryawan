@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Staff - PT Silindo</title>
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+
+<body class="bg-slate-50 flex h-screen overflow-hidden">
+
+    {{-- SIDEBAR --}}
+    @include('component_kadiv.sidebar')
+
+    {{-- AREA KANAN --}}
+    <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
+
+        {{-- TOPBAR --}}
+        @include('component.topbar')
+
+        {{-- MAIN CONTENT --}}
+        <main class="flex-1 overflow-y-auto p-8 pt-6 pb-16">
+            @include('component.breadcrumbs', [
+                'parentText' => 'Dashboard',
+                'parentUrl' => url('/kadiv/dashboard'),
+                'currentPage' => 'Manajemen Staff',
+                'inline' => true,
+            ])
+            <x-page-heading title="Manajemen Staff" icon="users" class="mb-6" />
+
+            <livewire:kadiv.staff-table />
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>

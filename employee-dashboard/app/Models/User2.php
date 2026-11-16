@@ -9,8 +9,8 @@ use Laravel\Sanctum\HasApiTokens;
 class User2 extends Authenticatable
 {
     use HasApiTokens, Notifiable;
-    protected $table = 'users2'; // Sesuaikan jika nama tabel Anda berbeda (misal 'users2')
 
+    protected $table = 'users2';
     protected $primaryKey = 'id_user';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -22,6 +22,16 @@ class User2 extends Authenticatable
         'role_id_role',
         'karyawan_id_karyawan',
         'last_login_at',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    // Hapus method casts() dan gunakan properti $casts ini
+    protected $casts = [
+        'last_login_at' => 'datetime',
     ];
 
     public function role()
@@ -37,5 +47,52 @@ class User2 extends Authenticatable
     public function notifikasis()
     {
         return $this->hasMany(Notifikasi::class, 'user_id_user', 'id_user');
+    }
+
+    public function pesanDikirim()
+    {
+        return $this->hasMany(
+            Pesan::class,
+            'pengirim_id_user',
+            'id_user'
+        );
+    }
+
+    public function pesanDiterima()
+    {
+        return $this->hasMany(
+            Pesan::class,
+            'penerima_id_user',
+            'id_user'
+        );
+    }
+
+    // ─── Keuangan Relations ───────────────────────────────────────────────────
+
+    public function alokasiDibuat()
+    {
+        return $this->hasMany(KeuanganAldiv::class, 'user_id_user', 'id_user');
+    }
+
+    public function pemasukan()
+    {
+        return $this->hasMany(KPemasukan::class, 'user_id_user', 'id_user');
+    }
+
+    public function laporanLabaRugi()
+    {
+        return $this->hasMany(KLabaRugi::class, 'user_id_user', 'id_user');
+    }
+
+    // ─── Keuangan Helpers ─────────────────────────────────────────────────────
+
+    /**
+     * Cek apakah user ini adalah Kepala Divisi Finance.
+     * Kriteria: role = 'kadiv' DAN divisi kode = 'FIN'
+     */
+    public function isKadivFinance(): bool
+    {
+        return strtolower($this->role?->nama_role ?? '') === 'kadiv'
+            && strtoupper($this->karyawan?->divisi?->kode_divisi ?? '') === 'FIN';
     }
 }

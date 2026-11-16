@@ -21,11 +21,11 @@ class ApiResponseFormatter
         $payload = [
             'success' => $response->isSuccessful(),
             'code'    => $response->getStatusCode(),
-            // Gunakan teks standar bila belum ada custom message
+            // Gunakan teks standar bila belum ada custom message (never leak exception details)
             'message' => $response->getStatusCode() === 200
                          ? 'OK'
-                         : ($response->exception ? $response->exception->getMessage() : Response::$statusTexts[$response->getStatusCode()] ?? 'Error'),
-            'data'    => $response->getOriginalContent() ?: null,
+                         : (Response::$statusTexts[$response->getStatusCode()] ?? 'Error'),
+            'data'    => $response->getStatusCode() >= 500 ? null : ($response->getOriginalContent() ?: null),
         ];
 
         return response()->json($payload, $response->getStatusCode());

@@ -12,10 +12,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: '*');
+
+        $middleware->validateCsrfTokens(except: [
+            'login',
+            'api/login',
+            'staff/pesan/send',
+        ]);
+
         $middleware->alias([
-            'role' => \App\Http\Middleware\CheckRole::class,
+            'role'            => \App\Http\Middleware\CheckRole::class,
+            'kadiv.finance'   => \App\Http\Middleware\EnsureKadivFinance::class,
             'gateway.throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-            'gateway.format' => \App\Http\Middleware\ApiResponseFormatter::class,
+            'gateway.format'  => \App\Http\Middleware\ApiResponseFormatter::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -30,7 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     $message = 'Unauthenticated';
                 } elseif ($e instanceof \Illuminate\Auth\Access\AuthorizationException) {
                     $statusCode = 403;
-                    $message = $e->getMessage() ?: 'Forbidden';
+                    $message = 'Forbidden';
                 } elseif ($e instanceof \Illuminate\Validation\ValidationException) {
                     $statusCode = 422;
                     $message = 'Validation Failed';
@@ -43,7 +52,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     $message = 'Ukuran file terlalu besar. Maksimal yang diizinkan adalah 200 MB.';
                 } else {
                     $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
-                    $message = $e->getMessage() ?: 'Server Error';
+                    $message = $statusCode >= 500 ? 'Server Error' : 'Request failed';
                 }
 
                 return response()->json([
@@ -51,7 +60,91 @@ return Application::configure(basePath: dirname(__DIR__))
                     'code'    => $statusCode,
                     'message' => $message,
                     'data'    => $data,
+                    // Keep the conventional Laravel shape too so clients can read
+                    // field-level validation messages without knowing about `data`.
+                    'errors'  => $e instanceof \Illuminate\Validation\ValidationException ? $data : null,
                 ], $statusCode);
+            }
+            // Helper untuk redirect pengguna browser ke dashboard peran masing-masing dengan pesan toast
+            $redirectToDashboard = function (string $key, string $message) use ($request) {
+                $user = $request->user() ?: auth()->user();
+                $role = strtolower($user?->role?->nama_role ?? '');
+
+                $dashboardRoute = match ($role) {
+                    'hrd'   => 'hrd.dashboard',
+                    'kadiv' => 'kadiv.dashboard',
+                    'staff' => 'dashboard',
+                    default => 'login',
+                };
+
+                if ($dashboardRoute === 'login') {
+                    // Jika user tidak terautentikasi, selalu tampilkan pesan login generic
+                    $message = 'Silakan login terlebih dahulu untuk mengakses sistem.';
+                }
+
+                $targetUrl = route($dashboardRoute);
+                // Jika sudah di halaman dashboard, jangan redirect (cukup flash session saja)
+                if ($request->url() === $targetUrl) {
+                    session()->flash($key, $message);
+                    return back()->with($key, $message);
+                }
+
+                return redirect()->route($dashboardRoute)->with($key, $message);
+            };
+
+            $is419 = $e instanceof \Illuminate\Session\TokenMismatchException
+                || (method_exists($e, 'getStatusCode') && $e->getStatusCode() === 419);
+
+            if ($is419) {
+                if ($request->expectsJson() || $request->isXmlHttpRequest()) {
+                    return response()->json(['message' => 'CSRF token mismatch / Page Expired.'], 419);
+                }
+                return redirect()->route('login')->with('error', 'Sesi telah kadaluarsa (Page Expired). Silakan login kembali.');
+            }
+
+            if ($e instanceof \Illuminate\Http\Exceptions\ThrottleRequestsException) {
+                if ($request->expectsJson() || $request->isXmlHttpRequest()) {
+                    return response()->json([
+                        'success' => false,
+                        'code'    => 429,
+                        'message' => 'Terlalu banyak permintaan. Silakan tunggu beberapa saat sebelum mencoba kembali.',
+                    ], 429, $e->getHeaders());
+                }
+
+                if ($request->isMethod('POST') || $request->isMethod('PUT') || $request->isMethod('PATCH') || $request->isMethod('DELETE')) {
+                    return back()->withInput()->with('error', 'Terlalu banyak percobaan. Harap tunggu beberapa saat sebelum mencoba kembali.');
+                }
+
+                return $redirectToDashboard('error', 'Terlalu banyak permintaan. Harap tunggu beberapa saat sebelum mencoba kembali.');
+            }
+
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                if ($request->expectsJson() || $request->isXmlHttpRequest()) {
+                    return response()->json(['message' => 'Data atau halaman tidak ditemukan.'], 404);
+                }
+
+                return $redirectToDashboard('error', 'Halaman atau data tidak ditemukan. Anda telah diarahkan ke dashboard Anda.');
+            }
+
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException || $e instanceof \Illuminate\Auth\Access\AuthorizationException) {
+                if ($request->expectsJson() || $request->isXmlHttpRequest()) {
+                    return response()->json(['message' => 'Forbidden. Akses ditolak.'], 403);
+                }
+
+                return $redirectToDashboard('forbidden', 'Akses ditolak. Anda telah diarahkan ke dashboard Anda.');
+            }
+
+            $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+            if ($statusCode >= 500 && ! ($e instanceof \Illuminate\Validation\ValidationException)) {
+                if ($request->expectsJson() || $request->isXmlHttpRequest()) {
+                    return response()->json([
+                        'success' => false,
+                        'code'    => 500,
+                        'message' => 'Terjadi kesalahan pada server.',
+                    ], 500);
+                }
+
+                return $redirectToDashboard('error', 'Terjadi kendala pada sistem. Harap coba lagi');
             }
         });
     })->create();

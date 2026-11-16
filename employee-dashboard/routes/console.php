@@ -2,7 +2,22 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+// Kirim pengingat email untuk tugas yang deadline-nya kurang dari 24 jam.
+// Dijalankan tiap jam agar tugas yang baru masuk jendela 24 jam tetap terkirim
+// tepat satu kali (lihat kolom tugas.deadline_reminder_sent_at).
+Schedule::command('tugas:remind-deadline')->hourly()->withoutOverlapping();
+
+// Kirim email pengingat catatan kalender pada tanggal pengingat masing-masing.
+// Catatan yang dibuat setelah jam 08:00 dengan pengingat hari ini dikirim
+// langsung oleh CalendarNoteController::store.
+Schedule::command('catatan:remind-email')->dailyAt('08:00')->withoutOverlapping();
+
+// Sinkronkan hari libur nasional dari API. Dijalankan mingguan agar data
+// tahun berjalan dan tahun berikutnya tetap mengikuti SKB 3 Menteri.
+Schedule::command('holidays:sync --years=2')->weeklyOn(1, '03:15')->withoutOverlapping();

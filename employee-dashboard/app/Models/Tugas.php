@@ -2,11 +2,49 @@
 
 namespace App\Models;
 
+use App\Events\TugasDitugaskan;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Tugas extends Model
 {
+    /**
+     * Status tugas sesuai hasil revisi UI/UX (5 status).
+     * Status yang dapat disimpan berada di kolom `status`;
+     * `terlambat` tidak pernah disimpan — dihitung dari deadline
+     * untuk tugas yang belum selesai.
+     */
+    public const STATUS_BARU = 'baru';
+
+    public const STATUS_BERJALAN = 'berjalan';
+
+    public const STATUS_MENUNGGU_ACC = 'menunggu di-acc';
+
+    public const STATUS_SUDAH_ACC = 'sudah di-acc';
+
+    public const STATUS_TERLAMBAT = 'terlambat';
+
+    /** Status yang dapat disimpan ke database. */
+    public const STATUSES = [
+        self::STATUS_BARU,
+        self::STATUS_BERJALAN,
+        self::STATUS_MENUNGGU_ACC,
+        self::STATUS_SUDAH_ACC,
+    ];
+
+    /** Semua status yang ditampilkan ke pengguna, termasuk status turunan. */
+    public const ALL_STATUSES = [
+        self::STATUS_BARU,
+        self::STATUS_BERJALAN,
+        self::STATUS_MENUNGGU_ACC,
+        self::STATUS_SUDAH_ACC,
+        self::STATUS_TERLAMBAT,
+    ];
+
     protected $table = 'tugas';
+
+    /** Selalu sertakan status efektif (termasuk turunan "terlambat") di tiap respons. */
+    protected $appends = ['status_efektif', 'is_terlambat'];
 
     protected $primaryKey = 'id_tugas';
 
@@ -20,13 +58,186 @@ class Tugas extends Model
         'judul_tugas',
         'deskripsi',
         'file_pendukung',
+        'file_pendukung_name',
         'link_pendukung',
         'deadline',
+        'deadline_reminder_sent_at',
         'progress',
         'status',
+        'checklist_selesai',
         'tanggal_dibuat',
         'tanggal_update',
     ];
+
+    protected $casts = [
+        'checklist_selesai' => 'boolean',
+        'deadline_reminder_sent_at' => 'datetime',
+    ];
+
+    protected static function booted(): void
+    {
+        static::created(function (Tugas $tugas): void {
+            TugasDitugaskan::dispatch($tugas);
+        });
+
+        // Deadline baru berarti pengingat harus dikirim ulang.
+        static::updated(function (Tugas $tugas): void {
+            if ($tugas->wasChanged('deadline')) {
+                $tugas->forceFill(['deadline_reminder_sent_at' => null])->saveQuietly();
+            }
+        });
+    }
+
+    /**
+     * Generate the next human-readable task ID (TG001, TG002, ...).
+     *
+     * Legacy rows use opaque IDs such as "TGS-XXXXXXXX", so we can no longer
+     * rely on the highest string ID being numeric (the old "sort descending
+     * and increment" approach produced "TG001" again and hit the primary key).
+     * Rows are locked while scanning so two concurrent creates cannot pick
+     * the same number.
+     */
+    public static function nextId(): string
+    {
+        return DB::transaction(function (): string {
+            $max = 0;
+
+            foreach (static::query()->lockForUpdate()->pluck('id_tugas') as $id) {
+                if (preg_match('/^TG(\d+)$/', (string) $id, $matches)) {
+                    $max = max($max, (int) $matches[1]);
+                }
+            }
+
+            return 'TG'.str_pad((string) ($max + 1), 3, '0', STR_PAD_LEFT);
+        });
+    }
+
+    /**
+     * For completed work, lateness is based on when it was submitted, even after approval.
+     * For unfinished work, lateness is based on the current time and deadline.
+     */
+    public function isTerlambat(): bool
+    {
+        if (empty($this->deadline)) {
+            return false;
+        }
+
+        if (in_array($this->status, [self::STATUS_MENUNGGU_ACC, self::STATUS_SUDAH_ACC], true)) {
+            $submission = $this->relationLoaded('latestSubmitTugas')
+                ? $this->latestSubmitTugas
+                : $this->latestSubmitTugas()->first();
+
+            return $submission !== null
+                && \Illuminate\Support\Carbon::parse($submission->created_at)
+                    ->gt(\Illuminate\Support\Carbon::parse($this->deadline));
+        }
+
+        return \Illuminate\Support\Carbon::parse($this->deadline)->lt(now());
+    }
+
+    /**
+     * Backward-compatible alias used by older controller/tests.
+     */
+    public function isTelat(): bool
+    {
+        return $this->isTerlambat();
+    }
+
+    /**
+     * Status yang ditampilkan: "terlambat" bila deadline lewat, selain itu status tersimpan.
+     * Jika status masih "baru" tetapi sudah lebih dari 1 hari sejak dibuat, otomatis dianggap "berjalan".
+     */
+    public function getStatusEfektifAttribute(): string
+    {
+        if ($this->isTerlambat() && ! in_array($this->status, [
+            self::STATUS_MENUNGGU_ACC,
+            self::STATUS_SUDAH_ACC,
+        ], true)) {
+            return self::STATUS_TERLAMBAT;
+        }
+
+        if ($this->status === self::STATUS_BARU && $this->tanggal_dibuat) {
+            $created = \Illuminate\Support\Carbon::parse($this->tanggal_dibuat);
+            if ($created->diffInDays(now()) >= 1) {
+                return self::STATUS_BERJALAN;
+            }
+        }
+
+        return $this->status;
+    }
+
+    public function getIsTerlambatAttribute(): bool
+    {
+        return $this->isTerlambat();
+    }
+
+    /**
+     * Scope: tugas dengan status efektif tertentu (termasuk turunan "terlambat").
+     * Dipakai dashboard untuk menghitung per bucket status.
+     */
+    public function scopeStatusEfektif($query, string $status)
+    {
+        if ($status === self::STATUS_TERLAMBAT) {
+            return $query->where(function ($lateTasks): void {
+                $lateTasks->where(function ($unfinished): void {
+                    $unfinished->whereNotNull('deadline')
+                        ->where('deadline', '<', now())
+                        ->whereNotIn('status', [self::STATUS_SUDAH_ACC, self::STATUS_MENUNGGU_ACC]);
+                })->orWhere(function ($lateSubmissions): void {
+                    $lateSubmissions->whereIn('status', [
+                        self::STATUS_MENUNGGU_ACC,
+                        self::STATUS_SUDAH_ACC,
+                    ])
+                        ->whereHas('latestSubmitTugas', function ($submission): void {
+                            $submission->whereColumn('submit_tugas.created_at', '>', 'tugas.deadline');
+                        });
+                });
+            });
+        }
+
+        // "sudah di-acc" tidak pernah terlambat, jadi tanpa syarat deadline.
+        if ($status === self::STATUS_SUDAH_ACC) {
+            return $query->where('status', $status);
+        }
+
+        //kalo status nungggu acc, lewat dl tidak dianggap terlambat
+        if ($status === self::STATUS_MENUNGGU_ACC) {
+            return $query->where('status', $status);
+        }
+
+        // Bucket non-terlambat:
+        if ($status === self::STATUS_BARU) {
+            return $query->where('status', self::STATUS_BARU)
+                ->where(function ($q): void {
+                    $q->whereNull('deadline')->orWhere('deadline', '>=', now());
+                })
+                ->where(function ($q): void {
+                    $q->whereNull('tanggal_dibuat')->orWhere('tanggal_dibuat', '>=', now()->subDay()->toDateString());
+                });
+        }
+
+        if ($status === self::STATUS_BERJALAN) {
+            return $query->where(function ($q): void {
+                $q->where(function ($sub): void {
+                    $sub->where('status', self::STATUS_BERJALAN)
+                        ->where(function ($dead): void {
+                            $dead->whereNull('deadline')->orWhere('deadline', '>=', now());
+                        });
+                })->orWhere(function ($sub): void {
+                    $sub->where('status', self::STATUS_BARU)
+                        ->where('tanggal_dibuat', '<', now()->subDay()->toDateString())
+                        ->where(function ($dead): void {
+                            $dead->whereNull('deadline')->orWhere('deadline', '>=', now());
+                        });
+                });
+            });
+        }
+
+        return $query->where('status', $status)
+            ->where(function ($q): void {
+                $q->whereNull('deadline')->orWhere('deadline', '>=', now());
+            });
+    }
 
     public function karyawan()
     {
@@ -42,11 +253,36 @@ class Tugas extends Model
         return $this->hasMany(Pesan::class, 'tugas_id_tugas');
     }
 
+    public function latestPesan()
+    {
+        return $this->hasOne(
+            Pesan::class,
+            'tugas_id_tugas'
+        )->latestOfMany('created_at');
+    }
+
     public function submitTugas()
     {
         return $this->hasMany(
             SubmitTugas::class,
             'tugas_id_tugas'
         );
+    }
+
+    public function latestSubmitTugas()
+    {
+        return $this->hasOne(
+            SubmitTugas::class,
+            'tugas_id_tugas',
+            'id_tugas'
+        )->latestOfMany('created_at');
+    }
+
+    public function scopeSelesaiTerlambat($query)
+    {
+        return $query->whereIn('status', [self::STATUS_MENUNGGU_ACC, self::STATUS_SUDAH_ACC])
+            ->whereHas('latestSubmitTugas', function ($submission): void {
+                $submission->whereColumn('submit_tugas.created_at', '>', 'tugas.deadline');
+            });
     }
 }

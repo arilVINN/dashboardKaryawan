@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'holiday' => [
+        // Fetch national holidays from the API when a year is not stored yet.
+        'auto_sync' => env('HOLIDAY_AUTO_SYNC', true),
+
+        // Include "cuti bersama" entries in the calendar holiday layer.
+        'include_joint_leave' => env('HOLIDAY_INCLUDE_JOINT_LEAVE', false),
+
+        // Seconds before a holiday API request is abandoned.
+        'timeout' => env('HOLIDAY_API_TIMEOUT', 5),
+    ],
+
 ];

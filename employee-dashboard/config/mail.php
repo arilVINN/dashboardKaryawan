@@ -18,6 +18,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Queue Email Notifications
+    |--------------------------------------------------------------------------
+    |
+    | When true, task-assignment emails are pushed onto the queue instead of
+    | being sent during the request. Only enable this once a queue worker
+    | (php artisan queue:work) is running; otherwise notifications would sit
+    | in the jobs table forever.
+    |
+    */
+
+    'queue_notifications' => env('MAIL_QUEUE_NOTIFICATIONS', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Mailer Configurations
     |--------------------------------------------------------------------------
     |
