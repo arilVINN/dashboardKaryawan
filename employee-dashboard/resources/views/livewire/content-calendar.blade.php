@@ -194,16 +194,15 @@
                 </select>
             @endif
 
-        <button type="button" id="content-add-account" wire:click="openAccountForm"
-            title="Tambah akun media sosial"
-            class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-[#146C94] px-3 text-[13px] font-semibold text-white transition hover:bg-[#0f5878] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
-            </svg>
-            <span class="whitespace-nowrap">Tambah akun</span>
-        </button>
+            <button type="button" id="content-add-account" wire:click="openAccountForm"
+                title="Tambah akun media sosial"
+                class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-[#146C94] px-3 text-[13px] font-semibold text-white transition hover:bg-[#0f5878] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
+                </svg>
+                <span class="whitespace-nowrap">Tambah akun</span>
+            </button>
 
-        <div class="ml-auto flex flex-wrap items-center gap-2">
             <select wire:model.live="typeFilter" aria-label="Filter jenis konten"
                 class="h-10 w-[125px] rounded-lg border border-[#E2E8EC] bg-white px-2 text-sm text-[#172B36] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
                 <option value="semua">Semua jenis</option>
