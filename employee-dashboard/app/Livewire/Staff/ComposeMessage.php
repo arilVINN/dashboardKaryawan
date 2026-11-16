@@ -96,9 +96,7 @@ class ComposeMessage extends Component
 
     public function render()
     {
-        $divisis = Divisi::query()
-            ->orderBy('nama_divisi')
-            ->get();
+        $divisis = Divisi::query()->ordered()->get();
 
         $recipients = collect();
 

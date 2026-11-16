@@ -1,6 +1,11 @@
 @php
     $indicator = fn (string $col) => $sort === $col ? ($dir === 'asc' ? '▲' : '▼') : '↕';
     $cellPadding = 'px-6 py-4';
+    $typeClasses = [
+        'direktur' => 'bg-amber-100 text-amber-800 border-amber-200',
+        'manajemen' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
+        'divisi' => 'bg-cyan-50 text-cyan-800 border-cyan-200',
+    ];
 @endphp
 
 <div class="flex flex-col gap-3 w-full mt-2">
@@ -10,6 +15,18 @@
             <input id="hrdDivisiSearch" type="text" wire:model.live.debounce.300ms="search" placeholder="Kode atau nama divisi..."
                 class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
         </div>
+        @if ($showHierarchy)
+            <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
+                <label for="divisiTipe" class="text-xs font-bold text-slate-500">Tingkatan</label>
+                <select id="divisiTipe" wire:model.live="tipe"
+                    class="h-10 w-full px-3 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]">
+                    <option value="">Semua</option>
+                    @foreach (\App\Models\Divisi::TIPE_OPTIONS as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+        @endif
         <div class="flex flex-1 min-w-[10rem] max-w-[16rem] flex-col gap-1.5">
             <label for="divisiStatus" class="text-xs font-bold text-slate-500">Status</label>
             <select id="divisiStatus" wire:model.live="status"
@@ -50,7 +67,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M4 18h16M6 18v-7m4 7v-7m4 7v-7m4 7v-7M2 10l10-6 10 6"></path>
                     </svg>
                 </span>
-                <span>Daftar Divisi</span>
+                <span>Struktur &amp; Daftar Divisi</span>
             </h2>
         @endif
         @if ($manage)
@@ -64,39 +81,104 @@
 
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-slate-600">
+            <table class="w-full text-left text-sm text-slate-600 {{ $showHierarchy ? '' : 'min-w-[720px] table-fixed' }}">
                 <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                     <tr>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap {{ $showHierarchy ? '' : 'w-[12%]' }}">
                             <button type="button" wire:click="sortBy('kode')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                Kode Divisi <span class="{{ $sort === 'kode' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('kode') }}</span>
+                                Kode <span class="{{ $sort === 'kode' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('kode') }}</span>
                             </button>
                         </th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap {{ $showHierarchy ? '' : 'w-[32%]' }}">
                             <button type="button" wire:click="sortBy('nama')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                Nama Divisi <span class="{{ $sort === 'nama' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('nama') }}</span>
+                                {{ $showHierarchy ? 'Struktur Divisi' : 'Nama Divisi' }}
+                                <span class="{{ $sort === 'nama' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('nama') }}</span>
                             </button>
                         </th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">
+                        @if ($showHierarchy)
+                            <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Kepala Divisi / Pimpinan</th>
+                        @endif
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap {{ $showHierarchy ? '' : 'w-[14%]' }}">
                             <button type="button" wire:click="sortBy('staff')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
-                                Jumlah Staff <span class="{{ $sort === 'staff' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('staff') }}</span>
+                                {{ $showHierarchy ? 'Anggota' : 'Jumlah Staff' }}
+                                <span class="{{ $sort === 'staff' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('staff') }}</span>
                             </button>
                         </th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap">Status</th>
-                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center">Aksi</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap {{ $showHierarchy ? '' : 'w-[14%]' }}">Status</th>
+                        <th class="{{ $cellPadding }} font-medium whitespace-nowrap text-center {{ $showHierarchy ? '' : 'w-[28%]' }}">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                     @forelse ($rows as $divisi)
+                        @php
+                            $memberCount = (int) ($divisi->karyawans_count ?? 0);
+                            $head = $showHierarchy ? $divisi->penanggungJawab() : null;
+                            $staffCount = $showHierarchy ? $divisi->anggotaStaff()->count() : 0;
+                            $level = (int) ($divisi->level ?? 3);
+                            $indent = max(0, ($level - 1) * 18);
+                            $typeClass = $typeClasses[$divisi->tipe] ?? 'bg-slate-100 text-slate-700 border-slate-200';
+                            $capacity = $divisi->isGrouping()
+                                ? 'Grup'
+                                : ($divisi->kapasitas === null ? 'Tanpa batas' : $memberCount.'/'.$divisi->kapasitas);
+                        @endphp
                         <tr wire:key="divisi-{{ $divisi->id_divisi }}" class="hover:bg-slate-50 transition">
                             <td class="{{ $cellPadding }} font-semibold text-slate-800 whitespace-nowrap">
                                 {{ $divisi->kode_divisi }}
                             </td>
                             <td class="{{ $cellPadding }} text-slate-700">
-                                {{ $divisi->nama_divisi }}
+                                @if ($showHierarchy)
+                                    <div class="flex items-start gap-2" style="padding-left: {{ $indent }}px">
+                                        <span class="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded {{ $level > 1 ? 'text-[#146C94]' : 'text-amber-500' }}">
+                                            @if ($level === 1)
+                                                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 2.5 6 10 10l7.5-4L10 2Zm-6 7.6L10 13l6-3.4V13l-6 3.4L4 13v-3.4Z"/></svg>
+                                            @elseif ($level === 2)
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.09 9.09 0 0 0 3.74-.35 3 3 0 0 0-4.68-2.05M18 18.72a9.09 9.09 0 0 1-6 2.03 9.09 9.09 0 0 1-6-2.03M18 18.72v-1.5a3 3 0 0 0-2-2.83M6 18.72a9.09 9.09 0 0 1-3.74-.35 3 3 0 0 1 4.68-2.05M6 18.72v-1.5a3 3 0 0 1 2-2.83m8-4.14a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path></svg>
+                                            @else
+                                                <span aria-hidden="true">↳</span>
+                                            @endif
+                                        </span>
+                                        <div class="min-w-0">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span class="font-semibold text-slate-800">{{ $divisi->nama_divisi }}</span>
+                                                <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide {{ $typeClass }}">
+                                                    {{ $divisi->labelTipe() }}
+                                                </span>
+                                            </div>
+                                            <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                                                @if ($divisi->parent)
+                                                    <span>Induk: {{ $divisi->parent->nama_divisi }}</span>
+                                                @endif
+                                                <span>Kapasitas: {{ $capacity }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @else
+                                    <span class="block break-words font-medium text-slate-800">{{ $divisi->nama_divisi }}</span>
+                                @endif
                             </td>
-                            <td class="{{ $cellPadding }} text-slate-700">
-                                {{ $divisi->karyawans_count ?? 0 }}
+                            @if ($showHierarchy)
+                                <td class="{{ $cellPadding }} text-slate-700">
+                                    @if ($head)
+                                        <div class="font-medium text-slate-800">{{ $head->nama }}</div>
+                                        <div class="text-xs text-slate-500">{{ $head->jabatan ?: '-' }}</div>
+                                    @else
+                                        <span class="text-slate-400">-</span>
+                                    @endif
+                                </td>
+                            @endif
+                            <td class="{{ $cellPadding }} text-slate-700 whitespace-nowrap">
+                                @if ($showHierarchy)
+                                    <span class="font-semibold text-slate-800">{{ $memberCount }}</span>
+                                    @if ($divisi->isGrouping())
+                                        <span class="text-xs text-slate-500">anggota langsung</span>
+                                    @elseif ($divisi->isSinglePerson() || $divisi->isDirekturUtama())
+                                        <span class="text-xs text-slate-500">orang</span>
+                                    @elseif ($memberCount > 0)
+                                        <span class="text-xs text-slate-500">({{ $staffCount }} staff)</span>
+                                    @endif
+                                @else
+                                    <span class="font-semibold text-slate-800">{{ $memberCount }}</span>
+                                @endif
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap">
                                 @if (strtolower($divisi->status_aktif ?? '') === 'aktif')
@@ -119,6 +201,10 @@
                                         data-id="{{ $divisi->id_divisi }}"
                                         data-kode="{{ $divisi->kode_divisi }}"
                                         data-nama="{{ $divisi->nama_divisi }}"
+                                        data-tipe="{{ $divisi->tipe }}"
+                                        data-parent="{{ $divisi->parent_id }}"
+                                        data-kapasitas="{{ $divisi->kapasitas }}"
+                                        data-urutan="{{ $divisi->urutan }}"
                                         class="ml-3 text-amber-600 hover:text-amber-800 font-medium hover:underline">
                                         Edit
                                     </button>
@@ -132,7 +218,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-10 text-center text-slate-400">
+                            <td colspan="{{ $showHierarchy ? 6 : 5 }}" class="px-6 py-10 text-center text-slate-400">
                                 @if ($hasActiveFilters)
                                     <span>Tidak ada data yang cocok dengan filter.</span>
                                     <button type="button" wire:click="resetFilters"

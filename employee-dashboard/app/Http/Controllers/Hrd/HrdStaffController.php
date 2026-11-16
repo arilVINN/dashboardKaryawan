@@ -11,6 +11,7 @@ use App\Models\ProjectTask;
 use App\Models\User2;
 use App\Models\Divisi;
 use App\Models\Role;
+use App\Services\HrdProtectionService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -83,6 +84,13 @@ class HrdStaffController extends Controller
                 return response()->json([
                     'message' => 'Divisi dengan ID "' . $request->divisi_id_divisi . '" tidak ditemukan. Silakan buat divisi terlebih dahulu.'
                 ], 404);
+            }
+
+            if (! $divisi->canAcceptMember()) {
+                return response()->json([
+                    'message' => $this->divisionCapacityMessage($divisi),
+                    'errors' => ['divisi_id_divisi' => [$this->divisionCapacityMessage($divisi)]],
+                ], 422);
             }
 
             $jabatanRole = $this->roleNameForJabatan($request->jabatan);
@@ -281,6 +289,27 @@ class HrdStaffController extends Controller
             }
         }
 
+        $targetDivisionId = $validated['divisi_id_divisi'] ?? $karyawan->divisi_id_divisi;
+
+        if (array_key_exists('divisi_id_divisi', $validated)
+            && $validated['divisi_id_divisi'] !== $karyawan->divisi_id_divisi) {
+            $targetDivision = Divisi::where('id_divisi', $targetDivisionId)->first();
+
+            if (! $targetDivision) {
+                return response()->json([
+                    'message' => 'Divisi tujuan tidak ditemukan.',
+                    'errors' => ['divisi_id_divisi' => ['Divisi tujuan tidak ditemukan.']],
+                ], 422);
+            }
+
+            if (! $targetDivision->canAcceptMember($karyawan->id_karyawan)) {
+                return response()->json([
+                    'message' => $this->divisionCapacityMessage($targetDivision),
+                    'errors' => ['divisi_id_divisi' => [$this->divisionCapacityMessage($targetDivision)]],
+                ], 422);
+            }
+        }
+
         if (isset($validated['jabatan'])) {
             $jabatanRole = $this->roleNameForJabatan($validated['jabatan']);
 
@@ -459,7 +488,7 @@ class HrdStaffController extends Controller
     {
         $normalized = mb_strtolower(trim($jabatan));
 
-        if (preg_match('/^kepala\s+divisi(?:\s|$)/i', $normalized) === 1) {
+        if (preg_match('/^(?:kepala\s+divisi|direktur\s+utama)(?:\s|$)/i', $normalized) === 1) {
             return 'kadiv';
         }
 
@@ -472,6 +501,19 @@ class HrdStaffController extends Controller
         }
 
         return null;
+    }
+
+    private function divisionCapacityMessage(Divisi $divisi): string
+    {
+        if ($divisi->isGrouping()) {
+            return 'Manajemen adalah level grup dan tidak memiliki anggota langsung.';
+        }
+
+        if ($divisi->isSinglePerson()) {
+            return 'Unit '.$divisi->nama_divisi.' hanya dapat diisi oleh satu orang.';
+        }
+
+        return 'Kapasitas unit '.$divisi->nama_divisi.' sudah penuh.';
     }
 
     /**

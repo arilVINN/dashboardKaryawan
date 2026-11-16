@@ -87,12 +87,12 @@ class User2 extends Authenticatable
     // ─── Keuangan Helpers ─────────────────────────────────────────────────────
 
     /**
-     * Cek apakah user ini adalah Kepala Divisi Finance.
-     * Kriteria: role = 'kadiv' DAN divisi kode = 'FIN'
+     * Cek apakah user ini adalah Kepala Divisi Finance & Accounting.
+     * Criteria: role = 'kadiv' AND the employee's division is Finance.
      */
     public function isKadivFinance(): bool
     {
         return strtolower($this->role?->nama_role ?? '') === 'kadiv'
-            && strtoupper($this->karyawan?->divisi?->kode_divisi ?? '') === 'FIN';
+            && ($this->karyawan?->isFinance() ?? false);
     }
 }

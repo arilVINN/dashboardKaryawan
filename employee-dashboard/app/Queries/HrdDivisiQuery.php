@@ -12,7 +12,12 @@ class HrdDivisiQuery
         $sort = $filters['sort'] ?? null;
         $dir = ($filters['dir'] ?? null) === 'desc' ? 'desc' : 'asc';
 
-        $query = Divisi::withCount('karyawans');
+        $query = Divisi::query()
+            ->withCount('karyawans')
+            ->with([
+                'parent:id_divisi,kode_divisi,nama_divisi,tipe,level',
+                'karyawans.user.role',
+            ]);
 
         $q = $filters['q'] ?? null;
         if ($this->hasFilter($q)) {
@@ -29,6 +34,11 @@ class HrdDivisiQuery
             $query->whereRaw('LOWER(status_aktif) = ?', [$status]);
         }
 
+        $tipe = $filters['tipe'] ?? null;
+        if (is_string($tipe) && array_key_exists($tipe, Divisi::TIPE_OPTIONS)) {
+            $query->where('tipe', $tipe);
+        }
+
         switch ($sort) {
             case 'kode':
                 $query->orderBy('kode_divisi', $dir)->orderBy('id_divisi');
@@ -40,7 +50,8 @@ class HrdDivisiQuery
                 $query->orderBy('karyawans_count', $dir)->orderBy('id_divisi');
                 break;
             default:
-                $query->orderBy('id_divisi', 'desc');
+                // Hierarchy order: Direktur Utama, Manajemen, then divisions.
+                $query->ordered();
         }
 
         return $query;

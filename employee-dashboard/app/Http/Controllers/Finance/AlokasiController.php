@@ -22,7 +22,7 @@ class AlokasiController extends Controller
     {
         $periode = $request->input('periode', now()->format('Y-m'));
 
-        $divisiList = Divisi::where('kode_divisi', '!=', 'FIN')
+        $divisiList = Divisi::query()->unitNonFinance()
             ->where('status_aktif', 'Aktif')
             ->get();
 

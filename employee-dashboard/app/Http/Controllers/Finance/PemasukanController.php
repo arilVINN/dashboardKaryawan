@@ -33,7 +33,7 @@ class PemasukanController extends Controller
         $pemasukan    = $query->latest('tanggal_masuk')->paginate(15);
         $totalPeriode = $query->sum('nominal');
 
-        $divisiList   = Divisi::where('kode_divisi', '!=', 'FIN')
+        $divisiList   = Divisi::query()->unitNonFinance()
             ->where('status_aktif', 'Aktif')
             ->get();
         $kategoriList = KPemasukan::KATEGORI_OPTIONS;

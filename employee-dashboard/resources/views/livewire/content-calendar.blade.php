@@ -560,7 +560,7 @@
                             </p>
                             @if ($readOnly)
                                 <div class="flex h-[42px] items-center rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36]">
-                                    {{ $event_date ? \Carbon\Carbon::parse($event_date)->locale('id')->translatedFormat('j M Y') : '—' }}
+                                    {{ $event_date ? \Carbon\Carbon::parse($event_date)->locale('id')->translatedFormat('j M Y') : '-' }}
                                 </div>
                             @else
                                 <x-date-picker id="content-date" label="Tanggal" model="event_date" :value="$event_date" />
@@ -582,7 +582,7 @@
                                     @if ($selectedType)
                                         <x-content-type-tag :name="$selectedType['name']" :fill="$selectedType['fill']" :border="$selectedType['border']" />
                                     @else
-                                        <span class="text-sm text-[#4B5563]">—</span>
+                                        <span class="text-sm text-[#4B5563]">-</span>
                                     @endif
                                 </div>
                             @else
@@ -623,7 +623,7 @@
                             </p>
                             @if ($readOnly)
                                 <div class="flex h-[42px] items-center rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36]">
-                                    {{ $post_time !== '' ? $post_time : '—' }}
+                                    {{ $post_time !== '' ? $post_time : '-' }}
                                 </div>
                             @else
                                 <input id="content-time" type="text" wire:model.blur.live="post_time"
@@ -850,7 +850,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.04 12.32a1 1 0 0 1 0-.64C3.42 7.51 7.36 4.5 12 4.5s8.58 3.01 9.96 7.18a1 1 0 0 1 0 .64C20.58 16.49 16.64 19.5 12 19.5S3.42 16.49 2.04 12.32Z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
                             </svg>
-                            <span>Event ini akan terlihat oleh semua karyawan Divisi Markom & Manajemen.</span>
+                            <span>Event ini akan terlihat oleh semua anggota tim konten yang memiliki akses kalender.</span>
                         </div>
                     @endif
                 </div>

@@ -126,7 +126,7 @@ class KaryawanTable extends Component
             'dir' => $this->dir,
         ])->paginate($this->perPage);
 
-        $daftarDivisi = Divisi::orderBy('nama_divisi')->get();
+        $daftarDivisi = Divisi::query()->ordered()->get();
         $daftarJabatan = Karyawan::query()
             ->whereNotNull('jabatan')
             ->distinct()

@@ -66,14 +66,14 @@ class ContentCalendarTest extends TestCase
         $this->hr = Divisi::create([
             'id_divisi' => 'DV-HR',
             'kode_divisi' => 'HR',
-            'nama_divisi' => 'Human Resources',
+            'nama_divisi' => 'HR',
             'status_aktif' => 'Aktif',
         ]);
 
         $this->markom = Divisi::create([
             'id_divisi' => 'DV-MK',
             'kode_divisi' => 'MK',
-            'nama_divisi' => 'Marketing Communication',
+            'nama_divisi' => 'Kreatif Digital',
             'status_aktif' => 'Aktif',
         ]);
 

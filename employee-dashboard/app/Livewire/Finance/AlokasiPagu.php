@@ -204,13 +204,13 @@ class AlokasiPagu extends Component
         $totalPagu = (float) $alokasi->sum('nominal_alokasi');
         $divisiDenganAlokasi = $alokasi->pluck('divisi_id_divisi')->all();
 
-        $divisiTersedia = Divisi::where('kode_divisi', '!=', 'FIN')
+        $divisiTersedia = Divisi::query()->unitNonFinance()
             ->where('status_aktif', 'Aktif')
             ->whereNotIn('id_divisi', $divisiDenganAlokasi)
-            ->orderBy('nama_divisi')
+            ->ordered()
             ->get();
 
-        $totalDivisi = Divisi::where('kode_divisi', '!=', 'FIN')
+        $totalDivisi = Divisi::query()->unitNonFinance()
             ->where('status_aktif', 'Aktif')
             ->count();
 

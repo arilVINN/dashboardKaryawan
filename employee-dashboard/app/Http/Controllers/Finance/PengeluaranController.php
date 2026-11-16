@@ -35,7 +35,7 @@ class PengeluaranController extends Controller
 
         $pengeluaran         = $query->latest('tanggal_cair')->paginate(15);
         $totalPeriode        = $query->sum('nominal');
-        $divisiList          = Divisi::where('kode_divisi', '!=', 'FIN')->where('status_aktif', 'Aktif')->get();
+        $divisiList          = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
         $permintaanSiapCair  = KPermintDana::with('divisi', 'diajukanOleh.karyawan')
             ->where('status', KPermintDana::STATUS_DISETUJUI)
             ->latest('tanggal_disetujui')

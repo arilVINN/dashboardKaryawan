@@ -17,7 +17,7 @@
         <main class="flex-1 overflow-y-auto p-8 pt-6">
             @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => url('/hrd/dashboard'), 'currentPage' => 'Manajemen Divisi', 'inline' => true])
             <x-page-heading title="Manajemen Divisi" icon="division" class="mb-6" />
-            <livewire:hrd.divisi-table manage />
+            <livewire:hrd.divisi-table manage :show-hierarchy="false" />
             @include('component_hrd.divisiModal')
 
         </main>
