@@ -215,7 +215,7 @@
                             <thead>
                                 <tr class="border-b border-[#E2E8EC] text-[12px] font-medium text-[#4B5563] bg-[#EAF4F8]">
                                     <th class="py-3.5 px-4">Divisi & Pengirim</th>
-                                    <th class="py-3.5 px-4 text-center">Periode & Minggu</th>
+                                    <th scope="col" class="px-4 py-3 text-center text-[12px] font-medium">Periode &amp; minggu</th>
                                     <th class="py-3.5 px-4 text-right">Pendapatan</th>
                                     <th class="py-3.5 px-4 text-right">Pengeluaran</th>
                                     <th class="py-3.5 px-4 text-right">Laba / (Rugi)</th>
@@ -234,10 +234,15 @@
                                             </div>
                                             <div class="text-xs text-[#4B5563] mt-0.5">{{ $lap->pengirim?->karyawan?->nama ?? $lap->pengirim?->username }}</div>
                                         </td>
-                                        <td class="py-3 px-4 text-center text-xs text-[#4B5563]">
-                                            <span class="font-medium">{{ \Carbon\Carbon::parse($lap->periode.'-01')->isoFormat('MMM Y') }}</span>
-                                            <span class="inline-block ml-1 px-2 py-0.5 rounded-md bg-[#E3F1F7] text-[#146C94] font-bold">M-{{ $lap->minggu_ke }}</span>
-                                            <div class="text-[10px] text-[#4B5563] mt-0.5">{{ \Carbon\Carbon::parse($lap->tanggal_mulai)->format('d/m') }} - {{ \Carbon\Carbon::parse($lap->tanggal_selesai)->format('d/m/Y') }}</div>
+                                        <td class="px-4 py-3 text-center">
+                                            <x-date-range :start="$lap->tanggal_mulai" :end="$lap->tanggal_selesai"
+                                                class="text-[12px] font-medium text-[#172B36]" />
+                                            <div class="mt-1">
+                                                <span
+                                                    class="inline-flex h-[22px] items-center rounded-md border border-[#E2E8F0] bg-[#F1F5F9] px-2 text-[11px] font-medium text-[#475569]">
+                                                    Minggu ke-{{ $lap->minggu_ke }}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td class="py-3 px-4 text-right font-medium text-[#047857]">Rp {{ number_format($lap->total_pendapatan, 0, ',', '.') }}</td>
                                         <td class="py-3 px-4 text-right font-medium text-[#B91C1C]">Rp {{ number_format($lap->total_pengeluaran, 0, ',', '.') }}</td>

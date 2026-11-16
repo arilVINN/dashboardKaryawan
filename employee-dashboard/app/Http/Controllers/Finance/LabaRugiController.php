@@ -24,17 +24,33 @@ class LabaRugiController extends Controller
     /**
      * Halaman form laporan & riwayat laporan divisi user saat ini.
      */
-    public function index(): \Illuminate\View\View
+    public function index(Request $request): \Illuminate\View\View
     {
         $user     = Auth::user();
         $divisiId = $user->karyawan?->divisi_id_divisi;
 
-        $riwayat = KLabaRugi::where('divisi_id_divisi', $divisiId)
-            ->with('diverifikasiOleh.karyawan')
-            ->latest()
-            ->paginate(10);
+        $periode = $request->input('periode', now()->format('Y-m'));
+        if (! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $periode)) {
+            $periode = now()->format('Y-m');
+        }
 
-        return view('kadiv.laporanLabaRugi', compact('riwayat'));
+        $mingguKe = (string) $request->input('minggu_ke', '');
+        if (! in_array($mingguKe, ['1', '2', '3', '4', '5'], true)) {
+            $mingguKe = '';
+        }
+
+        $query = KLabaRugi::where('divisi_id_divisi', $divisiId)
+            ->with('diverifikasiOleh.karyawan')
+            ->where('periode', $periode)
+            ->latest();
+
+        if ($mingguKe !== '') {
+            $query->where('minggu_ke', (int) $mingguKe);
+        }
+
+        $riwayat = $query->paginate(10)->withQueryString();
+
+        return view('kadiv.laporanLabaRugi', compact('riwayat', 'periode', 'mingguKe'));
     }
 
     /**

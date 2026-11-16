@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\KeuanganAldiv;
+use App\Models\KLabaRugi;
 use App\Models\KPemasukan;
 use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
@@ -140,6 +141,42 @@ class FinanceDashboardUiTest extends TestCase
         $response->assertDontSee('Input pendapatan atau modal baru');
         $response->assertDontSee('Eksekusi pengeluaran operasional');
         $response->assertDontSee('Review laporan laba rugi mingguan');
+    }
+
+    public function test_finance_laporan_verification_page_uses_finance_design(): void
+    {
+        KLabaRugi::create([
+            'id_klr' => 'KLR-FIN-1',
+            'periode' => '2026-11',
+            'minggu_ke' => 4,
+            'tanggal_mulai' => '2026-11-28',
+            'tanggal_selesai' => '2026-12-05',
+            'total_pendapatan' => 30000000,
+            'total_pengeluaran' => 10000000,
+            'laba_bersih' => 20000000,
+            'margin_persen' => (20000000 / 30000000) * 100,
+            'status_verifikasi' => KLabaRugi::STATUS_MENUNGGU,
+            'tanggal_kirim' => '2026-12-05',
+            'bukti_laporan' => 'keuangan/laporan/fin.pdf',
+            'divisi_id_divisi' => 'DIV-IT',
+            'user_id_user' => $this->finance->id_user,
+        ]);
+
+        $this->actingAs($this->finance)
+            ->get('/kadiv/keuangan/laporan?periode=2026-11')
+            ->assertOk()
+            ->assertSee('data-breadcrumb-parent="Keuangan"', false)
+            ->assertSee('data-breadcrumb-current="Verifikasi Laporan L/R"', false)
+            ->assertSee('Verifikasi Laporan Laba / Rugi Divisi')
+            ->assertSee('Semua divisi')
+            ->assertSee('Semua status')
+            ->assertSee('Periode & minggu')
+            ->assertSee('28 Nov - 05 Des 26')
+            ->assertSee('Minggu ke-4')
+            ->assertSee('Lihat')
+            ->assertSee('Verifikasi')
+            ->assertSee('bg-[#F4F7F9]', false)
+            ->assertSee('min-w-[1100px]', false);
     }
 
     public function test_finance_sidebar_menu_is_collapsed_on_non_finance_pages(): void

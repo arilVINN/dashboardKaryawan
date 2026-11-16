@@ -8,120 +8,138 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-slate-50 flex h-screen overflow-hidden">
+<body class="bg-[#F4F7F9] flex h-screen overflow-hidden">
 
     @include('component_kadiv.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
 
-        <main class="flex-1 overflow-y-auto p-8 pb-10">
+        <main class="flex-1 overflow-y-auto bg-[#F4F7F9] p-4 pb-10 sm:p-6 lg:p-8">
+            @include('component.breadcrumbs', [
+                'rootText' => 'Dashboard',
+                'rootUrl' => url('/kadiv/dashboard'),
+                'parentText' => 'Pengajuan Dana',
+                'parentUrl' => route('kadiv.pengajuanDana'),
+                'currentPage' => 'Riwayat Pengajuan Dana',
+                'inline' => true,
+            ])
 
-            {{-- Header & Button Pengajuan Baru --}}
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-800">Riwayat Pengajuan Dana</h1>
-                    <p class="text-sm text-slate-500 mt-1">Daftar seluruh permohonan dana divisi Anda dan status persetujuan dari Finance.</p>
+            {{-- Header --}}
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div class="min-w-0">
+                    <x-page-heading title="Riwayat Pengajuan Dana" icon="archive" />
+                    <p class="mt-1 text-[13px] text-[#4B5563]">
+                        Daftar seluruh permohonan dana divisi Anda dan status persetujuan dari Finance.
+                    </p>
                 </div>
-                <div>
-                    <a href="{{ route('kadiv.pengajuanDana') }}"
-                        class="inline-flex items-center gap-2 px-4 py-2.5 bg-[#044564] hover:bg-[#03334a] text-white text-xs font-semibold rounded-xl shadow-sm transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span>Buat Pengajuan Baru</span>
-                    </a>
-                </div>
+
+                <a href="{{ route('kadiv.pengajuanDana') }}"
+                    class="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-[#0097B2] px-4 text-[13px] font-medium text-white shadow-sm transition hover:bg-[#008199] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"
+                        aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14"></path>
+                    </svg>
+                    <span>Buat pengajuan baru</span>
+                </a>
             </div>
 
-            {{-- Flash Alert --}}
+            {{-- Flash --}}
             @if (session('success'))
-                <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-2 shadow-sm">
-                    <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                <div
+                    class="mt-4 flex items-start gap-2.5 rounded-lg border border-[#BBF7D0] bg-[#F0FDF4] px-3.5 py-2.5 text-[13px] text-[#166534]">
+                    <svg class="mt-0.5 h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4Z"
+                            clip-rule="evenodd"></path>
                     </svg>
                     <span>{{ session('success') }}</span>
                 </div>
             @endif
 
-            {{-- Table Riwayat --}}
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden mb-8">
+            {{-- Table --}}
+            <div class="mt-5 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/75">
-                                <th class="py-3.5 px-4">No. Pengajuan</th>
-                                <th class="py-3.5 px-4">Tanggal</th>
-                                <th class="py-3.5 px-4">Judul & Keperluan</th>
-                                <th class="py-3.5 px-4 text-right">Nominal Diajukan</th>
-                                <th class="py-3.5 px-4 text-center">Status</th>
-                                <th class="py-3.5 px-4">Catatan Finance</th>
-                                <th class="py-3.5 px-4 text-center">Lampiran</th>
+                    <table class="w-full min-w-[1000px] border-collapse text-left">
+                        <thead class="bg-[#EAF4F8] text-[#334155]">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 text-[12px] font-medium">No. pengajuan</th>
+                                <th scope="col" class="px-4 py-3 text-[12px] font-medium">Tanggal</th>
+                                <th scope="col" class="px-4 py-3 text-[12px] font-medium">Judul &amp; keperluan</th>
+                                <th scope="col" class="px-4 py-3 text-right text-[12px] font-medium">Nominal</th>
+                                <th scope="col" class="px-4 py-3 text-center text-[12px] font-medium">Status</th>
+                                <th scope="col" class="px-4 py-3 text-[12px] font-medium">Catatan finance</th>
+                                <th scope="col" class="px-4 py-3 text-center text-[12px] font-medium">Lampiran</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
+                        <tbody class="divide-y divide-[#EEF2F5]">
                             @forelse ($riwayat as $item)
-                                <tr class="hover:bg-slate-50/60 transition">
-                                    <td class="py-4 px-4 font-mono text-xs font-bold text-slate-700">
+                                <tr class="transition hover:bg-[#F5FAFC]">
+                                    <td class="whitespace-nowrap px-4 py-3 font-mono text-[12px] font-semibold text-[#172B36]">
                                         {{ $item->nomor_pengajuan }}
                                     </td>
-                                    <td class="py-4 px-4 text-xs text-slate-500 whitespace-nowrap">
-                                        {{ $item->created_at->isoFormat('DD MMM Y') }}
+                                    <td class="whitespace-nowrap px-4 py-3 text-[12px] text-[#4B5563]">
+                                        {{ $item->created_at->locale('id')->isoFormat('D MMM Y') }}
                                     </td>
-                                    <td class="py-4 px-4 max-w-xs">
-                                        <div class="font-semibold text-slate-800">{{ $item->judul_pengajuan }}</div>
-                                        <div class="text-xs text-slate-500 mt-0.5 truncate">{{ $item->keperluan }}</div>
+                                    <td class="max-w-xs px-4 py-3">
+                                        <div class="truncate text-[13px] font-medium text-[#172B36]">
+                                            {{ $item->judul_pengajuan }}
+                                        </div>
+                                        <div class="mt-0.5 truncate text-[12px] text-[#4B5563]">
+                                            {{ $item->keperluan }}
+                                        </div>
                                     </td>
-                                    <td class="py-4 px-4 text-right font-bold text-slate-800 whitespace-nowrap">
-                                        Rp {{ number_format($item->nominal_diajukan, 0, ',', '.') }}
+                                    <td class="whitespace-nowrap px-4 py-3 text-right text-[13px] font-medium tabular-nums text-[#172B36]">
+                                        {{ \App\Helpers\FormatAkuntansi::formatRupiah($item->nominal_diajukan) }}
                                     </td>
-                                    <td class="py-4 px-4 text-center whitespace-nowrap">
+                                    <td class="whitespace-nowrap px-4 py-3 text-center">
                                         @if ($item->status === 'menunggu')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                            <span
+                                                class="inline-flex items-center rounded-md border border-[#F5C85C] bg-[#FEF0C3] px-2 py-0.5 text-[12px] font-medium text-[#B45309]">
                                                 Menunggu
                                             </span>
                                         @elseif ($item->status === 'disetujui')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                            <span
+                                                class="inline-flex items-center rounded-md border border-[#7DD3C8] bg-[#D5F3F0] px-2 py-0.5 text-[12px] font-medium text-[#0D9488]">
                                                 Disetujui
                                             </span>
                                         @elseif ($item->status === 'dicairkan')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            <span
+                                                class="inline-flex items-center rounded-md border border-[#D5DEE3] bg-[#E2E8EC] px-2 py-0.5 text-[12px] font-medium text-[#4B5563]">
                                                 Dicairkan
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                            <span
+                                                class="inline-flex items-center rounded-md border border-[#F5A3A3] bg-[#FDE0E0] px-2 py-0.5 text-[12px] font-medium text-[#B91C1C]">
                                                 Ditolak
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="py-4 px-4 text-xs text-slate-600 max-w-xs">
-                                        @if ($item->catatan_finance)
-                                            <div class="p-2 bg-slate-50 rounded-lg border border-slate-100">
-                                                {{ $item->catatan_finance }}
-                                            </div>
-                                        @else
-                                            <span class="text-slate-400 italic">-</span>
-                                        @endif
+                                    <td class="max-w-xs px-4 py-3 text-[12px] text-[#4B5563]">
+                                        {{ $item->catatan_finance ?: '-' }}
                                     </td>
-                                    <td class="py-4 px-4 text-center whitespace-nowrap">
+                                    <td class="whitespace-nowrap px-4 py-3 text-center">
                                         @if ($item->lampiran_proposal)
-                                            <a href="{{ asset('storage/' . $item->lampiran_proposal) }}" target="_blank"
-                                                class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1">
-                                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            <a href="{{ asset('storage/'.$item->lampiran_proposal) }}" target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#D5DEE3] bg-white px-2.5 text-[12px] font-medium text-[#172B36] transition hover:bg-[#F5FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"
+                                                    viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13">
+                                                    </path>
                                                 </svg>
-                                                <span>File</span>
+                                                Lihat
                                             </a>
                                         @else
-                                            <span class="text-xs text-slate-400">-</span>
+                                            <span class="text-[12px] text-[#B45309]">Belum ada</span>
                                         @endif
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="py-8 text-center text-slate-400">
-                                        Divisi Anda belum pernah membuat pengajuan dana.
+                                    <td colspan="7" class="px-4 py-10 text-center text-[12px] text-[#4B5563]">
+                                        Belum ada pengajuan dana untuk divisi Anda.
                                     </td>
                                 </tr>
                             @endforelse
@@ -129,13 +147,19 @@
                     </table>
                 </div>
 
-                @if ($riwayat->hasPages())
-                    <div class="px-6 py-4 border-t border-slate-100">
-                        {{ $riwayat->links() }}
-                    </div>
-                @endif
+                <div class="flex flex-col gap-2 border-t border-[#E2E8EC] px-4 py-3 text-[12px] text-[#4B5563] sm:flex-row sm:items-center sm:justify-between">
+                    <span>
+                        @if ($riwayat->total() > 0)
+                            Menampilkan {{ $riwayat->firstItem() }}-{{ $riwayat->lastItem() }} dari {{ $riwayat->total() }} pengajuan
+                        @else
+                            Belum ada pengajuan
+                        @endif
+                    </span>
+                    @if ($riwayat->hasPages())
+                        <div>{{ $riwayat->links() }}</div>
+                    @endif
+                </div>
             </div>
-
         </main>
     </div>
 
