@@ -38,7 +38,7 @@
         @include('component.topbar')
 
         {{-- MAIN CONTENT --}}
-        <main class="flex-1 overflow-y-auto p-8 pt-6 pb-6">
+        <main class="flex-1 overflow-y-auto px-4 pt-6 pb-6">
             @include('component.breadcrumbs', [
                 'parentText' => 'Dashboard',
                 'parentUrl' => $dashboardUrl,
