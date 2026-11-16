@@ -173,12 +173,12 @@ class FinanceConsolidatedPagesUiTest extends TestCase
         $this->actingAs($this->finance)
             ->get('/kadiv/keuangan/manajemen-dana?periode=2026-11&tab=laporan')
             ->assertOk()
-            ->assertSee('Periode & minggu')
-            ->assertSee('01 - 07 Nov 26')
-            ->assertSee('Minggu ke-1');
+            ->assertSee('Periode')
+            ->assertSee('1–7 Nov 2026')
+            ->assertSee('Minggu 1');
     }
 
-    public function test_manajemen_dana_page_uses_detail_link_instead_of_inline_actions(): void
+    public function test_manajemen_dana_page_uses_clickable_rows_and_plain_tab_counts(): void
     {
         $request = KPermintDana::create([
             'id_kpd' => 'KPD-CONS-1',
@@ -200,10 +200,15 @@ class FinanceConsolidatedPagesUiTest extends TestCase
             ->assertSee('data-breadcrumb-parent="Keuangan"', false)
             ->assertSee('data-breadcrumb-current="Permintaan &amp; Verifikasi"', false)
             ->assertSee('Permintaan & Verifikasi')
-            ->assertSee('Permintaan Dana')
-            ->assertSee('Verifikasi Laporan L/R')
-            ->assertSee('href="'.$detailUrl.'"', false)
-            ->assertSee('text-[12px] font-medium text-[#146C94]', false)
+            ->assertSee('Permintaan dana')
+            ->assertSee('Verifikasi laporan L/R')
+            ->assertSee('Pengajuan')
+            ->assertSee('Divisi / pengaju')
+            ->assertSee('Nominal')
+            ->assertSee("window.location.href='".$detailUrl."'", false)
+            ->assertSee('Menampilkan 1-1 dari 1 pengajuan')
+            ->assertSee('Aksi')
+            ->assertSee('Detail')
             ->assertDontSee("openApproveModal('KPD-CONS-1'", false)
             ->assertSee('id="finance-groups"', false)
             ->assertSee('data-finance-direct="permintaan"', false);

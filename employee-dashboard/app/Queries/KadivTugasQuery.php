@@ -8,18 +8,24 @@ use Illuminate\Database\Eloquent\Builder;
 
 class KadivTugasQuery
 {
-    private function __construct(private string $divisiId)
+    private function __construct(private ?string $divisiId)
     {
     }
 
-    public static function forDivision(string $divisiId): self
+    public static function forDivision(?string $divisiId): self
     {
         return new self($divisiId);
     }
 
     public function apply(array $filters): Builder
     {
-        $karyawanIds = Karyawan::where('divisi_id_divisi', $this->divisiId)->pluck('id_karyawan');
+        $karyawanQuery = Karyawan::query();
+
+        if ($this->divisiId !== null) {
+            $karyawanQuery->where('divisi_id_divisi', $this->divisiId);
+        }
+
+        $karyawanIds = $karyawanQuery->pluck('id_karyawan');
 
         $query = Tugas::with(['karyawan.divisi', 'submitTugas', 'latestSubmitTugas'])
             ->whereIn('karyawan_id_karyawan', $karyawanIds);

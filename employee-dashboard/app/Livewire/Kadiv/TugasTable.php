@@ -109,13 +109,21 @@ class TugasTable extends Component
         ]]);
     }
 
-    private function divisionId(): string
+    private function divisionId(): ?string
     {
         $user = auth()->user();
 
+        if (! $user instanceof User2) {
+            abort(403);
+        }
+
+        // Direktur/Direksi monitors every division (read-only).
+        if ($user->isDirektur()) {
+            return null;
+        }
+
         if (
-            ! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'kadiv'
+            strtolower($user->role?->nama_role ?? '') !== 'kadiv'
             || ! $user->karyawan?->divisi_id_divisi
         ) {
             abort(403);
@@ -167,6 +175,10 @@ class TugasTable extends Component
 
     public function createTask(): void
     {
+        if (auth()->user()?->isDirektur()) {
+            abort(403, 'Direksi hanya dapat memantau data (read-only).');
+        }
+
         $divisionId = $this->divisionId();
 
         $this->validate([
@@ -233,6 +245,10 @@ class TugasTable extends Component
 
     public function createProject(): void
     {
+        if (auth()->user()?->isDirektur()) {
+            abort(403, 'Direksi hanya dapat memantau data (read-only).');
+        }
+
         $this->divisionId();
 
         $this->validate([

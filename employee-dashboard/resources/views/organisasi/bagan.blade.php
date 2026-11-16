@@ -118,56 +118,35 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
 
-        {{-- Top Action & Filter Toolbar --}}
-        <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4 shrink-0 shadow-xs">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#044564] to-[#19A7CE] text-white flex items-center justify-center shadow-md shadow-sky-500/20">
+        @php
+            $dashboardUrl = match ($role) {
+                'hrd' => route('hrd.dashboard'),
+                'kadiv' => route('kadiv.dashboard'),
+                default => url('/'),
+            };
+        @endphp
+
+        <main class="flex-1 flex flex-col min-h-0 overflow-hidden bg-slate-50 p-8 pt-6">
+            @include('component.breadcrumbs', [
+                'parentText' => 'Dashboard',
+                'parentUrl' => $dashboardUrl,
+                'currentPage' => 'Bagan Struktur Organisasi',
+                'inline' => true,
+            ])
+
+            {{-- Page heading --}}
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2.5 mb-6">
+                <span class="shrink-0 w-10 h-10 rounded-xl bg-[#E3F1F7] text-[#146C94] flex items-center justify-center">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15M8.25 9.75h7.5m-7.5 4.5h7.5" />
                         <rect x="3" y="3" width="18" height="18" rx="3" />
                     </svg>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">Bagan Struktur Organisasi</h1>
-                    <p class="text-xs text-slate-500">Visualisasi hierarki jabatan & tim kerja PT Silindo</p>
-                </div>
-            </div>
+                </span>
+                <span>Bagan Struktur Organisasi</span>
+            </h1>
 
-            <div class="flex flex-wrap items-center gap-3">
-                {{-- Filter Divisi --}}
-                <div class="flex items-center gap-2">
-                    <label for="filter-divisi" class="text-xs font-semibold text-slate-600">Filter:</label>
-                    <select id="filter-divisi" onchange="loadBaganData()"
-                            class="text-xs font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#19A7CE] cursor-pointer">
-                        <option value="all">Seluruh Perusahaan</option>
-                        @foreach ($daftarDivisi as $div)
-                            <option value="{{ $div->id_divisi }}">{{ $div->nama_divisi }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
-
-                {{-- Zoom & Pan Controls --}}
-                <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 gap-1">
-                    <button type="button" onclick="zoomIn()" title="Perbesar"
-                            class="p-1.5 rounded-md hover:bg-white text-slate-700 transition cursor-pointer">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                    </button>
-                    <button type="button" onclick="zoomOut()" title="Perkecil"
-                            class="p-1.5 rounded-md hover:bg-white text-slate-700 transition cursor-pointer">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" />
-                        </svg>
-                    </button>
-                    <button type="button" onclick="resetZoom()" title="Reset Tampilan"
-                            class="px-2 py-1 text-xs font-semibold rounded-md hover:bg-white text-slate-700 transition cursor-pointer">
-                        100%
-                    </button>
-                </div>
-
+            {{-- Toolbar --}}
+            <div class="relative z-20 flex flex-wrap items-center justify-between gap-3 mb-4 shrink-0">
                 {{-- Legend Tingkatan / Job Level --}}
                 <div class="hidden lg:flex items-center gap-3 text-[11px] font-medium text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span> Direktur Utama</span>
@@ -176,29 +155,65 @@
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-cyan-600"></span> Staff</span>
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full border border-dashed border-slate-500 bg-slate-300"></span> Kosong</span>
                 </div>
-            </div>
-        </header>
 
-        {{-- Canvas Area --}}
-        <main class="flex-1 relative overflow-hidden bg-slate-50">
-            <div id="org-canvas-viewport" class="w-full h-full overflow-auto flex items-start justify-center p-8">
-                <div id="org-canvas-container" class="transition-transform duration-100 origin-top">
-                    {{-- Tree Content rendered by JS --}}
-                    <div id="tree-root" class="org-tree">
-                        <div class="flex items-center justify-center p-12 text-slate-400">
-                            <svg class="animate-spin h-8 w-8 text-[#19A7CE]" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                <div class="flex flex-wrap items-center gap-3 ml-auto">
+                    {{-- Filter Divisi --}}
+                    <div class="flex items-center gap-2">
+                        <label for="filter-divisi" class="text-xs font-semibold text-slate-600">Filter:</label>
+                        <select id="filter-divisi" onchange="loadBaganData()"
+                                class="text-xs font-medium bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#19A7CE] cursor-pointer">
+                            <option value="all">Seluruh Perusahaan</option>
+                            @foreach ($daftarDivisi as $div)
+                                <option value="{{ $div->id_divisi }}">{{ $div->nama_divisi }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+
+                    {{-- Zoom & Pan Controls --}}
+                    <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 gap-1">
+                        <button type="button" onclick="zoomIn()" title="Perbesar"
+                                class="p-1.5 rounded-md hover:bg-white text-slate-700 transition cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                             </svg>
-                            <span class="ml-3 text-sm font-medium">Memuat bagan struktur...</span>
-                        </div>
+                        </button>
+                        <button type="button" onclick="zoomOut()" title="Perkecil"
+                                class="p-1.5 rounded-md hover:bg-white text-slate-700 transition cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" />
+                            </svg>
+                        </button>
+                        <button type="button" onclick="resetZoom()" title="Reset Tampilan"
+                                class="px-2 py-1 text-xs font-semibold rounded-md hover:bg-white text-slate-700 transition cursor-pointer">
+                            100%
+                        </button>
                     </div>
                 </div>
             </div>
 
-            {{-- Floating Quick Hint --}}
-            <div class="absolute bottom-4 left-6 bg-white/90 backdrop-blur-xs border border-slate-200 rounded-full px-4 py-1.5 text-xs text-slate-500 shadow-sm pointer-events-none">
-                💡 Klik salah satu foto/kartu untuk melihat detail atau mengirim pesan langsung.
+            {{-- Canvas Area --}}
+            <div class="relative flex-1 min-h-0 bg-slate-50">
+                <div id="org-canvas-viewport" class="w-full h-full overflow-auto flex items-start justify-start p-8">
+                    <div id="org-canvas-container" class="w-max shrink-0 mx-auto transition-transform duration-100 origin-top">
+                        {{-- Tree Content rendered by JS --}}
+                        <div id="tree-root" class="org-tree">
+                            <div class="flex items-center justify-center p-12 text-slate-400">
+                                <svg class="animate-spin h-8 w-8 text-[#19A7CE]" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                </svg>
+                                <span class="ml-3 text-sm font-medium">Memuat bagan struktur...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Floating Quick Hint --}}
+                <div class="absolute bottom-4 left-6 z-30 bg-white/90 backdrop-blur-xs border border-slate-200 rounded-full px-4 py-1.5 text-xs text-slate-500 shadow-sm pointer-events-none">
+                    💡 Klik salah satu foto/kartu untuk melihat detail atau mengirim pesan langsung.
+                </div>
             </div>
         </main>
     </div>

@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'            => \App\Http\Middleware\CheckRole::class,
             'kadiv.finance'   => \App\Http\Middleware\EnsureKadivFinance::class,
+            'deny.superadmin' => \App\Http\Middleware\DenySuperAdmin::class,
             'gateway.throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'gateway.format'  => \App\Http\Middleware\ApiResponseFormatter::class,
         ]);
@@ -71,6 +72,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 $role = strtolower($user?->role?->nama_role ?? '');
 
                 $dashboardRoute = match ($role) {
+                    'direktur', 'direksi' => 'direktur.dashboard',
                     'hrd'   => 'hrd.dashboard',
                     'kadiv' => 'kadiv.dashboard',
                     'staff' => 'dashboard',

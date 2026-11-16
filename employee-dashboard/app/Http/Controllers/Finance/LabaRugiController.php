@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Exceptions\LaporanSudahDiverifikasiException;
 use App\Helpers\FormatAkuntansi;
 use App\Http\Controllers\Controller;
 use App\Models\Divisi;
 use App\Models\KLabaRugi;
+use App\Services\Finance\VerifikasiLaporanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -153,18 +155,21 @@ class LabaRugiController extends Controller
      */
     public function verifikasi(Request $request, string $id): \Illuminate\Http\RedirectResponse
     {
-        $laporan = KLabaRugi::findOrFail($id);
-
         $data = $request->validate([
             'status_verifikasi'  => ['required', 'string', 'in:disetujui,perlu_revisi'],
             'catatan_verifikasi' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $laporan->update([
-            'status_verifikasi'         => $data['status_verifikasi'],
-            'catatan_verifikasi'        => $data['catatan_verifikasi'],
-            'diverifikasi_oleh_id_user' => Auth::id(),
-        ]);
+        try {
+            app(VerifikasiLaporanService::class)->putuskan(
+                $id,
+                $request->user(),
+                $data['status_verifikasi'],
+                $data['catatan_verifikasi'] ?? null
+            );
+        } catch (LaporanSudahDiverifikasiException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         $statusLabel = $data['status_verifikasi'] === 'disetujui' ? 'disetujui' : 'diminta untuk direvisi';
 

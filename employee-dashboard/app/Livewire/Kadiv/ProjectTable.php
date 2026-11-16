@@ -22,12 +22,21 @@ class ProjectTable extends Component
     public string $tenggatProject = '';
     public $projectFile = null;
 
-    private function divisionId(): string
+    private function divisionId(): ?string
     {
         $user = auth()->user();
 
-        if (! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'kadiv'
+        if (! $user instanceof User2) {
+            abort(403);
+        }
+
+        // Direktur/Direksi may view the page, but the mutation methods below
+        // remain blocked for the read-only super-admin role.
+        if ($user->isDirektur()) {
+            return null;
+        }
+
+        if (strtolower($user->role?->nama_role ?? '') !== 'kadiv'
             || ! $user->karyawan?->divisi_id_divisi) {
             abort(403);
         }
@@ -55,6 +64,10 @@ class ProjectTable extends Component
 
     public function editProject(string $id): void
     {
+        if (auth()->user()?->isDirektur()) {
+            abort(403, 'Direksi hanya dapat memantau data (read-only).');
+        }
+
         $this->divisionId();
         $project = $this->projectForOwner($id);
 
@@ -74,6 +87,10 @@ class ProjectTable extends Component
 
     public function updateProject(): void
     {
+        if (auth()->user()?->isDirektur()) {
+            abort(403, 'Direksi hanya dapat memantau data (read-only).');
+        }
+
         $this->divisionId();
         $project = $this->projectForOwner($this->editingProjectId);
 
@@ -133,6 +150,10 @@ class ProjectTable extends Component
 
     public function deleteProject(string $id): void
     {
+        if (auth()->user()?->isDirektur()) {
+            abort(403, 'Direksi hanya dapat memantau data (read-only).');
+        }
+
         $this->divisionId();
         $project = $this->projectForOwner($id);
         $filePath = $project->file_path;

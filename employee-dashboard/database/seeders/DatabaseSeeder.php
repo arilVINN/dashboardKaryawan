@@ -303,6 +303,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FinanceSeeder::class,
             DivisionHierarchySeeder::class,
+            DirekturSeeder::class,
             TugasSeeder::class,
             TowerDatabaseSeeder::class,
             PesanSeeder::class,

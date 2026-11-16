@@ -54,7 +54,7 @@ class DivisiTable extends Component
         $user = auth()->user();
 
         if (! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'hrd') {
+            || (strtolower($user->role?->nama_role ?? '') !== 'hrd' && ! $user->isDirektur())) {
             abort(403);
         }
 

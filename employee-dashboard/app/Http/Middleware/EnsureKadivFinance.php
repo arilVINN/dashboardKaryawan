@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User2;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -10,6 +11,7 @@ use Illuminate\Http\Request;
  *
  * Kriteria akses: role = 'kadiv' DAN divisi adalah unit Finance & Accounting.
  * Rute ini hanya boleh diakses oleh Kadiv Finance, bukan Kadiv divisi lain.
+ * Direktur/Direksi memiliki akses penuh sebagai super-admin.
  */
 class EnsureKadivFinance
 {
@@ -24,7 +26,8 @@ class EnsureKadivFinance
             return redirect()->route('login');
         }
 
-        // Pastikan role adalah kadiv DAN unitnya adalah Finance & Accounting.
+        // Pastikan role adalah kadiv DAN unitnya adalah Finance & Accounting,
+        // atau Direktur/Direksi yang memiliki akses keuangan penuh.
         if (! $user->isKadivFinance()) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -32,7 +35,11 @@ class EnsureKadivFinance
                 ], 403);
             }
 
-            return redirect()->route('kadiv.dashboard')
+            $dashboardRoute = $user instanceof User2 && $user->isDirektur()
+                ? 'direktur.dashboard'
+                : 'kadiv.dashboard';
+
+            return redirect()->route($dashboardRoute)
                 ->with('forbidden', 'Akses ini khusus Kepala Divisi Finance & Accounting.');
         }
 

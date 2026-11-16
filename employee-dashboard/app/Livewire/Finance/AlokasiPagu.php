@@ -84,6 +84,7 @@ class AlokasiPagu extends Component
     public function openCreateModal(): void
     {
         $this->ensureFinanceAccess();
+        $this->ensureFinanceWritable();
         $this->resetValidation();
         $this->createDivisiId = '';
         $this->createNominal = '';
@@ -100,6 +101,7 @@ class AlokasiPagu extends Component
     public function openEditModal(string $id): void
     {
         $this->ensureFinanceAccess();
+        $this->ensureFinanceWritable();
 
         $alokasi = KeuanganAldiv::with('divisi')
             ->where('periode', $this->periode)
@@ -126,6 +128,7 @@ class AlokasiPagu extends Component
     public function saveCreate(): void
     {
         $this->ensureFinanceAccess();
+        $this->ensureFinanceWritable();
 
         $this->validate([
             'createDivisiId' => [
@@ -164,6 +167,7 @@ class AlokasiPagu extends Component
     public function saveEdit(): void
     {
         $this->ensureFinanceAccess();
+        $this->ensureFinanceWritable();
 
         $this->validate([
             'editNominal' => ['required', 'integer', 'gt:0'],
@@ -227,6 +231,14 @@ class AlokasiPagu extends Component
     {
         // Samakan dengan middleware kadiv.finance pada route halaman.
         abort_unless(auth()->user()?->isKadivFinance(), 403);
+    }
+
+    private function ensureFinanceWritable(): void
+    {
+        // Direktur/Direksi is a read-only monitor for budget data.
+        if (auth()->user()?->isDirektur()) {
+            abort(403, 'Direksi hanya dapat memantau data (read-only).');
+        }
     }
 
     private function periodeLabel(): string

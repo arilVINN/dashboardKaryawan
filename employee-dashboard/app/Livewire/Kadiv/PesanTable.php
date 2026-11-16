@@ -59,7 +59,7 @@ class PesanTable extends Component
 
         if (
             ! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'kadiv'
+            || (strtolower($user->role?->nama_role ?? '') !== 'kadiv' && ! $user->isDirektur())
             || ! $user->karyawan?->divisi_id_divisi
         ) {
             abort(403);

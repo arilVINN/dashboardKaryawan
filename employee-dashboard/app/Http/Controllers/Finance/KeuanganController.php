@@ -151,6 +151,10 @@ class KeuanganController extends Controller
         $divisiId = $request->input('divisi_id', null);
         $periode  = $request->input('periode', now()->format('Y-m'));
 
+        if (! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', (string) $periode)) {
+            $periode = now()->format('Y-m');
+        }
+
         $divisiList = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
 
         // Permintaan Dana
