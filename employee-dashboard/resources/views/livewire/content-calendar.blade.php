@@ -277,35 +277,6 @@
                     Coba lagi
                 </button>
             </div>
-        @elseif ($isEmpty && $view !== 'daftar')
-            <div class="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-                <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E3F1F7] text-[#146C94]">
-                    <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z"></path>
-                    </svg>
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-[#172B36]">Belum ada event bulan ini</p>
-                    <p class="mt-1 text-xs text-[#4B5563]">
-                        {{ $hasActiveFilters ? 'Coba ubah filter atau tambahkan event baru.' : 'Tambahkan event pertama untuk '.($activeAccount?->name ?? 'akun ini').'.' }}
-                    </p>
-                </div>
-                <div class="flex flex-wrap items-center justify-center gap-2">
-                    <button type="button" id="content-add-event-empty" wire:click="openCreate()" @click="remember($el)"
-                        class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white hover:bg-[#0086A0]">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
-                        </svg>
-                        Tambah event
-                    </button>
-                    @if ($hasActiveFilters)
-                        <button type="button" wire:click="resetFilters"
-                            class="inline-flex h-10 items-center rounded-lg border border-[#E2E8EC] bg-white px-4 text-sm font-medium text-[#4B5563] hover:bg-slate-50">
-                            Reset filter
-                        </button>
-                    @endif
-                </div>
-            </div>
         @elseif ($view === 'bulan')
             <div class="overflow-x-auto">
                 <div class="min-w-[760px]">

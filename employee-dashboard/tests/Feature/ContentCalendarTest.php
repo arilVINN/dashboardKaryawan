@@ -761,12 +761,14 @@ class ContentCalendarTest extends TestCase
             ->assertSet('statusFilter', 'semua');
     }
 
-    public function test_empty_state_is_shown_when_the_month_has_no_events(): void
+    public function test_month_without_events_renders_the_empty_calendar_grid(): void
     {
         Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->set('month', '2026-12')
-            ->assertSee('Belum ada event bulan ini');
+            ->assertDontSee('Belum ada event bulan ini')
+            ->assertSee('Desember 2026')
+            ->assertSee('Sen');
     }
 
     public function test_national_holidays_are_not_rendered_on_the_content_calendar(): void
