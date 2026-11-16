@@ -20,7 +20,7 @@
             {{-- Header & Button Tambah Langsung --}}
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-800">Kas Keluar & Pencairan Dana</h1>
+                    <x-page-heading title="Kas Keluar & Pencairan Dana" icon="document" />
                     <p class="text-sm text-slate-500 mt-1">Eksekusi pencairan anggaran yang telah di-ACC serta pencatatan pengeluaran operasional perusahaan.</p>
                 </div>
                 <div class="flex items-center gap-3">
@@ -82,7 +82,7 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <button type="button"
-                                        onclick="openCairkanModal('{{ $kpd->id_kpd }}', '{{ $kpd->nomor_pengajuan }}', '{{ $kpd->nominal_diajukan }}', '{{ addslashes($kpd->judul_pengajuan) }}')"
+                                        onclick="openCairkanModal('{{ $kpd->id_kpd }}', '{{ $kpd->nomor_pengajuan }}', '{{ $kpd->nominal_diajukan }}', '{{ addslashes($kpd->judul_pengajuan) }}', '{{ addslashes($kpd->divisi?->nama_divisi ?? '-') }}')"
                                         class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center gap-1.5">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -225,6 +225,7 @@
                 @csrf
                 <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
                     <p class="text-slate-500">Nomor Pengajuan: <span id="cairkan-no" class="font-mono font-bold text-slate-800"></span></p>
+                    <p class="text-slate-500 mt-1">Divisi: <span id="cairkan-divisi" class="font-semibold text-slate-800"></span></p>
                     <p class="text-slate-500 mt-1">Keperluan: <span id="cairkan-judul" class="font-semibold text-slate-800"></span></p>
                     <p class="text-slate-500 mt-1">Nominal Dicairkan: <span id="cairkan-nominal" class="font-bold text-emerald-600 text-sm"></span></p>
                 </div>
@@ -260,7 +261,7 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-                    <button type="button" onclick="closeModal('modal-cairkan')"
+                    <button type="button" id="cairkan-batal" data-autofocus onclick="closeModal('modal-cairkan')"
                         class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
                         Batal
                     </button>
@@ -348,17 +349,22 @@
 
     <script>
         function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            const focusTarget = modal.querySelector('[data-autofocus]');
+            if (focusTarget) setTimeout(function () { focusTarget.focus(); }, 0);
         }
 
         function closeModal(id) {
             document.getElementById(id).classList.add('hidden');
         }
 
-        function openCairkanModal(idKpd, noReq, nominal, judul) {
+        function openCairkanModal(idKpd, noReq, nominal, judul, divisi) {
             const form = document.getElementById('form-cairkan');
             form.action = '/kadiv/keuangan/pengeluaran/cairkan/' + idKpd;
             document.getElementById('cairkan-no').textContent = noReq;
+            document.getElementById('cairkan-divisi').textContent = divisi || '-';
             document.getElementById('cairkan-judul').textContent = judul;
             document.getElementById('cairkan-nominal').textContent = 'Rp ' + parseInt(nominal).toLocaleString('id-ID');
             openModal('modal-cairkan');

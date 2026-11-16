@@ -20,7 +20,7 @@
             {{-- Header & Button Tambah --}}
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-800">Kas Masuk (Pemasukan)</h1>
+                    <x-page-heading title="Kas Masuk (Pemasukan)" icon="analytics" />
                     <p class="text-sm text-slate-500 mt-1">Pencatatan seluruh penerimaan kas, modal, piutang, dan pendapatan operasional PT Silindo.</p>
                 </div>
                 <div class="flex items-center gap-3">

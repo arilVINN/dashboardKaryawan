@@ -11,10 +11,10 @@
     $isRevisi = in_array($status, ['revisi', 'menunggu'], true);
 
     if ($isRevisi) {
-        // Revisi keeps the dark grey card treatment so it stands apart.
-        $rowStyle = 'background-color: #4B5563; border-color: #000000;';
-        $titleStyle = 'color: #F9FAFB;';
-        $metaStyle = 'color: #E5E7EB;';
+        // Revisi keeps the grey card treatment so it stands apart from white Plan rows.
+        $rowStyle = 'background-color: #E2E8F0; border-color: #000000;';
+        $titleStyle = 'color: #172B36;';
+        $metaStyle = 'color: #4B5563;';
     } elseif ($palette) {
         $rowStyle = 'background-color: '.$palette['bg'].'; border-color: '.$palette['border'].';';
         $titleStyle = 'color: #172B36;';

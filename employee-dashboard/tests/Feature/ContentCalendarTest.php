@@ -612,7 +612,7 @@ class ContentCalendarTest extends TestCase
         );
     }
 
-    public function test_event_card_background_follows_status_and_plan_uses_the_previous_revisi_style(): void
+    public function test_event_card_background_follows_status_with_grey_revisi_and_white_plan(): void
     {
         $this->event($this->staffHr, ['title' => 'Event Publish', 'event_date' => '2026-11-10', 'status' => 'publish']);
         $this->event($this->staffHr, ['title' => 'Event Process', 'event_date' => '2026-11-11', 'status' => 'process']);
@@ -631,8 +631,7 @@ class ContentCalendarTest extends TestCase
         $this->assertStringContainsString('background-color: #FEF0C3; border-color: #F5C85C;', $html);
 
         $this->assertStringContainsString('data-status="revisi"', $html);
-        $this->assertStringContainsString('background-color: #4B5563; border-color: #000000;', $html);
-        $this->assertStringContainsString('color: #F9FAFB;', $html);
+        $this->assertStringContainsString('background-color: #E2E8F0; border-color: #000000;', $html);
 
         $this->assertStringContainsString('data-status="plan"', $html);
         $this->assertStringContainsString('background-color: #FFFFFF; border-color: #94A3B8;', $html);
