@@ -20,7 +20,7 @@
             {{-- Header --}}
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-800">Verifikasi Laporan Laba / Rugi Divisi</h1>
+                    <x-page-heading title="Verifikasi Laporan Laba / Rugi Divisi" icon="tasks" />
                     <p class="text-sm text-slate-500 mt-1">Review dan verifikasi laporan mingguan yang dikirim oleh kepala divisi.</p>
                 </div>
             </div>

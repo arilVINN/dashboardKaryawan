@@ -198,7 +198,7 @@
 
         <button type="button" id="content-add-account" wire:click="openAccountForm"
             title="Tambah akun media sosial"
-            class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-[#0097B2] px-3 text-[13px] font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
+            class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-[#146C94] px-3 text-[13px] font-semibold text-white transition hover:bg-[#0f5878] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
             </svg>
@@ -298,7 +298,7 @@
                                         : ($day['is_other_month'] ? 'text-[#7B8794]' : 'text-[#172B36]');
                                 @endphp
                                 <div wire:key="month-day-{{ $date }}"
-                                    class="relative min-h-[96px] border-b border-r border-[#E2E8EC] p-1.5 transition-colors {{ $isSelectedCreate ? 'ring-2 ring-inset ring-[#146C94]' : '' }}"
+                                    class="relative min-h-[96px] border-b border-r border-[#E2E8EC] p-1 transition-colors {{ $isSelectedCreate ? 'ring-2 ring-inset ring-[#146C94]' : '' }}"
                                     :class="dragOver === '{{ $date }}' ? 'bg-[#E3F1F7]/60 outline outline-2 -outline-offset-2 outline-dashed outline-[#146C94]' : ''"
                                     @dragover.prevent="dragOver = '{{ $date }}'"
                                     @dragleave="if (dragOver === '{{ $date }}') dragOver = null"
@@ -364,7 +364,7 @@
                                     <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-full px-1 text-[14px] font-medium {{ $numberClass }}">{{ $day['day'] }}</span>
                                 </div>
 
-                                <div class="space-y-2 p-2 pt-1">
+                                <div class="space-y-2 p-1.5 pt-1">
                                     @foreach ($day['items'] as $item)
                                         <x-content-event-card :event="$item" :show-date="true" :lines="2"
                                             wire:key="week-card-{{ $item['id'] }}"

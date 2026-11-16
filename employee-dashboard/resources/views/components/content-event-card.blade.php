@@ -14,9 +14,9 @@
     $isRevisi = in_array($status, ['revisi', 'menunggu'], true);
 
     if ($isRevisi) {
-        // Revisi uses a dark grey card with light text so it stands apart from
-        // the coloured workflow blocks.
-        $cardStyle = 'background-color: #4B5563; border-color: #000000;';
+        // Revisi uses a clearly grey card (not white) with dark text so it
+        // stands apart from both the white Plan card and the coloured blocks.
+        $cardStyle = 'background-color: #E2E8F0; border-color: #000000;';
     } elseif ($palette) {
         $cardStyle = 'background-color: '.$palette['bg'].'; border-color: '.$palette['border'].';';
     } else {
@@ -33,21 +33,23 @@
     data-status="{{ $event['status'] }}"
     @if ($openable) wire:click="openEvent({{ $event['id'] }})" @endif
     aria-label="Buka event {{ $event['title'] }}">
-    <span class="text-[13px] font-semibold leading-snug text-[#172B36] {{ $lines > 1 ? 'line-clamp-2' : 'block truncate' }}"
-        @if ($isRevisi) style="color: #F9FAFB;" @endif>
+    <span class="text-[13px] font-semibold leading-snug text-[#172B36] {{ $lines > 1 ? 'line-clamp-2' : 'block truncate' }}">
         {{ $event['title'] }}
     </span>
 
     @if ($showDate)
-        <span class="text-[12px] leading-tight text-[#4B5563]" @if ($isRevisi) style="color: #E5E7EB;" @endif>{{ $event['date_label'] }}</span>
+        <span class="text-[12px] leading-tight text-[#4B5563]">{{ $event['date_label'] }}</span>
     @endif
 
-    @if (! empty($event['time_label']))
-        <span class="text-[12px] leading-tight text-[#4B5563]" @if ($isRevisi) style="color: #E5E7EB;" @endif>{{ $event['time_label'] }}</span>
-    @endif
+    <span class="mt-auto flex items-end justify-between gap-2 pt-1">
+        <span class="flex flex-col items-start gap-1 whitespace-nowrap">
+            <x-content-type-tag :name="$event['type_name']" :fill="$event['type_fill']" :border="$event['type_border']" quiet />
+            <x-status-badge variant="content" dot solid :status="$event['status']" />
+        </span>
 
-    <span class="mt-0.5 flex flex-col items-start gap-1">
-        <x-content-type-tag :name="$event['type_name']" :fill="$event['type_fill']" :border="$event['type_border']" quiet />
-        <x-status-badge variant="content" dot solid :status="$event['status']" />
+        @if (! empty($event['time_label']))
+            <span class="shrink-0 pb-0.5 text-[11px] font-medium leading-none text-[#4B5563]"
+                style="font-variant-numeric: tabular-nums;">{{ $event['time_label'] }}</span>
+        @endif
     </span>
 </button>
