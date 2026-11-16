@@ -42,6 +42,11 @@ Route::middleware(['auth', 'throttle:umum', EnsureContentCalendarAccess::class])
     })->name('kalender-konten');
 });
 
+// ================= DIREKTUR (auth + role) ================= //
+Route::middleware(['auth', 'role:direktur,direksi', 'throttle:umum'])->prefix('direktur')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Direktur\DirekturDashboardController::class, 'index'])->name('direktur.dashboard');
+});
+
 // staff route (session auth + staff role)
 Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/', function () {
@@ -437,6 +442,12 @@ Route::middleware(['auth', 'role:hrd,direksi', 'throttle:umum'])->prefix('hrd')-
     Route::post('/suratBooking/{booking}/tolak', [BookingController::class, 'reject'])
         ->middleware('throttle:submit-form')
         ->name('hrd.suratBooking.tolak');
+
+    Route::get('/suratIzin', [HrdDashboardController::class, 'suratIzinPage']);
+    Route::post('/suratIzin/{suratIzin}/acc', [HrdDashboardController::class, 'approveSuratIzin'])
+        ->middleware('throttle:submit-form');
+    Route::post('/suratIzin/{suratIzin}/tolak', [HrdDashboardController::class, 'rejectSuratIzin'])
+        ->middleware('throttle:submit-form');
 });
 
 
@@ -469,6 +480,7 @@ Route::fallback(function (Request $request) {
 
     $role = strtolower($user->role?->nama_role ?? '');
     $dashboardRoute = match ($role) {
+        'direktur', 'direksi' => 'direktur.dashboard',
         'hrd'   => 'hrd.dashboard',
         'kadiv' => 'kadiv.dashboard',
         'staff' => 'dashboard',

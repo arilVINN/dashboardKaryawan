@@ -18,12 +18,19 @@ class ProjectDetail extends Component
         $this->divisionId();
     }
 
-    private function divisionId(): string
+    private function divisionId(): ?string
     {
         $user = auth()->user();
 
-        if (! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'kadiv'
+        if (! $user instanceof User2) {
+            abort(403);
+        }
+
+        if ($user->isDirektur()) {
+            return null;
+        }
+
+        if (strtolower($user->role?->nama_role ?? '') !== 'kadiv'
             || ! $user->karyawan?->divisi_id_divisi) {
             abort(403);
         }
@@ -33,12 +40,14 @@ class ProjectDetail extends Component
 
     private function project(): ProjectModel
     {
-        $project = ProjectModel::with(['tasks.karyawan'])
-            ->where('id_project', $this->projectId)
-            ->where('dibuat_oleh_id_user', auth()->user()->id_user)
-            ->firstOrFail();
+        $query = ProjectModel::with(['tasks.karyawan'])
+            ->where('id_project', $this->projectId);
 
-        return $project;
+        if (! auth()->user()?->isDirektur()) {
+            $query->where('dibuat_oleh_id_user', auth()->user()->id_user);
+        }
+
+        return $query->firstOrFail();
     }
 
     public function toggleTask(string $idTask): void

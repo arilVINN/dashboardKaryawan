@@ -19,6 +19,10 @@ class ContentCalendarAccess
             return false;
         }
 
+        if ($user->isDirektur()) {
+            return true;
+        }
+
         $divisionId = $user->karyawan?->divisi_id_divisi;
 
         if (! $divisionId) {

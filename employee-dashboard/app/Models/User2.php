@@ -84,7 +84,25 @@ class User2 extends Authenticatable
         return $this->hasMany(KLabaRugi::class, 'user_id_user', 'id_user');
     }
 
-    // ─── Keuangan Helpers ─────────────────────────────────────────────────────
+    // ─── Role Helpers ─────────────────────────────────────────────────────────
+
+    /**
+     * Cek apakah user ini adalah Direktur / Direksi (Super-Admin).
+     */
+    public function isDirektur(): bool
+    {
+        $roleName = strtolower($this->role?->nama_role ?? '');
+        return $roleName === 'direktur' || $roleName === 'direksi';
+    }
+
+    /**
+     * Cek apakah user ini memiliki hak akses keuangan penuh.
+     * Kadiv Finance ATAU Direktur.
+     */
+    public function hasFinanceAccess(): bool
+    {
+        return $this->isKadivFinance() || $this->isDirektur();
+    }
 
     /**
      * Cek apakah user ini adalah Kepala Divisi Finance.
@@ -92,7 +110,8 @@ class User2 extends Authenticatable
      */
     public function isKadivFinance(): bool
     {
-        return strtolower($this->role?->nama_role ?? '') === 'kadiv'
-            && strtoupper($this->karyawan?->divisi?->kode_divisi ?? '') === 'FIN';
+        return (strtolower($this->role?->nama_role ?? '') === 'kadiv'
+            && strtoupper($this->karyawan?->divisi?->kode_divisi ?? '') === 'FIN')
+            || $this->isDirektur();
     }
 }

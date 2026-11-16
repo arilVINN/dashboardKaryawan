@@ -14,18 +14,18 @@ class KadivStaffController extends Controller
      */
     public function index(Request $request)
     {
-        // Dapatkan user yang sedang login (Kadiv)
         $userKadiv = $request->user();
-        
-        // Dapatkan divisi dari Kadiv tersebut
-        $divisiId = $userKadiv->karyawan->divisi_id_divisi;
+        $isDirektur = $userKadiv->isDirektur();
+        $divisiId = $request->query('divisi_id') ?? ($isDirektur ? null : $userKadiv->karyawan?->divisi_id_divisi);
 
-        // Ambil semua karyawan yang satu divisi, kecuali Kadiv itu sendiri jika diperlukan,
-        // tapi sesuai requirement, ambil semua staff di divisi.
-        $staffs = Karyawan::with('user.role')
-            ->where('divisi_id_divisi', $divisiId)
-            ->whereHas('user.role', fn ($query) => $query->whereRaw('LOWER(nama_role) = ?', ['staff']))
-            ->get();
+        $query = Karyawan::with('user.role')
+            ->whereHas('user.role', fn ($query) => $query->whereRaw('LOWER(nama_role) = ?', ['staff']));
+
+        if ($divisiId) {
+            $query->where('divisi_id_divisi', $divisiId);
+        }
+
+        $staffs = $query->get();
 
         return response()->json([
             'message' => 'Berhasil mengambil data staff divisi',
@@ -40,17 +40,18 @@ class KadivStaffController extends Controller
     public function show(Request $request, $id)
     {
         $userKadiv = $request->user();
-        $divisiId = $userKadiv->karyawan->divisi_id_divisi;
 
-        // Pastikan staff tersebut ada dan berada di divisi yang sama dengan Kadiv
-        $staff = Karyawan::with(['user.role', 'tugas' => function($query) {
-            // Urutkan tugas terbaru atau status
+        $query = Karyawan::with(['user.role', 'tugas' => function($query) {
             $query->orderBy('tanggal_dibuat', 'desc');
         }])
         ->where('id_karyawan', $id)
-        ->where('divisi_id_divisi', $divisiId)
-        ->whereHas('user.role', fn ($query) => $query->whereRaw('LOWER(nama_role) = ?', ['staff']))
-        ->first();
+        ->whereHas('user.role', fn ($query) => $query->whereRaw('LOWER(nama_role) = ?', ['staff']));
+
+        if (! $userKadiv->isDirektur()) {
+            $query->where('divisi_id_divisi', $userKadiv->karyawan?->divisi_id_divisi);
+        }
+
+        $staff = $query->first();
 
         if (!$staff) {
             return response()->json(['message' => 'Staff tidak ditemukan atau bukan bagian dari divisi Anda'], 404);

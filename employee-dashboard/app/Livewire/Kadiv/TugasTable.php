@@ -109,13 +109,20 @@ class TugasTable extends Component
         ]]);
     }
 
-    private function divisionId(): string
+    private function divisionId(): ?string
     {
         $user = auth()->user();
 
+        if (! $user instanceof User2) {
+            abort(403);
+        }
+
+        if ($user->isDirektur()) {
+            return null;
+        }
+
         if (
-            ! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'kadiv'
+            strtolower($user->role?->nama_role ?? '') !== 'kadiv'
             || ! $user->karyawan?->divisi_id_divisi
         ) {
             abort(403);
@@ -179,9 +186,11 @@ class TugasTable extends Component
             'tenggat.after' => 'Invalid tanggal: tidak bisa mengambil waktu masa lalu.',
         ]);
 
-        $staffIds = Karyawan::where('divisi_id_divisi', $divisionId)
-            ->whereHas('user.role', fn($q) => $q->whereRaw('LOWER(nama_role) = ?', ['staff']))
-            ->pluck('id_karyawan');
+        $staffQuery = Karyawan::whereHas('user.role', fn($q) => $q->whereRaw('LOWER(nama_role) = ?', ['staff']));
+        if (!empty($divisionId)) {
+            $staffQuery->where('divisi_id_divisi', $divisionId);
+        }
+        $staffIds = $staffQuery->pluck('id_karyawan');
 
         if ($this->recipient === 'semua') {
             $recipients = $staffIds->all();

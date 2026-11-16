@@ -71,7 +71,7 @@ class ComposeMessage extends Component
         $user = auth()->user();
 
         if (! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'staff') {
+            || (! in_array(strtolower($user->role?->nama_role ?? ''), ['staff', 'direktur', 'direksi'], true))) {
             abort(403);
         }
 

@@ -46,7 +46,7 @@ class KaryawanTable extends Component
         $user = auth()->user();
 
         if (! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'hrd') {
+            || (! in_array(strtolower($user->role?->nama_role ?? ''), ['hrd', 'direktur', 'direksi'], true))) {
             abort(403);
         }
 

@@ -147,15 +147,24 @@ class Karyawan extends Model
         return strtolower($this->user?->role?->nama_role ?? '') === strtolower($roleName);
     }
 
+    public function isDirektur(): bool
+    {
+        return $this->hasRole('direktur')
+            || $this->hasRole('direksi')
+            || strtolower($this->job_level ?? '') === 'direksi'
+            || str_contains(strtolower($this->jabatan ?? ''), 'direktur');
+    }
+
     public function isKadiv(): bool
     {
         return $this->hasRole('kadiv')
+            || $this->isDirektur()
             || preg_match('/^kepala\s+divisi(?:\s|$)/i', trim($this->jabatan ?? '')) === 1;
     }
 
     public function isStaff(): bool
     {
-        return $this->hasRole('staff');
+        return $this->hasRole('staff') || $this->isDirektur();
     }
 
     /**
@@ -163,7 +172,7 @@ class Karyawan extends Model
      */
     public function isFinance(): bool
     {
-        return strtoupper($this->divisi?->kode_divisi ?? '') === 'FIN';
+        return strtoupper($this->divisi?->kode_divisi ?? '') === 'FIN' || $this->isDirektur();
     }
 
     /**
@@ -171,7 +180,7 @@ class Karyawan extends Model
      */
     public function isKadivFinance(): bool
     {
-        return $this->isKadiv() && $this->isFinance();
+        return ($this->isKadiv() && $this->isFinance()) || $this->isDirektur();
     }
 
     public function suratIzins(): HasMany

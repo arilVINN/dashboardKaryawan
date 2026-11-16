@@ -38,7 +38,7 @@ class StrukturOrganisasiController extends Controller
 
         return view('organisasi.bagan', [
             'role' => $role,
-            'isHrd' => ($role === 'hrd'),
+            'isHrd' => in_array($role, ['hrd', 'direktur', 'direksi'], true),
             'currentKaryawan' => $karyawan,
             'daftarDivisi' => $daftarDivisi,
             'daftarKaryawanAktif' => $daftarKaryawanAktif,
@@ -163,8 +163,8 @@ class StrukturOrganisasiController extends Controller
     public function updateAtasan(Request $request): JsonResponse
     {
         $user = Auth::user();
-        if (strtolower($user?->role?->nama_role ?? '') !== 'hrd') {
-            return response()->json(['success' => false, 'message' => 'Hanya HRD yang diizinkan mengubah bagan struktur.'], 403);
+        if (! in_array(strtolower($user?->role?->nama_role ?? ''), ['hrd', 'direktur', 'direksi'], true)) {
+            return response()->json(['success' => false, 'message' => 'Hanya HRD atau Direktur yang diizinkan mengubah bagan struktur.'], 403);
         }
 
         $validated = $request->validate([
@@ -204,8 +204,8 @@ class StrukturOrganisasiController extends Controller
     public function assignVacant(Request $request): JsonResponse
     {
         $user = Auth::user();
-        if (strtolower($user?->role?->nama_role ?? '') !== 'hrd') {
-            return response()->json(['success' => false, 'message' => 'Hanya HRD yang diizinkan.'], 403);
+        if (! in_array(strtolower($user?->role?->nama_role ?? ''), ['hrd', 'direktur', 'direksi'], true)) {
+            return response()->json(['success' => false, 'message' => 'Hanya HRD atau Direktur yang diizinkan.'], 403);
         }
 
         $validated = $request->validate([

@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Divisi;
 use App\Models\TowerDatabase;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Url;
@@ -20,6 +21,9 @@ class TowerDatabaseTable extends Component
     #[Url]
     public string $jenis = '';
 
+    #[Url(as: 'akses')]
+    public string $filterAkses = '';
+
     #[Url]
     public string $sort = 'created_at';
 
@@ -35,6 +39,8 @@ class TowerDatabaseTable extends Component
     public string $formNama = '';
     public string $formKeterangan = '';
     public string $formJenis = 'file'; // 'file', 'nomor', 'link'
+    public string $formAkses = 'general'; // 'general' atau 'divisi'
+    public ?string $formDivisiId = null;
     public $formFile = null;
     public string $formNilaiKontak = '';
     public string $formEmailKontak = '';
@@ -46,6 +52,11 @@ class TowerDatabaseTable extends Component
     }
 
     public function updatedJenis(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterAkses(): void
     {
         $this->resetPage();
     }
@@ -81,7 +92,7 @@ class TowerDatabaseTable extends Component
 
     public function resetFilters(): void
     {
-        $this->reset(['search', 'jenis']);
+        $this->reset(['search', 'jenis', 'filterAkses']);
         $this->resetPage();
     }
 
@@ -96,10 +107,56 @@ class TowerDatabaseTable extends Component
         $this->resetPage();
     }
 
+    public function currentUserRole(): string
+    {
+        return strtolower(auth()->user()?->role?->nama_role ?? '');
+    }
+
+    public function isExecutiveRole(): bool
+    {
+        return in_array($this->currentUserRole(), ['hrd', 'admin', 'direktur'], true);
+    }
+
+    public function currentUserDivisiId(): ?string
+    {
+        return auth()->user()?->karyawan?->divisi_id_divisi;
+    }
+
     public function canManage(): bool
     {
-        $role = strtolower(auth()->user()?->role?->nama_role ?? '');
-        return in_array($role, ['hrd', 'kadiv', 'admin'], true);
+        return in_array($this->currentUserRole(), ['hrd', 'kadiv', 'admin', 'direktur'], true);
+    }
+
+    public function canAccessItem(TowerDatabase $item): bool
+    {
+        if ($this->isExecutiveRole()) {
+            return true;
+        }
+
+        if ($item->isGeneral()) {
+            return true;
+        }
+
+        $userDivisiId = $this->currentUserDivisiId();
+        return $userDivisiId && $item->divisi_id_divisi === $userDivisiId;
+    }
+
+    public function canManageItem(TowerDatabase $item): bool
+    {
+        if (!$this->canManage()) {
+            return false;
+        }
+
+        if ($this->isExecutiveRole()) {
+            return true;
+        }
+
+        if ($item->isGeneral()) {
+            return true;
+        }
+
+        $userDivisiId = $this->currentUserDivisiId();
+        return $userDivisiId && $item->divisi_id_divisi === $userDivisiId;
     }
 
     public function bukaModalTambah(): void
@@ -109,6 +166,8 @@ class TowerDatabaseTable extends Component
         }
 
         $this->resetModalForm();
+        $this->formAkses = 'general';
+        $this->formDivisiId = $this->currentUserDivisiId();
         $this->showModal = true;
     }
 
@@ -119,6 +178,11 @@ class TowerDatabaseTable extends Component
         }
 
         $item = TowerDatabase::findOrFail($id);
+        if (!$this->canManageItem($item)) {
+            session()->flash('tower_error', 'Anda tidak memiliki hak untuk mengedit data ini.');
+            return;
+        }
+
         $this->editingId = $item->id;
         $this->formNama = $item->nama;
         $this->formKeterangan = $item->keterangan ?? '';
@@ -127,6 +191,14 @@ class TowerDatabaseTable extends Component
         $this->formEmailKontak = $item->email_kontak ?? '';
         $this->formUrlLink = $item->url_link ?? '';
         $this->formFile = null;
+
+        if ($item->divisi_id_divisi) {
+            $this->formAkses = 'divisi';
+            $this->formDivisiId = $item->divisi_id_divisi;
+        } else {
+            $this->formAkses = 'general';
+            $this->formDivisiId = $this->currentUserDivisiId();
+        }
 
         $this->showModal = true;
     }
@@ -145,12 +217,15 @@ class TowerDatabaseTable extends Component
             'formNama',
             'formKeterangan',
             'formJenis',
+            'formAkses',
+            'formDivisiId',
             'formFile',
             'formNilaiKontak',
             'formEmailKontak',
             'formUrlLink',
         ]);
         $this->formJenis = 'file';
+        $this->formAkses = 'general';
         $this->formFile = null;
         $this->resetErrorBag();
     }
@@ -175,20 +250,27 @@ class TowerDatabaseTable extends Component
                 'formNama'       => 'required|string|max:255',
                 'formKeterangan' => 'nullable|string',
                 'formJenis'      => 'required|in:file,nomor,link',
+                'formAkses'      => 'required|in:general,divisi',
+                'formDivisiId'   => 'nullable|required_if:formAkses,divisi|exists:divisis,id_divisi',
             ];
 
-        if ($this->formJenis === 'file') {
-            if (!$this->editingId) {
-                $rules['formFile'] = 'required|file|max:51200'; // max 50 MB
-            } else {
-                $rules['formFile'] = 'nullable|file|max:51200';
+            if ($this->formJenis === 'file') {
+                if (!$this->editingId) {
+                    $rules['formFile'] = 'required|file|max:51200'; // max 50 MB
+                } else {
+                    $rules['formFile'] = 'nullable|file|max:51200';
+                }
+            } elseif ($this->formJenis === 'nomor') {
+                $rules['formNilaiKontak'] = 'required|string|max:100';
+                $rules['formEmailKontak'] = 'nullable|email|max:100';
+            } elseif ($this->formJenis === 'link') {
+                $rules['formUrlLink'] = 'required|url|max:500';
             }
-        } elseif ($this->formJenis === 'nomor') {
-            $rules['formNilaiKontak'] = 'required|string|max:100';
-            $rules['formEmailKontak'] = 'nullable|email|max:100';
-        } elseif ($this->formJenis === 'link') {
-            $rules['formUrlLink'] = 'required|url|max:500';
-        }
+
+            // Jika role non-eksekutif (seperti Kadiv), divisi otomatis terkunci ke divisi miliknya
+            if (! $this->isExecutiveRole() && $this->formAkses === 'divisi') {
+                $this->formDivisiId = $this->currentUserDivisiId();
+            }
 
             $this->validate($rules, [
                 'formNama.required'        => 'Nama item wajib diisi.',
@@ -198,15 +280,33 @@ class TowerDatabaseTable extends Component
                 'formEmailKontak.email'    => 'Format email tidak valid.',
                 'formUrlLink.required'     => 'URL tautan wajib diisi.',
                 'formUrlLink.url'          => 'Format URL tidak valid (harus diawali http:// atau https://).',
+                'formDivisiId.required_if' => 'Silakan pilih divisi untuk arsip khusus divisi.',
+                'formDivisiId.exists'      => 'Divisi yang dipilih tidak valid.',
             ]);
 
             $karyawanId = auth()->user()?->karyawan_id_karyawan;
 
+            // Tentukan divisi target:
+            $targetDivisiId = null;
+            if ($this->formAkses === 'divisi') {
+                if ($this->isExecutiveRole()) {
+                    $targetDivisiId = $this->formDivisiId;
+                } else {
+                    $targetDivisiId = $this->currentUserDivisiId();
+                }
+            }
+
             if ($this->editingId) {
                 $item = TowerDatabase::findOrFail($this->editingId);
+                if (!$this->canManageItem($item)) {
+                    session()->flash('tower_error', 'Anda tidak memiliki hak untuk mengedit data ini.');
+                    return;
+                }
+
                 $item->nama = $this->formNama;
                 $item->keterangan = $this->formKeterangan ?: null;
                 $item->jenis = $this->formJenis;
+                $item->divisi_id_divisi = $targetDivisiId;
 
                 if ($this->formJenis === 'file') {
                     if ($this->formFile) {
@@ -240,6 +340,7 @@ class TowerDatabaseTable extends Component
                     'nama'                    => $this->formNama,
                     'keterangan'              => $this->formKeterangan ?: null,
                     'jenis'                   => $this->formJenis,
+                    'divisi_id_divisi'        => $targetDivisiId,
                     'dibuat_oleh_id_karyawan' => $karyawanId,
                 ];
 
@@ -263,6 +364,8 @@ class TowerDatabaseTable extends Component
 
             $this->tutupModal();
             $this->resetPage();
+        } catch (\Illuminate\Validation\ValidationException $ve) {
+            throw $ve;
         } catch (\Throwable $e) {
             $this->clearTemporaryFile();
             $this->addError('formFile', 'File tidak valid atau gagal diproses. Pastikan file yang dipilih sesuai format dan ukuran yang diizinkan.');
@@ -277,6 +380,11 @@ class TowerDatabaseTable extends Component
         }
 
         $item = TowerDatabase::findOrFail($id);
+        if (! $this->canManageItem($item)) {
+            session()->flash('tower_error', 'Anda tidak memiliki hak untuk menghapus data ini.');
+            return;
+        }
+
         if ($item->file_path && Storage::disk('public')->exists($item->file_path)) {
             Storage::disk('public')->delete($item->file_path);
         }
@@ -288,6 +396,11 @@ class TowerDatabaseTable extends Component
     public function downloadFile(int $id)
     {
         $item = TowerDatabase::findOrFail($id);
+        if (! $this->canAccessItem($item)) {
+            session()->flash('tower_error', 'Anda tidak memiliki izin akses untuk mengunduh dokumen divisi ini.');
+            return null;
+        }
+
         if (!$item->file_path || !Storage::disk('public')->exists($item->file_path)) {
             session()->flash('tower_error', 'File fisik tidak ditemukan pada server.');
             return null;
@@ -309,7 +422,24 @@ class TowerDatabaseTable extends Component
 
     public function render()
     {
-        $query = TowerDatabase::query();
+        $user = auth()->user();
+        $userDivisiId = $this->currentUserDivisiId();
+        $isExecutive = $this->isExecutiveRole();
+
+        $baseScope = TowerDatabase::with(['divisi', 'dibuatOleh']);
+
+        // Filter visibilitas berdasarkan hak akses:
+        // Staff & Kadiv hanya boleh melihat data General (divisi_id_divisi is null) ATAU divisi mereka sendiri
+        if (! $isExecutive) {
+            $baseScope->where(function ($q) use ($userDivisiId) {
+                $q->whereNull('divisi_id_divisi');
+                if ($userDivisiId) {
+                    $q->orWhere('divisi_id_divisi', $userDivisiId);
+                }
+            });
+        }
+
+        $query = clone $baseScope;
 
         if ($this->search !== '') {
             $s = '%' . mb_strtolower(trim($this->search)) . '%';
@@ -326,27 +456,48 @@ class TowerDatabaseTable extends Component
             $query->where('jenis', $this->jenis);
         }
 
+        // Filter akses / divisi
+        if ($this->filterAkses === 'general') {
+            $query->whereNull('divisi_id_divisi');
+        } elseif ($this->filterAkses === 'my-division') {
+            if ($userDivisiId) {
+                $query->where('divisi_id_divisi', $userDivisiId);
+            } else {
+                $query->whereRaw('1=0');
+            }
+        } elseif ($this->filterAkses !== '') {
+            $query->where('divisi_id_divisi', $this->filterAkses);
+        }
+
         $sortCol = in_array($this->sort, ['nama', 'jenis', 'created_at'], true) ? $this->sort : 'created_at';
         $sortDir = strtolower($this->dir) === 'asc' ? 'asc' : 'desc';
         $query->orderBy($sortCol, $sortDir);
 
         $items = $query->paginate($this->perPage);
 
-        // Counter untuk badge filter jenis
+        // Counter untuk badge filter jenis & akses
         $counts = [
-            'total' => TowerDatabase::count(),
-            'file'  => TowerDatabase::where('jenis', 'file')->count(),
-            'nomor' => TowerDatabase::where('jenis', 'nomor')->count(),
-            'link'  => TowerDatabase::where('jenis', 'link')->count(),
+            'total'   => (clone $baseScope)->count(),
+            'file'    => (clone $baseScope)->where('jenis', 'file')->count(),
+            'nomor'   => (clone $baseScope)->where('jenis', 'nomor')->count(),
+            'link'    => (clone $baseScope)->where('jenis', 'link')->count(),
+            'general' => (clone $baseScope)->whereNull('divisi_id_divisi')->count(),
+            'divisi'  => (clone $baseScope)->whereNotNull('divisi_id_divisi')->count(),
         ];
 
+        $daftarDivisi = Divisi::where('status_aktif', 'Aktif')->orderBy('nama_divisi')->get();
+        $userDivisi = $user?->karyawan?->divisi;
+
         return view('livewire.tower-database-table', [
-            'items'     => $items,
-            'counts'    => $counts,
-            'canManage' => $this->canManage(),
-            'sort'      => $this->sort,
-            'dir'       => $this->dir,
-            'showModal' => $this->showModal,
+            'items'        => $items,
+            'counts'       => $counts,
+            'canManage'    => $this->canManage(),
+            'isExecutive'  => $isExecutive,
+            'userDivisi'   => $userDivisi,
+            'daftarDivisi' => $daftarDivisi,
+            'sort'         => $this->sort,
+            'dir'          => $this->dir,
+            'showModal'    => $this->showModal,
         ]);
     }
 }

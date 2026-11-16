@@ -22,12 +22,19 @@ class ProjectTable extends Component
     public string $tenggatProject = '';
     public $projectFile = null;
 
-    private function divisionId(): string
+    private function divisionId(): ?string
     {
         $user = auth()->user();
 
-        if (! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'kadiv'
+        if (! $user instanceof User2) {
+            abort(403);
+        }
+
+        if ($user->isDirektur()) {
+            return null;
+        }
+
+        if (strtolower($user->role?->nama_role ?? '') !== 'kadiv'
             || ! $user->karyawan?->divisi_id_divisi) {
             abort(403);
         }
@@ -160,10 +167,11 @@ class ProjectTable extends Component
         $this->divisionId();
         $user = auth()->user();
 
-        $projects = ProjectModel::with(['tasks.karyawan'])
-            ->where('dibuat_oleh_id_user', $user->id_user)
-            ->latest()
-            ->get();
+        $query = ProjectModel::with(['tasks.karyawan'])->latest();
+        if ($user && ! $user->isDirektur()) {
+            $query->where('dibuat_oleh_id_user', $user->id_user);
+        }
+        $projects = $query->get();
 
         return view('livewire.kadiv.project-table', [
             'projects' => $projects,

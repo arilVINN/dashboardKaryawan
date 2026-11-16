@@ -5,6 +5,7 @@
     // role from the account instead of the URL; otherwise the profile dropdown
     // never initialises for Kadiv and profile links fall back to the staff route.
     $pageRole = match (strtolower((string) $topbarUser?->role?->nama_role)) {
+        'direktur', 'direksi' => 'direktur',
         'hrd' => 'hrd',
         'kadiv' => 'kadiv',
         default => 'staff',
@@ -15,11 +16,13 @@
     $topbarInitial = $topbarUser ? mb_strtoupper(mb_substr($topbarNama, 0, 1)) : 'U';
     $topbarFotoUrl = $topbarEmployee?->foto ? '/storage/'.$topbarEmployee->foto : null;
     $topbarProfileUrl = match ($pageRole) {
+        'direktur' => url('/profile'),
         'hrd' => route('hrd.profile'),
         'kadiv' => route('kadiv.profile'),
         default => url('/profile'),
     };
     $topbarProfileEndpoint = match ($pageRole) {
+        'direktur' => '/api/staff/profile',
         'hrd' => '/api/hrd/profile',
         'kadiv' => '/api/kadiv/profile',
         default => '/api/staff/profile',
@@ -82,16 +85,20 @@
 </header>
 
 <script>
-    if (@json($pageRole === 'kadiv')) {
-        const profileBtn = document.getElementById('profile-dropdown-btn');
-        const profileMenu = document.getElementById('profile-dropdown-menu');
-        const dropdownArrow = document.getElementById('dropdown-arrow');
+    (function initProfileDropdown() {
+        const setup = function () {
+            const profileBtn = document.getElementById('profile-dropdown-btn');
+            const profileMenu = document.getElementById('profile-dropdown-menu');
+            const dropdownArrow = document.getElementById('dropdown-arrow');
 
-        if (profileBtn && profileMenu) {
+            if (!profileBtn || !profileMenu || profileBtn._dropdownInitialized) return;
+            profileBtn._dropdownInitialized = true;
+
             profileBtn.addEventListener('click', function (event) {
                 event.stopPropagation();
-                profileMenu.classList.toggle('hidden');
-                dropdownArrow?.classList.toggle('rotate-180');
+                const isHidden = profileMenu.classList.contains('hidden');
+                profileMenu.classList.toggle('hidden', !isHidden);
+                dropdownArrow?.classList.toggle('rotate-180', isHidden);
             });
 
             document.addEventListener('click', function (event) {
@@ -100,8 +107,21 @@
                     dropdownArrow?.classList.remove('rotate-180');
                 }
             });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && !profileMenu.classList.contains('hidden')) {
+                    profileMenu.classList.add('hidden');
+                    dropdownArrow?.classList.remove('rotate-180');
+                }
+            });
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setup);
+        } else {
+            setup();
         }
-    }
+    })();
 
     // Fallback token hanya bila halaman tidak dirender dari session (mis. alur token).
     (async function loadTopbar() {

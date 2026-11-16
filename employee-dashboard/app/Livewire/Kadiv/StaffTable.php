@@ -26,12 +26,19 @@ class StaffTable extends Component
         $this->divisionId();
     }
 
-    private function divisionId(): string
+    private function divisionId(): ?string
     {
         $user = auth()->user();
 
-        if (! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'kadiv'
+        if (! $user instanceof User2) {
+            abort(403);
+        }
+
+        if ($user->isDirektur()) {
+            return null;
+        }
+
+        if (strtolower($user->role?->nama_role ?? '') !== 'kadiv'
             || ! $user->karyawan?->divisi_id_divisi) {
             abort(403);
         }

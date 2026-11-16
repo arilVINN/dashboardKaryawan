@@ -1,3 +1,6 @@
+@if (auth()->user()?->isDirektur())
+    @include('component_direktur.sidebar')
+@else
 <aside id="sidebar"
        class="w-64 flex flex-col h-screen shrink-0 bg-gradient-to-b from-[#044564] from-50% to-[#19A7CE] transition-all duration-150 ease-in-out">
 
@@ -120,25 +123,5 @@
         });
     }
 })();
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const profileBtn = document.getElementById('profile-dropdown-btn');
-        const profileMenu = document.getElementById('profile-dropdown-menu');
-        const dropdownArrow = document.getElementById('dropdown-arrow');
-
-        if (profileBtn && profileMenu) {
-            profileBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                profileMenu.classList.toggle('hidden');
-                if (dropdownArrow) dropdownArrow.classList.toggle('rotate-180');
-            });
-
-            document.addEventListener('click', function (e) {
-                if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
-                    profileMenu.classList.add('hidden');
-                    if (dropdownArrow) dropdownArrow.classList.remove('rotate-180');
-                }
-            });
-        }
-    });
 </script>
+@endif

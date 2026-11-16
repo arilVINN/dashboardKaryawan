@@ -21,7 +21,8 @@ class KadivTaskController extends Controller
     public function index(Request $request)
     {
         $userKadiv = $request->user();
-        $divisiId = $userKadiv->karyawan->divisi_id_divisi;
+        $isDirektur = $userKadiv->isDirektur();
+        $divisiId = $isDirektur ? $request->query('divisi_id') : $userKadiv->karyawan?->divisi_id_divisi;
 
         $tugas = KadivTugasQuery::forDivision($divisiId)
             ->apply($request->only(['sort', 'dir', 'status', 'staff', 'q']))
@@ -39,13 +40,18 @@ class KadivTaskController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        $divisionId = $request->user()->karyawan->divisi_id_divisi;
-        $task = Tugas::with([
+        $user = $request->user();
+        $query = Tugas::with([
             'karyawan',
             'submitTugas' => fn ($query) => $query->latest('created_at'),
-        ])->whereKey($id)
-            ->whereHas('karyawan', fn ($query) => $query->where('divisi_id_divisi', $divisionId))
-            ->first();
+        ])->whereKey($id);
+
+        if (! $user->isDirektur()) {
+            $divisionId = $user->karyawan?->divisi_id_divisi;
+            $query->whereHas('karyawan', fn ($query) => $query->where('divisi_id_divisi', $divisionId));
+        }
+
+        $task = $query->first();
 
         if (! $task) {
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar divisi Anda.'], 404);
@@ -81,10 +87,12 @@ class KadivTaskController extends Controller
             'link_pendukung' => 'nullable|url|max:2048',
         ]);
 
-        // Pastikan karyawan penerima tugas berada di divisi yang sama
-        $karyawanTujuan = Karyawan::where('id_karyawan', $request->karyawan_id_karyawan)
-                                  ->where('divisi_id_divisi', $divisiId)
-                                  ->first();
+        // Pastikan karyawan penerima tugas berada di divisi yang sama (kecuali Direktur)
+        $karyawanQuery = Karyawan::where('id_karyawan', $request->karyawan_id_karyawan);
+        if (! $userKadiv->isDirektur()) {
+            $karyawanQuery->where('divisi_id_divisi', $divisiId);
+        }
+        $karyawanTujuan = $karyawanQuery->first();
 
         if (!$karyawanTujuan) {
             return response()->json(['message' => 'Karyawan tidak valid atau beda divisi'], 403);
@@ -134,7 +142,7 @@ class KadivTaskController extends Controller
 
         $tugas = Tugas::with('karyawan')->where('id_tugas', $id)->first();
 
-        if (!$tugas || $tugas->karyawan->divisi_id_divisi !== $divisiId) {
+        if (!$tugas || (! $userKadiv->isDirektur() && $tugas->karyawan?->divisi_id_divisi !== $divisiId)) {
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar wewenang'], 404);
         }
 
@@ -151,12 +159,13 @@ class KadivTaskController extends Controller
             'link_pendukung' => 'nullable|url|max:2048'
         ]);
 
-        // Jika pindah tangan, pastikan karyawan baru se-divisi
+        // Jika pindah tangan, pastikan karyawan baru se-divisi (kecuali Direktur)
         if ($request->has('karyawan_id_karyawan')) {
-            $karyawanTujuan = Karyawan::where('id_karyawan', $request->karyawan_id_karyawan)
-                                      ->where('divisi_id_divisi', $divisiId)
-                                      ->first();
-            if (!$karyawanTujuan) {
+            $karyawanTujuan = Karyawan::where('id_karyawan', $request->karyawan_id_karyawan);
+            if (! $userKadiv->isDirektur()) {
+                $karyawanTujuan->where('divisi_id_divisi', $divisiId);
+            }
+            if (!$karyawanTujuan->first()) {
                 return response()->json(['message' => 'Karyawan pengganti tidak valid atau beda divisi'], 403);
             }
         }
@@ -199,7 +208,7 @@ class KadivTaskController extends Controller
 
         $tugas = Tugas::with('karyawan')->where('id_tugas', $id)->first();
 
-        if (!$tugas || $tugas->karyawan->divisi_id_divisi !== $divisiId) {
+        if (!$tugas || (! $userKadiv->isDirektur() && $tugas->karyawan?->divisi_id_divisi !== $divisiId)) {
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar wewenang'], 404);
         }
 

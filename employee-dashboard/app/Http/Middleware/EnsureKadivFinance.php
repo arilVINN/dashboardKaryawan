@@ -24,15 +24,16 @@ class EnsureKadivFinance
             return redirect()->route('login');
         }
 
-        // Pastikan role adalah kadiv DAN divisi adalah Finance (kode FIN)
-        if (! $user->isKadivFinance()) {
+        // Pastikan role adalah kadiv Finance (kode FIN) atau Direktur
+        if (! $user->isKadivFinance() && ! $user->isDirektur()) {
             if ($request->expectsJson()) {
                 return response()->json([
-                    'message' => 'Forbidden. Akses ini khusus Kepala Divisi Finance.',
+                    'message' => 'Forbidden. Akses ini khusus Kepala Divisi Finance & Direktur.',
                 ], 403);
             }
 
-            return redirect()->route('kadiv.dashboard')
+            $redirectRoute = $user->isDirektur() ? 'direktur.dashboard' : 'kadiv.dashboard';
+            return redirect()->route($redirectRoute)
                 ->with('forbidden', 'Akses ini khusus Kepala Divisi Finance & Accounting.');
         }
 

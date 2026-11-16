@@ -298,9 +298,10 @@ class DatabaseSeeder extends Seeder
         ]);
         // -----------------
 
-        $this->command->info('Berhasil Seed Database: 3 Role (staff, kadiv, hrd), 2 Divisi, 7 Karyawan!');
+        $this->command->info('Berhasil Seed Database: 4 Role (staff, kadiv, hrd, direktur), 3 Divisi, Karyawan & Akun Utama!');
 
         $this->call([
+            DirekturSeeder::class,
             FinanceSeeder::class,
             TugasSeeder::class,
             TowerDatabaseSeeder::class,

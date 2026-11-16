@@ -21,6 +21,11 @@ class FormatAkuntansi
         return $prefix . number_format($nominal, 0, ',', '.');
     }
 
+    public static function rupiah(float|int|null $nominal, bool $withPrefix = true): string
+    {
+        return self::formatRupiah($nominal, $withPrefix);
+    }
+
     /**
      * Format angka tabel laporan keuangan:
      * - Nilai 0 ditampilkan sebagai '-'

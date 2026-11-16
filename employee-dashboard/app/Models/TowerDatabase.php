@@ -24,6 +24,7 @@ class TowerDatabase extends Model
         'email_kontak',
         'url_link',
         'dibuat_oleh_id_karyawan',
+        'divisi_id_divisi',
     ];
 
     public const JENIS_FILE = 'file';
@@ -33,5 +34,15 @@ class TowerDatabase extends Model
     public function dibuatOleh(): BelongsTo
     {
         return $this->belongsTo(Karyawan::class, 'dibuat_oleh_id_karyawan', 'id_karyawan');
+    }
+
+    public function divisi(): BelongsTo
+    {
+        return $this->belongsTo(Divisi::class, 'divisi_id_divisi', 'id_divisi');
+    }
+
+    public function isGeneral(): bool
+    {
+        return is_null($this->divisi_id_divisi);
     }
 }
