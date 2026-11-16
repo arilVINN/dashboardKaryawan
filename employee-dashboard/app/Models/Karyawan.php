@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -34,7 +35,6 @@ class Karyawan extends Model
         'tanggal_keluar',
         'foto',
         'divisi_id_divisi',
-        'atasan_id',
         'pendidikan',
         'job_level',
         'status_karyawan',
@@ -183,21 +183,12 @@ class Karyawan extends Model
         );
     }
 
-    public function atasan(): BelongsTo
+    public function scopeBirthdayToday(Builder $query): Builder
     {
-        return $this->belongsTo(
-            Karyawan::class,
-            'atasan_id',
-            'id_karyawan'
-        );
-    }
-
-    public function bawahan(): HasMany
-    {
-        return $this->hasMany(
-            Karyawan::class,
-            'atasan_id',
-            'id_karyawan'
-        );
+        return $query
+            ->where('aktif', true)
+            ->whereNotNull('tanggal_lahir')
+            ->whereMonth('tanggal_lahir', now()->month)
+            ->whereDay('tanggal_lahir', now()->day);
     }
 }

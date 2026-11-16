@@ -19,7 +19,6 @@ class ContentEvent extends Model
         'content_type',
         'content_account_id',
         'status',
-        'caption',
         'description',
         'todos',
         'content_url',

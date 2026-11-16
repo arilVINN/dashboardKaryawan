@@ -19,6 +19,7 @@ use App\Models\Carousel;
 use App\Models\BookingRequest;
 use App\Models\Divisi;
 use App\Models\SuratIzin;
+use App\Services\BirthdayNotificationService;
 
 // ─── Finance Module Controllers ───────────────────────────────────────────────
 use App\Http\Controllers\Finance\KeuanganController;
@@ -44,7 +45,8 @@ Route::middleware(['auth', 'throttle:umum', EnsureContentCalendarAccess::class])
 
 // staff route (session auth + staff role)
 Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
-    Route::get('/', function () {
+    Route::get('/', function (BirthdayNotificationService $birthdayNotifications) {
+        $user = auth()->user();
         $divisionId = auth()->user()?->karyawan?->divisi_id_divisi;
         $carousels = Carousel::query()
             ->with(['user.karyawan', 'divisi'])
@@ -67,8 +69,9 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
             })
             ->latest()
             ->get();
+        $birthdayEmployees = $birthdayNotifications->forUser($user);
 
-        return view('staff.dashboard', compact('carousels'));
+        return view('staff.dashboard', compact('carousels', 'birthdayEmployees'));
     })->name('dashboard');
 
     Route::get('/tugas', function () {
@@ -126,9 +129,8 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
         return view('staff.pusatData');
     })->name('staff.pusatData');
 
-    // Bagan Struktur Organisasi (Staff)
-    Route::get('/struktur-organisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('struktur-organisasi');
-    Route::get('/struktur-organisasi/data', [\App\Http\Controllers\StrukturOrganisasiController::class, 'getTreeData'])->name('struktur-organisasi.data');
+    // Struktur Organisasi (staff)
+    Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('staff.strukturOrganisasi');
 });
 
 Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->group(function () {
@@ -141,7 +143,7 @@ Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->g
 // ================= KADIV (auth + role) ================= //
 Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->group(function () {
     // Dashboard
-    Route::get('/dashboard', function () {
+    Route::get('/dashboard', function (BirthdayNotificationService $birthdayNotifications) {
         $user = auth()->user();
         $divisiId = $user?->karyawan?->divisi_id_divisi;
 
@@ -158,8 +160,9 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
             })
             ->latest()
             ->get();
+        $birthdayEmployees = $birthdayNotifications->forUser($user);
 
-        return view('kadiv.dashboard', compact('carousels'));
+        return view('kadiv.dashboard', compact('carousels', 'birthdayEmployees'));
     })->name('kadiv.dashboard');
 
     // Manajemen Staff
@@ -258,9 +261,8 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
         return view('kadiv.pusatData');
     })->name('kadiv.pusatData');
 
-    // Bagan Struktur Organisasi (Kadiv)
-    Route::get('/struktur-organisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('kadiv.struktur-organisasi');
-    Route::get('/struktur-organisasi/data', [\App\Http\Controllers\StrukturOrganisasiController::class, 'getTreeData'])->name('kadiv.struktur-organisasi.data');
+    // Struktur Organisasi (kadiv)
+    Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('kadiv.strukturOrganisasi');
 
     // Carousel Konten Kegiatan / Informasi
     Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])
@@ -311,6 +313,7 @@ Route::post('/profile', function (Request $request) {
 //route hrd
 Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
+    Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('hrd.strukturOrganisasi');
 
     // Kalender
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexHrd'])->name('hrd.kalender');
@@ -406,16 +409,6 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
         ->middleware('throttle:pencarian')
         ->name('hrd.turnoverKaryawan');
 
-    // Bagan Struktur Organisasi (HRD)
-    Route::get('/struktur-organisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('hrd.struktur-organisasi');
-    Route::get('/struktur-organisasi/data', [\App\Http\Controllers\StrukturOrganisasiController::class, 'getTreeData'])->name('hrd.struktur-organisasi.data');
-    Route::post('/struktur-organisasi/update-atasan', [\App\Http\Controllers\StrukturOrganisasiController::class, 'updateAtasan'])
-        ->middleware('throttle:submit-form')
-        ->name('hrd.struktur-organisasi.update-atasan');
-    Route::post('/struktur-organisasi/assign-vacant', [\App\Http\Controllers\StrukturOrganisasiController::class, 'assignVacant'])
-        ->middleware('throttle:submit-form')
-        ->name('hrd.struktur-organisasi.assign-vacant');
-
     // Carousel Konten Kegiatan / Informasi (HRD)
     Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])
         ->middleware('throttle:submit-form')
@@ -493,12 +486,6 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
         Route::get('/', [KeuanganController::class, 'index'])->name('kadiv.keuangan');
         Route::get('/rekap-divisi', [KeuanganController::class, 'rekapDivisi'])->name('kadiv.keuangan.rekapDivisi');
         Route::get('/rekap-divisi/export', [KeuanganController::class, 'export'])->name('kadiv.keuangan.exportRekapDivisi');
-
-        // Arus Kas (Gabungan Kas Masuk + Kas Keluar)
-        Route::get('/arus-kas', [KeuanganController::class, 'arusKas'])->name('kadiv.keuangan.arusKas');
-
-        // Manajemen Dana (Gabungan Permintaan Dana + Verifikasi Laporan L/R)
-        Route::get('/manajemen-dana', [KeuanganController::class, 'manajemenDana'])->name('kadiv.keuangan.manajemenDana');
 
         // Pemasukan Kas
         Route::get('/pemasukan', [PemasukanController::class, 'index'])->name('kadiv.keuangan.pemasukan');

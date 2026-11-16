@@ -108,6 +108,18 @@
                 };
             }
 
+            if (lower.includes('ulang tahun')) {
+                return {
+                    badgeText: 'Ulang Tahun',
+                    badgeClass: 'text-sky-700 bg-sky-100 border-sky-200',
+                    borderClass: 'border-sky-200',
+                    iconBg: 'bg-sky-100 text-sky-600',
+                    linkUrl: '/',
+                    actionLabel: 'Kembali ke Dashboard',
+                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16v5.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V12Z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 14.5c1.3 0 1.3 1.2 2.6 1.2s1.3-1.2 2.6-1.2 1.3 1.2 2.6 1.2 1.3-1.2 2.6-1.2 1.3 1.2 2.6 1.2 1.3-1.2 2.6-1.2 1.3 1.2 2.6 1.2M8 9V5m4 4V3m4 6V5" /><circle cx="8" cy="3.5" r=".8" fill="currentColor" stroke="none" /><circle cx="12" cy="1.8" r=".8" fill="currentColor" stroke="none" /><circle cx="16" cy="3.5" r=".8" fill="currentColor" stroke="none" />`
+                };
+            }
+
             // Pengingat (Catatan Kalender & Tenggat Tugas)
             if (lower.includes('pengingat') || lower.includes('catatan') || lower.includes('kalender') || lower.includes('tenggat')) {
                 const isTugas = lower.includes('tugas');
@@ -169,6 +181,15 @@
                     iconClass: 'bg-emerald-100 text-emerald-600',
                     linkUrl: '/pesan',
                     iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />`
+                };
+            }
+
+            if (lower.includes('ulang tahun')) {
+                return {
+                    title: 'Ulang tahun karyawan',
+                    iconClass: 'bg-sky-100 text-sky-600',
+                    linkUrl: '/',
+                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5" />`
                 };
             }
 

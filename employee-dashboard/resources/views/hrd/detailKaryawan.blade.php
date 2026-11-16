@@ -25,8 +25,14 @@
                 class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 flex flex-col lg:flex-row lg:items-center gap-5">
                 <div class="flex items-center gap-5 min-w-0 flex-1">
                     <div
-                        class="w-20 h-20 rounded-full bg-[#0097B2] text-white text-3xl font-bold flex items-center justify-center shrink-0">
-                        {{ strtoupper(substr($karyawan->nama, 0, 1)) }}
+                        class="w-20 h-20 rounded-full bg-[#0097B2] text-white text-3xl font-bold flex items-center justify-center shrink-0 overflow-hidden">
+                        @if ($karyawan->foto)
+                            <img src="{{ asset('storage/' . $karyawan->foto) }}"
+                                alt="Foto profil {{ $karyawan->nama }}"
+                                class="w-full h-full object-cover">
+                        @else
+                            {{ strtoupper(substr($karyawan->nama, 0, 1)) }}
+                        @endif
                     </div>
                     <div class="min-w-0">
                         <h1 class="text-2xl font-bold text-slate-900 truncate">{{ $karyawan->nama }}</h1>

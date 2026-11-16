@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Notifikasi extends Model
@@ -23,6 +24,14 @@ class Notifikasi extends Model
         'tanggal_notifikasi',
         'user_id_user',
     ];
+
+    public function scopeWithoutExpiredBirthdays(Builder $query): Builder
+    {
+        return $query->where(function (Builder $query) {
+            $query->whereRaw('LOWER(judul_notifikasi) NOT LIKE ?', ['%ulang tahun%'])
+                ->orWhereDate('tanggal_notifikasi', now()->toDateString());
+        });
+    }
 
     public function user()
     {
