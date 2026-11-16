@@ -38,7 +38,7 @@ class KeuanganController extends Controller
         $permintaanMenunggu = KPermintDana::where('status', KPermintDana::STATUS_MENUNGGU)->count();
 
         // ── Rekap Saldo Per Divisi ─────────────────────────────────────
-        $rekapDivisi = Divisi::where('kode_divisi', '!=', 'FIN')
+        $rekapDivisi = Divisi::query()->unitNonFinance()
             ->where('status_aktif', 'Aktif')
             ->withSum(['alokasiAnggaran as total_alokasi' => function ($q) use ($periode) {
                 $q->where('periode', $periode);
@@ -70,7 +70,7 @@ class KeuanganController extends Controller
         $periode  = $request->input('periode', now()->format('Y-m'));
         $mingguKe = $request->input('minggu_ke', null); // null = semua minggu
 
-        $query = Divisi::where('kode_divisi', '!=', 'FIN')
+        $query = Divisi::query()->unitNonFinance()
             ->where('status_aktif', 'Aktif')
             ->with(['laporanLabaRugi' => function ($q) use ($periode, $mingguKe) {
                 $q->where('periode', $periode)
@@ -102,7 +102,7 @@ class KeuanganController extends Controller
         $periode = $request->input('periode', now()->format('Y-m'));
         [$tahun, $bulan] = explode('-', $periode);
 
-        $divisiList   = Divisi::where('kode_divisi', '!=', 'FIN')->where('status_aktif', 'Aktif')->get();
+        $divisiList   = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
         $kategoriList = KPemasukan::KATEGORI_OPTIONS;
 
         // Kas Masuk (always load for badge count)
@@ -151,7 +151,7 @@ class KeuanganController extends Controller
         $divisiId = $request->input('divisi_id', null);
         $periode  = $request->input('periode', now()->format('Y-m'));
 
-        $divisiList = Divisi::where('kode_divisi', '!=', 'FIN')->where('status_aktif', 'Aktif')->get();
+        $divisiList = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
 
         // Permintaan Dana
         $qPerm = KPermintDana::with('divisi', 'diajukanOleh.karyawan');

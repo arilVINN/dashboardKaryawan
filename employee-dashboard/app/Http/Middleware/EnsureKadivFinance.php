@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 /**
  * Middleware untuk memproteksi rute khusus Kepala Divisi Finance.
  *
- * Kriteria akses: role = 'kadiv' DAN divisi kode_divisi = 'FIN'.
+ * Kriteria akses: role = 'kadiv' DAN divisi adalah unit Finance & Accounting.
  * Rute ini hanya boleh diakses oleh Kadiv Finance, bukan Kadiv divisi lain.
  */
 class EnsureKadivFinance
@@ -24,7 +24,7 @@ class EnsureKadivFinance
             return redirect()->route('login');
         }
 
-        // Pastikan role adalah kadiv DAN divisi adalah Finance (kode FIN)
+        // Pastikan role adalah kadiv DAN unitnya adalah Finance & Accounting.
         if (! $user->isKadivFinance()) {
             if ($request->expectsJson()) {
                 return response()->json([

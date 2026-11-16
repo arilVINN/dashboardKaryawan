@@ -122,10 +122,9 @@ class TugasSeeder extends Seeder
                 continue;
             }
 
-            $divisiName = strtolower($karyawan->divisi?->nama_divisi ?? '');
-            $isIT = str_contains($divisiName, 'tech') || str_contains($divisiName, 'it') || str_contains($divisiName, 'info');
-
-            $pool = $isIT ? $itTaskTemplates : $hrTaskTemplates;
+            // Division-specific task pools follow the division code, not its
+            // display name, so renames do not change seeded behaviour.
+            $pool = $karyawan->divisi?->isIt() ? $itTaskTemplates : $hrTaskTemplates;
 
             // Ambil 3 template unik untuk staff ini berdasarkan index atau rotasi
             $offset = ($index * 3) % count($pool);

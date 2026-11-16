@@ -83,7 +83,7 @@ class RingkasanKeuangan extends Component
         // Hanya divisi yang memiliki pagu pada periode ini yang ditampilkan.
         // Baris tanpa pagu (Rp 0 / 0%) tidak masuk tabel, melainkan memicu
         // empty state di view.
-        $rekapDivisi = Divisi::where('kode_divisi', '!=', 'FIN')
+        $rekapDivisi = Divisi::query()->unitNonFinance()
             ->where('status_aktif', 'Aktif')
             ->withSum(['alokasiAnggaran as total_alokasi' => function ($q) {
                 $q->where('periode', $this->periode);

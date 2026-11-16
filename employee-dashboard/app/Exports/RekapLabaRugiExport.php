@@ -32,7 +32,7 @@ class RekapLabaRugiExport implements FromCollection, WithHeadings, WithStyles, S
 
     public function collection(): Collection
     {
-        $divisiQuery = Divisi::where('status_aktif', 'Aktif')->orderBy('id_divisi');
+        $divisiQuery = Divisi::query()->unitNonFinance()->aktif()->ordered();
         if ($this->divisiId) {
             $divisiQuery->where('id_divisi', $this->divisiId);
         }

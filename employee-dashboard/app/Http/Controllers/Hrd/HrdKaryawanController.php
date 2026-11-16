@@ -17,7 +17,7 @@ class HrdKaryawanController extends Controller
         // Rows, filters, sorting, and pagination now live in the
         // App\Livewire\Hrd\KaryawanTable component; the page only supplies
         // the divisi list for the CRUD modals.
-        $daftarDivisi = Divisi::orderBy('nama_divisi')->get();
+        $daftarDivisi = Divisi::query()->ordered()->get();
 
         return view('hrd.daftarKaryawan', compact('daftarDivisi'));
     }
@@ -32,7 +32,7 @@ class HrdKaryawanController extends Controller
 
         $totalTugas = $karyawan->tugas->count();
         $tugasSelesai = $karyawan->tugas->where('status', Tugas::STATUS_SUDAH_ACC)->count();
-        $daftarDivisi = Divisi::orderBy('nama_divisi')->get();
+        $daftarDivisi = Divisi::query()->ordered()->get();
 
         return view('hrd.detailKaryawan', compact('karyawan', 'totalTugas', 'tugasSelesai', 'daftarDivisi'));
     }

@@ -44,7 +44,7 @@ class PermintaanDanaController extends Controller
 
         $permintaan     = $query->paginate(15);
         $jumlahMenunggu = KPermintDana::where('status', KPermintDana::STATUS_MENUNGGU)->count();
-        $divisiList     = Divisi::where('kode_divisi', '!=', 'FIN')->where('status_aktif', 'Aktif')->get();
+        $divisiList     = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
 
         return view('finance.permintaan.index', compact('permintaan', 'status', 'divisiId', 'divisiList', 'jumlahMenunggu'));
     }

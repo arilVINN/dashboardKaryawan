@@ -101,15 +101,9 @@ class PesanSeeder extends Seeder
         // =========================================================================
         // 2. Pesan Langsung dari Kadiv ke Staff per Divisi
         // =========================================================================
-        $kadivIT = $kadivUsers->first(function ($u) {
-            $div = strtolower($u->karyawan?->divisi?->nama_divisi ?? '');
-            return str_contains($div, 'it') || str_contains($div, 'tech');
-        }) ?? $kadivUsers->first();
+        $kadivIT = $kadivUsers->first(fn ($u) => $u->karyawan?->divisi?->isIt()) ?? $kadivUsers->first();
 
-        $kadivHR = $kadivUsers->first(function ($u) {
-            $div = strtolower($u->karyawan?->divisi?->nama_divisi ?? '');
-            return str_contains($div, 'hr') || str_contains($div, 'human');
-        }) ?? $kadivUsers->last();
+        $kadivHR = $kadivUsers->first(fn ($u) => $u->karyawan?->divisi?->isHr()) ?? $kadivUsers->last();
 
         $kadivMessages = [
             'it' => [
@@ -123,8 +117,7 @@ class PesanSeeder extends Seeder
         ];
 
         foreach ($staffUsers as $staffUser) {
-            $staffDiv = strtolower($staffUser->karyawan?->divisi?->nama_divisi ?? '');
-            $isIT = str_contains($staffDiv, 'it') || str_contains($staffDiv, 'tech');
+            $isIT = $staffUser->karyawan?->divisi?->isIt() ?? false;
 
             $sender = $isIT ? ($kadivIT ?? $primaryHrd) : ($kadivHR ?? $primaryHrd);
             $msgTemplate = $isIT ? $kadivMessages['it'] : $kadivMessages['hr'];
@@ -165,8 +158,7 @@ class PesanSeeder extends Seeder
                 continue;
             }
 
-            $staffDiv = strtolower($staffUser->karyawan?->divisi?->nama_divisi ?? '');
-            $isIT = str_contains($staffDiv, 'it') || str_contains($staffDiv, 'tech');
+            $isIT = $staffUser->karyawan?->divisi?->isIt() ?? false;
             $sender = $isIT ? ($kadivIT ?? $primaryHrd) : ($kadivHR ?? $primaryHrd);
 
             $parentCreatedAt = now()->subDays(2)->subHours(5);

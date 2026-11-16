@@ -376,7 +376,7 @@
         }
         function openVerifModal(idKlr, divisiNama, mingguKe, currentStatus, currentCatatan) {
             document.getElementById('form-verif').action = '/kadiv/keuangan/laporan/' + idKlr + '/verifikasi';
-            document.getElementById('verif-desc').textContent = divisiNama + ' — Minggu ke-' + mingguKe;
+            document.getElementById('verif-desc').textContent = divisiNama + ' - Minggu ke-' + mingguKe;
             document.getElementById('status_verifikasi').value = (currentStatus === 'perlu_revisi' || currentStatus === 'disetujui') ? currentStatus : 'disetujui';
             document.getElementById('catatan_verifikasi').value = currentCatatan || '';
             openModal('modal-verif');

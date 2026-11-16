@@ -143,7 +143,7 @@ class LabaRugiController extends Controller
         }
 
         $laporan    = $query->paginate(15);
-        $divisiList = Divisi::where('kode_divisi', '!=', 'FIN')->where('status_aktif', 'Aktif')->get();
+        $divisiList = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
 
         return view('finance.laporan.index', compact('laporan', 'periode', 'mingguKe', 'status', 'divisiId', 'divisiList'));
     }

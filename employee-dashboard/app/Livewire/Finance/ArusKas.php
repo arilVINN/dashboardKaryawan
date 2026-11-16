@@ -158,7 +158,7 @@ class ArusKas extends Component
 
         [$tahun, $bulan] = explode('-', $this->periode);
 
-        $divisiList = Divisi::where('kode_divisi', '!=', 'FIN')->where('status_aktif', 'Aktif')->get();
+        $divisiList = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
         $kategoriList = KPemasukan::KATEGORI_OPTIONS;
 
         $qMasuk = KPemasukan::with('divisi')

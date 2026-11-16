@@ -19,9 +19,9 @@ class StrukturOrganisasiController extends Controller
         $role = strtolower($user?->role?->nama_role ?? 'staff');
         $karyawan = $user?->karyawan;
 
-        $daftarDivisi = Divisi::select('id_divisi', 'kode_divisi', 'nama_divisi')
-            ->orderBy('nama_divisi')
-            ->get();
+        $daftarDivisi = Divisi::query()
+            ->ordered()
+            ->get(['id_divisi', 'kode_divisi', 'nama_divisi', 'tipe', 'level']);
 
         $daftarKaryawanAktif = Karyawan::with('divisi')
             ->where(function ($q) {
@@ -244,24 +244,28 @@ class StrukturOrganisasiController extends Controller
         $jabatan = strtolower($karyawan->jabatan ?? '');
         $jobLevel = strtolower($karyawan->job_level ?? '');
 
-        // Level 1: CEO, Direktur, HRD Manager, General Manager, Pucuk Pimpinan
+        // Level 1: Direktur Utama / CEO / C-level. Manajemen (level 2) is a
+        // grouping node in the division tree and has no employees of its own.
         if (
+            $karyawan->isDirekturUtama() ||
+            $karyawan->divisi?->isDirekturUtama() ||
             str_contains($jabatan, 'direktur') ||
             str_contains($jabatan, 'ceo') ||
-            str_contains($jabatan, 'hrd manager') ||
-            str_contains($jabatan, 'general manager') ||
             str_contains($jobLevel, 'c-level') ||
             str_contains($jobLevel, 'direktur')
         ) {
             return 1;
         }
 
-        // Level 2: Kepala Divisi, Manager, Kadiv
+        // Level 2: Kepala Divisi / unit lead, including the single-person
+        // HR and Finance & Accounting units.
         if (
+            $karyawan->isKadiv() ||
             str_contains($jabatan, 'kepala divisi') ||
             str_contains($jabatan, 'kadiv') ||
             str_contains($jabatan, 'manager') ||
-            $karyawan->hasRole('kadiv')
+            $karyawan->hasRole('kadiv') ||
+            $karyawan->hasRole('hrd')
         ) {
             return 2;
         }
