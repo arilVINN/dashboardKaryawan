@@ -643,6 +643,23 @@
                         <p class="mt-3 text-[12px] font-medium text-[#B91C1C]">{{ $saveError }}</p>
                     @endif
 
+                    {{-- Caption --}}
+                    <div class="mt-6 border-t border-[#E8EDF2] pt-5">
+                        <label for="content-caption" class="block text-[14px] font-semibold text-[#172B36]">Caption</label>
+                        @if ($readOnly)
+                            <p class="mt-2 whitespace-pre-line text-[15px] leading-[1.7] {{ $caption !== '' ? 'text-[#172B36]' : 'text-[#4B5563]' }}">
+                                {{ $caption !== '' ? $caption : 'Belum ada caption.' }}
+                            </p>
+                        @else
+                            <input id="content-caption" type="text" wire:model.blur.live="caption"
+                                maxlength="5000" placeholder="Tulis caption untuk postingan..."
+                                class="mt-2 h-[42px] w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[15px] text-[#172B36] transition placeholder:text-[#8A96A3] hover:border-[#B9C6CE] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+                            @error('caption')
+                                <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
+                            @enderror
+                        @endif
+                    </div>
+
                     {{-- Description --}}
                     <div class="mt-6 border-t border-[#E8EDF2] pt-5">
                         <label for="content-description" class="block text-[14px] font-semibold text-[#172B36]">Deskripsi</label>
