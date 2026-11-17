@@ -227,7 +227,7 @@
                 </a>
                 <a href="{{ url('/jurnal') }}"
                     class="block px-3.5 py-2 rounded-lg transition {{ request()->is('jurnal*') ? $activeClass : $idleClass }}">
-                    Jurnal Harian
+                    To Do Harian
                 </a>
                 @if (\App\Support\ContentCalendarAccess::allows(auth()->user()))
                     <a href="{{ url('/kalender-konten') }}"
@@ -273,25 +273,4 @@
         });
     }
 })();
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const profileBtn = document.getElementById('profile-dropdown-btn');
-        const profileMenu = document.getElementById('profile-dropdown-menu');
-        const dropdownArrow = document.getElementById('dropdown-arrow');
-
-        if (profileBtn && profileMenu) {
-            profileBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                profileMenu.classList.toggle('hidden');
-                if (dropdownArrow) dropdownArrow.classList.toggle('rotate-180');
-            });
-
-            document.addEventListener('click', function (e) {
-                if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
-                    profileMenu.classList.add('hidden');
-                    if (dropdownArrow) dropdownArrow.classList.remove('rotate-180');
-                }
-            });
-        }
-    });
 </script>

@@ -110,9 +110,9 @@
                 <select wire:model.live="filterAkses"
                     class="h-10 border border-slate-300 rounded-lg px-3 text-[13px] font-medium text-slate-700 bg-white outline-none focus:border-[#146C94] hover:bg-slate-50 transition cursor-pointer">
                     <option value="">Semua Akses ({{ $counts['total'] }})</option>
-                    <option value="general">🌐 General / Semua Divisi ({{ $counts['general'] }})</option>
+                    <option value="general">General / Semua Divisi ({{ $counts['general'] }})</option>
                     @foreach ($daftarDivisi as $d)
-                        <option value="{{ $d->id_divisi }}">🏢 Divisi {{ $d->nama_divisi }}</option>
+                        <option value="{{ $d->id_divisi }}">Divisi {{ $d->nama_divisi }}</option>
                     @endforeach
                 </select>
             </div>
@@ -120,8 +120,8 @@
             @php
                 $aksesTabs = [
                     ''            => ['label' => 'Semua', 'count' => $counts['total']],
-                    'general'     => ['label' => '🌐 General', 'count' => $counts['general']],
-                    'my-division' => ['label' => '🏢 Divisi ' . ($userDivisi?->kode_divisi ?? 'Saya'), 'count' => $counts['divisi']],
+                    'general'     => ['label' => 'General', 'count' => $counts['general']],
+                    'my-division' => ['label' => 'Divisi ' . ($userDivisi?->kode_divisi ?? 'Saya'), 'count' => $counts['divisi']],
                 ];
             @endphp
             <div class="inline-flex items-center" role="group" aria-label="Filter akses">
@@ -230,12 +230,10 @@
                             <td class="{{ $cellPadding }}">
                                 @if ($item->isGeneral())
                                     <span class="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 text-[11px] font-medium text-sky-700" title="Dapat diakses oleh seluruh staff & divisi">
-                                        <span>🌐</span>
                                         <span>General</span>
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-800" title="Khusus divisi {{ $item->divisi?->nama_divisi ?? 'tertentu' }}">
-                                        <span>🏢</span>
                                         <span class="truncate max-w-[9rem]">{{ $item->divisi?->nama_divisi ?? 'Divisi' }}</span>
                                     </span>
                                 @endif
@@ -433,12 +431,12 @@
                                 <label class="flex items-center justify-center gap-1.5 p-2.5 rounded-lg border cursor-pointer transition text-xs font-semibold
                                     {{ $formAkses === 'general' ? 'bg-[#EAF4F8] border-[#146C94] text-[#146C94]' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50' }}">
                                     <input type="radio" wire:model.live="formAkses" value="general" class="hidden">
-                                    <span>🌐 General (Semua Divisi)</span>
+                                    <span>General (Semua Divisi)</span>
                                 </label>
                                 <label class="flex items-center justify-center gap-1.5 p-2.5 rounded-lg border cursor-pointer transition text-xs font-semibold
                                     {{ $formAkses === 'divisi' ? 'bg-amber-50 border-amber-500 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50' }}">
                                     <input type="radio" wire:model.live="formAkses" value="divisi" class="hidden">
-                                    <span>🏢 Khusus Divisi Tertentu</span>
+                                    <span>Khusus Divisi Tertentu</span>
                                 </label>
                             </div>
 

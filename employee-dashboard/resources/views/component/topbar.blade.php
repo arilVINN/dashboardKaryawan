@@ -30,7 +30,7 @@
 @endphp
 
 <header
-    class="h-16 w-full bg-white border-b border-slate-200 px-8 flex items-center justify-end shrink-0 relative box-border">
+    class="h-16 w-full bg-white border-b border-slate-200 px-8 flex items-center justify-end shrink-0 relative z-30 box-border">
     <div class="flex items-center gap-5">
 
         <div class="relative">

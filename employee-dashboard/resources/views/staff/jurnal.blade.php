@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jurnal Harian - PT Silindo</title>
+    <title>To Do Harian - PT Silindo</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -21,13 +21,13 @@
             @include('component.breadcrumbs', [
                 'parentText' => 'Dashboard',
                 'parentUrl' => url('/'),
-                'currentPage' => 'Jurnal Harian',
+                'currentPage' => 'To Do Harian',
                 'inline' => true,
             ])
 
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <x-page-heading title="Jurnal Harian" icon="calendar" />
+                    <x-page-heading title="To Do Harian" icon="calendar" />
                 </div>
             </div>
 
