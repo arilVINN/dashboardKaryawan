@@ -16,18 +16,18 @@ use Illuminate\Support\Facades\Hash;
  *   1. Isi array $rows di bawah (contoh sudah disiapkan, masih di-comment).
  *   2. Jalankan: php artisan db:seed --class=EmployeeTemplateSeeder
  *
- * Aman dijalankan ulang: data dengan id yang sama akan di-update, bukan dobel.
+ * ID karyawan (KR001, KR002, ...) dan ID user (US001, ...) dibuat OTOMATIS,
+ * mengikuti format yang dipakai HRD di HrdStaffController::store.
+ * Untuk menjaga idempotent, akun dikenali berdasarkan 'username'.
+ *
  * Seeder ini sengaja TIDAK didaftarkan di DatabaseSeeder.php.
  *
- * CATATAN PENTING:
- * - 'kode'  : token unik pendek (huruf/angka). Dipakai untuk id_karyawan /
- *             id_user otomatis. Maksimal 20 karakter.
- * - 'role'  : nama role, bebas huruf besar/kecil: staff | kadiv | hrd | direktur
- * - 'divisi': KODE divisi (kode_divisi), mis. IT01, HR01, FIN01.
- * - 'username': WAJIB hanya huruf dan angka (alpha_num). Login menolak titik,
- *             spasi, dan tanda baca lainnya.
- * - 'jabatan': memengaruhi izin. 'Kepala Divisi ...' / 'Kadiv ...' membuat
- *             user dianggap kadiv; 'Kadiv Finance' + divisi FIN = Kadiv Finance.
+ * CATATAN:
+ * - 'username': WAJIB huruf/angka saja. Login menolak titik/spasi.
+ * - 'role'  : staff | kadiv | hrd | direktur (huruf besar/kecil bebas).
+ * - 'divisi': KODE divisi (kode_divisi), mis. HR, FIN, IT01.
+ * - 'jabatan': memengaruhi izin. 'Kepala Divisi ...' / 'Kadiv ...' dianggap
+ *              kadiv; 'Kadiv Finance' + divisi FIN = Kadiv Finance.
  */
 class EmployeeTemplateSeeder extends Seeder
 {
@@ -38,9 +38,8 @@ class EmployeeTemplateSeeder extends Seeder
      */
     private array $rows = [
         // [
-        //     'kode'      => 'STFNEW',          // wajib, unik, <= 20 char
         //     'nama'      => 'Nama Karyawan',
-        //     'username'  => 'stfnew',          // huruf/angka SAJA
+        //     'username'  => 'stfnew',          // huruf/angka SAJA, unik
         //     'password'  => 'pass123',         // opsional, default: pass123
         //     'role'      => 'staff',           // staff | kadiv | hrd | direktur
         //     'divisi'    => 'IT01',            // kode_divisi
@@ -53,9 +52,8 @@ class EmployeeTemplateSeeder extends Seeder
         //
         // Contoh Kadiv Finance:
         // [
-        //     'kode' => 'FINNEW', 'nama' => 'Kadiv Finance Baru',
-        //     'username' => 'finnew', 'role' => 'kadiv',
-        //     'divisi' => 'FIN01', 'jabatan' => 'Kadiv Finance',
+        //     'nama' => 'Kadiv Finance Baru', 'username' => 'finnew',
+        //     'role' => 'kadiv', 'divisi' => 'FIN', 'jabatan' => 'Kadiv Finance',
         // ],
     ];
 
@@ -66,22 +64,18 @@ class EmployeeTemplateSeeder extends Seeder
             return;
         }
 
+        $nextKaryawan = $this->nextSequence(Karyawan::query()->pluck('id_karyawan'), 'KR');
+        $nextUser = $this->nextSequence(User2::query()->pluck('id_user'), 'US');
+
         $created = 0;
+        $updated = 0;
         $skipped = 0;
 
         foreach ($this->rows as $index => $row) {
-            $label = $row['kode'] ?? ('baris #'.($index + 1));
-
-            $kode = strtoupper((string) ($row['kode'] ?? ''));
             $username = strtolower((string) ($row['username'] ?? ''));
             $roleName = strtolower((string) ($row['role'] ?? ''));
             $divisiKode = strtoupper((string) ($row['divisi'] ?? ''));
-
-            if ($kode === '' || strlen($kode) > 20) {
-                $this->command->warn("  [{$label}] dilewati: 'kode' wajib dan maksimal 20 karakter.");
-                $skipped++;
-                continue;
-            }
+            $label = $row['nama'] ?? $username ?: ('baris #'.($index + 1));
 
             if ($username === '' || ! preg_match('/^[a-z0-9]+$/', $username)) {
                 $this->command->warn("  [{$label}] dilewati: username harus huruf/angka saja (tanpa titik/spasi).");
@@ -103,13 +97,17 @@ class EmployeeTemplateSeeder extends Seeder
                 continue;
             }
 
-            $idKaryawan = 'KRY-'.$kode;
-            $idUser = 'USR-'.$kode;
+            // Idempotent berdasarkan username: akun yang sudah ada di-update.
+            $existing = User2::where('username', $username)->first();
+
+            $idUser = $existing?->id_user ?? 'US'.str_pad($nextUser++, 3, '0', STR_PAD_LEFT);
+            $idKaryawan = $existing?->karyawan_id_karyawan
+                ?? 'KR'.str_pad($nextKaryawan++, 3, '0', STR_PAD_LEFT);
 
             Karyawan::updateOrCreate(
                 ['id_karyawan' => $idKaryawan],
                 [
-                    'nama'              => $row['nama'] ?? $kode,
+                    'nama'              => $row['nama'] ?? $username,
                     'jenis_kelamin'     => $row['jenis_kelamin'] ?? 'Laki-laki',
                     'jabatan'           => $row['jabatan'] ?? 'Staff',
                     'divisi_id_divisi'  => $divisi->id_divisi,
@@ -131,11 +129,28 @@ class EmployeeTemplateSeeder extends Seeder
                 ]
             );
 
-            $created++;
-            $this->command->line("  [{$label}] OK -> {$username} / ".($row['password'] ?? 'pass123'));
+            $existing ? $updated++ : $created++;
+            $this->command->line("  [{$label}] ".($existing ? 'diubah' : 'dibuat')." -> {$idKaryawan} / {$idUser} / {$username} / ".($row['password'] ?? 'pass123'));
         }
 
-        $this->command->info("EmployeeTemplateSeeder selesai: {$created} dibuat/diubah, {$skipped} dilewati.");
+        $this->command->info("EmployeeTemplateSeeder selesai: {$created} dibuat, {$updated} diubah, {$skipped} dilewati.");
         $this->command->line('Cek kode divisi dengan: php artisan tinker --execute="App\\Models\\Divisi::all([\'kode_divisi\',\'nama_divisi\']);"');
+    }
+
+    /**
+     * Cari nomor urut berikutnya hanya dari ID dengan format <prefix><angka>,
+     * supaya ID legacy/format lain tidak merusak urutan (sama seperti SubmitTugas::nextId).
+     */
+    private function nextSequence($ids, string $prefix): int
+    {
+        $max = 0;
+
+        foreach ($ids as $id) {
+            if (preg_match('/^'.preg_quote($prefix, '/').'(\d+)$/', (string) $id, $matches)) {
+                $max = max($max, (int) $matches[1]);
+            }
+        }
+
+        return $max + 1;
     }
 }
