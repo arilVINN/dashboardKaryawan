@@ -515,7 +515,8 @@ class HrdStaffController extends Controller
             return 'hrd';
         }
 
-        if (in_array($normalized, ['staff', 'wakil kepala divisi'], true)) {
+        if (in_array($normalized, ['staff', 'wakil kepala divisi', 'markom', 'marcom'], true)
+            || preg_match('/^(?:markom|marcom)(\s|$)/i', $normalized) === 1) {
             return 'staff';
         }
 
