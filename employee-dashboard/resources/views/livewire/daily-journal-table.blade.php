@@ -382,7 +382,7 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-[#FDE8EC] border-b border-[#F9BDCA] text-[#881337] text-xs font-bold uppercase tracking-wider">
+                        <tr class="bg-[#146C94] border-b border-[#0116d1] text-white text-xs font-bold uppercase tracking-wider">
                             <th class="py-3 px-4 min-w-[280px] border-r border-dashed border-[#F3B7C4]">Tugas</th>
                             <th class="py-3 px-3 w-36 text-center border-r border-dashed border-[#F3B7C4]">Status</th>
                             <th class="py-3 px-3 w-32 text-center border-r border-dashed border-[#F3B7C4]">Prioritas</th>
