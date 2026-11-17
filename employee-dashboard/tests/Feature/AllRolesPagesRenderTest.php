@@ -16,6 +16,7 @@ class AllRolesPagesRenderTest extends TestCase
     use RefreshDatabase;
 
     private User2 $staff;
+
     private User2 $hrd;
 
     protected function setUp(): void
@@ -76,6 +77,14 @@ class AllRolesPagesRenderTest extends TestCase
         $this->staff->karyawan()->update([
             'tanggal_akhir_kontrak' => '2026-11-30',
         ]);
+        Karyawan::create([
+            'id_karyawan' => 'KRY-EXPIRED',
+            'nama' => 'Staff Kontrak Habis',
+            'jenis_kelamin' => 'Laki-laki',
+            'jabatan' => 'Staff',
+            'divisi_id_divisi' => 'DIV-IT',
+            'tanggal_akhir_kontrak' => '2026-11-16',
+        ]);
 
         try {
             Carbon::setTestNow('2026-11-16 08:00:00');
@@ -84,6 +93,9 @@ class AllRolesPagesRenderTest extends TestCase
                 ->get('/hrd/dashboard')
                 ->assertOk()
                 ->assertSee('Kontrak kerja Staff Satu akan berakhir pada 30 November 2026 (14 hari lagi).')
+                ->assertSee('Kontrak kerja sudah berakhir')
+                ->assertSee('Kontrak kerja Staff Kontrak Habis telah berakhir pada 16 November 2026.')
+                ->assertSee('bg-red-100 text-red-600', false)
                 ->assertSee(route('hrd.daftarKaryawan'), false);
 
             $this->actingAs($this->hrd)
@@ -91,6 +103,11 @@ class AllRolesPagesRenderTest extends TestCase
                 ->assertOk()
                 ->assertJsonPath(
                     'data.notifikasi_kontrak.0.id_notifikasi',
+                    'kontrak-expired-KRY-EXPIRED-2026-11-16'
+                )
+                ->assertJsonPath('data.notifikasi_kontrak.0.is_contract_expired', true)
+                ->assertJsonPath(
+                    'data.notifikasi_kontrak.1.id_notifikasi',
                     'kontrak-reminder-KRY-S-2026-11-30'
                 );
         } finally {
