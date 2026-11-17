@@ -69,11 +69,7 @@ class HrdStaffController extends Controller
             // Lampiran
             'lampiran' => 'nullable|array',
             'lampiran.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-        ], [
-            'jabatan.in' => 'Jabatan harus salah satu dari: ' . implode(', ', Karyawan::JABATAN_OPTIONS) . '.',
-            'lampiran.*.mimes' => 'Format file lampiran harus PDF, JPG, JPEG, atau PNG.',
-            'lampiran.*.max' => 'Ukuran file lampiran maksimal 5 MB per file.',
-        ]);
+        ], $this->validationMessages(), $this->validationAttributes());
 
         // Try-catch: pastikan divisi ada
         try {
@@ -107,11 +103,10 @@ class HrdStaffController extends Controller
             // Gunakan transaksi agar data karyawan + user konsisten
             DB::beginTransaction();
 
-            // 1. Generate ID Karyawan (KRxxx)
-            $lastKaryawan = Karyawan::orderBy('id_karyawan', 'desc')->first();
-            $newKaryawanId = $lastKaryawan
-                ? 'KR' . str_pad(intval(substr($lastKaryawan->id_karyawan, 2)) + 1, 3, '0', STR_PAD_LEFT)
-                : 'KR001';
+            // 1. Generate ID Karyawan (KRxxx). Hanya ID berformat KR + angka
+            // yang dihitung, sehingga data lama seperti "KRY-..." tidak
+            // merusak urutan dan menyebabkan bentrok ID.
+            $newKaryawanId = $this->nextGeneratedId(Karyawan::class, 'id_karyawan', 'KR');
 
             $tanggalMasuk = $validated['tanggal_masuk'] ?? $validated['tanggal_rekrut'] ?? now()->toDateString();
             $tanggalAkhirKontrak = $validated['tanggal_akhir_kontrak'] ?? null;
@@ -139,11 +134,9 @@ class HrdStaffController extends Controller
             // Simpan lampiran (jika ada)
             $this->simpanLampiran($request, $karyawan->id_karyawan);
 
-            // 3. Generate ID User (USxxx)
-            $lastUser = User2::orderBy('id_user', 'desc')->first();
-            $newUserId = $lastUser
-                ? 'US' . str_pad(intval(substr($lastUser->id_user, 2)) + 1, 3, '0', STR_PAD_LEFT)
-                : 'US001';
+            // 3. Generate ID User (USxxx), dengan aturan yang sama seperti
+            // ID karyawan agar data lama tidak memicu bentrok.
+            $newUserId = $this->nextGeneratedId(User2::class, 'id_user', 'US');
 
             // 4. Default role = staff jika tidak diisi
             // 5. Buat Akun User
@@ -168,17 +161,19 @@ class HrdStaffController extends Controller
                     ]
                 ]
             ], 201);
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             DB::rollBack();
-            report($e);
-            // Duplikat race-condition (username/ID): 23000 integrity violation
-            if ($e->getCode() === '23000') {
-                return response()->json([
-                    'message' => 'Staff dengan username tersebut sudah ada'
-                ], 409);
+
+            $duplicate = $this->duplicateStaffData($e);
+
+            if ($duplicate !== null) {
+                return response()->json($duplicate, 409);
             }
+
+            report($e);
+
             return response()->json([
-                'message' => 'Gagal menambahkan staff. Silakan coba lagi.'
+                'message' => 'Gagal menambahkan staff karena kendala pada server. Silakan coba lagi.'
             ], 500);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -260,11 +255,7 @@ class HrdStaffController extends Controller
             // Lampiran
             'lampiran' => 'sometimes|nullable|array',
             'lampiran.*' => 'sometimes|nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-        ], [
-            'jabatan.in' => 'Jabatan harus salah satu dari: ' . implode(', ', Karyawan::JABATAN_OPTIONS) . '.',
-            'lampiran.*.mimes' => 'Format file lampiran harus PDF, JPG, JPEG, atau PNG.',
-            'lampiran.*.max' => 'Ukuran file lampiran maksimal 5 MB per file.',
-        ]);
+        ], $this->validationMessages(), $this->validationAttributes());
 
         // Hanya karyawan yang sudah ditandai keluar (ada tanggal_keluar) yang tidak bisa diaktifkan kembali.
         // Karyawan yang Tidak Aktif karena diset manual tetap bisa diubah kembali menjadi Aktif.
@@ -356,56 +347,70 @@ class HrdStaffController extends Controller
             }
         }
 
-        DB::transaction(function () use ($karyawan, $validated, $request): void {
-            $karyawanChanges = array_intersect_key($validated, array_flip([
-                'nama',
-                'jenis_kelamin',
-                'tanggal_lahir',
-                'tanggal_masuk',
-                'tanggal_rekrut',
-                'tanggal_akhir_kontrak',
-                'no_rekening',
-                'no_telepon',
-                'email',
-                'alamat',
-                'jabatan',
-                'status_aktif',
-                'divisi_id_divisi',
-                'pendidikan',      // <-- Pastikan ini ada
-                'job_level',
-            ]));
+        try {
+            DB::transaction(function () use ($karyawan, $validated, $request): void {
+                $karyawanChanges = array_intersect_key($validated, array_flip([
+                    'nama',
+                    'jenis_kelamin',
+                    'tanggal_lahir',
+                    'tanggal_masuk',
+                    'tanggal_rekrut',
+                    'tanggal_akhir_kontrak',
+                    'no_rekening',
+                    'no_telepon',
+                    'email',
+                    'alamat',
+                    'jabatan',
+                    'status_aktif',
+                    'divisi_id_divisi',
+                    'pendidikan',      // <-- Pastikan ini ada
+                    'job_level',
+                ]));
 
-            if (isset($karyawanChanges['tanggal_rekrut']) && !isset($karyawanChanges['tanggal_masuk'])) {
-                $karyawanChanges['tanggal_masuk'] = $karyawanChanges['tanggal_rekrut'];
-            }
-            unset($karyawanChanges['tanggal_rekrut']);
-
-            $tanggalAkhirKontrak = array_key_exists('tanggal_akhir_kontrak', $karyawanChanges)
-                ? $karyawanChanges['tanggal_akhir_kontrak']
-                : $karyawan->tanggal_akhir_kontrak;
-            $karyawanChanges['status_karyawan'] = $tanggalAkhirKontrak ? 'Kontrak' : 'Tetap';
-
-            if (array_key_exists('status_aktif', $karyawanChanges) && $karyawan->tanggal_keluar === null) {
-                $isActive = $karyawanChanges['status_aktif'] === 'Aktif';
-                $karyawanChanges['aktif'] = $isActive;
-            }
-
-            if (!empty($karyawanChanges)) {
-                $karyawan->update($karyawanChanges);
-            }
-
-            $this->simpanLampiran($request, $karyawan->id_karyawan);
-
-            if ($karyawan->user) {
-                $accountChanges = array_intersect_key($validated, array_flip(['username', 'role_id_role']));
-                if (isset($validated['password'])) {
-                    $accountChanges['password'] = Hash::make($validated['password']);
+                if (isset($karyawanChanges['tanggal_rekrut']) && !isset($karyawanChanges['tanggal_masuk'])) {
+                    $karyawanChanges['tanggal_masuk'] = $karyawanChanges['tanggal_rekrut'];
                 }
-                if ($accountChanges) {
-                    $karyawan->user->update($accountChanges);
+                unset($karyawanChanges['tanggal_rekrut']);
+
+                $tanggalAkhirKontrak = array_key_exists('tanggal_akhir_kontrak', $karyawanChanges)
+                    ? $karyawanChanges['tanggal_akhir_kontrak']
+                    : $karyawan->tanggal_akhir_kontrak;
+                $karyawanChanges['status_karyawan'] = $tanggalAkhirKontrak ? 'Kontrak' : 'Tetap';
+
+                if (array_key_exists('status_aktif', $karyawanChanges) && $karyawan->tanggal_keluar === null) {
+                    $isActive = $karyawanChanges['status_aktif'] === 'Aktif';
+                    $karyawanChanges['aktif'] = $isActive;
                 }
+
+                if (!empty($karyawanChanges)) {
+                    $karyawan->update($karyawanChanges);
+                }
+
+                $this->simpanLampiran($request, $karyawan->id_karyawan);
+
+                if ($karyawan->user) {
+                    $accountChanges = array_intersect_key($validated, array_flip(['username', 'role_id_role']));
+                    if (isset($validated['password'])) {
+                        $accountChanges['password'] = Hash::make($validated['password']);
+                    }
+                    if ($accountChanges) {
+                        $karyawan->user->update($accountChanges);
+                    }
+                }
+            });
+        } catch (QueryException $e) {
+            $duplicate = $this->duplicateStaffData($e);
+
+            if ($duplicate !== null) {
+                return response()->json($duplicate, 409);
             }
-        });
+
+            report($e);
+
+            return response()->json([
+                'message' => 'Gagal mengubah data staff karena kendala pada server. Silakan coba lagi.',
+            ], 500);
+        }
 
         return response()->json([
             'message' => 'Staff berhasil diubah',
@@ -501,6 +506,124 @@ class HrdStaffController extends Controller
         }
 
         return response()->json(['message' => 'Staff dan akun login berhasil dihapus']);
+    }
+
+    /**
+     * Generate the next sequential id (e.g. KR017 / US018).
+     *
+     * Only ids that match "PREFIX + digits" are considered, so legacy or
+     * imported ids such as "KRY-CONTRACT-TEST" cannot reset the sequence and
+     * cause a duplicate primary key on every new employee.
+     */
+    private function nextGeneratedId(string $modelClass, string $column, string $prefix, int $pad = 3): string
+    {
+        $max = 0;
+
+        $modelClass::query()
+            ->where($column, 'like', $prefix.'%')
+            ->pluck($column)
+            ->each(function ($id) use ($prefix, &$max): void {
+                if (preg_match('/^'.preg_quote($prefix, '/').'(\d+)$/', (string) $id, $matches) === 1) {
+                    $max = max($max, (int) $matches[1]);
+                }
+            });
+
+        do {
+            $max++;
+            $candidate = $prefix.str_pad((string) $max, $pad, '0', STR_PAD_LEFT);
+        } while ($modelClass::query()->where($column, $candidate)->exists());
+
+        return $candidate;
+    }
+
+    /**
+     * Translate a unique-constraint violation into a clear, field-specific
+     * message. Returns null when the error is not a duplicate-key error.
+     */
+    private function duplicateStaffData(QueryException $e): ?array
+    {
+        $sqlState = (string) $e->getCode();
+        $message = mb_strtolower($e->getMessage());
+
+        $isDuplicate = in_array($sqlState, ['23000', '23505'], true)
+            || str_contains($message, 'duplicate key')
+            || str_contains($message, 'unique constraint')
+            || str_contains($message, 'duplicate entry');
+
+        if (! $isDuplicate) {
+            return null;
+        }
+
+        if (str_contains($message, 'username')) {
+            return [
+                'message' => 'Username sudah digunakan. Silakan pilih username lain.',
+                'errors' => ['username' => ['Username sudah digunakan. Silakan pilih username lain.']],
+            ];
+        }
+
+        if (str_contains($message, 'email')) {
+            return [
+                'message' => 'Email sudah digunakan karyawan lain. Gunakan email lain atau kosongkan.',
+                'errors' => ['email' => ['Email sudah digunakan karyawan lain.']],
+            ];
+        }
+
+        return [
+            'message' => 'ID karyawan atau akun bentrok dengan data lain. Silakan coba lagi.',
+        ];
+    }
+
+    /**
+     * Pesan validasi dalam bahasa Indonesia agar error form mudah dipahami.
+     */
+    private function validationMessages(): array
+    {
+        return [
+            'nama.required' => 'Nama karyawan wajib diisi.',
+            'nama.max' => 'Nama karyawan maksimal 100 karakter.',
+            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
+            'jenis_kelamin.in' => 'Jenis kelamin harus Laki-laki atau Perempuan.',
+            'tanggal_lahir.date' => 'Tanggal lahir tidak valid.',
+            'tanggal_masuk.date' => 'Tanggal masuk tidak valid.',
+            'tanggal_rekrut.date' => 'Tanggal rekrut tidak valid.',
+            'tanggal_akhir_kontrak.date' => 'Tanggal akhir kontrak tidak valid.',
+            'no_telepon.max' => 'Nomor telepon maksimal 20 karakter.',
+            'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email maksimal 100 karakter.',
+            'email.unique' => 'Email sudah digunakan karyawan lain. Gunakan email lain atau kosongkan.',
+            'jabatan.required' => 'Jabatan wajib dipilih.',
+            'jabatan.in' => 'Jabatan harus salah satu dari: '.implode(', ', Karyawan::JABATAN_OPTIONS).'.',
+            'jabatan.max' => 'Jabatan maksimal 100 karakter.',
+            'status_aktif.in' => 'Status harus salah satu dari: '.implode(', ', Karyawan::STATUS_OPTIONS).'.',
+            'pendidikan.in' => 'Pendidikan harus salah satu dari: '.implode(', ', Karyawan::PENDIDIKAN_OPTIONS).'.',
+            'job_level.in' => 'Job level harus salah satu dari: '.implode(', ', Karyawan::JOB_LEVEL_OPTIONS).'.',
+            'divisi_id_divisi.required' => 'Divisi wajib dipilih.',
+            'divisi_id_divisi.max' => 'Divisi tidak valid.',
+            'username.required' => 'Username wajib diisi.',
+            'username.max' => 'Username maksimal 50 karakter.',
+            'username.unique' => 'Username sudah digunakan. Silakan pilih username lain.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 6 karakter.',
+            'lampiran.*.file' => 'Lampiran gagal diunggah. Silakan pilih file lain.',
+            'lampiran.*.mimes' => 'Format file lampiran harus PDF, JPG, JPEG, atau PNG.',
+            'lampiran.*.max' => 'Ukuran file lampiran maksimal 5 MB per file.',
+        ];
+    }
+
+    private function validationAttributes(): array
+    {
+        return [
+            'nama' => 'nama karyawan',
+            'jenis_kelamin' => 'jenis kelamin',
+            'tanggal_lahir' => 'tanggal lahir',
+            'tanggal_masuk' => 'tanggal masuk',
+            'tanggal_rekrut' => 'tanggal rekrut',
+            'tanggal_akhir_kontrak' => 'tanggal akhir kontrak',
+            'no_rekening' => 'no. rekening',
+            'no_telepon' => 'nomor telepon',
+            'divisi_id_divisi' => 'divisi',
+            'job_level' => 'job level',
+        ];
     }
 
     private function roleNameForJabatan(string $jabatan): ?string
