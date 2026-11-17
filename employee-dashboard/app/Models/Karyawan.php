@@ -35,6 +35,7 @@ class Karyawan extends Model
         'tanggal_keluar',
         'foto',
         'divisi_id_divisi',
+        'atasan_id',
         'pendidikan',
         'job_level',
         'status_karyawan',
@@ -74,11 +75,16 @@ class Karyawan extends Model
      * separately in divisi_id_divisi; the forms offer these as a select and
      * the staff API validates against this list.
      */
+    public const JABATAN_DIREKTUR = 'Direktur Utama';
+    public const JABATAN_KEPALA = 'Kepala Divisi';
+    public const JABATAN_STAFF = 'Staff';
+    public const JABATAN_HRD_MANAGER = 'HRD Manager';
+
     public const JABATAN_OPTIONS = [
-        'Kepala Divisi',
-        'Wakil Kepala Divisi',
-        'Staff',
-        'HRD Manager',
+        self::JABATAN_DIREKTUR,
+        self::JABATAN_KEPALA,
+        self::JABATAN_STAFF,
+        self::JABATAN_HRD_MANAGER,
     ];
 
     public const STATUS_OPTIONS = [
@@ -147,23 +153,38 @@ class Karyawan extends Model
         return strtolower($this->user?->role?->nama_role ?? '') === strtolower($roleName);
     }
 
+    public function isDirektur(): bool
+    {
+        return $this->hasRole('direktur')
+            || $this->hasRole('direksi')
+            || strtolower($this->job_level ?? '') === 'direksi'
+            || str_contains(strtolower($this->jabatan ?? ''), 'direktur');
+    }
+
     public function isKadiv(): bool
     {
         return $this->hasRole('kadiv')
+            || $this->isDirektur()
             || preg_match('/^kepala\s+divisi(?:\s|$)/i', trim($this->jabatan ?? '')) === 1;
+    }
+
+    public function isDirekturUtama(): bool
+    {
+        return preg_match('/^direktur\s+utama(?:\s|$)/i', trim($this->jabatan ?? '')) === 1;
     }
 
     public function isStaff(): bool
     {
-        return $this->hasRole('staff');
+        return $this->hasRole('staff') || $this->isDirektur();
     }
 
     /**
-     * Cek apakah karyawan ini berada di divisi Finance (kode_divisi = 'FIN').
+     * Cek apakah karyawan ini berada di unit Finance & Accounting.
+     * Delegated to the division model so the code lives in one place.
      */
     public function isFinance(): bool
     {
-        return strtoupper($this->divisi?->kode_divisi ?? '') === 'FIN';
+        return $this->divisi?->isFinance() ?? false;
     }
 
     /**
@@ -171,7 +192,7 @@ class Karyawan extends Model
      */
     public function isKadivFinance(): bool
     {
-        return $this->isKadiv() && $this->isFinance();
+        return ($this->isKadiv() && $this->isFinance()) || $this->isDirektur();
     }
 
     public function suratIzins(): HasMany
@@ -179,6 +200,24 @@ class Karyawan extends Model
         return $this->hasMany(
             SuratIzin::class,
             'karyawan_id_karyawan',
+            'id_karyawan'
+        );
+    }
+
+    public function atasan(): BelongsTo
+    {
+        return $this->belongsTo(
+            Karyawan::class,
+            'atasan_id',
+            'id_karyawan'
+        );
+    }
+
+    public function bawahan(): HasMany
+    {
+        return $this->hasMany(
+            Karyawan::class,
+            'atasan_id',
             'id_karyawan'
         );
     }

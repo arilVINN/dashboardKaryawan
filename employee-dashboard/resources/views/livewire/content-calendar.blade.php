@@ -46,8 +46,8 @@
         closeDelete() {
             this.confirmOpen = false;
         },
-        trap(event) {
-            const panel = document.querySelector('[data-content-modal] [data-modal-panel]');
+        trap(event, selector = '[data-content-modal] [data-modal-panel]') {
+            const panel = document.querySelector(selector);
             if (!panel) return;
             const focusable = [...panel.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\'-1\'])')]
                 .filter((el) => el.offsetParent !== null);
@@ -109,8 +109,10 @@
     @content-modal-closed.window="restoreFocus()"
     @content-focus-title.window="dirty = false; $nextTick(() => $refs.titleInput?.focus())"
     @content-focus-modal.window="dirty = false; $nextTick(() => document.querySelector('[data-modal-panel]')?.focus())"
+    @content-focus-account-name.window="$nextTick(() => $refs.accountName?.focus())"
     @keydown.escape.window="
-        if (closeConfirm) { closeConfirm = false; }
+        if ($wire.get('accountFormOpen')) { $wire.closeAccountForm(); }
+        else if (closeConfirm) { closeConfirm = false; }
         else if (confirmOpen) { closeDelete(); }
         else if ($wire.get('popoverDate')) { $wire.closePopover(); }
         else if (modalOpen()) { requestClose(); }">
@@ -181,16 +183,17 @@
             </div>
             <h2 class="truncate text-xl font-semibold text-[#172B36]">{{ $monthLabel }}</h2>
         </div>
+    </div>
 
-        <div class="ml-auto flex flex-wrap items-center gap-2">
-            @if ($accounts->isNotEmpty())
-                <select wire:model.live="account" aria-label="Pilih akun media sosial"
-                    class="h-10 w-[180px] rounded-lg border border-[#E2E8EC] bg-white px-2 text-sm text-[#172B36] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
-                    @foreach ($accounts as $availableAccount)
-                        <option value="{{ $availableAccount->slug }}">{{ $availableAccount->name }}</option>
-                    @endforeach
-                </select>
-            @endif
+    <div class="mt-2 flex flex-wrap items-center gap-2">
+        @if ($accounts->isNotEmpty())
+            <select wire:model.live="account" aria-label="Pilih akun media sosial"
+                class="h-10 w-[180px] rounded-lg border border-[#E2E8EC] bg-white px-2 text-sm text-[#172B36] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+                @foreach ($accounts as $availableAccount)
+                    <option value="{{ $availableAccount->slug }}">{{ $availableAccount->name }}</option>
+                @endforeach
+            </select>
+        @endif
 
         <button type="button" id="content-add-account" wire:click="openAccountForm"
             title="Tambah akun media sosial"
@@ -273,35 +276,6 @@
                     class="inline-flex h-9 items-center rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white hover:bg-[#0086A0]">
                     Coba lagi
                 </button>
-            </div>
-        @elseif ($isEmpty && $view !== 'daftar')
-            <div class="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-                <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E3F1F7] text-[#146C94]">
-                    <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z"></path>
-                    </svg>
-                </span>
-                <div>
-                    <p class="text-sm font-semibold text-[#172B36]">Belum ada event bulan ini</p>
-                    <p class="mt-1 text-xs text-[#4B5563]">
-                        {{ $hasActiveFilters ? 'Coba ubah filter atau tambahkan event baru.' : 'Tambahkan event pertama untuk '.($activeAccount?->name ?? 'akun ini').'.' }}
-                    </p>
-                </div>
-                <div class="flex flex-wrap items-center justify-center gap-2">
-                    <button type="button" id="content-add-event-empty" wire:click="openCreate()" @click="remember($el)"
-                        class="inline-flex h-10 items-center gap-2 rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white hover:bg-[#0086A0]">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
-                        </svg>
-                        Tambah event
-                    </button>
-                    @if ($hasActiveFilters)
-                        <button type="button" wire:click="resetFilters"
-                            class="inline-flex h-10 items-center rounded-lg border border-[#E2E8EC] bg-white px-4 text-sm font-medium text-[#4B5563] hover:bg-slate-50">
-                            Reset filter
-                        </button>
-                    @endif
-                </div>
             </div>
         @elseif ($view === 'bulan')
             <div class="overflow-x-auto">
@@ -541,8 +515,9 @@
                                 </svg>
                                 Tersimpan
                             </span>
-                            @if ($content_url !== '')
-                                <button type="button" @click="copyText($refs.modalLink?.value ?? $refs.modalLinkText?.textContent)"
+                            @php $primaryLink = collect($contentLinks)->first(fn ($link) => trim((string) $link) !== ''); @endphp
+                            @if ($primaryLink)
+                                <button type="button" @click='copyText(@js($primaryLink))'
                                     aria-label="Salin link konten"
                                     class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#64748B] transition hover:bg-slate-100 hover:text-[#172B36] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -585,7 +560,7 @@
                             </p>
                             @if ($readOnly)
                                 <div class="flex h-[42px] items-center rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36]">
-                                    {{ $event_date ? \Carbon\Carbon::parse($event_date)->locale('id')->translatedFormat('j M Y') : '—' }}
+                                    {{ $event_date ? \Carbon\Carbon::parse($event_date)->locale('id')->translatedFormat('j M Y') : '-' }}
                                 </div>
                             @else
                                 <x-date-picker id="content-date" label="Tanggal" model="event_date" :value="$event_date" />
@@ -607,7 +582,7 @@
                                     @if ($selectedType)
                                         <x-content-type-tag :name="$selectedType['name']" :fill="$selectedType['fill']" :border="$selectedType['border']" />
                                     @else
-                                        <span class="text-sm text-[#4B5563]">—</span>
+                                        <span class="text-sm text-[#4B5563]">-</span>
                                     @endif
                                 </div>
                             @else
@@ -648,7 +623,7 @@
                             </p>
                             @if ($readOnly)
                                 <div class="flex h-[42px] items-center rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36]">
-                                    {{ $post_time !== '' ? $post_time : '—' }}
+                                    {{ $post_time !== '' ? $post_time : '-' }}
                                 </div>
                             @else
                                 <input id="content-time" type="text" wire:model.blur.live="post_time"
@@ -748,49 +723,79 @@
                         </p>
 
                         @if ($readOnly)
-                            <div class="flex h-[46px] items-center gap-2 rounded-lg border border-[#E8EDF2] bg-white px-3">
-                                <svg class="h-4 w-4 shrink-0 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.5 6H18a3 3 0 0 1 0 6h-2M10.5 18H6a3 3 0 0 1 0-6h2M9 12h6"></path>
-                                </svg>
-                                @if ($content_url !== '')
-                                    <a x-ref="modalLinkText" href="{{ $content_url }}" target="_blank" rel="noopener noreferrer"
-                                        class="min-w-0 flex-1 truncate text-sm text-[#146C94] hover:underline">{{ $content_url }}</a>
-                                    <button type="button" @click="copyText('{{ $content_url }}')"
-                                        class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
-                                        <span x-show="!copied">Salin</span>
-                                        <span x-show="copied" x-cloak>Tersalin</span>
-                                    </button>
-                                    <a href="{{ $content_url }}" target="_blank" rel="noopener noreferrer"
-                                        class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
-                                        Buka
-                                    </a>
-                                @else
+                            @php $savedLinks = collect($contentLinks)->filter(fn ($link) => trim((string) $link) !== '')->values(); @endphp
+                            @if ($savedLinks->isEmpty())
+                                <div class="flex h-[46px] items-center gap-2 rounded-lg border border-[#E8EDF2] bg-white px-3">
+                                    <svg class="h-4 w-4 shrink-0 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.5 6H18a3 3 0 0 1 0 6h-2M10.5 18H6a3 3 0 0 1 0-6h2M9 12h6"></path>
+                                    </svg>
                                     <span class="text-sm text-[#4B5563]">Belum ada link</span>
-                                @endif
-                            </div>
+                                </div>
+                            @else
+                                <div class="space-y-2">
+                                    @foreach ($savedLinks as $index => $link)
+                                        <div wire:key="content-link-view-{{ $index }}"
+                                            class="flex h-[46px] items-center gap-2 rounded-lg border border-[#E8EDF2] bg-white px-3">
+                                            <svg class="h-4 w-4 shrink-0 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.5 6H18a3 3 0 0 1 0 6h-2M10.5 18H6a3 3 0 0 1 0-6h2M9 12h6"></path>
+                                            </svg>
+                                            <a href="{{ $link }}" target="_blank" rel="noopener noreferrer"
+                                                class="min-w-0 flex-1 truncate text-sm text-[#146C94] hover:underline">{{ $link }}</a>
+                                            <button type="button" @click='copyText(@js($link))'
+                                                class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                                <span x-show="!copied">Salin</span>
+                                                <span x-show="copied" x-cloak>Tersalin</span>
+                                            </button>
+                                            <a href="{{ $link }}" target="_blank" rel="noopener noreferrer"
+                                                class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                                Buka
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                         @else
-                            <div class="flex h-[46px] items-center gap-2 rounded-lg border border-[#D5DEE3] bg-white px-3 focus-within:border-[#146C94] focus-within:ring-2 focus-within:ring-[#146C94]">
-                                <svg class="h-4 w-4 shrink-0 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.5 6H18a3 3 0 0 1 0 6h-2M10.5 18H6a3 3 0 0 1 0-6h2M9 12h6"></path>
-                                </svg>
-                                <input id="content-url" x-ref="modalLink" type="url" wire:model.blur.live="content_url"
-                                    placeholder="https://" autocomplete="off"
-                                    class="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-[#172B36] placeholder:text-[#8A96A3] focus:outline-none focus:ring-0">
-                                @if ($content_url !== '')
-                                    <button type="button" @click="copyText($refs.modalLink?.value)"
-                                        class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
-                                        <span x-show="!copied">Salin</span>
-                                        <span x-show="copied" x-cloak>Tersalin</span>
-                                    </button>
-                                    <a href="{{ $content_url }}" target="_blank" rel="noopener noreferrer"
-                                        class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
-                                        Buka
-                                    </a>
-                                @endif
+                            <div class="space-y-2">
+                                @foreach ($contentLinks as $index => $link)
+                                    <div wire:key="content-link-{{ $index }}" class="flex items-center gap-2">
+                                        <div class="flex h-[46px] min-w-0 flex-1 items-center gap-2 rounded-lg border border-[#D5DEE3] bg-white px-3 focus-within:border-[#146C94] focus-within:ring-2 focus-within:ring-[#146C94]">
+                                            <svg class="h-4 w-4 shrink-0 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.5 6H18a3 3 0 0 1 0 6h-2M10.5 18H6a3 3 0 0 1 0-6h2M9 12h6"></path>
+                                            </svg>
+                                            <input id="content-link-{{ $index }}" type="url" wire:model.blur.live="contentLinks.{{ $index }}"
+                                                placeholder="https://" autocomplete="off"
+                                                class="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-[#172B36] placeholder:text-[#8A96A3] focus:outline-none focus:ring-0">
+                                            @if (trim((string) $link) !== '')
+                                                <button type="button" @click='copyText(@js($link))'
+                                                    class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                                    <span x-show="!copied">Salin</span>
+                                                    <span x-show="copied" x-cloak>Tersalin</span>
+                                                </button>
+                                                <a href="{{ $link }}" target="_blank" rel="noopener noreferrer"
+                                                    class="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[#146C94] hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                                    Buka
+                                                </a>
+                                            @endif
+                                        </div>
+                                        <button type="button" wire:click="removeLink({{ $index }})" aria-label="Hapus link"
+                                            class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#8A96A3] transition hover:bg-red-50 hover:text-[#B91C1C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    @error('contentLinks.'.$index)
+                                        <p class="text-[12px] text-[#B91C1C]">{{ $message }}</p>
+                                    @enderror
+                                @endforeach
                             </div>
-                            @error('content_url')
-                                <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
-                            @enderror
+                            <button type="button" wire:click="addLink"
+                                class="mt-2 inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[12px] font-semibold text-[#146C94] transition hover:bg-[#E3F1F7] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
+                                </svg>
+                                Tambah link
+                            </button>
                         @endif
                     </div>
 
@@ -943,5 +948,48 @@
             </div>
         </div>
     </div>
+    @endif
+
+    {{-- Add account --}}
+    @if ($accountFormOpen)
+        <div data-account-modal
+            class="fixed inset-0 flex items-center justify-center bg-slate-900/40 p-4"
+            style="z-index: 90;"
+            @click.self="$wire.closeAccountForm()">
+            <div data-account-panel role="dialog" aria-modal="true" aria-labelledby="content-account-modal-title"
+                tabindex="-1"
+                class="w-full max-w-md rounded-xl border border-[#E2E8EC] bg-white p-6 shadow-xl"
+                @keydown.tab="trap($event, '[data-account-modal] [data-account-panel]')">
+                <h3 id="content-account-modal-title" class="text-lg font-semibold text-[#172B36]">
+                    Tambah akun media sosial
+                </h3>
+                <p class="mt-1 text-sm text-[#4B5563]">
+                    Akun baru langsung dipakai untuk kalender konten ini.
+                </p>
+
+                <form wire:submit.prevent="saveAccount" class="mt-4">
+                    <label for="content-account-name" class="block text-[13px] font-medium text-[#4B5563]">
+                        Nama akun
+                    </label>
+                    <input id="content-account-name" x-ref="accountName" type="text"
+                        wire:model="accountName" maxlength="80" autocomplete="off"
+                        placeholder="Contoh: Citra Komunika"
+                        class="mt-1.5 h-[42px] w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36] placeholder:text-[#8A96A3] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+                    @error('accountName')
+                        <p class="mt-1.5 text-[12px] text-[#B91C1C]">{{ $message }}</p>
+                    @enderror
+                    <div class="mt-5 flex justify-end gap-2">
+                        <button type="button" wire:click="closeAccountForm"
+                            class="inline-flex h-10 items-center rounded-lg border border-[#E2E8EC] bg-white px-4 text-sm font-medium text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="inline-flex h-10 items-center rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
+                            Simpan akun
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     @endif
 </div>

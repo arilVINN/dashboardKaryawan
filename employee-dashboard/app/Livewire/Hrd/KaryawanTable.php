@@ -46,7 +46,7 @@ class KaryawanTable extends Component
         $user = auth()->user();
 
         if (! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'hrd') {
+            || (strtolower($user->role?->nama_role ?? '') !== 'hrd' && ! $user->isDirektur())) {
             abort(403);
         }
 
@@ -126,7 +126,7 @@ class KaryawanTable extends Component
             'dir' => $this->dir,
         ])->paginate($this->perPage);
 
-        $daftarDivisi = Divisi::orderBy('nama_divisi')->get();
+        $daftarDivisi = Divisi::query()->ordered()->get();
         $daftarJabatan = Karyawan::query()
             ->whereNotNull('jabatan')
             ->distinct()

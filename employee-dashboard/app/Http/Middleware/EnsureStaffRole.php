@@ -14,9 +14,11 @@ class EnsureStaffRole
      * Mapping role → named route dashboard masing-masing.
      */
     private const DASHBOARD_ROUTES = [
-        'hrd'   => 'hrd.dashboard',
-        'kadiv' => 'kadiv.dashboard',
-        'staff' => 'dashboard',
+        'direktur' => 'direktur.dashboard',
+        'direksi'  => 'direktur.dashboard',
+        'hrd'      => 'hrd.dashboard',
+        'kadiv'    => 'kadiv.dashboard',
+        'staff'    => 'dashboard',
     ];
 
     public function handle(Request $request, Closure $next): Response|JsonResponse
@@ -31,6 +33,11 @@ class EnsureStaffRole
         }
 
         $user->loadMissing('role');
+
+        // Direktur / Direksi memiliki akses ke fitur staff.
+        if ($user->isDirektur()) {
+            return $next($request);
+        }
 
         if (strtolower($user->role?->nama_role ?? '') !== 'staff') {
             if ($request->expectsJson()) {

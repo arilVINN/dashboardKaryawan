@@ -4,6 +4,13 @@
     $divisiTerkunci = $divisiTerkunci ?? null;
     $judulTambah = $judulTambah ?? 'Tambah Karyawan';
     $formControl = 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm outline-none focus:border-[#004A65]';
+    $divisionOptionLabel = function ($division): string {
+        $suffix = $division->isGrouping()
+            ? ' (grup)'
+            : ($division->isSinglePerson() ? ' (1 orang)' : '');
+
+        return $division->nama_divisi.$suffix;
+    };
 @endphp
 
 <!-- Modal Tambah Karyawan -->
@@ -102,7 +109,7 @@
                                 <select class="{{ $formControl }}" disabled>
                                     @foreach ($daftarDivisi as $d)
                                         <option value="{{ $d->id_divisi }}" @selected($d->id_divisi === $divisiTerkunci)>
-                                            {{ $d->nama_divisi }}</option>
+                                            {{ $divisionOptionLabel($d) }}</option>
                                     @endforeach
                                 </select>
                                 <input type="hidden" name="divisi_id_divisi" value="{{ $divisiTerkunci }}">
@@ -110,7 +117,7 @@
                                 <select name="divisi_id_divisi" required class="{{ $formControl }}">
                                     <option value="">Pilih divisi</option>
                                     @foreach ($daftarDivisi as $d)
-                                        <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
+                                        <option value="{{ $d->id_divisi }}" @disabled($d->isGrouping())>{{ $divisionOptionLabel($d) }}</option>
                                     @endforeach
                                 </select>
                             @endif
@@ -321,7 +328,7 @@
                             <label class="text-xs font-bold text-slate-500">DIVISI</label>
                             <select name="divisi_id_divisi" required class="{{ $formControl }}">
                                 @foreach ($daftarDivisi as $d)
-                                    <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
+                                    <option value="{{ $d->id_divisi }}" @disabled($d->isGrouping())>{{ $divisionOptionLabel($d) }}</option>
                                 @endforeach
                             </select>
                         </div>

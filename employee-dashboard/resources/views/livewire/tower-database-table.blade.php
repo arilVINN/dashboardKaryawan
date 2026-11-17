@@ -67,31 +67,31 @@
         </div>
     @endif
 
-    {{-- Filter Ringkas: Pencarian + Toggle Jenis + Reset --}}
-    <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+    {{-- Filter Ringkas: Pencarian + Toggle Jenis + Filter Akses/Divisi + Reset --}}
+    <div class="flex flex-wrap items-center gap-3">
         {{-- Search Input --}}
-        <div class="relative w-full sm:w-80 shrink-0">
+        <div class="relative w-full sm:w-72 shrink-0">
             <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
             <input id="towerSearch" type="text" wire:model.live.debounce.300ms="search"
-                placeholder="Cari nama dokumen, mitra, nomor, atau tautan..."
-                class="h-10 w-full pl-9 pr-3 border border-slate-300 rounded-lg text-sm outline-none focus:border-[#146C94]">
+                placeholder="Cari nama dokumen, nomor, link..."
+                class="h-10 w-full pl-9 pr-3 border border-slate-300 rounded-lg text-sm outline-none focus:border-[#146C94] bg-white">
         </div>
 
-        {{-- Toggle Group Jenis (segmented, seperti switcher di halaman kalender) --}}
+        {{-- Toggle Group Jenis (segmented) --}}
         @php
             $jenisTabs = [
                 ''      => ['label' => 'Semua',  'count' => $counts['total']],
-                'nomor' => ['label' => 'Kontak', 'count' => $counts['nomor']],
                 'file'  => ['label' => 'File',   'count' => $counts['file']],
+                'nomor' => ['label' => 'Kontak', 'count' => $counts['nomor']],
                 'link'  => ['label' => 'Tautan', 'count' => $counts['link']],
             ];
         @endphp
         <div class="inline-flex items-center" role="group" aria-label="Filter jenis">
             @foreach ($jenisTabs as $value => $tab)
                 <button type="button" wire:click="$set('jenis', @js($value))"
-                    class="inline-flex h-10 items-center gap-1.5 border border-slate-300 px-3.5 text-[13px] font-medium transition
+                    class="inline-flex h-10 items-center gap-1.5 border border-slate-300 px-3 text-[13px] font-medium transition
                         {{ $loop->first ? 'rounded-l-lg' : '' }}
                         {{ $loop->last ? 'rounded-r-lg' : '' }}
                         {{ ! $loop->first ? '-ml-px' : '' }}
@@ -104,9 +104,46 @@
             @endforeach
         </div>
 
+        {{-- Filter Akses / Divisi (General vs Divisi) --}}
+        @if ($isExecutive)
+            <div class="inline-flex items-center">
+                <select wire:model.live="filterAkses"
+                    class="h-10 border border-slate-300 rounded-lg px-3 text-[13px] font-medium text-slate-700 bg-white outline-none focus:border-[#146C94] hover:bg-slate-50 transition cursor-pointer">
+                    <option value="">Semua Akses ({{ $counts['total'] }})</option>
+                    <option value="general">General / Semua Divisi ({{ $counts['general'] }})</option>
+                    @foreach ($daftarDivisi as $d)
+                        <option value="{{ $d->id_divisi }}">Divisi {{ $d->nama_divisi }}</option>
+                    @endforeach
+                </select>
+            </div>
+        @else
+            @php
+                $aksesTabs = [
+                    ''            => ['label' => 'Semua', 'count' => $counts['total']],
+                    'general'     => ['label' => 'General', 'count' => $counts['general']],
+                    'my-division' => ['label' => 'Divisi ' . ($userDivisi?->kode_divisi ?? 'Saya'), 'count' => $counts['divisi']],
+                ];
+            @endphp
+            <div class="inline-flex items-center" role="group" aria-label="Filter akses">
+                @foreach ($aksesTabs as $value => $tab)
+                    <button type="button" wire:click="$set('filterAkses', @js($value))"
+                        class="inline-flex h-10 items-center gap-1.5 border border-slate-300 px-3 text-[13px] font-medium transition
+                            {{ $loop->first ? 'rounded-l-lg' : '' }}
+                            {{ $loop->last ? 'rounded-r-lg' : '' }}
+                            {{ ! $loop->first ? '-ml-px' : '' }}
+                            {{ $filterAkses === $value
+                                ? 'relative z-10 border-[#146C94] bg-[#146C94] text-white'
+                                : 'bg-white text-slate-700 hover:bg-slate-50' }}">
+                        <span>{{ $tab['label'] }}</span>
+                        <span class="text-xs {{ $filterAkses === $value ? 'text-white/80' : 'text-slate-400' }}">{{ $tab['count'] }}</span>
+                    </button>
+                @endforeach
+            </div>
+        @endif
+
         {{-- Aksi kanan: Reset (saat filter aktif) + Tambah arsip --}}
         <div class="ml-auto flex items-center gap-3">
-            @if ($search !== '' || $jenis !== '')
+            @if ($search !== '' || $jenis !== '' || $filterAkses !== '')
                 <button type="button" wire:click="resetFilters"
                     class="text-sm font-medium text-[#146C94] hover:underline">
                     Reset
@@ -136,15 +173,18 @@
                                 Nama <span class="{{ $sort === 'nama' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('nama') }}</span>
                             </button>
                         </th>
-                        <th class="{{ $headPadding }} text-left font-medium whitespace-nowrap w-36">
+                        <th class="{{ $headPadding }} text-left font-medium whitespace-nowrap w-28">
                             <button type="button" wire:click="sortBy('jenis')" class="inline-flex items-center gap-1 hover:text-[#004A65]">
                                 Jenis <span class="{{ $sort === 'jenis' ? 'text-[#004A65]' : 'text-slate-300' }}">{{ $indicator('jenis') }}</span>
                             </button>
                         </th>
-                        <th class="{{ $headPadding }} text-left font-medium whitespace-nowrap min-w-[16rem]">
+                        <th class="{{ $headPadding }} text-left font-medium whitespace-nowrap w-44">
+                            Akses / Divisi
+                        </th>
+                        <th class="{{ $headPadding }} text-left font-medium whitespace-nowrap min-w-[14rem]">
                             Detail / Nilai
                         </th>
-                        <th class="{{ $headPadding }} text-right font-medium whitespace-nowrap w-48">
+                        <th class="{{ $headPadding }} text-right font-medium whitespace-nowrap w-44">
                             Aksi
                         </th>
                     </tr>
@@ -154,7 +194,10 @@
                         <tr class="h-16 cursor-pointer hover:bg-[#F5FAFC] transition" wire:key="tower-item-{{ $item->id }}">
                             {{-- Kolom 1: Nama --}}
                             <td class="{{ $cellPadding }}">
-                                <span class="block max-w-[22rem] truncate font-bold text-slate-900 text-sm leading-snug" title="{{ $item->nama }}">{{ $item->nama }}</span>
+                                <span class="block max-w-[20rem] truncate font-bold text-slate-900 text-sm leading-snug" title="{{ $item->nama }}">{{ $item->nama }}</span>
+                                @if ($item->keterangan)
+                                    <span class="block max-w-[20rem] truncate text-xs text-slate-400 mt-0.5" title="{{ $item->keterangan }}">{{ $item->keterangan }}</span>
+                                @endif
                             </td>
 
                             {{-- Kolom 2: Jenis (Badge netral) --}}
@@ -183,20 +226,33 @@
                                 @endif
                             </td>
 
-                            {{-- Kolom 3: Detail / Nilai --}}
+                            {{-- Kolom 3: Akses / Divisi --}}
+                            <td class="{{ $cellPadding }}">
+                                @if ($item->isGeneral())
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 text-[11px] font-medium text-sky-700" title="Dapat diakses oleh seluruh staff & divisi">
+                                        <span>General</span>
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-800" title="Khusus divisi {{ $item->divisi?->nama_divisi ?? 'tertentu' }}">
+                                        <span class="truncate max-w-[9rem]">{{ $item->divisi?->nama_divisi ?? 'Divisi' }}</span>
+                                    </span>
+                                @endif
+                            </td>
+
+                            {{-- Kolom 4: Detail / Nilai --}}
                             <td class="{{ $cellPadding }}">
                                 @if ($item->jenis === 'file')
                                     <div class="flex flex-col">
-                                        <span class="text-[13px] font-medium text-[#334155] truncate max-w-[22rem]" title="{{ $item->file_name ?: 'Dokumen File' }}">{{ $item->file_name ?: 'Dokumen File' }}</span>
+                                        <span class="text-[13px] font-medium text-[#334155] truncate max-w-[18rem]" title="{{ $item->file_name ?: 'Dokumen File' }}">{{ $item->file_name ?: 'Dokumen File' }}</span>
                                         @if ($item->file_size)
-                                            <span class="text-[13px] text-[#4B5563]">{{ $item->file_size }}</span>
+                                            <span class="text-[12px] text-[#4B5563]">{{ $item->file_size }}</span>
                                         @endif
                                     </div>
                                 @elseif ($item->jenis === 'nomor')
                                     <div class="flex flex-col">
                                         <span class="font-mono font-bold text-slate-800 text-[13px] select-all">{{ $item->nilai_kontak }}</span>
                                         @if ($item->email_kontak)
-                                            <span class="text-[13px] text-[#4B5563] truncate max-w-[22rem]" title="{{ $item->email_kontak }}">{{ $item->email_kontak }}</span>
+                                            <span class="text-[12px] text-[#4B5563] truncate max-w-[18rem]" title="{{ $item->email_kontak }}">{{ $item->email_kontak }}</span>
                                         @endif
                                     </div>
                                 @elseif ($item->jenis === 'link')
@@ -205,14 +261,14 @@
                                         $linkHost = $linkHost ? preg_replace('/^www\./i', '', $linkHost) : ($item->url_link ?? '');
                                     @endphp
                                     <a href="{{ $item->url_link }}" target="_blank" rel="noopener noreferrer"
-                                       class="block max-w-[22rem] truncate text-[13px] font-medium text-[#146C94] hover:underline"
+                                       class="block max-w-[18rem] truncate text-[13px] font-medium text-[#146C94] hover:underline"
                                        title="{{ $item->url_link }}">
                                         {{ $linkHost }}
                                     </a>
                                 @endif
                             </td>
 
-                            {{-- Kolom 4: Aksi --}}
+                            {{-- Kolom 5: Aksi --}}
                             <td class="{{ $cellPadding }}">
                                 <div class="flex items-center justify-end gap-2">
                                     {{-- Slot 1: Aksi Utama Berdasarkan Jenis --}}
@@ -293,12 +349,12 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-12 text-center text-slate-400">
+                            <td colspan="5" class="px-6 py-12 text-center text-slate-400">
                                 <div class="flex flex-col items-center justify-center gap-2">
                                     <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                                     </svg>
-                                    <span class="text-sm font-medium">Belum ada data arsip yang cocok.</span>
+                                    <span class="text-sm font-medium">Belum ada data arsip yang sesuai.</span>
                                 </div>
                             </td>
                         </tr>
@@ -307,36 +363,29 @@
             </table>
         </div>
 
-        {{-- Footer: Ringkasan, Pagination & Baris per Halaman --}}
-        <div class="border-t border-slate-100 px-6 py-4">
-            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <p class="text-[13px] text-[#4B5563] lg:shrink-0">
-                    Menampilkan {{ $items->firstItem() ?? 0 }}-{{ $items->lastItem() ?? 0 }} dari {{ $items->total() }} data
-                </p>
-
-                @if ($items->hasPages())
-                    <div class="flex w-full justify-center lg:w-auto lg:flex-1">
-                        {{ $items->links('vendor.pagination.custom') }}
-                    </div>
-                @endif
-
-                <label class="flex items-center gap-2 text-[13px] text-[#4B5563] lg:shrink-0">
-                    <span>Baris per halaman</span>
-                    <select wire:model.live="perPage"
-                        class="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm text-[#334155] outline-none focus:border-[#146C94]">
-                        @foreach ([5, 10, 25, 50] as $size)
-                            <option value="{{ $size }}">{{ $size }}</option>
-                        @endforeach
-                    </select>
-                </label>
+        {{-- Pagination & Footer --}}
+        <div class="px-6 py-3.5 border-t border-slate-200 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <div class="flex items-center gap-2">
+                <span>Tampilkan</span>
+                <select wire:model.live="perPage" class="border border-slate-300 rounded px-2 py-1 outline-none text-xs bg-white text-slate-700">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <span>dari total <strong>{{ $items->total() }}</strong> arsip</span>
+            </div>
+            <div>
+                {{ $items->links('vendor.pagination.custom') }}
             </div>
         </div>
     </div>
 
-    {{-- Modal Tambah / Edit Data (Konsisten dengan Modal Tugas) --}}
+    {{-- MODAL TAMBAH / EDIT DATA ARSIP --}}
     @if ($showModal)
-        <div class="arsip-modal-backdrop fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-            <div class="arsip-modal-panel bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all my-8"
+        <div class="arsip-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+             wire:click.self="tutupModal">
+            <div class="arsip-modal-panel bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden"
                  onclick="event.stopPropagation()">
                 {{-- Header Modal --}}
                 <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
@@ -375,6 +424,51 @@
                             </div>
                         </div>
 
+                        {{-- Pilihan Akses / Visibilitas (General vs Khusus Divisi) --}}
+                        <div>
+                            <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">AKSES / CAKUPAN DATA</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center justify-center gap-1.5 p-2.5 rounded-lg border cursor-pointer transition text-xs font-semibold
+                                    {{ $formAkses === 'general' ? 'bg-[#EAF4F8] border-[#146C94] text-[#146C94]' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50' }}">
+                                    <input type="radio" wire:model.live="formAkses" value="general" class="hidden">
+                                    <span>General (Semua Divisi)</span>
+                                </label>
+                                <label class="flex items-center justify-center gap-1.5 p-2.5 rounded-lg border cursor-pointer transition text-xs font-semibold
+                                    {{ $formAkses === 'divisi' ? 'bg-amber-50 border-amber-500 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50' }}">
+                                    <input type="radio" wire:model.live="formAkses" value="divisi" class="hidden">
+                                    <span>Khusus Divisi Tertentu</span>
+                                </label>
+                            </div>
+
+                            @if ($formAkses === 'divisi')
+                                <div class="mt-2.5">
+                                    @if ($isExecutive)
+                                        <label class="block text-xs font-medium text-slate-500 mb-1">Pilih Divisi yang Memiliki Akses:</label>
+                                        <select wire:model="formDivisiId"
+                                            class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] bg-white outline-none focus:border-[#19A7CE]">
+                                            <option value="">-- Pilih Divisi --</option>
+                                            @foreach ($daftarDivisi as $divisi)
+                                                <option value="{{ $divisi->id_divisi }}">{{ $divisi->nama_divisi }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('formDivisiId')
+                                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                                        @enderror
+                                    @else
+                                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <span>Dokumen ini hanya dapat diakses oleh anggota divisi <strong>{{ $userDivisi?->nama_divisi ?? 'divisi Anda' }}</strong>.</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
+                            @error('formAkses')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         {{-- Nama Item --}}
                         <div>
                             <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">NAMA ITEM / JUDUL</label>
@@ -382,6 +476,17 @@
                                 placeholder="{{ $formJenis === 'nomor' ? 'Contoh: Pak Hendra - Vendor Cloud' : 'Contoh: Template Surat Tugas Resmi' }}"
                                 class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] outline-none focus:border-[#19A7CE]">
                             @error('formNama')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Keterangan / Deskripsi Singkat --}}
+                        <div>
+                            <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">KETERANGAN / CATATAN (OPSIONAL)</label>
+                            <textarea wire:model="formKeterangan" rows="2"
+                                placeholder="Tuliskan catatan atau deskripsi singkat..."
+                                class="w-full rounded-lg border border-[#CBD5E1] px-3 py-2 text-sm text-[#283044] outline-none focus:border-[#19A7CE]"></textarea>
+                            @error('formKeterangan')
                                 <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -511,7 +616,6 @@
                 return;
             }
 
-            // Fallback untuk konteks non-secure (http)
             const textarea = document.createElement('textarea');
             textarea.value = teks;
             textarea.style.position = 'fixed';

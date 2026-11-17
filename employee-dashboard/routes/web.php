@@ -13,6 +13,7 @@ use App\Http\Controllers\Hrd\HrdDivisiController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
 use App\Http\Controllers\Hrd\HrdDashboardController;
+use App\Http\Controllers\Direktur\DirekturDashboardController;
 use App\Http\Controllers\Staff\SuratIzinController;
 use App\Http\Controllers\BookingController;
 use App\Models\Carousel;
@@ -35,6 +36,11 @@ Route::post('/login', [AuthController::class, 'login'])
     ->middleware('gateway.throttle:5,1') // sudah ada, tidak diubah
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// ─── Direktur / Direksi (executive monitoring) ───────────────────────────────
+Route::middleware(['auth', 'role:direktur,direksi', 'throttle:umum'])->prefix('direktur')->group(function () {
+    Route::get('/dashboard', [DirekturDashboardController::class, 'index'])->name('direktur.dashboard');
+});
 
 // Shared content calendar (HR and Marketing Communication only)
 Route::middleware(['auth', 'throttle:umum', EnsureContentCalendarAccess::class])->group(function () {
@@ -189,7 +195,7 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     });
 
     Route::post('/tugas', [KadivController::class, 'store'])
-        ->middleware('throttle:submit-form') // + throttle
+        ->middleware(['throttle:submit-form', 'deny.superadmin']) // + throttle
         ->name('kadiv.tugas.store');
 
     Route::post('/tugas/{id}/revisi', function (Request $request, $id) {
@@ -210,7 +216,7 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
         return redirect()
             ->route('kadiv.detailTugas.show', $id)
             ->with('success', 'Revisi berhasil dikirim.');
-    })->middleware('throttle:submit-form')->name('kadiv.revisiTugas'); // + throttle
+    })->middleware(['throttle:submit-form', 'deny.superadmin'])->name('kadiv.revisiTugas'); // + throttle
 
     // Pesan
     Route::get('/pesan', function () {
@@ -258,10 +264,10 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
 
     // Carousel Konten Kegiatan / Informasi
     Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])
-        ->middleware('throttle:submit-form')
+        ->middleware(['throttle:submit-form', 'deny.superadmin'])
         ->name('carousel.store');
     Route::delete('/carousel/{id}', [\App\Http\Controllers\CarouselController::class, 'destroy'])
-        ->middleware('throttle:submit-form')
+        ->middleware(['throttle:submit-form', 'deny.superadmin'])
         ->name('carousel.destroy');
 });
 
@@ -306,6 +312,9 @@ Route::post('/profile', function (Request $request) {
 Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
     Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('hrd.strukturOrganisasi');
+
+    // Legacy URL from the old direktur sidebar; the real page is /suratIzin.
+    Route::get('/suratIzin', fn () => redirect()->route('hrd.suratIzin'))->name('hrd.suratIzin.legacy');
 
     // Kalender
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexHrd'])->name('hrd.kalender');
@@ -369,17 +378,17 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
 
     // 2. Route Action/API Divisi (Dipanggil via Fetch JavaScript)
     Route::get('/divisi', [HrdDivisiController::class, 'index']);
-    Route::post('/divisi', [HrdDivisiController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
+    Route::post('/divisi', [HrdDivisiController::class, 'store'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle
     Route::get('/divisi/{id}', [HrdDivisiController::class, 'show']);
-    Route::put('/divisi/{id}', [HrdDivisiController::class, 'update'])->middleware('throttle:submit-form'); // + throttle
-    Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
+    Route::put('/divisi/{id}', [HrdDivisiController::class, 'update'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle
+    Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle
 
-    Route::post('/staff', [HrdStaffController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
+    Route::post('/staff', [HrdStaffController::class, 'store'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle
     Route::get('/staff', [HrdStaffController::class, 'index']); // Dipakai JS modal pesan HRD (session auth)
-    Route::match(['put', 'post'], '/staff/{id}', [HrdStaffController::class, 'update'])->middleware('throttle:submit-form'); // + throttle
-    Route::post('/staff/{id}/foto', [HrdStaffController::class, 'updateFoto'])->middleware('throttle:submit-form');
-    Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
-    Route::delete('/karyawan/{id}', [HrdStaffController::class, 'destroy'])->middleware('throttle:submit-form'); // + throttle
+    Route::match(['put', 'post'], '/staff/{id}', [HrdStaffController::class, 'update'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle
+    Route::post('/staff/{id}/foto', [HrdStaffController::class, 'updateFoto'])->middleware(['throttle:submit-form', 'deny.superadmin']);
+    Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle
+    Route::delete('/karyawan/{id}', [HrdStaffController::class, 'destroy'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle
 
     Route::get('/lampiran/{id}/download', function ($id) {
         $lampiran = \App\Models\LampiranKaryawan::findOrFail($id);
@@ -403,10 +412,10 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
 
     // Carousel Konten Kegiatan / Informasi (HRD)
     Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])
-        ->middleware('throttle:submit-form')
+        ->middleware(['throttle:submit-form', 'deny.superadmin'])
         ->name('hrd.carousel.store');
     Route::delete('/carousel/{id}', [\App\Http\Controllers\CarouselController::class, 'destroy'])
-        ->middleware('throttle:submit-form')
+        ->middleware(['throttle:submit-form', 'deny.superadmin'])
         ->name('hrd.carousel.destroy');
 });
 
@@ -422,6 +431,12 @@ Route::middleware(['auth', 'role:hrd,direksi', 'throttle:umum'])->prefix('hrd')-
     Route::post('/suratBooking/{booking}/tolak', [BookingController::class, 'reject'])
         ->middleware('throttle:submit-form')
         ->name('hrd.suratBooking.tolak');
+
+    Route::get('/suratIzin', [HrdDashboardController::class, 'suratIzinPage']);
+    Route::post('/suratIzin/{suratIzin}/acc', [HrdDashboardController::class, 'approveSuratIzin'])
+        ->middleware('throttle:submit-form');
+    Route::post('/suratIzin/{suratIzin}/tolak', [HrdDashboardController::class, 'rejectSuratIzin'])
+        ->middleware('throttle:submit-form');
 });
 
 
@@ -454,6 +469,7 @@ Route::fallback(function (Request $request) {
 
     $role = strtolower($user->role?->nama_role ?? '');
     $dashboardRoute = match ($role) {
+        'direktur', 'direksi' => 'direktur.dashboard',
         'hrd'   => 'hrd.dashboard',
         'kadiv' => 'kadiv.dashboard',
         'staff' => 'dashboard',
@@ -479,22 +495,25 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
         Route::get('/rekap-divisi', [KeuanganController::class, 'rekapDivisi'])->name('kadiv.keuangan.rekapDivisi');
         Route::get('/rekap-divisi/export', [KeuanganController::class, 'export'])->name('kadiv.keuangan.exportRekapDivisi');
 
-        Route::get('/arus-kas', fn () => view('finance.arusKas.index'))->name('kadiv.keuangan.arusKas');
-        Route::get('/manajemen-dana', [PermintaanDanaController::class, 'manajemenDana'])->name('kadiv.keuangan.manajemenDana');
+        // Arus Kas (Gabungan Kas Masuk + Kas Keluar)
+        Route::get('/arus-kas', [KeuanganController::class, 'arusKas'])->name('kadiv.keuangan.arusKas');
+
+        // Manajemen Dana (Gabungan Permintaan Dana + Verifikasi Laporan L/R)
+        Route::get('/manajemen-dana', [KeuanganController::class, 'manajemenDana'])->name('kadiv.keuangan.manajemenDana');
 
         // Pemasukan Kas
         Route::get('/pemasukan', [PemasukanController::class, 'index'])->name('kadiv.keuangan.pemasukan');
         Route::post('/pemasukan', [PemasukanController::class, 'store'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.keuangan.pemasukan.store');
 
         // Alokasi Pagu Anggaran
         Route::get('/alokasi', [AlokasiController::class, 'index'])->name('kadiv.keuangan.alokasi');
         Route::post('/alokasi', [AlokasiController::class, 'store'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.keuangan.alokasi.store');
         Route::put('/alokasi/{id}', [AlokasiController::class, 'update'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.keuangan.alokasi.update');
 
         // Permintaan Dana — Lihat & Approve/Reject (Finance)
@@ -510,10 +529,10 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
         // Pengeluaran / Pencairan
         Route::get('/pengeluaran', [PengeluaranController::class, 'index'])->name('kadiv.keuangan.pengeluaran');
         Route::post('/pengeluaran', [PengeluaranController::class, 'store'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.keuangan.pengeluaran.store');
         Route::post('/pengeluaran/cairkan/{idKpd}', [PengeluaranController::class, 'cairkan'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.keuangan.cairkan');
 
         // Verifikasi Laporan Laba/Rugi (Finance)
@@ -530,13 +549,13 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])
         // Pengajuan Dana
         Route::get('/pengajuan-dana', [PermintaanDanaController::class, 'create'])->name('kadiv.pengajuanDana');
         Route::post('/pengajuan-dana', [PermintaanDanaController::class, 'store'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.pengajuanDana.store');
         Route::get('/pengajuan-dana/riwayat', [PermintaanDanaController::class, 'riwayat'])->name('kadiv.pengajuanDana.riwayat');
 
         // Laporan Laba/Rugi per Kadiv
         Route::get('/laporan-laba-rugi', [LabaRugiController::class, 'index'])->name('kadiv.laporanLabaRugi');
         Route::post('/laporan-laba-rugi', [LabaRugiController::class, 'store'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.laporanLabaRugi.store');
     });

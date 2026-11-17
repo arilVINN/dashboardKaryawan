@@ -67,7 +67,7 @@ class RekapLabaRugi extends Component
         // middleware kadiv.finance pada route halaman.
         abort_unless(auth()->user()?->isKadivFinance(), 403);
 
-        $query = Divisi::where('kode_divisi', '!=', 'FIN')
+        $query = Divisi::query()->unitNonFinance()
             ->where('status_aktif', 'Aktif')
             ->with(['laporanLabaRugi' => function ($q) {
                 $q->where('periode', $this->periode)

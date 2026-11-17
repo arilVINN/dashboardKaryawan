@@ -1,3 +1,6 @@
+@if (auth()->user()?->isDirektur())
+    @include('component_direktur.sidebar')
+@else
 <aside id="sidebar"
     class="w-64 flex flex-col h-screen shrink-0 bg-gradient-to-b from-[#044564] from-50% to-[#19A7CE] transition-all duration-150 ease-in-out">
 
@@ -64,7 +67,7 @@
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
             </svg>
-            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Jurnal Harian</span>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">To Do Harian</span>
         </a>
 
         @if (\App\Support\ContentCalendarAccess::allows(auth()->user()))
@@ -136,25 +139,5 @@
             });
         }
     })();
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const profileBtn = document.getElementById('profile-dropdown-btn');
-        const profileMenu = document.getElementById('profile-dropdown-menu');
-        const dropdownArrow = document.getElementById('dropdown-arrow');
-
-        if (profileBtn && profileMenu) {
-            profileBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                profileMenu.classList.toggle('hidden');
-                if (dropdownArrow) dropdownArrow.classList.toggle('rotate-180');
-            });
-
-            document.addEventListener('click', function(e) {
-                if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
-                    profileMenu.classList.add('hidden');
-                    if (dropdownArrow) dropdownArrow.classList.remove('rotate-180');
-                }
-            });
-        }
-    });
 </script>
+@endif

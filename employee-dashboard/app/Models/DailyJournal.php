@@ -12,11 +12,15 @@ class DailyJournal extends Model
     protected $fillable = [
         'user_id_user',
         'karyawan_id_karyawan',
+        'assigned_by_user_id',
         'tanggal',
         'aktivitas',
         'prioritas',
         'status',
         'catatan',
+        'file_bukti',
+        'file_nama_asli',
+        'link_bukti',
     ];
 
     protected $casts = [
@@ -33,28 +37,78 @@ class DailyJournal extends Model
         return $this->belongsTo(Karyawan::class, 'karyawan_id_karyawan', 'id_karyawan');
     }
 
+    public function assignedBy(): BelongsTo
+    {
+        return $this->belongsTo(User2::class, 'assigned_by_user_id', 'id_user');
+    }
+
+    public function getIsAssignedByOtherAttribute(): bool
+    {
+        return ! empty($this->assigned_by_user_id) && $this->assigned_by_user_id !== $this->user_id_user;
+    }
+
+    public function getAssignedByLabelAttribute(): ?string
+    {
+        if (! $this->is_assigned_by_other) {
+            return null;
+        }
+
+        $assigner = $this->assignedBy;
+        if (! $assigner) {
+            return 'Pimpinan';
+        }
+
+        $nama = $assigner->karyawan?->nama ?? $assigner->username;
+        $role = strtoupper($assigner->role?->nama_role ?? 'ATASAN');
+
+        return "{$nama} ({$role})";
+    }
+
+    /**
+     * Konversi status ke persentase progres sesuai aturan bisnis
+     */
+    public static function statusToPercentage(?string $status): int
+    {
+        return match (strtolower((string) $status)) {
+            'disetujui', 'approved', 'complete_100', 'fix' => 100,
+            'selesai', 'complete', 'completed' => 90,
+            'on_progress', 'revisi' => 50,
+            default => 0, // 'pending', 'belum', dll.
+        };
+    }
+
+    /**
+     * Persentase progres to do
+     */
+    public function getPercentageAttribute(): int
+    {
+        return self::statusToPercentage($this->status);
+    }
+
     /**
      * Label prioritas
      */
     public function getPrioritasLabelAttribute(): string
     {
         return match ($this->prioritas) {
-            'tinggi' => 'Tinggi',
-            'sedang' => 'Sedang',
-            'rendah' => 'Rendah',
+            'tinggi' => 'High',
+            'sedang' => 'Medium',
+            'rendah' => 'Low',
             default => ucfirst((string) $this->prioritas),
         };
     }
 
     /**
-     * Label status
+     * Label status dengan persentase
      */
     public function getStatusLabelAttribute(): string
     {
-        return match ($this->status) {
-            'selesai' => 'Selesai',
-            'on_progress' => 'On Progress',
-            default => ucfirst(str_replace('_', ' ', (string) $this->status)),
+        return match (strtolower((string) $this->status)) {
+            'disetujui', 'approved', 'complete_100', 'fix' => 'Complete 100% (100%)',
+            'selesai', 'complete', 'completed' => 'Completed (90%)',
+            'revisi' => 'Revisi (50%)',
+            'on_progress' => 'In Progress (50%)',
+            default => 'Pending (0%)',
         };
     }
 }

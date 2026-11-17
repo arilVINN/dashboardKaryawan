@@ -46,7 +46,9 @@ class HrdDashboardController extends Controller
             ->count();
 
         // 5 divisi terbesar (untuk widget dan JSON)
-        $divisiTerbesar = Divisi::withCount('karyawans')
+        $divisiTerbesar = Divisi::query()
+            ->unit()
+            ->withCount('karyawans')
             ->orderByDesc('karyawans_count')
             ->take(5)
             ->get();
@@ -111,7 +113,7 @@ class HrdDashboardController extends Controller
 
         // Halaman Blade
         $divisis = Divisi::withCount('karyawans')
-            ->orderBy('id_divisi')
+            ->ordered()
             ->get();
 
         // Hitung total dan tugas selesai per divisi dalam satu query.
@@ -257,9 +259,12 @@ class HrdDashboardController extends Controller
         })->count();
 
         // Mengambil data divisi beserta relasi karyawannya yang aktif
-        $divisiList = Divisi::with(['karyawans' => function ($q) {
-            $q->where('aktif', true);
-        }])->get();
+        $divisiList = Divisi::query()
+            ->ordered()
+            ->with(['karyawans' => function ($q) {
+                $q->where('aktif', true);
+            }])
+            ->get();
 
         $gender = Karyawan::where('aktif', true)
             ->selectRaw('jenis_kelamin, COUNT(*) as jumlah')

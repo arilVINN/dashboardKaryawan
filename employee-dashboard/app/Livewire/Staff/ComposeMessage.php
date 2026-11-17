@@ -71,7 +71,7 @@ class ComposeMessage extends Component
         $user = auth()->user();
 
         if (! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'staff') {
+            || (strtolower($user->role?->nama_role ?? '') !== 'staff' && ! $user->isDirektur())) {
             abort(403);
         }
 
@@ -96,9 +96,7 @@ class ComposeMessage extends Component
 
     public function render()
     {
-        $divisis = Divisi::query()
-            ->orderBy('nama_divisi')
-            ->get();
+        $divisis = Divisi::query()->ordered()->get();
 
         $recipients = collect();
 

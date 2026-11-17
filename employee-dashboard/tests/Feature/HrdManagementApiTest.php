@@ -161,9 +161,9 @@ class HrdManagementApiTest extends TestCase
             ->assertSee('Kepala Baru');
 
         $this->actingAs($this->hrd)
-            ->putJson('/hrd/staff/' . $employeeId, ['jabatan' => 'Wakil Kepala Divisi'])
+            ->putJson('/hrd/staff/' . $employeeId, ['jabatan' => 'Staff'])
             ->assertOk()
-            ->assertJsonPath('data.jabatan', 'Wakil Kepala Divisi')
+            ->assertJsonPath('data.jabatan', 'Staff')
             ->assertJsonPath('data.user.role.nama_role', 'Staff');
 
         $this->actingAs($this->hrd)
@@ -412,7 +412,7 @@ class HrdManagementApiTest extends TestCase
         $this->actingAs($this->hrd)
             ->get('/hrd/detailDivisi/DIV-EMPTY')
             ->assertOk()
-            ->assertSee('Belum ada staff di divisi ini.')
+            ->assertSee('Belum ada anggota di unit ini.')
             ->assertDontSee('Budi Santoso');
 
         $this->actingAs($this->hrd)

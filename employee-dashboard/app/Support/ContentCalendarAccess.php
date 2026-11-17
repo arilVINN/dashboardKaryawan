@@ -19,6 +19,12 @@ class ContentCalendarAccess
             return false;
         }
 
+        // Direktur/Direksi has company-wide access, including the shared
+        // content calendar.
+        if ($user->isDirektur()) {
+            return true;
+        }
+
         $divisionId = $user->karyawan?->divisi_id_divisi;
 
         if (! $divisionId) {
@@ -37,10 +43,19 @@ class ContentCalendarAccess
             return self::$cache[$divisionId] = true;
         }
 
-        $name = Divisi::query()->whereKey($divisionId)->value('nama_divisi');
+        $division = Divisi::query()->find($divisionId, ['nama_divisi', 'kode_divisi']);
 
-        if ($name === null) {
+        if ($division === null) {
             return self::$cache[$divisionId] = false;
+        }
+
+        $configuredCodes = array_map(
+            fn (string $value) => strtoupper(trim($value)),
+            config('content_calendar.divisions.codes', [])
+        );
+
+        if (in_array(strtoupper(trim((string) $division->kode_divisi)), $configuredCodes, true)) {
+            return self::$cache[$divisionId] = true;
         }
 
         $configuredNames = array_map(
@@ -48,7 +63,7 @@ class ContentCalendarAccess
             config('content_calendar.divisions.names', [])
         );
 
-        return self::$cache[$divisionId] = in_array(mb_strtolower(trim($name)), $configuredNames, true);
+        return self::$cache[$divisionId] = in_array(mb_strtolower(trim((string) $division->nama_divisi)), $configuredNames, true);
     }
 
     /**

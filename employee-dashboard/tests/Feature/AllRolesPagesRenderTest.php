@@ -55,6 +55,16 @@ class AllRolesPagesRenderTest extends TestCase
         $this->actingAs($this->hrd)->get('/hrd/daftarDivisi')->assertOk()->assertSee('id="hrdDivisiSearch"', false);
     }
 
+    public function test_organisation_chart_has_breadcrumbs_and_heading(): void
+    {
+        $this->actingAs($this->hrd)->get('/hrd/strukturOrganisasi')
+            ->assertOk()
+            ->assertSee('data-breadcrumb-parent="Dashboard"', false)
+            ->assertSee('data-breadcrumb-current="Struktur Organisasi"', false)
+            ->assertSee('Struktur Organisasi')
+            ->assertSee('<h1', false);
+    }
+
     public function test_tampered_filters_do_not_error(): void
     {
         $this->actingAs($this->staff)->get('/tugas?sort=DROP&dir=x&page=999')->assertOk();

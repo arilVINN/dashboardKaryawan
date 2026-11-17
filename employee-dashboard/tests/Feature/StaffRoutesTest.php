@@ -70,7 +70,9 @@ class StaffRoutesTest extends TestCase
     public function test_staff_pages_forbidden_for_non_staff(): void
     {
         foreach (self::STAFF_PAGES as $page) {
-            $this->actingAs($this->hrd)->get($page)->assertForbidden();
+            $this->actingAs($this->hrd)->get($page)
+                ->assertRedirect(route('hrd.dashboard'))
+                ->assertSessionHas('forbidden');
         }
     }
 

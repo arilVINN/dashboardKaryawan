@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Livewire\Finance\ArusKas;
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\KLabaRugi;
 use App\Models\KPemasukan;
 use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
@@ -148,7 +149,36 @@ class FinanceConsolidatedPagesUiTest extends TestCase
             ->assertSee('Oktober 2026');
     }
 
-    public function test_manajemen_dana_page_uses_detail_link_instead_of_inline_actions(): void
+    public function test_manajemen_dana_report_tab_uses_date_range_format(): void
+    {
+        $lap = KLabaRugi::create([
+            'id_klr' => 'KLR-MD-1',
+            'periode' => '2026-11',
+            'minggu_ke' => 1,
+            'tanggal_mulai' => '2026-11-01',
+            'tanggal_selesai' => '2026-11-07',
+            'total_pendapatan' => 30000000,
+            'total_pengeluaran' => 10000000,
+            'laba_bersih' => 20000000,
+            'margin_persen' => (20000000 / 30000000) * 100,
+            'status_verifikasi' => KLabaRugi::STATUS_MENUNGGU,
+            'tanggal_kirim' => '2026-11-07',
+            'divisi_id_divisi' => 'DIV-IT',
+            'user_id_user' => $this->finance->id_user,
+        ]);
+        $lap->timestamps = false;
+        $lap->forceFill(['created_at' => '2026-11-16 10:00:00', 'updated_at' => '2026-11-16 10:00:00'])->save();
+        $lap->timestamps = true;
+
+        $this->actingAs($this->finance)
+            ->get('/kadiv/keuangan/manajemen-dana?periode=2026-11&tab=laporan')
+            ->assertOk()
+            ->assertSee('Periode')
+            ->assertSee('1–7 Nov 2026')
+            ->assertSee('Minggu 1');
+    }
+
+    public function test_manajemen_dana_page_uses_clickable_rows_and_plain_tab_counts(): void
     {
         $request = KPermintDana::create([
             'id_kpd' => 'KPD-CONS-1',
@@ -170,10 +200,15 @@ class FinanceConsolidatedPagesUiTest extends TestCase
             ->assertSee('data-breadcrumb-parent="Keuangan"', false)
             ->assertSee('data-breadcrumb-current="Permintaan &amp; Verifikasi"', false)
             ->assertSee('Permintaan & Verifikasi')
-            ->assertSee('Permintaan Dana')
-            ->assertSee('Verifikasi Laporan L/R')
-            ->assertSee('href="'.$detailUrl.'"', false)
-            ->assertSee('text-[12px] font-medium text-[#146C94]', false)
+            ->assertSee('Permintaan dana')
+            ->assertSee('Verifikasi laporan L/R')
+            ->assertSee('Pengajuan')
+            ->assertSee('Divisi / pengaju')
+            ->assertSee('Nominal')
+            ->assertSee("window.location.href='".$detailUrl."'", false)
+            ->assertSee('Menampilkan 1-1 dari 1 pengajuan')
+            ->assertSee('Aksi')
+            ->assertSee('Detail')
             ->assertDontSee("openApproveModal('KPD-CONS-1'", false)
             ->assertSee('id="finance-groups"', false)
             ->assertSee('data-finance-direct="permintaan"', false);

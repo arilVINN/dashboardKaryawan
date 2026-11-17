@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User2;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -11,9 +12,11 @@ class CheckRole
      * Mapping role → named route dashboard masing-masing.
      */
     private const DASHBOARD_ROUTES = [
-        'hrd'   => 'hrd.dashboard',
-        'kadiv' => 'kadiv.dashboard',
-        'staff' => 'dashboard',
+        'direktur' => 'direktur.dashboard',
+        'direksi'  => 'direktur.dashboard',
+        'hrd'      => 'hrd.dashboard',
+        'kadiv'    => 'kadiv.dashboard',
+        'staff'    => 'dashboard',
     ];
 
     public function handle(Request $request, Closure $next, ...$roles)
@@ -29,6 +32,11 @@ class CheckRole
 
         // Case-insensitive comparison so 'Staff', 'staff', 'STAFF' all match.
         $userRole = strtolower($user->role?->nama_role ?? '');
+
+        // Direktur / Direksi memiliki hak akses Super-Admin ke seluruh modul.
+        if ($user instanceof User2 && $user->isDirektur()) {
+            return $next($request);
+        }
 
         if (! in_array($userRole, array_map('strtolower', $roles), true)) {
             // Request AJAX / API → tetap JSON

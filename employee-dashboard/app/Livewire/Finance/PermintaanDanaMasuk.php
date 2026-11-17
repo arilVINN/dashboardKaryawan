@@ -239,9 +239,9 @@ class PermintaanDanaMasuk extends Component
         $pendingCount = KPermintDana::where('status', KPermintDana::STATUS_MENUNGGU)->count();
         $pendingSum = (float) KPermintDana::where('status', KPermintDana::STATUS_MENUNGGU)->sum('nominal_diajukan');
 
-        $divisiList = Divisi::where('kode_divisi', '!=', 'FIN')
+        $divisiList = Divisi::query()->unitNonFinance()
             ->where('status_aktif', 'Aktif')
-            ->orderBy('nama_divisi')
+            ->ordered()
             ->get();
 
         return view('livewire.finance.permintaan-dana-masuk', [

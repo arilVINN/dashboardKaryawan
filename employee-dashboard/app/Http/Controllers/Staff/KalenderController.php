@@ -669,7 +669,7 @@ class KalenderController extends Controller
      */
     public function indexHrd(Request $request)
     {
-        $divisiList = Divisi::orderBy('nama_divisi', 'asc')->get();
+        $divisiList = Divisi::query()->ordered()->get();
         $staffList = Karyawan::with('divisi')
             ->orderBy('nama', 'asc')
             ->get();

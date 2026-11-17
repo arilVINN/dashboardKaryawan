@@ -2598,7 +2598,7 @@
                             <span class="text-[12px] text-slate-700 font-medium truncate min-w-0" title="${escapeHtml(title)}">${escapeHtml(title)}</span>
                         `;
                     } else if (isTimeGrid) {
-                        // Minggu view: kartu ringkas — judul + alur penugasan
+                        // Minggu view: kartu ringkas - judul + alur penugasan
                         if (arg.event.allDay) {
                             el.className = 'w-full px-1 py-0 leading-tight flex items-center gap-1 overflow-hidden min-w-0';
                             el.innerHTML = `
@@ -2673,7 +2673,7 @@
                     // Tooltip: judul lengkap + divisi (+ alur & jam di week view)
                     const judulTooltip = props.judul_murni || info.event.title;
                     const divisiTooltip = props.divisi_nama || '';
-                    let tooltip = divisiTooltip ? `${judulTooltip} — ${divisiTooltip}` : judulTooltip;
+                    let tooltip = divisiTooltip ? `${judulTooltip} - ${divisiTooltip}` : judulTooltip;
 
                     if (info.view.type === 'timeGridWeek') {
                         const flowTooltip = [props.pengirim_nama, props.staff_nama].filter(Boolean).join(' → ');

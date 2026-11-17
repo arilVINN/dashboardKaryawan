@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Builder;
 
 class KadivStaffQuery
 {
-    private function __construct(private string $divisiId)
+    private function __construct(private ?string $divisiId = null)
     {
     }
 
-    public static function forDivision(string $divisiId): self
+    public static function forDivision(?string $divisiId = null): self
     {
         return new self($divisiId);
     }
@@ -21,10 +21,13 @@ class KadivStaffQuery
         $dir = ($filters['dir'] ?? null) === 'desc' ? 'desc' : 'asc';
 
         $query = Karyawan::query()
-            ->where('divisi_id_divisi', $this->divisiId)
             ->whereHas('user.role', fn ($q) => $q->whereRaw('LOWER(nama_role) = ?', ['staff']))
-            ->with('user:id_user,karyawan_id_karyawan,last_login_at')
+            ->with(['divisi', 'user:id_user,karyawan_id_karyawan,last_login_at'])
             ->withCount('tugas');
+
+        if (!empty($this->divisiId)) {
+            $query->where('divisi_id_divisi', $this->divisiId);
+        }
 
         $q = $filters['q'] ?? null;
         if ($q !== null && $q !== '') {

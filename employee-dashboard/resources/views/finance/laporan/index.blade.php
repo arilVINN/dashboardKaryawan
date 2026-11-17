@@ -8,150 +8,165 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-slate-50 flex h-screen overflow-hidden">
+<body class="bg-[#F4F7F9] flex h-screen overflow-hidden">
 
     @include('component_kadiv.sidebar')
 
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
 
-        <main class="flex-1 overflow-y-auto p-8 pb-10">
+        <main class="flex-1 overflow-y-auto bg-[#F4F7F9] p-4 pb-10 sm:p-6 lg:p-8">
+            @include('component.breadcrumbs', [
+                'rootText' => 'Dashboard',
+                'rootUrl' => url('/kadiv/dashboard'),
+                'parentText' => 'Keuangan',
+                'parentUrl' => route('kadiv.keuangan'),
+                'currentPage' => 'Verifikasi Laporan L/R',
+                'inline' => true,
+            ])
 
             {{-- Header --}}
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <div>
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div class="min-w-0">
                     <x-page-heading title="Verifikasi Laporan Laba / Rugi Divisi" icon="tasks" />
-                    <p class="text-sm text-slate-500 mt-1">Review dan verifikasi laporan mingguan yang dikirim oleh kepala divisi.</p>
+                    <p class="mt-1 text-[13px] text-[#4B5563]">
+                        Review dan verifikasi laporan mingguan yang dikirim oleh kepala divisi.
+                    </p>
                 </div>
             </div>
 
-            {{-- Flash Alert --}}
+            {{-- Flash --}}
             @if (session('success'))
-                <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-2 shadow-sm">
-                    <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                <div
+                    class="mt-4 flex items-start gap-2.5 rounded-lg border border-[#BBF7D0] bg-[#F0FDF4] px-3.5 py-2.5 text-[13px] text-[#166534]">
+                    <svg class="mt-0.5 h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4Z"
+                            clip-rule="evenodd"></path>
                     </svg>
                     <span>{{ session('success') }}</span>
                 </div>
             @endif
 
-            {{-- Filter Panel (Auto-refresh on change) --}}
-            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm mb-6">
-                <form id="filterForm" method="GET" action="{{ route('kadiv.keuangan.laporan') }}" class="flex flex-col sm:flex-row items-end gap-4">
-                    <div class="w-full sm:w-64">
-                        <label for="periode" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Periode Bulan</label>
-                        <input type="month" id="periode" name="periode" value="{{ $periode }}"
-                            onchange="this.form.submit()"
-                            class="w-full text-sm font-medium text-slate-700 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#19A7CE] cursor-pointer transition">
-                    </div>
+            {{-- Toolbar --}}
+            <form method="GET" action="{{ route('kadiv.keuangan.laporan') }}"
+                class="mt-5 flex flex-wrap items-center gap-3">
+                <input type="month" name="periode" value="{{ $periode }}" onchange="this.form.submit()"
+                    aria-label="Periode"
+                    class="h-9 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] font-medium text-[#172B36] focus:outline-none focus:ring-2 focus:ring-[#146C94] sm:w-44">
 
-                    <div class="w-full sm:w-64">
-                        <label for="divisi_id_divisi" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Divisi</label>
-                        <select id="divisi_id_divisi" name="divisi_id_divisi"
-                            onchange="this.form.submit()"
-                            class="w-full text-sm font-medium text-slate-700 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#19A7CE] cursor-pointer transition">
-                            <option value="">Semua Divisi</option>
-                            @foreach ($divisiList as $div)
-                                <option value="{{ $div->id_divisi }}" {{ $divisiId === $div->id_divisi ? 'selected' : '' }}>
-                                    {{ $div->nama_divisi }} ({{ $div->kode_divisi }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                <select name="divisi_id_divisi" onchange="this.form.submit()" aria-label="Divisi"
+                    class="h-9 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] font-medium text-[#172B36] focus:outline-none focus:ring-2 focus:ring-[#146C94] sm:w-56">
+                    <option value="">Semua divisi</option>
+                    @foreach ($divisiList as $div)
+                        <option value="{{ $div->id_divisi }}" @selected($divisiId === $div->id_divisi)>
+                            {{ $div->nama_divisi }}
+                        </option>
+                    @endforeach
+                </select>
 
-                    <div class="w-full sm:w-64">
-                        <label for="status" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Status Verifikasi</label>
-                        <select id="status" name="status"
-                            onchange="this.form.submit()"
-                            class="w-full text-sm font-medium text-slate-700 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#19A7CE] cursor-pointer transition">
-                            <option value="">Semua Status</option>
-                            <option value="menunggu" {{ $status === 'menunggu' ? 'selected' : '' }}>Menunggu Review</option>
-                            <option value="disetujui" {{ $status === 'disetujui' ? 'selected' : '' }}>Disetujui / Terverifikasi</option>
-                            <option value="perlu_revisi" {{ $status === 'perlu_revisi' ? 'selected' : '' }}>Perlu Revisi</option>
-                        </select>
-                    </div>
+                <select name="status" onchange="this.form.submit()" aria-label="Status"
+                    class="h-9 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] font-medium text-[#172B36] focus:outline-none focus:ring-2 focus:ring-[#146C94] sm:w-48">
+                    <option value="">Semua status</option>
+                    <option value="menunggu" @selected($status === 'menunggu')>Menunggu</option>
+                    <option value="disetujui" @selected($status === 'disetujui')>Disetujui</option>
+                    <option value="perlu_revisi" @selected($status === 'perlu_revisi')>Perlu revisi</option>
+                </select>
 
-                    @if (request()->has('periode') || request()->has('divisi_id_divisi') || request()->has('status'))
-                        <div>
-                            <a href="{{ route('kadiv.keuangan.laporan') }}"
-                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-xl transition h-[38px] whitespace-nowrap">
-                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                                <span>Reset</span>
-                            </a>
-                        </div>
-                    @endif
-                </form>
-            </div>
+                @if (request()->hasAny(['periode', 'divisi_id_divisi', 'status']))
+                    <a href="{{ route('kadiv.keuangan.laporan') }}"
+                        class="inline-flex h-9 items-center rounded-lg border border-[#D5DEE3] bg-white px-3 text-[12px] font-medium text-[#172B36] transition hover:bg-[#F5FAFC]">
+                        Reset
+                    </a>
+                @endif
+            </form>
 
-            {{-- Table Laporan --}}
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden mb-8">
+            {{-- Table --}}
+            <div class="mt-4 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/75">
-                                <th class="py-3.5 px-4">Divisi & Pengirim</th>
-                                <th class="py-3.5 px-4 text-center">Periode & Minggu</th>
-                                <th class="py-3.5 px-4 text-right">Pendapatan</th>
-                                <th class="py-3.5 px-4 text-right">Pengeluaran</th>
-                                <th class="py-3.5 px-4 text-right">Laba / (Rugi)</th>
-                                <th class="py-3.5 px-4 text-center">Margin %</th>
-                                <th class="py-3.5 px-4 text-center">Status</th>
-                                <th class="py-3.5 px-4 text-center">Bukti & Aksi</th>
+                    <table class="w-full min-w-[1100px] border-collapse text-left">
+                        <thead class="bg-[#EAF4F8] text-[#334155]">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 text-[12px] font-medium">Divisi &amp; pengirim</th>
+                                <th scope="col" class="px-4 py-3 text-[12px] font-medium">Periode &amp; minggu</th>
+                                <th scope="col" class="px-4 py-3 text-right text-[12px] font-medium">Pendapatan</th>
+                                <th scope="col" class="px-4 py-3 text-right text-[12px] font-medium">Pengeluaran</th>
+                                <th scope="col" class="px-4 py-3 text-right text-[12px] font-medium">Laba / (rugi)</th>
+                                <th scope="col" class="px-4 py-3 text-right text-[12px] font-medium">Margin</th>
+                                <th scope="col" class="px-4 py-3 text-center text-[12px] font-medium">Status</th>
+                                <th scope="col" class="px-4 py-3 text-center text-[12px] font-medium">Bukti &amp; aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
+                        <tbody class="divide-y divide-[#EEF2F5]">
                             @forelse ($laporan as $lap)
-                                <tr class="hover:bg-slate-50/60 transition">
-                                    <td class="py-4 px-4 font-semibold text-slate-800">
-                                        <div class="flex items-center gap-2">
-                                            <span class="w-2.5 h-2.5 rounded-full bg-[#19A7CE]"></span>
-                                            <span>{{ $lap->divisi?->nama_divisi }}</span>
+                                <tr class="transition hover:bg-[#F5FAFC]">
+                                    <td class="px-4 py-3">
+                                        <div class="text-[13px] font-medium text-[#172B36]">
+                                            {{ $lap->divisi?->nama_divisi }}
                                         </div>
-                                        <div class="text-xs text-slate-400 mt-0.5">Dikirim oleh: {{ $lap->pengirim?->karyawan?->nama ?? $lap->pengirim?->username }}</div>
+                                        <div class="mt-0.5 text-[12px] text-[#4B5563]">
+                                            {{ $lap->pengirim?->karyawan?->nama ?? $lap->pengirim?->username }}
+                                        </div>
                                     </td>
-                                    <td class="py-4 px-4 text-center text-xs text-slate-600">
-                                        <span class="font-medium">{{ \Carbon\Carbon::parse($lap->periode.'-01')->isoFormat('MMM Y') }}</span>
-                                        <span class="inline-block ml-1 px-2 py-0.5 rounded-md bg-blue-50 text-[#19A7CE] font-bold">M-{{ $lap->minggu_ke }}</span>
-                                        <div class="text-[10px] text-slate-400 mt-0.5">{{ \Carbon\Carbon::parse($lap->tanggal_mulai)->format('d/m') }} - {{ \Carbon\Carbon::parse($lap->tanggal_selesai)->format('d/m/Y') }}</div>
+                                    <td class="whitespace-nowrap px-4 py-3">
+                                        <x-date-range :start="$lap->tanggal_mulai" :end="$lap->tanggal_selesai"
+                                            class="text-[13px] font-medium text-[#172B36]" />
+                                        <div class="mt-1">
+                                            <span
+                                                class="inline-flex h-[22px] items-center rounded-md border border-[#E2E8F0] bg-[#F1F5F9] px-2 text-[11px] font-medium text-[#475569]">
+                                                Minggu ke-{{ $lap->minggu_ke }}
+                                            </span>
+                                        </div>
                                     </td>
-                                    <td class="py-4 px-4 text-right font-medium text-emerald-600">
-                                        Rp {{ number_format($lap->total_pendapatan, 0, ',', '.') }}
+                                    <td class="whitespace-nowrap px-4 py-3 text-right text-[13px] font-medium tabular-nums text-[#172B36]">
+                                        {{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->total_pendapatan) }}
                                     </td>
-                                    <td class="py-4 px-4 text-right font-medium text-rose-600">
-                                        Rp {{ number_format($lap->total_pengeluaran, 0, ',', '.') }}
+                                    <td class="whitespace-nowrap px-4 py-3 text-right text-[13px] font-medium tabular-nums text-[#172B36]">
+                                        {{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->total_pengeluaran) }}
                                     </td>
-                                    <td class="py-4 px-4 text-right font-bold {{ $lap->laba_bersih >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
+                                    <td class="whitespace-nowrap px-4 py-3 text-right text-[13px] font-semibold tabular-nums {{ $lap->laba_bersih < 0 ? 'text-[#B91C1C]' : 'text-[#172B36]' }}">
                                         {{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->laba_bersih) }}
                                     </td>
-                                    <td class="py-4 px-4 text-center">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold {{ $lap->margin_persen > 0 ? 'bg-emerald-50 text-emerald-700' : ($lap->margin_persen < 0 ? 'bg-rose-50 text-rose-700' : 'bg-slate-100 text-slate-600') }}">
-                                            {{ \App\Helpers\FormatAkuntansi::formatMargin($lap->margin_persen) }}
-                                        </span>
+                                    <td class="whitespace-nowrap px-4 py-3 text-right text-[13px] tabular-nums {{ $lap->margin_persen < 0 ? 'text-[#B91C1C]' : 'text-[#4B5563]' }}">
+                                        {{ \App\Helpers\FormatAkuntansi::formatMargin($lap->margin_persen) }}
                                     </td>
-                                    <td class="py-4 px-4 text-center">
+                                    <td class="whitespace-nowrap px-4 py-3 text-center">
                                         @if ($lap->status_verifikasi === 'disetujui')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-emerald-100 text-emerald-700">Disetujui</span>
+                                            <span
+                                                class="inline-flex items-center rounded-md border border-[#7DD3C8] bg-[#D5F3F0] px-2 py-0.5 text-[12px] font-medium text-[#0D9488]">
+                                                Disetujui
+                                            </span>
                                         @elseif ($lap->status_verifikasi === 'perlu_revisi')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-rose-100 text-rose-700">Perlu Revisi</span>
+                                            <span
+                                                class="inline-flex items-center rounded-md border border-[#F5A3A3] bg-[#FDE0E0] px-2 py-0.5 text-[12px] font-medium text-[#B91C1C]">
+                                                Perlu revisi
+                                            </span>
                                         @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-amber-100 text-amber-700">Menunggu</span>
+                                            <span
+                                                class="inline-flex items-center rounded-md border border-[#F5C85C] bg-[#FEF0C3] px-2 py-0.5 text-[12px] font-medium text-[#B45309]">
+                                                Menunggu
+                                            </span>
                                         @endif
                                     </td>
-                                    <td class="py-4 px-4 text-center">
-                                        <div class="inline-flex items-center gap-1.5">
+                                    <td class="whitespace-nowrap px-4 py-3 text-center">
+                                        <div class="inline-flex items-center gap-2">
                                             @if ($lap->bukti_laporan)
-                                                <a href="{{ asset('storage/' . $lap->bukti_laporan) }}" target="_blank"
-                                                    class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition"
-                                                    title="Unduh File Laporan">
-                                                    File
+                                                <a href="{{ asset('storage/'.$lap->bukti_laporan) }}" target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#D5DEE3] bg-white px-2.5 text-[12px] font-medium text-[#172B36] transition hover:bg-[#F5FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"
+                                                        viewBox="0 0 24 24" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13">
+                                                        </path>
+                                                    </svg>
+                                                    Lihat
                                                 </a>
                                             @endif
 
                                             <button type="button"
                                                 onclick="openVerifModal('{{ $lap->id_klr }}', '{{ $lap->divisi?->nama_divisi }}', '{{ $lap->minggu_ke }}', '{{ $lap->status_verifikasi }}', '{{ addslashes($lap->catatan_verifikasi ?? '') }}')"
-                                                class="px-2.5 py-1 bg-[#044564] hover:bg-[#03334a] text-white text-xs font-semibold rounded-lg shadow-sm transition">
+                                                class="inline-flex h-8 items-center rounded-lg bg-[#0097B2] px-2.5 text-[12px] font-medium text-white shadow-sm transition hover:bg-[#008199] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
                                                 Verifikasi
                                             </button>
                                         </div>
@@ -159,7 +174,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="py-8 text-center text-slate-400">
+                                    <td colspan="8" class="px-4 py-10 text-center text-[12px] text-[#4B5563]">
                                         Belum ada laporan laba rugi divisi yang masuk.
                                     </td>
                                 </tr>
@@ -168,50 +183,75 @@
                     </table>
                 </div>
 
-                @if ($laporan->hasPages())
-                    <div class="px-6 py-4 border-t border-slate-100">
-                        {{ $laporan->withQueryString()->links() }}
-                    </div>
-                @endif
+                <div class="flex flex-col gap-2 border-t border-[#E2E8EC] px-4 py-3 text-[12px] text-[#4B5563] sm:flex-row sm:items-center sm:justify-between">
+                    <span>
+                        @if ($laporan->total() > 0)
+                            Menampilkan {{ $laporan->firstItem() }}-{{ $laporan->lastItem() }} dari {{ $laporan->total() }} laporan
+                        @else
+                            Belum ada laporan
+                        @endif
+                    </span>
+                    @if ($laporan->hasPages())
+                        <div>{{ $laporan->withQueryString()->links() }}</div>
+                    @endif
+                </div>
             </div>
-
         </main>
     </div>
 
-    {{-- MODAL VERIFIKASI LAPORAN --}}
-    <div id="modal-verif" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100">
-            <h3 class="text-base font-bold text-slate-800 mb-1">Verifikasi Laporan Divisi</h3>
-            <p id="verif-desc" class="text-xs text-slate-500 mb-4"></p>
-
-            <form id="form-verif" method="POST" action="" class="space-y-4">
-                @csrf
-                <div>
-                    <label for="status_verifikasi" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Status Keputusan</label>
-                    <select id="status_verifikasi" name="status_verifikasi" required
-                        class="w-full text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#19A7CE]">
-                        <option value="disetujui">Setujui & Verifikasi Laporan</option>
-                        <option value="perlu_revisi">Kembalikan (Perlu Revisi)</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label for="catatan_verifikasi" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Catatan / Catatan Revisi</label>
-                    <textarea id="catatan_verifikasi" name="catatan_verifikasi" rows="3" placeholder="Berikan arahan perbaikan jika meminta revisi..."
-                        class="w-full text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#19A7CE]"></textarea>
-                </div>
-
-                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-                    <button type="button" onclick="closeModal('modal-verif')"
-                        class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
-                        Batal
-                    </button>
-                    <button type="submit"
-                        class="px-4 py-2 text-xs font-semibold text-white bg-[#044564] hover:bg-[#03334a] rounded-xl shadow-sm transition">
-                        Simpan Verifikasi
+    {{-- Modal verifikasi --}}
+    <div id="modal-verif" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm">
+        <div class="flex min-h-full items-center justify-center">
+            <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-xl">
+                <div class="flex items-start justify-between gap-4 border-b border-[#E2E8EC] pb-4">
+                    <div>
+                        <h3 class="text-[16px] font-semibold text-[#172B36]">Verifikasi laporan divisi</h3>
+                        <p id="verif-desc" class="mt-0.5 text-[12px] text-[#4B5563]"></p>
+                    </div>
+                    <button type="button" onclick="closeModal('modal-verif')" aria-label="Tutup dialog"
+                        class="rounded-lg p-1 text-[#4B5563] transition hover:bg-[#F5FAFC] hover:text-[#172B36]">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"
+                            aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+                        </svg>
                     </button>
                 </div>
-            </form>
+
+                <form id="form-verif" method="POST" action="" class="mt-4 space-y-4">
+                    @csrf
+
+                    <div>
+                        <label for="status_verifikasi" class="mb-1 block text-[12px] font-medium text-[#4B5563]">
+                            Status keputusan
+                        </label>
+                        <select id="status_verifikasi" name="status_verifikasi" required
+                            class="h-9 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] text-[#172B36] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+                            <option value="disetujui">Setujui &amp; verifikasi laporan</option>
+                            <option value="perlu_revisi">Kembalikan (perlu revisi)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="catatan_verifikasi" class="mb-1 block text-[12px] font-medium text-[#4B5563]">
+                            Catatan / catatan revisi
+                        </label>
+                        <textarea id="catatan_verifikasi" name="catatan_verifikasi" rows="3"
+                            placeholder="Berikan arahan perbaikan jika meminta revisi..."
+                            class="w-full rounded-lg border border-[#D5DEE3] bg-white px-3 py-2 text-[13px] text-[#172B36] placeholder:text-[#4B5563] focus:outline-none focus:ring-2 focus:ring-[#146C94]"></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 border-t border-[#E2E8EC] pt-4">
+                        <button type="button" onclick="closeModal('modal-verif')"
+                            class="inline-flex h-9 items-center rounded-lg border border-[#D5DEE3] bg-white px-4 text-[12px] font-medium text-[#172B36] transition hover:bg-[#F5FAFC]">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="inline-flex h-9 items-center rounded-lg bg-[#0097B2] px-4 text-[12px] font-medium text-white shadow-sm transition hover:bg-[#008199]">
+                            Simpan verifikasi
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

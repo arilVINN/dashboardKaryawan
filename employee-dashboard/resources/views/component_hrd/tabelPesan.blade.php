@@ -94,7 +94,7 @@
             const recipientSelect = document.getElementById('penerimaPesanHrd');
 
             async function loadRecipients() {
-                // HRD login via web session — gunakan web route /hrd/staff bukan API token
+                // HRD login via web session - gunakan web route /hrd/staff bukan API token
                 const response = await fetch('/hrd/staff', {
                     headers: {
                         'Accept': 'application/json',

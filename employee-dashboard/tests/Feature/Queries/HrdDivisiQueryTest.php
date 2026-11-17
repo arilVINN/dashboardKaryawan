@@ -47,14 +47,16 @@ class HrdDivisiQueryTest extends TestCase
         return (new HrdDivisiQuery)->apply($filters)->pluck('id_divisi')->all();
     }
 
-    public function test_defaults_to_id_desc(): void
+    public function test_defaults_to_hierarchy_order(): void
     {
-        $this->assertSame(['DIV-OPS', 'DIV-IT', 'DIV-HR'], $this->ids([]));
+        // All fixtures default to level 3 / urutan 0, so id_divisi asc is the
+        // deterministic tie-breaker inside the hierarchy ordering.
+        $this->assertSame(['DIV-HR', 'DIV-IT', 'DIV-OPS'], $this->ids([]));
     }
 
     public function test_filters_by_status(): void
     {
-        $this->assertSame(['DIV-IT', 'DIV-HR'], $this->ids(['status' => 'aktif']));
+        $this->assertSame(['DIV-HR', 'DIV-IT'], $this->ids(['status' => 'aktif']));
         $this->assertSame(['DIV-OPS'], $this->ids(['status' => 'nonaktif']));
     }
 

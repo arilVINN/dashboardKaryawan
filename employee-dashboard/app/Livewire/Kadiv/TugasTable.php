@@ -75,13 +75,21 @@ class TugasTable extends Component
         ]]);
     }
 
-    private function divisionId(): string
+    private function divisionId(): ?string
     {
         $user = auth()->user();
 
+        if (! $user instanceof User2) {
+            abort(403);
+        }
+
+        // Direktur/Direksi monitors every division (read-only).
+        if ($user->isDirektur()) {
+            return null;
+        }
+
         if (
-            ! $user instanceof User2
-            || strtolower($user->role?->nama_role ?? '') !== 'kadiv'
+            strtolower($user->role?->nama_role ?? '') !== 'kadiv'
             || ! $user->karyawan?->divisi_id_divisi
         ) {
             abort(403);
@@ -133,6 +141,10 @@ class TugasTable extends Component
 
     public function createTask(): void
     {
+        if (auth()->user()?->isDirektur()) {
+            abort(403, 'Direksi hanya dapat memantau data (read-only).');
+        }
+
         $divisionId = $this->divisionId();
 
         $this->validate([
@@ -145,9 +157,11 @@ class TugasTable extends Component
             'tenggat.after' => 'Invalid tanggal: tidak bisa mengambil waktu masa lalu.',
         ]);
 
-        $staffIds = Karyawan::where('divisi_id_divisi', $divisionId)
-            ->whereHas('user.role', fn($q) => $q->whereRaw('LOWER(nama_role) = ?', ['staff']))
-            ->pluck('id_karyawan');
+        $staffQuery = Karyawan::whereHas('user.role', fn($q) => $q->whereRaw('LOWER(nama_role) = ?', ['staff']));
+        if (!empty($divisionId)) {
+            $staffQuery->where('divisi_id_divisi', $divisionId);
+        }
+        $staffIds = $staffQuery->pluck('id_karyawan');
 
         if ($this->recipient === 'semua') {
             $recipients = $staffIds->all();
@@ -195,8 +209,6 @@ class TugasTable extends Component
             $this->addError('judul', 'Gagal membuat tugas: ' . $e->getMessage());
         }
     }
-
-
     public function render()
     {
         $divisionId = $this->divisionId();
