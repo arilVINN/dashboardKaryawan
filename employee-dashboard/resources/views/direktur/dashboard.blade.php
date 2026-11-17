@@ -312,6 +312,31 @@
                         </div>
                     </div>
 
+                    {{-- Notifikasi Terbaru --}}
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center justify-between gap-2 px-1">
+                            <h2 class="text-lg font-semibold text-[#172B36]">Notifikasi Terbaru</h2>
+                            <a href="{{ route('direktur.notifikasi') }}" class="shrink-0 text-xs text-[#146C94] hover:underline">Lihat semua &rsaquo;</a>
+                        </div>
+                        <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+                            @if ($notifikasiTerbaru->isEmpty())
+                                <p class="px-4 py-6 text-center text-[13px] text-[#4B5563] sm:px-5">Belum ada notifikasi.</p>
+                            @else
+                                <div class="divide-y divide-[#EEF2F5]">
+                                    @foreach ($notifikasiTerbaru as $notifikasi)
+                                        <div class="px-4 py-3 sm:px-5">
+                                            <p class="text-[13px] font-medium text-[#172B36]">{{ $notifikasi->judul_notifikasi }}</p>
+                                            <p class="mt-0.5 text-[12px] leading-[1.45] text-[#4B5563]">{{ $notifikasi->displayMessage() }}</p>
+                                            <p class="mt-1 text-[11px] text-[#94A3B8]">
+                                                {{ $notifikasi->created_at?->locale('id')->translatedFormat('j M Y, H:i') ?? $notifikasi->tanggal_notifikasi }}
+                                            </p>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
                 </div>
 
             </div>

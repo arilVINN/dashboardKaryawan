@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\BookingRequest;
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\Notifikasi;
 use App\Models\Role;
 use App\Models\SuratIzin;
 use App\Models\User2;
@@ -110,6 +111,51 @@ class BookingRequestTest extends TestCase
             ->assertStatus(409);
 
         $this->actingAs($this->staff)->get(route('hrd.suratBooking'))->assertRedirect();
+    }
+
+    public function test_booking_approval_creates_notification_for_requester(): void
+    {
+        $this->actingAs($this->staff)->post('/booking', $this->bookingData())->assertRedirect();
+        $booking = BookingRequest::firstOrFail();
+
+        $this->actingAs($this->direksi)
+            ->post(route('hrd.suratBooking.acc', $booking))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $notification = Notifikasi::where('user_id_user', $this->staff->id_user)->firstOrFail();
+        $this->assertSame('Booking Disetujui', $notification->judul_notifikasi);
+        $this->assertStringContainsString('Ruangan', $notification->isi_notif);
+        $this->assertStringContainsString('Ruang Meeting', $notification->isi_notif);
+        $this->assertStringContainsString('disetujui', $notification->isi_notif);
+        $this->assertStringContainsString('Direksi Satu', $notification->isi_notif);
+
+        // HRD menerima notifikasi "Booking Masuk" saat permintaan dibuat.
+        $this->assertDatabaseHas('notifikasis', [
+            'user_id_user' => $this->hrd->id_user,
+            'judul_notifikasi' => 'Booking Masuk',
+        ]);
+    }
+
+    public function test_booking_rejection_notifies_requester_without_duplicates_on_stale_request(): void
+    {
+        $this->actingAs($this->staff)->post('/booking', $this->bookingData())->assertRedirect();
+        $booking = BookingRequest::firstOrFail();
+
+        $this->actingAs($this->hrd)
+            ->post(route('hrd.suratBooking.tolak', $booking))
+            ->assertRedirect();
+
+        $notification = Notifikasi::where('user_id_user', $this->staff->id_user)->firstOrFail();
+        $this->assertSame('Booking Ditolak', $notification->judul_notifikasi);
+        $this->assertStringContainsString('ditolak', $notification->isi_notif);
+        $this->assertStringContainsString('HRD Satu', $notification->isi_notif);
+
+        $this->actingAs($this->direksi)
+            ->post(route('hrd.suratBooking.acc', $booking))
+            ->assertStatus(409);
+
+        $this->assertSame(1, Notifikasi::where('user_id_user', $this->staff->id_user)->count());
     }
 
     public function test_rejected_room_request_releases_its_time_slot(): void

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Staff;
 // app/Http/Controllers/Staff/SuratIzinController.php
+use App\Actions\NotifyHrdUsers;
 use App\Http\Controllers\Controller;
 use App\Models\SuratIzin;
 use Illuminate\Http\Request;
@@ -37,7 +38,7 @@ class SuratIzinController extends Controller
         } while (SuratIzin::whereKey($newId)->exists());
 
         // 2. Masukkan field baru ke dalam proses create database
-        SuratIzin::create([
+        $suratIzin = SuratIzin::create([
             'id_surat'             => $newId,
             'karyawan_id_karyawan' => $karyawanId,
             'jenis_izin'           => $data['jenis_izin'],
@@ -50,6 +51,13 @@ class SuratIzinController extends Controller
                 ? $request->file('file')->store('surat_izin', 'public') : null,
             'status'               => 'Pending',
         ]);
+
+        $user = auth()->user();
+        app(NotifyHrdUsers::class)(
+            'Surat Izin Masuk',
+            'Surat izin "'.$suratIzin->judul_surat.'" ('.$suratIzin->jenis_izin.') dari '
+                .($user->karyawan?->nama ?? $user->username).' menunggu persetujuan HRD.'
+        );
 
         return back()->with('success', 'Surat izin berhasil dikirim.');
     }

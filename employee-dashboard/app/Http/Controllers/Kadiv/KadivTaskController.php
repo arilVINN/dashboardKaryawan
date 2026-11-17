@@ -278,7 +278,7 @@ class KadivTaskController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($latestSubmit, $tugas, $validated, $filePath, $fileName): void {
+            DB::transaction(function () use ($latestSubmit, $tugas, $validated, $filePath, $fileName, $userKadiv): void {
                 $latestSubmit->update([
                     'status_review' => $validated['status_review'],
                     'catatan_revisi' => $validated['status_review'] === 'revisi'
@@ -306,6 +306,19 @@ class KadivTaskController extends Controller
                         'judul_notifikasi' => 'Revisi Tugas',
                         'isi_notif' => 'Tugas "'.$tugas->judul_tugas.'" mendapat revisi baru: '
                             .trim($validated['catatan_revisi']),
+                        'tugas_id_tugas' => $tugas->id_tugas,
+                        'tanggal_notifikasi' => now()->toDateString(),
+                        'user_id_user' => $tugas->karyawan->user->id_user,
+                    ]);
+                }
+
+                if ($validated['status_review'] === 'acc' && $tugas->karyawan->user) {
+                    $actor = $userKadiv->karyawan?->nama ?? $userKadiv->username;
+
+                    Notifikasi::create([
+                        'id_notifikasi' => $this->generateNotifikasiId(),
+                        'judul_notifikasi' => 'Tugas Disetujui',
+                        'isi_notif' => 'Tugas "'.$tugas->judul_tugas.'" telah disetujui oleh '.$actor.'.',
                         'tugas_id_tugas' => $tugas->id_tugas,
                         'tanggal_notifikasi' => now()->toDateString(),
                         'user_id_user' => $tugas->karyawan->user->id_user,

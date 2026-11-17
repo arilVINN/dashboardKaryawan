@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Actions\NotifyFinanceUsers;
 use App\Exceptions\LaporanSudahDiverifikasiException;
 use App\Helpers\FormatAkuntansi;
 use App\Http\Controllers\Controller;
@@ -109,7 +110,14 @@ class LabaRugiController extends Controller
         $data['divisi_id_divisi']  = $divisiId;
         $data['user_id_user']      = $user->id_user;
 
-        KLabaRugi::create($data);
+        $laporan = KLabaRugi::create($data);
+
+        $pengirim = $user->karyawan?->nama ?? $user->username;
+        app(NotifyFinanceUsers::class)(
+            'Laporan L/R Baru',
+            'Laporan laba/rugi periode '.$laporan->periode.' minggu ke-'.$laporan->minggu_ke
+                .' dari '.$pengirim.' menunggu verifikasi Finance.'
+        );
 
         return back()->with('success', "Laporan Laba/Rugi Minggu ke-{$data['minggu_ke']} berhasil dikirim ke Finance.");
     }
