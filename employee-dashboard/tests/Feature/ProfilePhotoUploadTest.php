@@ -219,8 +219,8 @@ class ProfilePhotoUploadTest extends TestCase
         $this->actingAs($this->kadiv)
             ->get('/kadiv/profile')
             ->assertOk()
-            ->assertSee('type="file"', false)
-            ->assertSee('id="profile-photo"', false)
+            ->assertSee('id="input-foto"', false)
+            ->assertSee('id="prof-foto"', false)
             ->assertSee('/api/kadiv/profile/foto', false);
     }
 
@@ -229,9 +229,77 @@ class ProfilePhotoUploadTest extends TestCase
         $this->actingAs($this->hrd)
             ->get('/hrd/profile')
             ->assertOk()
-            ->assertSee('type="file"', false)
-            ->assertSee('id="hrd-profile-photo"', false)
+            ->assertSee('id="input-foto"', false)
+            ->assertSee('id="prof-foto"', false)
             ->assertSee('/api/hrd/profile/foto', false);
+    }
+
+    public function test_kadiv_and_hrd_can_edit_their_own_profile_data(): void
+    {
+        foreach ([
+            [$this->kadiv, '/api/kadiv/profile', 'KRY-KADIV'],
+            [$this->hrd, '/api/hrd/profile', 'KRY-HRD'],
+        ] as [$account, $endpoint, $employeeId]) {
+            $this->actingAs($account)
+                ->putJson($endpoint, [
+                    'nama' => 'Nama Pribadi Baru',
+                    'email' => strtolower($employeeId).'@example.test',
+                    'no_telepon' => '081234567890',
+                    'alamat' => 'Alamat Pribadi Baru',
+                    'no_rekening' => 'BCA 123456',
+                    'jabatan' => 'Admin',
+                    'tanggal_masuk' => '2025-01-01',
+                ])
+                ->assertOk()
+                ->assertJsonPath('message', 'Profil berhasil diperbarui.');
+
+            $this->assertDatabaseHas('karyawans', [
+                'id_karyawan' => $employeeId,
+                'nama' => 'Nama Pribadi Baru',
+                'alamat' => 'Alamat Pribadi Baru',
+                'jabatan' => 'Staff',
+                'tanggal_masuk' => null,
+            ]);
+        }
+
+        $this->assertDatabaseHas('karyawans', [
+            'id_karyawan' => 'KRY-STAFF',
+            'nama' => 'Pemilik stafffoto',
+        ]);
+    }
+
+    public function test_hrd_can_change_their_own_password(): void
+    {
+        $this->hrd->update([
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+        ]);
+
+        $this->actingAs($this->hrd)
+            ->putJson('/api/hrd/profile/password', [
+                'current_password' => 'password',
+                'new_password' => 'password-baru',
+            ])
+            ->assertOk()
+            ->assertJsonPath('message', 'Password berhasil diperbarui.');
+    }
+
+    public function test_profile_pages_share_personal_fields_and_edit_controls(): void
+    {
+        foreach ([
+            [$this->staff, '/profile'],
+            [$this->kadiv, '/kadiv/profile'],
+            [$this->hrd, '/hrd/profile'],
+        ] as [$account, $path]) {
+            $this->actingAs($account)
+                ->get($path)
+                ->assertOk()
+                ->assertSee('id="prof-id"', false)
+                ->assertSee('id="prof-role"', false)
+                ->assertSee('id="prof-status-aktif"', false)
+                ->assertSee('id="form-edit-profil"', false)
+                ->assertSee('id="input-rekening"', false)
+                ->assertSee('id="form-password"', false);
+        }
     }
 
     public function test_topbar_shows_profile_photo_when_set(): void

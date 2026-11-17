@@ -9,7 +9,6 @@ use App\Http\Controllers\Kadiv\KadivMessageController;
 use App\Http\Controllers\Kadiv\KadivStaffController;
 use App\Http\Controllers\Kadiv\KadivTaskController;
 use App\Http\Controllers\Staff\PesanController;
-use App\Http\Controllers\Staff\ProjectController;
 use App\Http\Controllers\Staff\StaffTugasController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,14 +41,9 @@ Route::middleware([
         Route::get('/dashboard', [\App\Http\Controllers\Staff\DashboardController::class, 'index']);
         Route::get('/notifikasi', [\App\Http\Controllers\Staff\NotifikasiController::class, 'index']);
         Route::get('/tugas', [StaffTugasController::class, 'index']);
-        Route::get('/overview', [\App\Http\Controllers\Staff\ProjectController::class, 'overview']);
         Route::get('/tugas/{id}', [StaffTugasController::class, 'show']);
         Route::patch('/tugas/{id}/toggle-checklist', [StaffTugasController::class, 'toggleChecklist']);
         Route::post('/tugas/{id}/submit', [StaffTugasController::class, 'submit']);
-        Route::get('/projects', [ProjectController::class, 'index']);
-        Route::get('/projects/{id}', [ProjectController::class, 'show']);
-        Route::patch('/projects/task/{id}/toggle', [ProjectController::class, 'toggleTask']);
-        Route::post('/projects/task/{id}/submit', [ProjectController::class, 'submitTask']);
         Route::get('/pesan', [PesanController::class, 'index']);
         Route::get('/pesan/{id_pesan}', [PesanController::class, 'show']);
         Route::post('/pesan/{id_pesan}/balas', [PesanController::class, 'balas']);
@@ -81,6 +75,8 @@ Route::middleware([
     Route::middleware('role:hrd')->prefix('hrd')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Hrd\HrdDashboardController::class, 'index']);
         Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
+        Route::put('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update']);
+        Route::put('/profile/password', [\App\Http\Controllers\Staff\ProfileController::class, 'updatePassword']);
         Route::post('/profile/foto', [\App\Http\Controllers\Staff\ProfileController::class, 'updateFoto']);
         
         Route::get('/pesan', [HrdPesanController::class, 'index']);

@@ -1,6 +1,7 @@
 @php
     $pesan = collect($pesan ?? []);
     $notifikasi = collect($notifikasi ?? []);
+    $contractReminders = collect($contractReminders ?? []);
     $birthdayNotifications = $notifikasi->filter(
         fn ($notification) => str_contains(strtolower($notification->judul_notifikasi), 'ulang tahun')
     );
@@ -16,7 +17,7 @@
 
     <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
         <div class="divide-y divide-[#EEF2F5]">
-            @if ($pesan->isEmpty() && $birthdayNotifications->isEmpty())
+            @if ($pesan->isEmpty() && $birthdayNotifications->isEmpty() && $contractReminders->isEmpty())
                 <p class="px-4 py-3 text-[13px] text-[#4B5563]">Belum ada notifikasi</p>
             @endif
             @foreach ($birthdayNotifications as $notification)
@@ -45,6 +46,29 @@
                                 <span class="shrink-0 whitespace-nowrap text-[11px] text-[#4B5563]">{{ $timeLabel }}</span>
                             </span>
                             <span class="mt-0.5 block text-xs leading-[1.45] text-[#4B5563]">{{ $notification->isi_notif }}</span>
+                        </span>
+                    </a>
+            @endforeach
+            @foreach ($contractReminders as $notification)
+                    @php
+                        $timeLabel = \Illuminate\Support\Carbon::parse($notification['created_at'])
+                            ->locale('id')->translatedFormat('j M, H:i');
+                    @endphp
+                    <a href="{{ route('hrd.daftarKaryawan') }}"
+                        data-notification-id="{{ $notification['id_notifikasi'] }}"
+                        class="flex items-start gap-3 px-4 py-3 transition hover:bg-[#F5FAFC] focus:bg-[#F5FAFC] focus:outline-none">
+                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span class="flex items-center justify-between gap-2">
+                                <span class="truncate text-[13px] font-medium text-[#172B36]">Kontrak kerja segera berakhir</span>
+                                <span class="shrink-0 whitespace-nowrap text-[11px] text-[#4B5563]">{{ $timeLabel }}</span>
+                            </span>
+                            <span class="mt-0.5 block text-xs leading-[1.45] text-[#4B5563]">{{ $notification['isi_notif'] }}</span>
                         </span>
                     </a>
             @endforeach

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Finance;
 use App\Exceptions\PermintaanSudahDiprosesException;
 use App\Http\Controllers\Controller;
 use App\Models\Divisi;
+use App\Models\KLabaRugi;
 use App\Models\KeuanganAldiv;
 use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
@@ -22,6 +23,56 @@ class PermintaanDanaController extends Controller
     // ═══════════════════════════════════════════════════════════════════════════
     // BAGIAN FINANCE — Melihat semua pengajuan & approval
     // ═══════════════════════════════════════════════════════════════════════════
+
+    public function manajemenDana(Request $request): \Illuminate\View\View
+    {
+        $tab = $request->input('tab') === 'laporan' ? 'laporan' : 'permintaan';
+        $status = $request->input('status', '');
+        $periode = $request->input('periode', now()->format('Y-m'));
+        $divisiId = $request->input('divisi_id');
+
+        $permintaanQuery = KPermintDana::with('divisi', 'diajukanOleh.karyawan')->latest();
+        if ($tab === 'permintaan') {
+            if ($status !== '') {
+                $permintaanQuery->where('status', $status);
+            }
+            if ($divisiId) {
+                $permintaanQuery->where('divisi_id_divisi', $divisiId);
+            }
+        }
+
+        $laporanQuery = KLabaRugi::with('divisi', 'pengirim.karyawan')
+            ->where('periode', $periode)
+            ->latest();
+        if ($tab === 'laporan') {
+            if ($status !== '') {
+                $laporanQuery->where('status_verifikasi', $status);
+            }
+            if ($divisiId) {
+                $laporanQuery->where('divisi_id_divisi', $divisiId);
+            }
+        }
+
+        $permintaan = $permintaanQuery->paginate(15)->withQueryString();
+        $laporan = $laporanQuery->paginate(15)->withQueryString();
+        $divisiList = Divisi::where('kode_divisi', '!=', 'FIN')
+            ->where('status_aktif', 'Aktif')
+            ->get();
+        $jumlahMenungguPermintaan = KPermintDana::where('status', KPermintDana::STATUS_MENUNGGU)->count();
+        $jumlahMenungguLaporan = KLabaRugi::where('status_verifikasi', KLabaRugi::STATUS_MENUNGGU)->count();
+
+        return view('finance.manajemenDana.index', compact(
+            'tab',
+            'status',
+            'periode',
+            'divisiId',
+            'permintaan',
+            'laporan',
+            'divisiList',
+            'jumlahMenungguPermintaan',
+            'jumlahMenungguLaporan',
+        ));
+    }
 
     /**
      * Daftar semua permintaan dana (Finance view).

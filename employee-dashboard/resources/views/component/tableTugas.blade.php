@@ -108,9 +108,6 @@
 @endif
 
 <script>
-    window.staffOverviewData = window.staffOverviewData || null;
-    window.staffOverviewRequest = window.staffOverviewRequest || null;
-
     const STAFF_STATUS_PALETTE = @json(\App\Support\StatusPalette::all());
     const STAFF_STATUS_HIGH_CONTRAST = {
         'baru': 'bg-[#C0E7FF] text-blue-700 border border-blue-500',
@@ -352,46 +349,27 @@
         return { hint: `${difference} hari lagi`, className: 'text-[#4B5563]' };
     }
 
-    async function fetchStaffOverview(params = {}) {
+    async function fetchStaffTugas(params = {}) {
         const token = localStorage.getItem('staff_token') || sessionStorage.getItem('staff_token');
-        if (!token) return { tasks: [], projects: [] };
-
-        if (Object.keys(params).length === 0) {
-            if (window.staffOverviewData) {
-                return window.staffOverviewData;
-            }
-
-            if (window.staffOverviewRequest) {
-                return window.staffOverviewRequest;
-            }
-        }
+        if (!token) return [];
 
         const qs = new URLSearchParams(params).toString();
-        const request = fetch('/api/staff/overview' + (qs ? '?' + qs : ''), {
-            headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-        }).then(async (res) => {
-            const json = await res.json();
-            if (!res.ok) {
-                throw new Error(json.message || 'Gagal memuat data halaman tugas.');
-            }
-            return json.data || { tasks: [], projects: [] };
+        const response = await fetch('/api/staff/tugas' + (qs ? '?' + qs : ''), {
+            headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+            signal: staffTugasAbortController.signal,
         });
 
-        if (Object.keys(params).length === 0) {
-            window.staffOverviewRequest = request;
+        const json = await response.json();
+
+        if (!response.ok) {
+            throw new Error(json.message || 'Gagal memuat data tugas.');
         }
 
-        try {
-            const data = await request;
-            if (Object.keys(params).length === 0) {
-                window.staffOverviewData = data;
-            }
-            return data;
-        } finally {
-            if (Object.keys(params).length === 0) {
-                window.staffOverviewRequest = null;
-            }
+        if (!Array.isArray(json.data)) {
+            throw new Error('Format data tugas tidak valid.');
         }
+
+        return json.data;
     }
 
     async function loadStaffTugas() {
@@ -415,8 +393,7 @@
             if (staffTugasSearch && staffTugasSearch.value) params.q = staffTugasSearch.value;
             if (staffTugasStatus && staffTugasStatus.value) params.status = staffTugasStatus.value;
 
-            const overview = await fetchStaffOverview(params);
-            let tugas = overview.tasks || [];
+            let tugas = await fetchStaffTugas(params);
 
             if (requestId !== staffTugasRequestId) {
                 return;

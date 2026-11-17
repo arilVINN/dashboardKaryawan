@@ -49,11 +49,6 @@ Route::middleware(['auth', 'throttle:umum', EnsureContentCalendarAccess::class])
     })->name('kalender-konten');
 });
 
-// ================= DIREKTUR (auth + role) ================= //
-Route::middleware(['auth', 'role:direktur,direksi', 'throttle:umum'])->prefix('direktur')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\Direktur\DirekturDashboardController::class, 'index'])->name('direktur.dashboard');
-});
-
 // staff route (session auth + staff role)
 Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/', function (BirthdayNotificationService $birthdayNotifications) {
@@ -112,10 +107,6 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/tugas/detail/{id?}', function () {
         return view('staff.detailTugas');
     })->name('tugas.detail');
-
-    Route::get('/project/detail/{id}', function (string $id) {
-        return view('staff.detailProject', ['id' => $id]);
-    })->name('project.detail');
 
     Route::get('/profile', function () {
         return view('staff.detailProfile');
@@ -194,10 +185,6 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     Route::get('/tugas', function () {
         return view('kadiv.tugas');
     })->name('kadiv.tugas');
-
-    Route::get('/project/{id}', function ($id) {
-        return view('kadiv.detailProject', ['id' => $id]);
-    })->name('kadiv.project.show');
 
     Route::get('/detailTugas/{id}', function ($id) {
         return view('kadiv.detailTugas', ['id' => $id]);

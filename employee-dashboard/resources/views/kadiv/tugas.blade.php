@@ -24,7 +24,6 @@
                 'inline' => true,
             ])
             @livewire('kadiv.tugas-table')
-            @livewire('kadiv.project-table')
         </main>
 
     </div>

@@ -29,7 +29,6 @@
 
             <div class="w-full">
                 @include('component.tableTugas')
-                @include('component.tabelProject')
             </div>
         </main>
 

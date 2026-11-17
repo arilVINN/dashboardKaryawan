@@ -120,6 +120,18 @@
                 };
             }
 
+            if (lower.includes('kontrak')) {
+                return {
+                    badgeText: 'Kontrak Kerja',
+                    badgeClass: 'text-amber-700 bg-amber-100 border-amber-200',
+                    borderClass: 'border-amber-200',
+                    iconBg: 'bg-amber-100 text-amber-600',
+                    linkUrl: '/profile',
+                    actionLabel: 'Lihat Profil',
+                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />`
+                };
+            }
+
             // Pengingat (Catatan Kalender & Tenggat Tugas)
             if (lower.includes('pengingat') || lower.includes('catatan') || lower.includes('kalender') || lower.includes('tenggat')) {
                 const isTugas = lower.includes('tugas');
@@ -190,6 +202,15 @@
                     iconClass: 'bg-sky-100 text-sky-600',
                     linkUrl: '/',
                     iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5" />`
+                };
+            }
+
+            if (lower.includes('kontrak')) {
+                return {
+                    title: 'Kontrak kerja segera berakhir',
+                    iconClass: 'bg-amber-100 text-amber-600',
+                    linkUrl: '/profile',
+                    iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />`
                 };
             }
 

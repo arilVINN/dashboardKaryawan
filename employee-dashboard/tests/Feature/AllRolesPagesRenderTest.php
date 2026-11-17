@@ -7,6 +7,7 @@ use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -68,5 +69,32 @@ class AllRolesPagesRenderTest extends TestCase
     {
         $this->actingAs($this->staff)->get('/tugas?sort=DROP&dir=x&page=999')->assertOk();
         $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?sort=DROP&status=x&page=999')->assertOk();
+    }
+
+    public function test_hrd_dashboard_shows_contract_expiry_reminders_for_active_employees(): void
+    {
+        $this->staff->karyawan()->update([
+            'tanggal_akhir_kontrak' => '2026-11-30',
+        ]);
+
+        try {
+            Carbon::setTestNow('2026-11-16 08:00:00');
+
+            $this->actingAs($this->hrd)
+                ->get('/hrd/dashboard')
+                ->assertOk()
+                ->assertSee('Kontrak kerja Staff Satu akan berakhir pada 30 November 2026 (14 hari lagi).')
+                ->assertSee(route('hrd.daftarKaryawan'), false);
+
+            $this->actingAs($this->hrd)
+                ->getJson('/api/hrd/dashboard')
+                ->assertOk()
+                ->assertJsonPath(
+                    'data.notifikasi_kontrak.0.id_notifikasi',
+                    'kontrak-reminder-KRY-S-2026-11-30'
+                );
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 }
