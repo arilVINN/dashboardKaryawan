@@ -134,13 +134,10 @@ class DirekturRoleTest extends TestCase
         ])->assertRedirect('/direktur/dashboard');
     }
 
-    public function test_direktur_can_open_surat_izin_and_legacy_url_redirects(): void
+    public function test_direktur_can_open_surat_izin_routes(): void
     {
         $this->actingAs($this->direktur)->get('/suratIzin')->assertOk();
-
-        $this->actingAs($this->direktur)
-            ->get('/hrd/suratIzin')
-            ->assertRedirect('/suratIzin');
+        $this->actingAs($this->direktur)->get('/hrd/suratIzin')->assertOk();
     }
 
     public function test_direktur_is_read_only_for_hrd_and_kadiv_data_mutations(): void
