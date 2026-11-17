@@ -178,25 +178,7 @@
                     class="text-[#565E74] hover:text-black text-2xl leading-none">&times;</button>
             </div>
 
-            {{-- TAB SWITCHER --}}
-            <div class="px-6 pt-4">
-                <div class="flex gap-6 border-b border-[#E2E8F0]">
-                    <button type="button" wire:click="setTab('tugas')"
-                        class="pb-3 text-sm font-semibold border-b-2 transition
-                               {{ $activeTab === 'tugas' ? 'border-[#146C94] text-[#146C94]' : 'border-transparent text-[#94A3B8] hover:text-[#565E74]' }}">
-                        Tugas
-                    </button>
-                    <button type="button" wire:click="setTab('project')"
-                        class="pb-3 text-sm font-semibold border-b-2 transition
-                               {{ $activeTab === 'project' ? 'border-[#146C94] text-[#146C94]' : 'border-transparent text-[#94A3B8] hover:text-[#565E74]' }}">
-                        Project
-                    </button>
-                </div>
-            </div>
-
-            {{-- PANEL: TUGAS --}}
-            @if ($activeTab === 'tugas')
-                <form wire:submit="createTask" class="flex-1 overflow-y-auto flex flex-col min-h-0">
+            <form wire:submit="createTask" class="flex-1 overflow-y-auto flex flex-col min-h-0">
                     <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
                         <div>
                             <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">JUDUL
@@ -274,118 +256,7 @@
                             <span wire:loading wire:target="createTask">Mengirim...</span>
                         </button>
                     </div>
-                </form>
-            @endif
-
-            {{-- PANEL: PROJECT --}}
-            @if ($activeTab === 'project')
-                <form wire:submit="createProject" class="flex-1 overflow-y-auto flex flex-col min-h-0">
-                    <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-                        <div>
-                            <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">NAMA
-                                PROJECT</label>
-                            <input type="text" wire:model="namaProject" maxlength="150"
-                                placeholder="Contoh: Project Writer & Markom"
-                                class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] outline-none focus:border-[#19A7CE]">
-                            @error('namaProject')
-                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">DESKRIPSI</label>
-                            <textarea wire:model="deskripsiProject" rows="3" maxlength="5000"
-                                placeholder="Deskripsikan tujuan atau informasi project..."
-                                class="w-full rounded-lg border border-[#CBD5E1] px-3 py-2 text-sm text-[#283044] outline-none focus:border-[#19A7CE]"></textarea>
-                            @error('deskripsiProject')
-                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label for="projectFile"
-                                class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">FILE PROJECT
-                                (OPSIONAL)</label>
-                            <input id="projectFile" type="file" wire:model="projectFile"
-                                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                                class="w-full text-sm text-[#283044] file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium">
-                            <p class="text-xs text-slate-400 mt-1">PDF, Word, Excel, atau gambar; maks. 200 MB.</p>
-                            @error('projectFile')
-                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">TENGGAT</label>
-                            <input type="datetime-local" wire:model="tenggatProject"
-                                class="w-full h-10 rounded-lg border px-3 text-sm text-[#283044] outline-none cursor-pointer focus:border-[#19A7CE] transition
-                                {{ $errors->has('tenggatProject') ? 'border-red-500 bg-red-50' : 'border-[#CBD5E1]' }}">
-                            @error('tenggatProject')
-                                <div
-                                    class="flex items-center gap-1.5 mt-1.5 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                                    <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                                    </svg>
-                                    <p class="text-xs font-semibold text-red-600">{{ $message }}</p>
-                                </div>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">DAFTAR
-                                TASK
-                            </label>
-
-                            <div class="space-y-3">
-                                @foreach ($taskLabels as $i => $label)
-                                    <div class="flex gap-2 items-start">
-                                        <div class="flex-1">
-                                            <input type="text" wire:model="taskLabels.{{ $i }}"
-                                                placeholder="Nama pekerjaan..."
-                                                class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] outline-none focus:border-[#19A7CE]">
-                                            @error("taskLabels.$i")
-                                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                        <div class="w-36">
-                                            <select wire:model="taskKaryawan.{{ $i }}"
-                                                class="w-full h-10 rounded-lg border border-[#CBD5E1] px-2 text-sm text-[#283044] bg-white outline-none focus:border-[#19A7CE]">
-                                                <option value="">-- Staff --</option>
-                                                @foreach ($projectKaryawanOptions as $option)
-                                                    <option value="{{ $option->id_karyawan }}">{{ $option->nama }} ({{ $option->divisi->nama_divisi ?? 'Tanpa divisi' }})</option>
-                                                @endforeach
-                                            </select>
-                                            @error("taskKaryawan.$i")
-                                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-                                        <button type="button" wire:click="removeTaskRow({{ $i }})"
-                                            class="shrink-0 w-10 h-10 rounded-lg border border-[#FEE2E2] text-[#B91C1C] hover:bg-[#FEE2E2] transition">&times;</button>
-                                    </div>
-                                @endforeach
-                            </div>
-
-                            <button type="button" wire:click="addTaskRow"
-                                class="mt-3 text-sm font-semibold text-[#146C94] hover:underline flex items-center gap-1">
-                                + Tambah Task
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between px-6 py-4 border-t border-[#E2E8F0]">
-                        <button type="button" data-modal-close="modalTugasBaru"
-                            class="h-9 px-4 bg-[#E8E7E9] rounded-lg text-sm text-[#333335] hover:bg-[#D9D9D9] transition">Batal</button>
-                        <button type="submit"
-                            class="h-9 px-4 bg-[#146C94] rounded-lg text-sm text-white font-bold hover:bg-[#0f5878] transition"
-                            wire:loading.attr="disabled">
-                            <span wire:loading.remove wire:target="createProject">Buat Project</span>
-                            <span wire:loading wire:target="createProject">Membuat...</span>
-                        </button>
-                    </div>
-                </form>
-            @endif
+            </form>
 
         </div>
     </div>

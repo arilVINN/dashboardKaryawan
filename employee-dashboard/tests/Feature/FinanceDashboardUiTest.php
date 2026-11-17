@@ -40,7 +40,7 @@ class FinanceDashboardUiTest extends TestCase
 
         $this->finance = User2::create([
             'id_user' => 'USR-FIN',
-            'username' => 'finance.lead',
+            'username' => 'sarifin',
             'password' => Hash::make('pass123'),
             'role_id_role' => 'ROLE-KADIV',
             'karyawan_id_karyawan' => 'KRY-FIN',
@@ -87,6 +87,21 @@ class FinanceDashboardUiTest extends TestCase
             'divisi_id_divisi' => 'DIV-IT',
             'user_id_user' => $this->finance->id_user,
         ]);
+    }
+
+    public function test_finance_user_can_log_in_and_open_the_kadiv_dashboard(): void
+    {
+        $this->postJson('/login', [
+            'username' => 'sarifin',
+            'password' => 'pass123',
+        ])
+            ->assertOk()
+            ->assertJsonPath('role', 'Kadiv')
+            ->assertJsonStructure(['access_token']);
+
+        $this->get('/kadiv/dashboard')
+            ->assertOk()
+            ->assertSee('Keuangan Perusahaan');
     }
 
     public function test_page_renders_restyled_summary_and_pagu_table(): void

@@ -11,10 +11,6 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use App\Models\ProjectModel;
-use App\Models\ProjectTask;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Storage;
 
 class TugasTable extends Component
 {
@@ -43,36 +39,6 @@ class TugasTable extends Component
     public string $tenggat = '';
     public string $recipient = '';
     public $attachment = null;
-
-    public string $activeTab = 'tugas'; // tugas | project
-
-    public string $namaProject = '';
-    public string $deskripsiProject = '';
-    public string $tenggatProject = '';
-    public $projectFile = null;
-    public array $taskLabels = [''];
-    public array $taskKaryawan = [''];
-
-    public function setTab(string $tab): void
-    {
-        $this->activeTab = $tab;
-    }
-
-    public function addTaskRow(): void
-    {
-        $this->taskLabels[] = '';
-        $this->taskKaryawan[] = '';
-    }
-
-    public function removeTaskRow(int $index): void
-    {
-        if (count($this->taskLabels) <= 1) {
-            return;
-        }
-        unset($this->taskLabels[$index], $this->taskKaryawan[$index]);
-        $this->taskLabels = array_values($this->taskLabels);
-        $this->taskKaryawan = array_values($this->taskKaryawan);
-    }
 
     public function mount(): void
     {
@@ -231,91 +197,6 @@ class TugasTable extends Component
     }
 
 
-    public function createProject(): void
-    {
-        $this->divisionId();
-
-        $this->validate([
-            'namaProject' => 'required|string|max:150',
-            'deskripsiProject' => 'nullable|string|max:5000',
-            'tenggatProject' => 'required|date|after:now',
-            'projectFile' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
-            'taskLabels' => 'required|array|min:1',
-            'taskLabels.*' => 'required|string|max:200',
-            'taskKaryawan' => 'required|array|min:1',
-            'taskKaryawan.*' => 'required|string',
-        ]);
-
-        $karyawanIds = $this->projectKaryawanQuery()
-            ->pluck('id_karyawan');
-
-        foreach ($this->taskKaryawan as $i => $karyawanId) {
-            if (! $karyawanIds->contains($karyawanId)) {
-                $this->addError("taskKaryawan.$i", 'Karyawan tidak valid atau tidak dapat dipilih.');
-                return;
-            }
-        }
-
-        $filePath = null;
-
-        try {
-            $filePath = $this->projectFile
-                ? $this->projectFile->store('project_files', 'public')
-                : null;
-
-            if ($this->projectFile && ! $filePath) {
-                throw new \RuntimeException('File project gagal disimpan.');
-            }
-
-            \Illuminate\Support\Facades\DB::transaction(function () use ($filePath) {
-                $project = ProjectModel::create([
-                    'id_project' => 'PRJ' . strtoupper(substr(uniqid('', true), -10)),
-                    'nama_project' => $this->namaProject,
-                    'deskripsi' => $this->deskripsiProject ?: null,
-                    'tenggat' => \Illuminate\Support\Carbon::parse($this->tenggatProject),   // + baru
-                    'file_path' => $filePath,
-                    'file_name' => $this->projectFile?->getClientOriginalName(),
-                    'dibuat_oleh_id_user' => auth()->user()->id_user,
-                ]);
-
-                foreach ($this->taskLabels as $i => $label) {
-                    ProjectTask::create([
-                        'id_task' => 'TSK' . strtoupper(substr(uniqid('', true), -10)),
-                        'project_id_project' => $project->id_project,
-                        'label' => $label,
-                        'karyawan_id_karyawan' => $this->taskKaryawan[$i],
-                        'urutan' => $i,
-                    ]);
-                }
-            });
-
-            $this->reset(['namaProject', 'deskripsiProject', 'tenggatProject', 'projectFile', 'taskLabels', 'taskKaryawan']);   // + tenggatProject
-            $this->taskLabels = [''];
-            $this->taskKaryawan = [''];
-
-            session()->flash('tugas_success', 'Project berhasil dibuat.');
-            $this->dispatch('tutup-modal-tugas');
-            $this->resetPage();
-        } catch (\Throwable $e) {
-            if ($filePath) {
-                Storage::disk('public')->delete($filePath);
-            }
-
-            \Illuminate\Support\Facades\Log::error('createProject error: ' . $e->getMessage());
-            $this->addError('namaProject', 'Gagal membuat project: ' . $e->getMessage());
-        }
-    }
-
-    private function projectKaryawanQuery(): Builder
-    {
-        return Karyawan::query()
-            ->where('aktif', true)
-            ->whereNull('tanggal_keluar')
-            ->where('status_aktif', 'Aktif')
-            ->whereDoesntHave('user.role', fn($query) => $query
-                ->whereRaw('LOWER(nama_role) IN (?, ?)', ['hrd', 'kadiv']));
-    }
-
     public function render()
     {
         $divisionId = $this->divisionId();
@@ -331,15 +212,10 @@ class TugasTable extends Component
             ->paginate(6);
 
         $staffOptions = KadivStaffQuery::forDivision($divisionId)->apply([])->get();
-        $projectKaryawanOptions = $this->projectKaryawanQuery()
-            ->with('divisi')
-            ->orderBy('nama')
-            ->get();
 
         return view('livewire.kadiv.tugas-table', [
             'rows' => $rows,
             'staffOptions' => $staffOptions,
-            'projectKaryawanOptions' => $projectKaryawanOptions,
         ]);
     }
 }

@@ -13,6 +13,7 @@ use App\Models\Pesan;
 use App\Models\SuratIzin;
 use App\Models\Notifikasi;
 use App\Services\BirthdayNotificationService;
+use App\Services\ContractExpiryReminder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -22,8 +23,14 @@ class HrdDashboardController extends Controller
      * GET /api/hrd/dashboard
      * Metrics tingkat perusahaan (Total staff, divisi, % tugas, total pesan) & widget summary.
      */
-    public function index(Request $request, BirthdayNotificationService $birthdayNotifications)
+    public function index(
+        Request $request,
+        BirthdayNotificationService $birthdayNotifications,
+        ContractExpiryReminder $contractExpiryReminder
+    )
     {
+        $contractReminders = $contractExpiryReminder->forHrd();
+
         $totalStaff  = Karyawan::count();
         $totalDivisi = Divisi::count();
 
@@ -71,6 +78,7 @@ class HrdDashboardController extends Controller
                             'total_staff' => $d->karyawans_count,
                         ]),
                     ],
+                    'notifikasi_kontrak' => $contractReminders,
                 ],
             ]);
         }
@@ -157,7 +165,8 @@ class HrdDashboardController extends Controller
             'totalKeluarTahunIni',
             'carousels',
             'birthdayEmployees',
-            'notifikasi'
+            'notifikasi',
+            'contractReminders'
         ));
     }
 

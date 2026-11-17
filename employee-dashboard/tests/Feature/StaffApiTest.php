@@ -93,6 +93,39 @@ class StaffApiTest extends TestCase
             ->assertJsonPath('data.notifikasi_terbaru.0.id_notifikasi', 'NTF-DASH');
     }
 
+    public function test_contract_expiry_reminder_is_shown_exactly_fourteen_days_before(): void
+    {
+        $this->staff->karyawan()->update([
+            'tanggal_akhir_kontrak' => '2026-11-30',
+        ]);
+
+        try {
+            Carbon::setTestNow('2026-11-16 08:00:00');
+
+            $this->actingAs($this->staff)
+                ->getJson('/staff/dashboard')
+                ->assertOk()
+                ->assertJsonPath('data.notifikasi_terbaru.0.is_contract_reminder', true)
+                ->assertJsonPath('data.notifikasi_terbaru.0.judul_notifikasi', 'Pengingat Kontrak Kerja')
+                ->assertJsonPath('data.notifikasi_terbaru.0.id_notifikasi', 'kontrak-reminder-KRY-STAFF-2026-11-30');
+
+            $this->actingAs($this->staff)
+                ->getJson('/staff/notifikasi')
+                ->assertOk()
+                ->assertJsonPath('data.0.is_contract_reminder', true)
+                ->assertJsonPath('data.0.isi_notif', 'Kontrak kerja Anda akan berakhir pada 30 November 2026 (14 hari lagi). Harap hubungi HRD untuk tindak lanjut.');
+
+            Carbon::setTestNow('2026-11-15 08:00:00');
+
+            $this->actingAs($this->staff)
+                ->getJson('/staff/notifikasi')
+                ->assertOk()
+                ->assertJsonMissing(['is_contract_reminder' => true]);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
     public function test_staff_profile_includes_education_job_level_and_employment_status(): void
     {
         $this->staff->karyawan()->update([

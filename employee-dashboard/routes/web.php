@@ -102,10 +102,6 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
         return view('staff.detailTugas');
     })->name('tugas.detail');
 
-    Route::get('/project/detail/{id}', function (string $id) {
-        return view('staff.detailProject', ['id' => $id]);
-    })->name('project.detail');
-
     Route::get('/profile', function () {
         return view('staff.detailProfile');
     })->name('profile');
@@ -183,10 +179,6 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     Route::get('/tugas', function () {
         return view('kadiv.tugas');
     })->name('kadiv.tugas');
-
-    Route::get('/project/{id}', function ($id) {
-        return view('kadiv.detailProject', ['id' => $id]);
-    })->name('kadiv.project.show');
 
     Route::get('/detailTugas/{id}', function ($id) {
         return view('kadiv.detailTugas', ['id' => $id]);
@@ -486,6 +478,9 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
         Route::get('/', [KeuanganController::class, 'index'])->name('kadiv.keuangan');
         Route::get('/rekap-divisi', [KeuanganController::class, 'rekapDivisi'])->name('kadiv.keuangan.rekapDivisi');
         Route::get('/rekap-divisi/export', [KeuanganController::class, 'export'])->name('kadiv.keuangan.exportRekapDivisi');
+
+        Route::get('/arus-kas', fn () => view('finance.arusKas.index'))->name('kadiv.keuangan.arusKas');
+        Route::get('/manajemen-dana', [PermintaanDanaController::class, 'manajemenDana'])->name('kadiv.keuangan.manajemenDana');
 
         // Pemasukan Kas
         Route::get('/pemasukan', [PemasukanController::class, 'index'])->name('kadiv.keuangan.pemasukan');

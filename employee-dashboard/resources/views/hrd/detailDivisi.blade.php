@@ -28,7 +28,13 @@
 
         <main class="flex overflow-y-auto p-8 pt-2 items-center gap-5 drop-shadow-2sm">
             <div class="w-20 h-20 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold text-2xl shrink-0">
-                {{ $ketuaDivisi ? strtoupper(substr($ketuaDivisi->nama, 0, 1)) : '?' }}
+                @if ($ketuaDivisi?->foto)
+                    <img src="{{ asset('storage/'.$ketuaDivisi->foto) }}"
+                        alt="Foto profil {{ $ketuaDivisi->nama }}"
+                        class="h-full w-full rounded-full object-cover">
+                @else
+                    {{ $ketuaDivisi ? strtoupper(substr($ketuaDivisi->nama, 0, 1)) : '?' }}
+                @endif
             </div>
             <div class="items-center">
                 <h3 class="font-medium">{{ $ketuaDivisi->nama ?? 'Belum ditentukan' }}</h3>

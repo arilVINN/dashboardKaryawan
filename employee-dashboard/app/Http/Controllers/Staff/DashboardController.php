@@ -8,12 +8,13 @@ use App\Models\Notifikasi;
 use App\Models\Pesan;
 use App\Models\Tugas;
 use App\Models\User2;
+use App\Services\ContractExpiryReminder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, ContractExpiryReminder $contractExpiryReminder)
     {
         $user = $request->user();
 
@@ -119,6 +120,8 @@ class DashboardController extends Controller
             ];
         })->values()->all();
 
+        $pengingatKontrak = $contractExpiryReminder->forUser($user);
+
         return response()->json([
             'data' => [
                 'statistik' => [
@@ -149,6 +152,7 @@ class DashboardController extends Controller
                 'notifikasi_terbaru' => collect(array_merge(
                     $pengingatNote,
                     $pengingatTugas,
+                    $pengingatKontrak ? [$pengingatKontrak] : [],
                     $notifikasiTerbaru->map(function (Notifikasi $notifikasi) {
                         return [
                             'id_notifikasi'      => $notifikasi->id_notifikasi,

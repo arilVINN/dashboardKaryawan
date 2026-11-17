@@ -7,12 +7,13 @@ use App\Models\CalendarNote;
 use App\Models\Notifikasi;
 use App\Models\Tugas;
 use App\Models\User2;
+use App\Services\ContractExpiryReminder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class NotifikasiController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, ContractExpiryReminder $contractExpiryReminder)
     {
         $user = $request->user();
 
@@ -70,9 +71,12 @@ class NotifikasiController extends Controller
             ];
         })->values()->all();
 
+        $pengingatKontrak = $contractExpiryReminder->forUser($user);
+
         $notifikasiData = array_merge(
             $pengingatNote,
             $pengingatTugas,
+            $pengingatKontrak ? [$pengingatKontrak] : [],
             $notifikasi->map(function ($item) {
                 return [
                     'id_notifikasi'      => $item->id_notifikasi,
