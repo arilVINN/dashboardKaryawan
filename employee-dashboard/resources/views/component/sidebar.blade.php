@@ -74,21 +74,22 @@
             <span class="sidebar-text whitespace-nowrap transition-all duration-150">Pesan & Informasi</span>
         </a>
 
-        <a href="{{ url('/struktur-organisasi') }}"
-           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('struktur-organisasi*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15M8.25 9.75h7.5m-7.5 4.5h7.5" />
-                <rect x="3" y="3" width="18" height="18" rx="3" />
-            </svg>
-            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Bagan Organisasi</span>
-        </a>
-
         <a href="{{ url('/pusat-data') }}"
            class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('pusat-data*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
             </svg>
             <span class="sidebar-text whitespace-nowrap transition-all duration-150">Pusat Arsip & Data</span>
+        </a>
+
+        <a href="{{ url('/strukturOrganisasi') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('strukturOrganisasi*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21">
+                </path>
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Struktur Organisasi</span>
         </a>
 
     </nav>

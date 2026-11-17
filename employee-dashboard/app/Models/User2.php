@@ -87,15 +87,6 @@ class User2 extends Authenticatable
     // ─── Role Helpers ─────────────────────────────────────────────────────────
 
     /**
-     * Cek apakah user ini adalah Direktur / Direksi (Super-Admin).
-     */
-    public function isDirektur(): bool
-    {
-        $roleName = strtolower($this->role?->nama_role ?? '');
-        return $roleName === 'direktur' || $roleName === 'direksi';
-    }
-
-    /**
      * Cek apakah user ini memiliki hak akses keuangan penuh.
      * Kadiv Finance ATAU Direktur.
      */
@@ -105,13 +96,32 @@ class User2 extends Authenticatable
     }
 
     /**
-     * Cek apakah user ini adalah Kepala Divisi Finance.
-     * Kriteria: role = 'kadiv' DAN divisi kode = 'FIN'
+     * Role names that hold the highest (super-admin) authority.
+     * "Direksi" is accepted as an equivalent alias of "Direktur".
+     */
+    public const SUPERADMIN_ROLES = ['direktur', 'direksi'];
+
+    /**
+     * Cek apakah user ini adalah Direktur / Direksi (super-admin).
+     */
+    public function isDirektur(): bool
+    {
+        return in_array(
+            strtolower($this->role?->nama_role ?? ''),
+            self::SUPERADMIN_ROLES,
+            true
+        );
+    }
+
+    /**
+     * Cek apakah user ini adalah Kepala Divisi Finance & Accounting.
+     * Criteria: role = 'kadiv' AND the employee's division is Finance.
+     * Direktur/Direksi inherits full finance access.
      */
     public function isKadivFinance(): bool
     {
-        return (strtolower($this->role?->nama_role ?? '') === 'kadiv'
-            && strtoupper($this->karyawan?->divisi?->kode_divisi ?? '') === 'FIN')
-            || $this->isDirektur();
+        return $this->isDirektur()
+            || (strtolower($this->role?->nama_role ?? '') === 'kadiv'
+                && ($this->karyawan?->isFinance() ?? false));
     }
 }

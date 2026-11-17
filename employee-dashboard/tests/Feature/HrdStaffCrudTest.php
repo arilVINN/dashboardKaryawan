@@ -81,11 +81,14 @@ class HrdStaffCrudTest extends TestCase
             'pendidikan' => 'S3',
             'job_level' => 'Senior',
             'tanggal_akhir_kontrak' => '2027-01-01',
+            'foto' => 'foto-profil/andi.jpg',
         ]);
 
         $this->actingAs($this->hrd)->get('/hrd/detailKaryawan/KRY-1')
             ->assertOk()
             ->assertSee('Andi Wijaya')
+            ->assertSee('src="' . asset('storage/foto-profil/andi.jpg') . '"', false)
+            ->assertSee('alt="Foto profil Andi Wijaya"', false)
             ->assertSee('Pendidikan Terakhir')
             ->assertSee('Job Level')
             ->assertSee('Status Karyawan')

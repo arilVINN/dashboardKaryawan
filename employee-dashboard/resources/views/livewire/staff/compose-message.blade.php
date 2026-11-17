@@ -55,7 +55,7 @@
                     @foreach ($recipients as $recipient)
                         <option value="{{ $recipient->id_user }}">
                             {{ $recipient->karyawan?->nama ?? $recipient->username }}
-                            — {{ ucfirst($recipient->role?->nama_role ?? '') }}
+                            - {{ ucfirst($recipient->role?->nama_role ?? '') }}
                         </option>
                     @endforeach
                 </select>

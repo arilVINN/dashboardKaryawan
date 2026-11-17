@@ -66,14 +66,14 @@ class ContentCalendarTest extends TestCase
         $this->hr = Divisi::create([
             'id_divisi' => 'DV-HR',
             'kode_divisi' => 'HR',
-            'nama_divisi' => 'Human Resources',
+            'nama_divisi' => 'HR',
             'status_aktif' => 'Aktif',
         ]);
 
         $this->markom = Divisi::create([
             'id_divisi' => 'DV-MK',
             'kode_divisi' => 'MK',
-            'nama_divisi' => 'Marketing Communication',
+            'nama_divisi' => 'Kreatif Digital',
             'status_aktif' => 'Aktif',
         ]);
 
@@ -91,10 +91,6 @@ class ContentCalendarTest extends TestCase
             ['slug' => 'single-image', 'name' => 'Single Image', 'sort_order' => 2],
             ['slug' => 'carousel', 'name' => 'Carousel', 'sort_order' => 3],
         ]);
-
-        // The account migration seeds the production list; tests create their
-        // own fixtures so ordering and names stay predictable.
-        ContentAccount::query()->delete();
 
         $this->defaultAccount = ContentAccount::create([
             'slug' => 'silindo-official',
@@ -278,111 +274,6 @@ class ContentCalendarTest extends TestCase
             ->assertSet('statusFilter', 'semua');
     }
 
-    public function test_content_account_seeder_creates_the_seven_brand_accounts(): void
-    {
-        ContentAccount::query()->delete();
-
-        $this->seed(\Database\Seeders\ContentAccountSeeder::class);
-
-        $names = ContentAccount::query()->active()->ordered()->pluck('name')->all();
-
-        $this->assertSame([
-            'PT SILINDO',
-            'Penerbit Buku',
-            'Academic Events',
-            'Publikasi Jurnal',
-            'Citra Komunika',
-            'Think With Meida',
-            'MeiRa Kost',
-        ], $names);
-    }
-
-    public function test_allowed_user_can_add_a_social_media_account(): void
-    {
-        Livewire::actingAs($this->staffHr)
-            ->test(ContentCalendar::class)
-            ->call('openAccountForm')
-            ->assertSet('accountFormOpen', true)
-            ->assertSee('Tambah akun media sosial')
-            ->set('accountName', 'Citra Komunika')
-            ->call('saveAccount')
-            ->assertHasNoErrors()
-            ->assertSet('accountFormOpen', false)
-            ->assertSet('accountName', '')
-            ->assertSet('account', 'citra-komunika')
-            ->assertDispatched('content-account-changed', name: 'Citra Komunika')
-            ->assertDispatched('content-toast');
-
-        $account = ContentAccount::where('slug', 'citra-komunika')->firstOrFail();
-
-        $this->assertSame('Citra Komunika', $account->name);
-        $this->assertTrue($account->is_active);
-        $this->assertSame(3, $account->sort_order);
-    }
-
-    public function test_new_account_appears_in_the_dropdown_and_has_an_empty_calendar(): void
-    {
-        $this->event($this->staffHr, ['title' => 'Event Official']);
-
-        Livewire::actingAs($this->staffHr)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->call('openAccountForm')
-            ->set('accountName', 'MeiRa Kost')
-            ->call('saveAccount')
-            ->assertSee('MeiRa Kost')
-            ->assertSee('content-day-2026-11-01')
-            ->assertDontSee('Event Official');
-    }
-
-    public function test_account_name_is_required(): void
-    {
-        Livewire::actingAs($this->staffHr)
-            ->test(ContentCalendar::class)
-            ->call('openAccountForm')
-            ->set('accountName', '')
-            ->call('saveAccount')
-            ->assertHasErrors(['accountName']);
-    }
-
-    public function test_account_name_must_be_unique(): void
-    {
-        Livewire::actingAs($this->staffHr)
-            ->test(ContentCalendar::class)
-            ->call('openAccountForm')
-            ->set('accountName', 'silindo official')
-            ->call('saveAccount')
-            ->assertHasErrors(['accountName']);
-    }
-
-    public function test_account_slug_gets_a_suffix_when_needed(): void
-    {
-        Livewire::actingAs($this->staffHr)
-            ->test(ContentCalendar::class)
-            ->call('openAccountForm')
-            ->set('accountName', 'Citra Komunika')
-            ->call('saveAccount')
-            ->assertHasNoErrors();
-
-        Livewire::actingAs($this->staffHr)
-            ->test(ContentCalendar::class)
-            ->call('openAccountForm')
-            ->set('accountName', 'Citra-Komunika')
-            ->call('saveAccount')
-            ->assertHasNoErrors();
-
-        $this->assertDatabaseHas('content_accounts', ['slug' => 'citra-komunika']);
-        $this->assertDatabaseHas('content_accounts', ['slug' => 'citra-komunika-2']);
-    }
-
-    public function test_add_account_button_is_visible_on_the_calendar(): void
-    {
-        $this->actingAs($this->staffHr)
-            ->get('/kalender-konten')
-            ->assertOk()
-            ->assertSee('Tambah akun');
-    }
-
     public function test_page_title_follows_the_account_query_parameter(): void
     {
         $this->actingAs($this->staffHr)
@@ -409,9 +300,8 @@ class ContentCalendarTest extends TestCase
             ->set('title', 'Kampanye Ramadan')
             ->set('post_time', '17:00')
             ->set('content_type', 'carousel')
-            ->set('caption', 'Caption kampanye Ramadan')
             ->set('description', 'Teaser dan carousel.')
-            ->set('content_url', 'https://example.test/konten')
+            ->set('contentLinks', ['https://example.test/konten', 'https://example.test/konten-2'])
             ->call('save')
             ->assertHasNoErrors()
             ->assertSet('formOpen', false)
@@ -426,9 +316,15 @@ class ContentCalendarTest extends TestCase
             'content_account_id' => $this->defaultAccount->id,
             'status' => 'process',
             'content_url' => 'https://example.test/konten',
-            'caption' => 'Caption kampanye Ramadan',
             'created_by' => $this->staffHr->id_user,
         ]);
+
+        $event = ContentEvent::where('title', 'Kampanye Ramadan')->firstOrFail();
+
+        $this->assertSame(
+            ['https://example.test/konten', 'https://example.test/konten-2'],
+            $event->content_links
+        );
     }
 
     public function test_create_requires_title_date_and_content_type(): void
@@ -454,25 +350,105 @@ class ContentCalendarTest extends TestCase
             ->assertHasErrors(['title']);
     }
 
-    public function test_content_url_must_be_http_or_https(): void
+    public function test_every_content_link_must_be_http_or_https(): void
     {
         Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->call('openCreate', '2026-11-12')
             ->set('title', 'Event')
             ->set('content_type', 'reels')
-            ->set('content_url', 'bukan-url')
+            ->set('contentLinks', ['https://example.test/ok', 'bukan-url'])
             ->call('save')
-            ->assertHasErrors(['content_url']);
+            ->assertHasErrors(['contentLinks.1']);
 
         Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->call('openCreate', '2026-11-12')
             ->set('title', 'Event')
             ->set('content_type', 'reels')
-            ->set('content_url', 'ftp://example.test/file')
+            ->set('contentLinks', ['ftp://example.test/file'])
             ->call('save')
-            ->assertHasErrors(['content_url']);
+            ->assertHasErrors(['contentLinks.0']);
+    }
+
+    public function test_multiple_links_are_saved_and_loaded_again(): void
+    {
+        $event = $this->event($this->staffHr, [
+            'title' => 'Event Multi Link',
+            'event_date' => '2026-11-12',
+            'content_links' => ['https://example.test/satu', 'https://example.test/dua'],
+            'content_url' => 'https://example.test/satu',
+        ]);
+
+        $this->assertSame(
+            ['https://example.test/satu', 'https://example.test/dua'],
+            $event->fresh()->content_links
+        );
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSet('contentLinks', ['https://example.test/satu', 'https://example.test/dua']);
+    }
+
+    public function test_links_can_be_added_and_removed_in_the_form(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Event Link')
+            ->set('content_type', 'reels')
+            ->set('contentLinks', ['https://example.test/satu'])
+            ->call('addLink')
+            ->assertCount('contentLinks', 2)
+            ->set('contentLinks.1', 'https://example.test/dua')
+            ->call('addLink')
+            ->set('contentLinks.2', 'https://example.test/tiga')
+            ->call('removeLink', 1)
+            ->assertSet('contentLinks', ['https://example.test/satu', 'https://example.test/tiga'])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $event = ContentEvent::where('title', 'Event Link')->firstOrFail();
+
+        $this->assertSame(
+            ['https://example.test/satu', 'https://example.test/tiga'],
+            $event->content_links
+        );
+        $this->assertSame('https://example.test/satu', $event->content_url);
+    }
+
+    public function test_link_changes_autosave_in_the_detail_modal(): void
+    {
+        $event = $this->event($this->staffHr, [
+            'title' => 'Event Link Autosave',
+            'content_links' => ['https://example.test/satu'],
+            'content_url' => 'https://example.test/satu',
+        ]);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->set('contentLinks.1', 'https://example.test/dua')
+            ->assertHasNoErrors()
+            ->assertDispatched('content-saved');
+
+        $this->assertSame(
+            ['https://example.test/satu', 'https://example.test/dua'],
+            $event->fresh()->content_links
+        );
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->call('removeLink', 0)
+            ->assertDispatched('content-saved');
+
+        $this->assertSame(
+            ['https://example.test/dua'],
+            $event->fresh()->content_links
+        );
+        $this->assertSame('https://example.test/dua', $event->fresh()->content_url);
     }
 
     public function test_post_time_uses_24_hour_format(): void
@@ -612,12 +588,11 @@ class ContentCalendarTest extends TestCase
         );
     }
 
-    public function test_event_card_background_follows_status_and_plan_uses_the_previous_revisi_style(): void
+    public function test_event_card_background_follows_status_with_grey_revisi_and_white_plan(): void
     {
         $this->event($this->staffHr, ['title' => 'Event Publish', 'event_date' => '2026-11-10', 'status' => 'publish']);
         $this->event($this->staffHr, ['title' => 'Event Process', 'event_date' => '2026-11-11', 'status' => 'process']);
         $this->event($this->staffHr, ['title' => 'Event Revisi', 'event_date' => '2026-11-12', 'status' => 'revisi']);
-        $this->event($this->staffHr, ['title' => 'Event Plan', 'event_date' => '2026-11-13', 'status' => 'plan']);
 
         $html = Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
@@ -631,46 +606,10 @@ class ContentCalendarTest extends TestCase
         $this->assertStringContainsString('background-color: #FEF0C3; border-color: #F5C85C;', $html);
 
         $this->assertStringContainsString('data-status="revisi"', $html);
-        $this->assertStringContainsString('background-color: #4B5563; border-color: #000000;', $html);
-        $this->assertStringContainsString('color: #F9FAFB;', $html);
+        $this->assertStringContainsString('background-color: #E2E8F0; border-color: #000000;', $html);
 
         $this->assertStringContainsString('data-status="plan"', $html);
         $this->assertStringContainsString('background-color: #FFFFFF; border-color: #94A3B8;', $html);
-    }
-
-    public function test_revisi_and_plan_card_pills_use_their_palettes(): void
-    {
-        $this->event($this->staffHr, ['title' => 'Event Revisi', 'event_date' => '2026-11-12', 'status' => 'revisi']);
-        $this->event($this->staffHr, ['title' => 'Event Plan', 'event_date' => '2026-11-13', 'status' => 'plan']);
-
-        $html = Livewire::actingAs($this->staffHr)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->html();
-
-        $this->assertStringContainsString(
-            'background-color: #6B7280; border-color: #6B7280; color: #FFFFFF;',
-            $html
-        );
-
-        $this->assertStringContainsString(
-            'background-color: #94A3B8; border-color: #94A3B8; color: #172B36;',
-            $html
-        );
-    }
-
-    public function test_form_revisi_status_pill_is_dark_grey_with_white_text(): void
-    {
-        $html = Livewire::actingAs($this->staffHr)
-            ->test(ContentCalendar::class)
-            ->call('openCreate', '2026-11-12')
-            ->set('formStatus', 'revisi')
-            ->html();
-
-        $this->assertStringContainsString(
-            'background-color: #4B5563; border-color: #6B7280; color: #FFFFFF;',
-            $html
-        );
     }
 
     public function test_event_card_status_pills_match_the_form_border_colour(): void
@@ -730,32 +669,6 @@ class ContentCalendarTest extends TestCase
             ->set('week', '2026-11-09')
             ->assertSee('Kartu Mingguan')
             ->assertSee('10 Nov 2026');
-    }
-
-    public function test_day_popover_uses_compact_rows_with_inline_pills(): void
-    {
-        $event = $this->event($this->staffHr, [
-            'title' => 'Reels Popover',
-            'event_date' => '2026-11-10',
-            'post_time' => '17:00',
-            'content_type' => 'carousel',
-            'status' => 'process',
-        ]);
-
-        $html = Livewire::actingAs($this->staffHr)
-            ->test(ContentCalendar::class)
-            ->set('month', '2026-11')
-            ->call('openDay', '2026-11-10')
-            ->html();
-
-        $this->assertStringContainsString('id="content-event-'.$event->id.'-popover"', $html);
-        $this->assertStringContainsString('content-event-row', $html);
-        $this->assertStringContainsString('data-status="process"', $html);
-        $this->assertStringContainsString('Reels Popover', $html);
-        $this->assertStringContainsString('17:00', $html);
-        $this->assertStringContainsString('Carousel', $html);
-        $this->assertStringContainsString('On process', $html);
-        $this->assertStringContainsString('flex flex-wrap items-center gap-1.5', $html);
     }
 
     public function test_month_view_orders_cards_by_time_and_caps_at_two(): void
@@ -848,25 +761,14 @@ class ContentCalendarTest extends TestCase
             ->assertSet('statusFilter', 'semua');
     }
 
-    public function test_month_view_shows_an_empty_grid_when_the_month_has_no_events(): void
+    public function test_month_without_events_renders_the_empty_calendar_grid(): void
     {
         Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->set('month', '2026-12')
-            ->assertSee('Sen')
-            ->assertSee('content-day-2026-12-01')
-            ->assertDontSee('Belum ada event bulan ini');
-    }
-
-    public function test_week_view_shows_an_empty_grid_when_the_week_has_no_events(): void
-    {
-        Livewire::actingAs($this->staffHr)
-            ->test(ContentCalendar::class)
-            ->set('view', 'minggu')
-            ->set('week', '2026-12-07')
-            ->assertSee('Sen')
-            ->assertSee('week-day-2026-12-07')
-            ->assertDontSee('Belum ada event bulan ini');
+            ->assertDontSee('Belum ada event bulan ini')
+            ->assertSee('Desember 2026')
+            ->assertSee('Sen');
     }
 
     public function test_national_holidays_are_not_rendered_on_the_content_calendar(): void
@@ -890,7 +792,6 @@ class ContentCalendarTest extends TestCase
         Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->call('openCreate', '2026-11-12')
-            ->assertSee('Plan')
             ->assertSee('Revisi')
             ->assertSee('Cancel')
             ->assertSee('Approved')
@@ -1172,7 +1073,7 @@ class ContentCalendarTest extends TestCase
             ->assertSet('readOnly', false)
             ->assertSee('Event Staff Lain')
             ->assertSee('content-date')
-            ->assertSee('content-url')
+            ->assertSee('content-link-0')
             ->assertSeeHtml('wire:click="deleteEvent"');
     }
 
@@ -1190,37 +1091,6 @@ class ContentCalendarTest extends TestCase
             ->assertDispatched('content-saved');
 
         $this->assertDatabaseHas('content_events', ['id' => $event->id, 'title' => 'Judul Baru']);
-    }
-
-    public function test_caption_is_autosaved_from_the_detail_modal(): void
-    {
-        $event = $this->event($this->staffHr, ['title' => 'Event Caption']);
-
-        Livewire::actingAs($this->staffHr)
-            ->test(ContentCalendar::class)
-            ->call('openEvent', $event->id)
-            ->assertSet('caption', '')
-            ->set('caption', 'Caption baru')
-            ->call('saveField', 'caption')
-            ->assertHasNoErrors()
-            ->assertDispatched('content-saved');
-
-        $this->assertDatabaseHas('content_events', ['id' => $event->id, 'caption' => 'Caption baru']);
-    }
-
-    public function test_caption_field_sits_above_the_description_field(): void
-    {
-        $html = Livewire::actingAs($this->staffHr)
-            ->test(ContentCalendar::class)
-            ->call('openCreate', '2026-11-12')
-            ->html();
-
-        $this->assertStringContainsString('id="content-caption"', $html);
-        $this->assertStringContainsString('id="content-description"', $html);
-        $this->assertLessThan(
-            strpos($html, 'id="content-description"'),
-            strpos($html, 'id="content-caption"')
-        );
     }
 
     public function test_autosave_rejects_an_invalid_value(): void

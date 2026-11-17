@@ -11,6 +11,8 @@ use App\Models\Divisi;
 use App\Models\Tugas;
 use App\Models\Pesan;
 use App\Models\SuratIzin;
+use App\Models\Notifikasi;
+use App\Services\BirthdayNotificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -20,7 +22,7 @@ class HrdDashboardController extends Controller
      * GET /api/hrd/dashboard
      * Metrics tingkat perusahaan (Total staff, divisi, % tugas, total pesan) & widget summary.
      */
-    public function index(Request $request)
+    public function index(Request $request, BirthdayNotificationService $birthdayNotifications)
     {
         $totalStaff  = Karyawan::count();
         $totalDivisi = Divisi::count();
@@ -37,7 +39,9 @@ class HrdDashboardController extends Controller
             ->count();
 
         // 5 divisi terbesar (untuk widget dan JSON)
-        $divisiTerbesar = Divisi::withCount('karyawans')
+        $divisiTerbesar = Divisi::query()
+            ->unit()
+            ->withCount('karyawans')
             ->orderByDesc('karyawans_count')
             ->take(5)
             ->get();
@@ -101,7 +105,7 @@ class HrdDashboardController extends Controller
 
         // Halaman Blade
         $divisis = Divisi::withCount('karyawans')
-            ->orderBy('id_divisi')
+            ->ordered()
             ->get();
 
         // Hitung total dan tugas selesai per divisi dalam satu query.
@@ -122,8 +126,17 @@ class HrdDashboardController extends Controller
             $divisi->tugas_selesai_count = (int) ($counts->tugas_selesai ?? 0);
         });
 
+        $user = $request->user();
+        $birthdayEmployees = $birthdayNotifications->forUser($user);
+
         $pesan = Pesan::orderBy('tanggal_pesan', 'desc')
             ->orderBy('id_pesan', 'desc')
+            ->limit(5)
+            ->get();
+        $notifikasi = Notifikasi::query()
+            ->where('user_id_user', $user->id_user)
+            ->withoutExpiredBirthdays()
+            ->latest('created_at')
             ->limit(5)
             ->get();
 
@@ -131,7 +144,6 @@ class HrdDashboardController extends Controller
             ->with(['user.karyawan', 'divisi'])
             ->latest()
             ->get();
-
         return view('hrd.dashboard', compact(
             'total',
             'tugasBuckets',
@@ -145,7 +157,9 @@ class HrdDashboardController extends Controller
             'totalKaryawanAktif',
             'totalKaryawanTidakAktif',
             'totalKeluarTahunIni',
-            'carousels'
+            'carousels',
+            'birthdayEmployees',
+            'notifikasi'
         ));
     }
 
@@ -236,9 +250,12 @@ class HrdDashboardController extends Controller
         })->count();
 
         // Mengambil data divisi beserta relasi karyawannya yang aktif
-        $divisiList = Divisi::with(['karyawans' => function ($q) {
-            $q->where('aktif', true);
-        }])->get();
+        $divisiList = Divisi::query()
+            ->ordered()
+            ->with(['karyawans' => function ($q) {
+                $q->where('aktif', true);
+            }])
+            ->get();
 
         $gender = Karyawan::where('aktif', true)
             ->selectRaw('jenis_kelamin, COUNT(*) as jumlah')

@@ -20,12 +20,15 @@ class KadivTugasQuery
     public function apply(array $filters): Builder
     {
         $query = Tugas::with(['karyawan.divisi', 'submitTugas', 'latestSubmitTugas']);
+        $karyawanQuery = Karyawan::query();
 
         if (!empty($this->divisiId)) {
-            $karyawanIds = Karyawan::where('divisi_id_divisi', $this->divisiId)->pluck('id_karyawan');
+            $karyawanIds = $karyawanQuery
+                ->where('divisi_id_divisi', $this->divisiId)
+                ->pluck('id_karyawan');
             $query->whereIn('karyawan_id_karyawan', $karyawanIds);
         } else {
-            $karyawanIds = Karyawan::pluck('id_karyawan');
+            $karyawanIds = $karyawanQuery->pluck('id_karyawan');
         }
 
         $staff = $filters['staff'] ?? null;

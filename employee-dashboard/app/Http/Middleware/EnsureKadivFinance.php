@@ -2,14 +2,16 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User2;
 use Closure;
 use Illuminate\Http\Request;
 
 /**
  * Middleware untuk memproteksi rute khusus Kepala Divisi Finance.
  *
- * Kriteria akses: role = 'kadiv' DAN divisi kode_divisi = 'FIN'.
+ * Kriteria akses: role = 'kadiv' DAN divisi adalah unit Finance & Accounting.
  * Rute ini hanya boleh diakses oleh Kadiv Finance, bukan Kadiv divisi lain.
+ * Direktur/Direksi memiliki akses penuh sebagai super-admin.
  */
 class EnsureKadivFinance
 {

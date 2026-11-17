@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Direktur;
 
 use App\Http\Controllers\Controller;
-use App\Helpers\FormatAkuntansi;
 use App\Models\BookingRequest;
 use App\Models\Carousel;
 use App\Models\Divisi;
@@ -28,7 +27,9 @@ class DirekturDashboardController extends Controller
             ->whereNull('tanggal_keluar')
             ->count();
 
-        $totalDivisi = Divisi::count();
+        // Only real operating divisions; structural "Direktur" and
+        // "Manajemen" nodes are excluded from the headcount cards.
+        $totalDivisi = Divisi::query()->unit()->aktif()->count();
 
         $suratIzinPending = SuratIzin::where('status', 'menunggu')->count();
         $suratIzinList = SuratIzin::with('karyawan.divisi')
@@ -58,19 +59,22 @@ class DirekturDashboardController extends Controller
             ->sum('nominal');
 
         $permintaanDanaPending = KPermintDana::where('status', KPermintDana::STATUS_MENUNGGU)->count();
-        $permintaanDanaList = KPermintDana::with(['divisi', 'user.karyawan'])
+        $permintaanDanaList = KPermintDana::with(['divisi', 'pemohon.karyawan'])
             ->where('status', KPermintDana::STATUS_MENUNGGU)
             ->latest()
             ->take(5)
             ->get();
 
-        $laporanLrPending = KLabaRugi::where('status_verifikasi', 'menunggu')->count();
+        $laporanLrPending = KLabaRugi::where('status_verifikasi', KLabaRugi::STATUS_MENUNGGU)->count();
 
         // 3. Tugas / Operasional Kadiv
         $totalTugas = Tugas::count();
-        $tugasBerjalan = Tugas::whereIn('status', ['baru', 'proses', 'dikerjakan', 'revisi'])->count();
-        $tugasSelesai = Tugas::where('status', 'selesai')->count();
-        $tugasRevisi = Tugas::where('status', 'revisi')->count();
+        $tugasBerjalan = Tugas::statusEfektif(Tugas::STATUS_BERJALAN)->count();
+        $tugasSelesai = Tugas::statusEfektif(Tugas::STATUS_SUDAH_ACC)->count();
+        $tugasMenunggu = Tugas::statusEfektif(Tugas::STATUS_MENUNGGU_ACC)->count();
+        $tugasRevisi = Tugas::statusEfektif(Tugas::STATUS_BERJALAN)
+            ->whereHas('latestSubmitTugas', fn ($q) => $q->where('status_review', 'revisi'))
+            ->count();
 
         $tugasTerbaru = Tugas::with('karyawan.divisi')
             ->latest('tanggal_dibuat')
@@ -78,9 +82,18 @@ class DirekturDashboardController extends Controller
             ->get();
 
         // 4. Ringkasan per Divisi
-        $divisiList = Divisi::withCount(['karyawans as jumlah_karyawan' => function ($q) {
-            $q->where('status_aktif', 'Aktif')->whereNull('tanggal_keluar');
-        }])->get();
+        $divisiList = Divisi::query()
+            ->unit()
+            ->aktif()
+            ->withCount(['karyawans as jumlah_karyawan' => function ($q) {
+                $q->where('status_aktif', 'Aktif')
+                    ->where(function ($active) {
+                        $active->where('aktif', true)->orWhereNull('aktif');
+                    })
+                    ->whereNull('tanggal_keluar');
+            }])
+            ->ordered()
+            ->get();
 
         // 5. Carousels
         $carousels = Carousel::query()
@@ -107,6 +120,7 @@ class DirekturDashboardController extends Controller
             'totalTugas',
             'tugasBerjalan',
             'tugasSelesai',
+            'tugasMenunggu',
             'tugasRevisi',
             'tugasTerbaru',
             'divisiList',

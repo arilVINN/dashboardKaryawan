@@ -152,6 +152,8 @@
                     window.location.href = '/kadiv/dashboard';
                 } else if (role === 'hrd') {
                     window.location.href = '/hrd/dashboard';
+                } else if (role === 'direktur' || role === 'direksi') {
+                    window.location.href = '/direktur/dashboard';
                 } else {
                     window.location.href = '/';
                 }

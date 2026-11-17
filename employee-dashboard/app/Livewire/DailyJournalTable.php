@@ -374,7 +374,7 @@ class DailyJournalTable extends Component
                 ->orderBy('nama')
                 ->get();
         } elseif ($role === 'hrd') {
-            $divisions = Divisi::orderBy('nama_divisi')->get();
+            $divisions = Divisi::query()->ordered()->get();
             $empQuery = Karyawan::query()->orderBy('nama');
             if ($this->filterDivisiId) {
                 $empQuery->where('divisi_id_divisi', $this->filterDivisiId);

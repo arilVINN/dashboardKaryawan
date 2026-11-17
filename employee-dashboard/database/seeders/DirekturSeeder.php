@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
-use App\Models\Role;
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\Role;
 use App\Models\User2;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DirekturSeeder extends Seeder
 {
@@ -18,42 +18,48 @@ class DirekturSeeder extends Seeder
             ['id_role' => 'RL004']
         );
 
-        $divisiDireksi = Divisi::firstOrCreate(
-            ['kode_divisi' => 'DIR'],
-            [
-                'id_divisi' => 'DV000',
-                'nama_divisi' => 'Direksi & Pimpinan',
-                'status_aktif' => 'Aktif',
-            ]
-        );
+        // DivisionHierarchySeeder already creates the Direktur Utama employee
+        // and the "Direktur Utama" division node. Reuse them when present so
+        // this seeder is safe on an already-seeded database.
+        $karyawanDirektur = Karyawan::query()
+            ->where('email', 'direktur@silindo.co.id')
+            ->orWhere('jabatan', Karyawan::JABATAN_DIREKTUR)
+            ->first();
 
-        $karyawanDirektur = Karyawan::firstOrCreate(
-            ['email' => 'direktur@silindo.co.id'],
-            [
-                'id_karyawan' => 'KR000',
-                'nama' => 'Hendra Prasetya',
+        if (! $karyawanDirektur) {
+            $divisiDireksi = Divisi::firstOrCreate(
+                ['kode_divisi' => Divisi::KODE_DIREKTUR],
+                [
+                    'id_divisi' => 'DV004',
+                    'nama_divisi' => 'Direktur Utama',
+                    'tipe' => Divisi::TIPE_DIREKTUR,
+                    'level' => 1,
+                    'kapasitas' => 1,
+                    'urutan' => 1,
+                    'parent_id' => null,
+                    'status_aktif' => 'Aktif',
+                ]
+            );
+
+            $karyawanDirektur = Karyawan::create([
+                'id_karyawan' => 'KR009',
+                'nama' => 'Hendra Wijaya',
                 'jenis_kelamin' => 'Laki-laki',
-                'tanggal_lahir' => '1975-01-01',
-                'tanggal_masuk' => '2010-01-01',
-                'tanggal_akhir_kontrak' => now()->addYears(10)->toDateString(),
-                'no_rekening' => '9999999999',
-                'no_telepon' => '081199998888',
+                'tanggal_lahir' => '1975-02-14',
+                'tanggal_masuk' => '2010-01-04',
+                'email' => 'direktur@silindo.co.id',
+                'no_telepon' => '081100112233',
                 'alamat' => 'Salatiga, Jawa Tengah',
-                'jabatan' => 'Direktur Utama',
-                'status_aktif' => 'Aktif',
-                'foto' => null,
+                'pendidikan' => 'S2 Manajemen',
+                'jabatan' => Karyawan::JABATAN_DIREKTUR,
+                'job_level' => 'Manager',
                 'divisi_id_divisi' => $divisiDireksi->id_divisi,
-                'pendidikan' => 'S2 Manajemen Bisnis',
-                'job_level' => 'Direksi',
+                'atasan_id' => null,
+                'status_aktif' => 'Aktif',
                 'status_karyawan' => 'tetap',
                 'aktif' => true,
-                'atasan_id' => null,
-            ]
-        );
-
-        Karyawan::where('id_karyawan', 'KR007')
-            ->whereNull('atasan_id')
-            ->update(['atasan_id' => $karyawanDirektur->id_karyawan]);
+            ]);
+        }
 
         User2::firstOrCreate(
             ['username' => 'direktur'],
@@ -65,6 +71,6 @@ class DirekturSeeder extends Seeder
             ]
         );
 
-        $this->command?->info('Berhasil Seed Role Direktur & Akun (direktur / pass123)');
+        $this->command?->info('Berhasil seed role Direktur & akun (direktur / pass123).');
     }
 }

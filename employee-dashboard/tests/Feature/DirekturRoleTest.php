@@ -20,111 +20,133 @@ class DirekturRoleTest extends TestCase
     {
         parent::setUp();
 
-        $roleDirektur = Role::firstOrCreate(
-            ['nama_role' => 'direktur'],
-            ['id_role' => 'RL004']
-        );
+        $this->withoutVite();
 
-        $divisiDireksi = Divisi::firstOrCreate(
-            ['kode_divisi' => 'DIR'],
-            [
-                'id_divisi' => 'DV000',
-                'nama_divisi' => 'Direksi & Pimpinan',
-                'status_aktif' => 'Aktif',
-            ]
-        );
-
-        $karyawanDirektur = Karyawan::firstOrCreate(
-            ['email' => 'direktur@silindo.co.id'],
-            [
-                'id_karyawan' => 'KR000',
-                'nama' => 'Hendra Prasetya',
-                'jenis_kelamin' => 'Laki-laki',
-                'tanggal_lahir' => '1975-01-01',
-                'tanggal_masuk' => '2010-01-01',
-                'tanggal_akhir_kontrak' => now()->addYears(10)->toDateString(),
-                'no_rekening' => '9999999999',
-                'no_telepon' => '081199998888',
-                'alamat' => 'Salatiga, Jawa Tengah',
-                'jabatan' => 'Direktur Utama',
-                'status_aktif' => 'Aktif',
-                'foto' => null,
-                'divisi_id_divisi' => $divisiDireksi->id_divisi,
-                'pendidikan' => 'S2 Manajemen Bisnis',
-                'job_level' => 'Direksi',
-                'status_karyawan' => 'tetap',
-                'aktif' => true,
-                'atasan_id' => null,
-            ]
-        );
-
-        $this->direktur = User2::firstOrCreate(
-            ['username' => 'direktur'],
-            [
-                'id_user' => 'US000',
-                'password' => Hash::make('pass123'),
-                'role_id_role' => $roleDirektur->id_role,
-                'karyawan_id_karyawan' => $karyawanDirektur->id_karyawan,
-            ]
-        );
-    }
-
-    public function test_direktur_can_login_and_redirects_to_direktur_dashboard(): void
-    {
-        $response = $this->get('/login');
-        $response->assertStatus(200);
-        $response->assertSee('/build/assets/app-');
-
-        $response = $this->post('/login', [
-            'username' => 'direktur',
-            'password' => 'pass123',
+        Role::insert([
+            ['id_role' => 'ROLE-STAFF', 'nama_role' => 'staff'],
+            ['id_role' => 'ROLE-HRD', 'nama_role' => 'hrd'],
+            ['id_role' => 'ROLE-KADIV', 'nama_role' => 'kadiv'],
+            ['id_role' => 'ROLE-DIR', 'nama_role' => 'direktur'],
         ]);
 
-        $response->assertRedirect('/direktur/dashboard');
+        $divisiDireksi = Divisi::create([
+            'id_divisi' => 'DIV-DIR',
+            'kode_divisi' => Divisi::KODE_DIREKTUR,
+            'nama_divisi' => 'Direktur Utama',
+            'tipe' => Divisi::TIPE_DIREKTUR,
+            'level' => 1,
+            'kapasitas' => 1,
+            'urutan' => 1,
+            'status_aktif' => 'Aktif',
+        ]);
+
+        $karyawanDirektur = Karyawan::create([
+            'id_karyawan' => 'KRY-DIR',
+            'nama' => 'Hendra Wijaya',
+            'jenis_kelamin' => 'Laki-laki',
+            'jabatan' => Karyawan::JABATAN_DIREKTUR,
+            'job_level' => 'Direksi',
+            'divisi_id_divisi' => $divisiDireksi->id_divisi,
+            'status_aktif' => 'Aktif',
+            'aktif' => true,
+        ]);
+
+        $this->direktur = User2::create([
+            'id_user' => 'USR-DIR',
+            'username' => 'direktur',
+            'password' => Hash::make('pass123'),
+            'role_id_role' => 'ROLE-DIR',
+            'karyawan_id_karyawan' => $karyawanDirektur->id_karyawan,
+        ]);
+    }
+
+    public function test_direktur_login_redirects_to_executive_dashboard(): void
+    {
+        $this->post('/login', [
+            'username' => 'direktur',
+            'password' => 'pass123',
+        ])->assertRedirect('/direktur/dashboard');
+
         $this->assertAuthenticatedAs($this->direktur);
     }
 
-    public function test_direktur_can_view_executive_dashboard(): void
+    public function test_login_page_sends_direktur_to_the_executive_dashboard(): void
     {
-        $response = $this->actingAs($this->direktur)->get('/direktur/dashboard');
-
-        $response->assertStatus(200);
-        $response->assertSee('Selamat Datang');
-        $response->assertSee('Executive Command Center');
-        $response->assertSee('Saldo Kas Bersih');
-        $response->assertSee('Karyawan Aktif');
-        $response->assertSee('Menunggu Approval');
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee("role === 'direktur'", false)
+            ->assertSee("/direktur/dashboard", false);
     }
 
-    public function test_direktur_can_access_all_four_pillars(): void
+    public function test_direktur_can_view_executive_dashboard_with_slim_sidebar(): void
     {
-        // 1. Staff Routes
-        $this->actingAs($this->direktur)->get('/')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/tugas')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/kalender')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/jurnal')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/pusat-data')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/profile')->assertStatus(200);
+        $this->actingAs($this->direktur)
+            ->get('/direktur/dashboard')
+            ->assertOk()
+            ->assertSee('Executive Command Center')
+            ->assertSee('Selamat Datang')
+            ->assertSee('Dashboard Direktur')
+            ->assertSee('Persetujuan')
+            ->assertSee('SDM & Organisasi', false)
+            ->assertSee('Keuangan')
+            ->assertSee('Operasional')
+            ->assertSee('Workspace');
+    }
 
-        // 2. Kadiv Routes
-        $this->actingAs($this->direktur)->get('/kadiv/dashboard')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/kadiv/tugas')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/kadiv/manajemenStaff')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/kadiv/pengajuan-dana')->assertStatus(200);
+    public function test_direktur_can_access_hrd_kadiv_finance_and_staff_pages(): void
+    {
+        $pages = [
+            '/',
+            '/tugas',
+            '/kalender',
+            '/jurnal',
+            '/pusat-data',
+            '/profile',
+            '/kadiv/dashboard',
+            '/hrd/daftarKaryawan',
+            '/hrd/manajemenDivisi',
+            '/hrd/strukturOrganisasi',
+            '/suratIzin',
+            '/hrd/suratBooking',
+            '/kadiv/tugas',
+            '/kadiv/manajemenStaff',
+            '/kadiv/keuangan',
+            '/kadiv/keuangan/rekap-divisi',
+            '/kadiv/keuangan/arus-kas',
+            '/kadiv/keuangan/manajemen-dana',
+            '/kadiv/pengajuan-dana',
+            '/hrd/dashboard',
+        ];
 
-        // 3. Finance Routes
-        $this->actingAs($this->direktur)->get('/kadiv/keuangan')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/kadiv/keuangan/rekap-divisi')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/kadiv/keuangan/arus-kas')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/kadiv/keuangan/manajemen-dana')->assertStatus(200);
+        foreach ($pages as $page) {
+            $this->actingAs($this->direktur)->get($page)->assertOk();
+        }
+    }
 
-        // 4. HRD Routes
-        $this->actingAs($this->direktur)->get('/hrd/dashboard')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/hrd/daftarKaryawan')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/hrd/manajemenDivisi')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/hrd/suratIzin')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/suratIzin')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/hrd/suratBooking')->assertStatus(200);
-        $this->actingAs($this->direktur)->get('/hrd/struktur-organisasi')->assertStatus(200);
+    public function test_direktur_login_ignores_intended_url(): void
+    {
+        // Simulate a logged-out user landing on a protected page first.
+        $this->get('/hrd/daftarKaryawan')->assertRedirect('/login');
+
+        $this->post('/login', [
+            'username' => 'direktur',
+            'password' => 'pass123',
+        ])->assertRedirect('/direktur/dashboard');
+    }
+
+    public function test_direktur_can_open_surat_izin_and_legacy_url_redirects(): void
+    {
+        $this->actingAs($this->direktur)->get('/suratIzin')->assertOk();
+
+        $this->actingAs($this->direktur)
+            ->get('/hrd/suratIzin')
+            ->assertRedirect('/suratIzin');
+    }
+
+    public function test_direktur_is_read_only_for_hrd_and_kadiv_data_mutations(): void
+    {
+        $this->actingAs($this->direktur)->post('/hrd/divisi', [])->assertForbidden();
+        $this->actingAs($this->direktur)->post('/kadiv/tugas', [])->assertForbidden();
+        $this->actingAs($this->direktur)->post('/kadiv/keuangan/pemasukan', [])->assertForbidden();
     }
 }

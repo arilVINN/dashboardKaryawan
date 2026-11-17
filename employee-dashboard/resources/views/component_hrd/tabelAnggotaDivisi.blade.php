@@ -1,15 +1,22 @@
 @php
     $isCompact = $compact ?? false;
     $cellPadding = $isCompact ? 'px-4 py-3' : 'px-6 py-4';
+    $bisaTambahAnggota = $bisaTambahAnggota ?? true;
 @endphp
 
 <section class="flex flex-col gap-3 w-full mt-2 p-5">
     <div class="flex justify-between items-center pr-4 sm:pr-6 lg:pr-8 gap-3">
         <h3 class="text-lg font-semibold text-slate-800">Anggota Divisi</h3>
-        <button onclick="bukaModalKaryawan()" type="button"
-            class="px-6 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-semibold rounded-lg shadow-sm transition">
-            Tambah Karyawan
-        </button>
+        @if ($bisaTambahAnggota)
+            <button onclick="bukaModalKaryawan()" type="button"
+                class="px-6 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-semibold rounded-lg shadow-sm transition">
+                Tambah Karyawan
+            </button>
+        @else
+            <span class="rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-500">
+                {{ $divisi->capacityLabel() }}
+            </span>
+        @endif
     </div>
 
     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full mt-2">
@@ -87,7 +94,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="p-4 text-center text-slate-500">
-                                Belum ada staff di divisi ini.
+                                Belum ada anggota di unit ini.
                             </td>
                         </tr>
                     @endforelse

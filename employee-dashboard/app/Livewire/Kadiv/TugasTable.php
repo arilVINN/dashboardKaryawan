@@ -117,6 +117,7 @@ class TugasTable extends Component
             abort(403);
         }
 
+        // Direktur/Direksi monitors every division (read-only).
         if ($user->isDirektur()) {
             return null;
         }
@@ -174,6 +175,10 @@ class TugasTable extends Component
 
     public function createTask(): void
     {
+        if (auth()->user()?->isDirektur()) {
+            abort(403, 'Direksi hanya dapat memantau data (read-only).');
+        }
+
         $divisionId = $this->divisionId();
 
         $this->validate([
@@ -242,6 +247,10 @@ class TugasTable extends Component
 
     public function createProject(): void
     {
+        if (auth()->user()?->isDirektur()) {
+            abort(403, 'Direksi hanya dapat memantau data (read-only).');
+        }
+
         $this->divisionId();
 
         $this->validate([

@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Exceptions\PermintaanSudahDiprosesException;
 use App\Http\Controllers\Controller;
 use App\Models\Divisi;
 use App\Models\KeuanganAldiv;
 use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
+use App\Services\Finance\PermintaanDanaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Manajemen Permintaan Dana:
@@ -43,7 +44,7 @@ class PermintaanDanaController extends Controller
 
         $permintaan     = $query->paginate(15);
         $jumlahMenunggu = KPermintDana::where('status', KPermintDana::STATUS_MENUNGGU)->count();
-        $divisiList     = Divisi::where('kode_divisi', '!=', 'FIN')->where('status_aktif', 'Aktif')->get();
+        $divisiList     = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
 
         return view('finance.permintaan.index', compact('permintaan', 'status', 'divisiId', 'divisiList', 'jumlahMenunggu'));
     }
@@ -79,18 +80,15 @@ class PermintaanDanaController extends Controller
      */
     public function approve(Request $request, string $id): \Illuminate\Http\RedirectResponse
     {
-        $permintaan = KPermintDana::findOrFail($id);
-
-        if (! $permintaan->isMenunggu()) {
-            return back()->with('error', 'Hanya pengajuan berstatus Menunggu yang dapat disetujui.');
+        try {
+            app(PermintaanDanaService::class)->approve(
+                $id,
+                $request->user(),
+                $request->input('catatan_finance')
+            );
+        } catch (PermintaanSudahDiprosesException $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $permintaan->update([
-            'status'                  => KPermintDana::STATUS_DISETUJUI,
-            'tanggal_disetujui'       => now()->toDateString(),
-            'disetujui_oleh_id_user'  => Auth::id(),
-            'catatan_finance'         => $request->input('catatan_finance'),
-        ]);
 
         return back()->with('success', 'Permintaan dana berhasil disetujui.');
     }
@@ -100,23 +98,21 @@ class PermintaanDanaController extends Controller
      */
     public function reject(Request $request, string $id): \Illuminate\Http\RedirectResponse
     {
-        $permintaan = KPermintDana::findOrFail($id);
-
-        if (! $permintaan->isMenunggu()) {
-            return back()->with('error', 'Hanya pengajuan berstatus Menunggu yang dapat ditolak.');
-        }
-
         $data = $request->validate([
             'catatan_finance' => ['required', 'string', 'max:500'],
         ], [
             'catatan_finance.required' => 'Alasan penolakan wajib diisi.',
         ]);
 
-        $permintaan->update([
-            'status'                 => KPermintDana::STATUS_DITOLAK,
-            'catatan_finance'        => $data['catatan_finance'],
-            'disetujui_oleh_id_user' => Auth::id(),
-        ]);
+        try {
+            app(PermintaanDanaService::class)->reject(
+                $id,
+                $request->user(),
+                $data['catatan_finance']
+            );
+        } catch (PermintaanSudahDiprosesException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', 'Permintaan dana telah ditolak.');
     }

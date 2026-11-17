@@ -34,6 +34,7 @@ class StaffTable extends Component
             abort(403);
         }
 
+        // Direktur/Direksi monitors every division (read-only).
         if ($user->isDirektur()) {
             return null;
         }

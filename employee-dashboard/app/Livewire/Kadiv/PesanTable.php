@@ -59,7 +59,7 @@ class PesanTable extends Component
 
         if (
             ! $user instanceof User2
-            || (! in_array(strtolower($user->role?->nama_role ?? ''), ['kadiv', 'direktur', 'direksi'], true))
+            || (strtolower($user->role?->nama_role ?? '') !== 'kadiv' && ! $user->isDirektur())
             || ! $user->karyawan
         ) {
             abort(403);
@@ -228,7 +228,7 @@ class PesanTable extends Component
             ->paginate(10)
             ->through(fn(Pesan $message) => MessagePresenter::for($message, $kadiv));
 
-        $divisis = Divisi::orderBy('nama_divisi')->get();
+        $divisis = Divisi::query()->ordered()->get();
 
         $recipientsQuery = User2::with(['karyawan.divisi', 'role'])
             ->where('id_user', '!=', $kadiv->id_user);

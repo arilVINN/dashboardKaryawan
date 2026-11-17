@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Divisi;
 use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
@@ -34,7 +35,7 @@ class PengeluaranController extends Controller
 
         $pengeluaran         = $query->latest('tanggal_cair')->paginate(15);
         $totalPeriode        = $query->sum('nominal');
-        $divisiList          = Divisi::where('kode_divisi', '!=', 'FIN')->where('status_aktif', 'Aktif')->get();
+        $divisiList          = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
         $permintaanSiapCair  = KPermintDana::with('divisi', 'diajukanOleh.karyawan')
             ->where('status', KPermintDana::STATUS_DISETUJUI)
             ->latest('tanggal_disetujui')
@@ -105,11 +106,13 @@ class PengeluaranController extends Controller
                 ->store('keuangan/pencairan', 'public');
         }
 
-        DB::transaction(function () use ($permintaan, $data, $buktiBayar) {
+        $pengeluaran = null;
+
+        DB::transaction(function () use ($permintaan, $data, $buktiBayar, &$pengeluaran) {
             $count = KPengeluaran::count();
 
             // Buat record pengeluaran
-            KPengeluaran::create([
+            $pengeluaran = KPengeluaran::create([
                 'id_kpengeluaran'  => 'KO' . str_pad($count + 1, 6, '0', STR_PAD_LEFT),
                 'kode_pengeluaran' => 'OUT' . now()->format('ym') . str_pad($count + 1, 4, '0', STR_PAD_LEFT),
                 'kpd_id_kpd'       => $permintaan->id_kpd,
@@ -125,6 +128,34 @@ class PengeluaranController extends Controller
             // Update status permintaan
             $permintaan->update(['status' => KPermintDana::STATUS_DICAIRKAN]);
         });
+
+        // Audit log pencairan: user dan waktu direkam otomatis oleh AuditLog,
+        // detail menyimpan nilai lama (status disetujui) dan nilai baru.
+        $permintaan->loadMissing('divisi');
+        AuditLog::catat(
+            Auth::id(),
+            'pencairan_dana',
+            'pencairan_dana',
+            (string) $permintaan->id_kpd,
+            [
+                'user_id'         => Auth::id(),
+                'user_nama'       => Auth::user()?->karyawan?->nama ?? Auth::user()?->username,
+                'waktu'           => now()->toIso8601String(),
+                'divisi_id'       => $permintaan->divisi_id_divisi,
+                'divisi_nama'     => $permintaan->divisi?->nama_divisi,
+                'nomor_pengajuan' => $permintaan->nomor_pengajuan,
+                'nilai_lama'      => [
+                    'status'  => KPermintDana::STATUS_DISETUJUI,
+                    'nominal' => (float) $permintaan->nominal_diajukan,
+                ],
+                'nilai_baru'      => [
+                    'status'          => KPermintDana::STATUS_DICAIRKAN,
+                    'nominal'         => (float) ($pengeluaran?->nominal ?? $permintaan->nominal_diajukan),
+                    'id_kpengeluaran' => $pengeluaran?->id_kpengeluaran,
+                    'tanggal_cair'    => $pengeluaran?->tanggal_cair?->toDateString(),
+                ],
+            ]
+        );
 
         return back()->with('success', 'Dana berhasil dicairkan dan pengeluaran tercatat.');
     }

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Exceptions\LaporanSudahDiverifikasiException;
 use App\Helpers\FormatAkuntansi;
 use App\Http\Controllers\Controller;
 use App\Models\Divisi;
 use App\Models\KLabaRugi;
+use App\Services\Finance\VerifikasiLaporanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -24,17 +26,33 @@ class LabaRugiController extends Controller
     /**
      * Halaman form laporan & riwayat laporan divisi user saat ini.
      */
-    public function index(): \Illuminate\View\View
+    public function index(Request $request): \Illuminate\View\View
     {
         $user     = Auth::user();
         $divisiId = $user->karyawan?->divisi_id_divisi;
 
-        $riwayat = KLabaRugi::where('divisi_id_divisi', $divisiId)
-            ->with('diverifikasiOleh.karyawan')
-            ->latest()
-            ->paginate(10);
+        $periode = $request->input('periode', now()->format('Y-m'));
+        if (! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $periode)) {
+            $periode = now()->format('Y-m');
+        }
 
-        return view('kadiv.laporanLabaRugi', compact('riwayat'));
+        $mingguKe = (string) $request->input('minggu_ke', '');
+        if (! in_array($mingguKe, ['1', '2', '3', '4', '5'], true)) {
+            $mingguKe = '';
+        }
+
+        $query = KLabaRugi::where('divisi_id_divisi', $divisiId)
+            ->with('diverifikasiOleh.karyawan')
+            ->where('periode', $periode)
+            ->latest();
+
+        if ($mingguKe !== '') {
+            $query->where('minggu_ke', (int) $mingguKe);
+        }
+
+        $riwayat = $query->paginate(10)->withQueryString();
+
+        return view('kadiv.laporanLabaRugi', compact('riwayat', 'periode', 'mingguKe'));
     }
 
     /**
@@ -127,7 +145,7 @@ class LabaRugiController extends Controller
         }
 
         $laporan    = $query->paginate(15);
-        $divisiList = Divisi::where('kode_divisi', '!=', 'FIN')->where('status_aktif', 'Aktif')->get();
+        $divisiList = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
 
         return view('finance.laporan.index', compact('laporan', 'periode', 'mingguKe', 'status', 'divisiId', 'divisiList'));
     }
@@ -137,18 +155,21 @@ class LabaRugiController extends Controller
      */
     public function verifikasi(Request $request, string $id): \Illuminate\Http\RedirectResponse
     {
-        $laporan = KLabaRugi::findOrFail($id);
-
         $data = $request->validate([
             'status_verifikasi'  => ['required', 'string', 'in:disetujui,perlu_revisi'],
             'catatan_verifikasi' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $laporan->update([
-            'status_verifikasi'         => $data['status_verifikasi'],
-            'catatan_verifikasi'        => $data['catatan_verifikasi'],
-            'diverifikasi_oleh_id_user' => Auth::id(),
-        ]);
+        try {
+            app(VerifikasiLaporanService::class)->putuskan(
+                $id,
+                $request->user(),
+                $data['status_verifikasi'],
+                $data['catatan_verifikasi'] ?? null
+            );
+        } catch (LaporanSudahDiverifikasiException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         $statusLabel = $data['status_verifikasi'] === 'disetujui' ? 'disetujui' : 'diminta untuk direvisi';
 

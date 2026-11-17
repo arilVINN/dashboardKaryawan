@@ -63,14 +63,13 @@ class ContentCalendar extends Component
 
     public string $formStatus = 'process';
 
-    public string $caption = '';
-
     public string $description = '';
 
     /** @var array<int, array{text: string, done: bool}> */
     public array $todos = [];
 
-    public string $content_url = '';
+    /** @var array<int, string> */
+    public array $contentLinks = [];
 
     public string $commentBody = '';
 
@@ -214,8 +213,22 @@ class ContentCalendar extends Component
             return;
         }
 
+        if (str_starts_with($property, 'contentLinks.')) {
+            if ($this->formOpen) {
+                $this->formDirty = true;
+
+                return;
+            }
+
+            if ($this->detailOpen && ! $this->readOnly) {
+                $this->persistLinks();
+            }
+
+            return;
+        }
+
         if ($this->formOpen) {
-            if (in_array($property, ['title', 'event_date', 'post_time', 'content_type', 'formStatus', 'caption', 'description', 'content_url'], true)) {
+            if (in_array($property, ['title', 'event_date', 'post_time', 'content_type', 'formStatus', 'description', 'content_url'], true)) {
                 $this->formDirty = true;
             }
 
@@ -229,9 +242,7 @@ class ContentCalendar extends Component
                 'post_time' => 'post_time',
                 'content_type' => 'content_type',
                 'formStatus' => 'status',
-                'caption' => 'caption',
                 'description' => 'description',
-                'content_url' => 'content_url',
             ];
 
             if (isset($map[$property])) {
@@ -320,10 +331,9 @@ class ContentCalendar extends Component
         $this->post_time = '';
         $this->content_type = '';
         $this->formStatus = 'process';
-        $this->caption = '';
         $this->description = '';
         $this->todos = [];
-        $this->content_url = '';
+        $this->contentLinks = [''];
         $this->commentBody = '';
 
         $this->dispatch('content-focus-title');
@@ -349,10 +359,9 @@ class ContentCalendar extends Component
         $this->post_time = $event->timeLabel() ?? '';
         $this->content_type = $event->content_type ?? '';
         $this->formStatus = $event->status;
-        $this->caption = $event->caption ?? '';
         $this->description = $event->description ?? '';
         $this->todos = $this->normalizeTodos($event->todos ?? []);
-        $this->content_url = $event->content_url ?? '';
+        $this->contentLinks = $this->linksFromEvent($event);
         $this->commentBody = '';
         $this->creatorName = $event->creator?->karyawan?->nama ?? $event->creator?->username ?? 'Pengguna';
         $this->creatorAgo = $event->created_at
@@ -450,6 +459,41 @@ class ContentCalendar extends Component
         $this->persistTodos();
     }
 
+    public function addLink(): void
+    {
+        abort_if($this->detailOpen && $this->readOnly, 403);
+
+        $this->contentLinks[] = '';
+
+        if ($this->formOpen) {
+            $this->formDirty = true;
+        }
+    }
+
+    public function removeLink(int $index): void
+    {
+        abort_if($this->detailOpen && $this->readOnly, 403);
+
+        if (! isset($this->contentLinks[$index])) {
+            return;
+        }
+
+        unset($this->contentLinks[$index]);
+        $this->contentLinks = array_values($this->contentLinks);
+
+        if (empty($this->contentLinks)) {
+            $this->contentLinks = [''];
+        }
+
+        if ($this->formOpen) {
+            $this->formDirty = true;
+
+            return;
+        }
+
+        $this->persistLinks();
+    }
+
     public function toggleTodo(int $index): void
     {
         if ($this->formOpen) {
@@ -538,6 +582,74 @@ class ContentCalendar extends Component
     }
 
     /**
+     * Persist every link attachment from the detail modal.
+     */
+    private function persistLinks(): void
+    {
+        if (! $this->editingId || ! $this->detailOpen || $this->readOnly) {
+            return;
+        }
+
+        $event = ContentEvent::with(['creator.karyawan'])->findOrFail($this->editingId);
+
+        $this->authorize('update', $event);
+
+        $this->validate([
+            'contentLinks' => ['array'],
+            'contentLinks.*' => ['nullable', 'url:http,https', 'max:2048'],
+        ], $this->messages());
+
+        $links = $this->normalizeLinks($this->contentLinks);
+
+        try {
+            $event->update([
+                'content_links' => $links ?: null,
+                'content_url' => $links[0] ?? null,
+            ]);
+        } catch (Throwable $exception) {
+            report($exception);
+            $this->saveError = 'Perubahan gagal disimpan. Coba lagi.';
+
+            return;
+        }
+
+        $this->saveError = null;
+
+        $this->dispatch('content-saved');
+    }
+
+    /**
+     * Links already on the event, falling back to the legacy single URL.
+     *
+     * @return array<int, string>
+     */
+    private function linksFromEvent(ContentEvent $event): array
+    {
+        $links = $this->normalizeLinks($event->content_links ?? []);
+
+        if (empty($links) && ! empty($event->content_url)) {
+            $links = [$event->content_url];
+        }
+
+        return $links ?: [''];
+    }
+
+    /**
+     * @param  array<int, string|null>|null  $links
+     * @return array<int, string>
+     */
+    private function normalizeLinks(?array $links): array
+    {
+        return collect($links ?? [])
+            ->map(fn ($link) => trim((string) $link))
+            ->filter(fn ($link) => $link !== '')
+            ->unique()
+            ->take(10)
+            ->values()
+            ->all();
+    }
+
+    /**
      * Autosave a single field from the detail modal.
      */
     public function saveField(string $property): void
@@ -592,13 +704,15 @@ class ContentCalendar extends Component
             'post_time' => ['nullable', 'date_format:H:i'],
             'content_type' => ['required', Rule::exists('content_types', 'slug')],
             'formStatus' => ['required', Rule::in(array_keys(StatusPalette::contentStatuses()))],
-            'caption' => ['nullable', 'string', 'max:5000'],
             'description' => ['nullable', 'string', 'max:5000'],
             'todos' => ['array'],
             'todos.*.text' => ['nullable', 'string', 'max:200'],
             'todos.*.done' => ['boolean'],
-            'content_url' => ['nullable', 'url:http,https', 'max:2048'],
+            'contentLinks' => ['array'],
+            'contentLinks.*' => ['nullable', 'url:http,https', 'max:2048'],
         ], $this->messages());
+
+        $links = $this->normalizeLinks($validated['contentLinks'] ?? []);
 
         $payload = [
             'title' => $validated['title'],
@@ -606,10 +720,10 @@ class ContentCalendar extends Component
             'post_time' => $validated['post_time'] ?: null,
             'content_type' => $validated['content_type'],
             'status' => $validated['formStatus'],
-            'caption' => $validated['caption'] ?: null,
             'description' => $validated['description'] ?: null,
             'todos' => $this->normalizeTodos($this->todos),
-            'content_url' => $validated['content_url'] ?: null,
+            'content_links' => $links ?: null,
+            'content_url' => $links[0] ?? null,
         ];
 
         $account = ContentAccount::resolve($this->account);
@@ -909,10 +1023,9 @@ class ContentCalendar extends Component
             'content_type.exists' => 'Jenis konten tidak dikenal.',
             'formStatus.required' => 'Status wajib dipilih.',
             'formStatus.in' => 'Status tidak valid.',
-            'caption.max' => 'Caption maksimal 5000 karakter.',
             'description.max' => 'Deskripsi maksimal 5000 karakter.',
-            'content_url.url' => 'Link konten harus berupa URL http atau https yang valid.',
-            'content_url.max' => 'Link konten terlalu panjang.',
+            'contentLinks.*.url' => 'Link konten harus berupa URL http atau https yang valid.',
+            'contentLinks.*.max' => 'Link konten terlalu panjang.',
             'todos.*.text.max' => 'Setiap to-do maksimal 200 karakter.',
             'commentBody.required' => 'Komentar wajib diisi.',
             'commentBody.max' => 'Komentar maksimal 1000 karakter.',
@@ -927,9 +1040,7 @@ class ContentCalendar extends Component
             'post_time' => ['nullable', 'date_format:H:i'],
             'content_type' => ['required', Rule::exists('content_types', 'slug')],
             'formStatus' => ['required', Rule::in(array_keys(StatusPalette::contentStatuses()))],
-            'caption' => ['nullable', 'string', 'max:5000'],
             'description' => ['nullable', 'string', 'max:5000'],
-            'content_url' => ['nullable', 'url:http,https', 'max:2048'],
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User2;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -32,8 +33,8 @@ class CheckRole
         // Case-insensitive comparison so 'Staff', 'staff', 'STAFF' all match.
         $userRole = strtolower($user->role?->nama_role ?? '');
 
-        // Direktur / Direksi memiliki hak akses Super-Admin ke seluruh modul
-        if ($userRole === 'direktur' || $userRole === 'direksi') {
+        // Direktur / Direksi memiliki hak akses Super-Admin ke seluruh modul.
+        if ($user instanceof User2 && $user->isDirektur()) {
             return $next($request);
         }
 

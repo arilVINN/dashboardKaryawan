@@ -37,7 +37,7 @@
 
         </main>
 
-        @include('component_hrd.tabelAnggotaDivisi')
+        @include('component_hrd.tabelAnggotaDivisi', ['bisaTambahAnggota' => $bisaTambahAnggota])
 
         @include('component_hrd.karyawanModals', [
             'daftarDivisi' => $daftarDivisi,

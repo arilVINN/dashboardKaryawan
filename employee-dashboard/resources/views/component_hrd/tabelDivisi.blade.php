@@ -66,6 +66,10 @@
                                     data-id="{{ $divisi->id_divisi }}"
                                     data-kode="{{ $divisi->kode_divisi }}"
                                     data-nama="{{ $divisi->nama_divisi }}"
+                                    data-tipe="{{ $divisi->tipe }}"
+                                    data-parent="{{ $divisi->parent_id }}"
+                                    data-kapasitas="{{ $divisi->kapasitas }}"
+                                    data-urutan="{{ $divisi->urutan }}"
                                     class="text-sm font-medium text-amber-600 hover:text-amber-800 hover:underline">
                                     Edit
                                 </button>

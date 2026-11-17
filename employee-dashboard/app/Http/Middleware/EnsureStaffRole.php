@@ -34,14 +34,12 @@ class EnsureStaffRole
 
         $user->loadMissing('role');
 
-        $userRole = strtolower($user->role?->nama_role ?? '');
-
-        // Direktur memiliki akses ke fitur staff
-        if ($userRole === 'direktur' || $userRole === 'direksi') {
+        // Direktur / Direksi memiliki akses ke fitur staff.
+        if ($user->isDirektur()) {
             return $next($request);
         }
 
-        if ($userRole !== 'staff') {
+        if (strtolower($user->role?->nama_role ?? '') !== 'staff') {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Akses hanya diberikan kepada Staff.'], 403);
             }

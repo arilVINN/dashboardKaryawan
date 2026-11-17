@@ -75,11 +75,13 @@ class DivisiTableTest extends TestCase
         return $component->viewData('rows')->getCollection()->pluck('id_divisi')->all();
     }
 
-    public function test_defaults_to_id_descending(): void
+    public function test_defaults_to_hierarchy_order(): void
     {
         $component = Livewire::actingAs($this->hrd)->test(DivisiTable::class);
 
-        $this->assertSame(['DIV-OPS', 'DIV-IT', 'DIV-HR'], $this->rowIds($component));
+        // All fixtures default to level 3 / urutan 0, so id_divisi asc breaks
+        // the tie inside the hierarchy ordering.
+        $this->assertSame(['DIV-HR', 'DIV-IT', 'DIV-OPS'], $this->rowIds($component));
     }
 
     public function test_sorts_by_kode_nama_and_staff_count(): void
@@ -101,7 +103,7 @@ class DivisiTableTest extends TestCase
     public function test_filters_by_status(): void
     {
         $aktif = Livewire::actingAs($this->hrd)->test(DivisiTable::class)->set('status', 'aktif');
-        $this->assertSame(['DIV-IT', 'DIV-HR'], $this->rowIds($aktif));
+        $this->assertSame(['DIV-HR', 'DIV-IT'], $this->rowIds($aktif));
 
         $nonaktif = Livewire::actingAs($this->hrd)->test(DivisiTable::class)->set('status', 'nonaktif');
         $this->assertSame(['DIV-OPS'], $this->rowIds($nonaktif));
@@ -131,17 +133,41 @@ class DivisiTableTest extends TestCase
             ->assertDontSee('hapusDivisi(this)', false);
     }
 
-    public function test_pagination_differs_per_mode(): void
+    public function test_management_table_hides_hierarchy_presentation(): void
     {
-        foreach (['DIV-A' => 'A', 'DIV-B' => 'B', 'DIV-C' => 'C'] as $id => $kode) {
-            Divisi::create(['id_divisi' => $id, 'kode_divisi' => $kode, 'nama_divisi' => 'Divisi '.$kode, 'status_aktif' => 'Aktif']);
+        $manage = Livewire::actingAs($this->hrd)->test(DivisiTable::class, ['manage' => true]);
+
+        $manage->assertDontSee('Tingkatan')
+            ->assertDontSee('Struktur Divisi')
+            ->assertDontSee('Induk:')
+            ->assertDontSee('Kapasitas:')
+            ->assertSee('Nama Divisi')
+            ->assertSee('Jumlah Staff');
+
+        $list = Livewire::actingAs($this->hrd)->test(DivisiTable::class);
+
+        $list->assertSee('Tingkatan')
+            ->assertSee('Struktur Divisi')
+            ->assertSee('Kapasitas:');
+    }
+
+    public function test_pagination_caps_at_ten_for_the_list_and_twenty_five_for_management(): void
+    {
+        for ($i = 1; $i <= 30; $i++) {
+            $suffix = str_pad((string) $i, 2, '0', STR_PAD_LEFT);
+            Divisi::create([
+                'id_divisi' => 'DIV-P'.$suffix,
+                'kode_divisi' => 'P'.$suffix,
+                'nama_divisi' => 'Divisi Tambahan '.$suffix,
+                'status_aktif' => 'Aktif',
+            ]);
         }
 
         $list = Livewire::actingAs($this->hrd)->test(DivisiTable::class);
-        $this->assertCount(5, $list->viewData('rows'));
+        $this->assertCount(10, $list->viewData('rows'));
 
         $manage = Livewire::actingAs($this->hrd)->test(DivisiTable::class, ['manage' => true]);
-        $this->assertCount(6, $manage->viewData('rows'));
+        $this->assertCount(25, $manage->viewData('rows'));
     }
 
     public function test_page_deep_links_hydrate(): void
