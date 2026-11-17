@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Kadiv;
 
+use App\Actions\NotifyHrdUsers;
 use App\Events\PesanDikirim;
 use App\Models\Divisi;
 use App\Models\Pesan;
@@ -171,7 +172,7 @@ class PesanTable extends Component
         ]);
 
         try {
-            SuratIzin::create([
+            $suratIzin = SuratIzin::create([
                 'id_surat' => $this->generateSuratId(),
                 'karyawan_id_karyawan' => $kadiv->karyawan->id_karyawan,
                 'jenis_izin' => $this->jenisIzin,
@@ -183,6 +184,12 @@ class PesanTable extends Component
                 'file' => $this->fileSurat ? $this->fileSurat->store('surat_izin', 'public') : null,
                 'status' => 'Pending',
             ]);
+
+            app(NotifyHrdUsers::class)(
+                'Surat Izin Masuk',
+                'Surat izin "'.$suratIzin->judul_surat.'" ('.$suratIzin->jenis_izin.') dari '
+                    .($kadiv->karyawan?->nama ?? $kadiv->username).' menunggu persetujuan HRD.'
+            );
 
             $this->reset(['jenisIzin', 'judulSurat', 'tanggalMulai', 'tanggalSelesai', 'fileSurat', 'keteranganSurat']);
             session()->flash('pesan_success', 'Surat izin berhasil dikirim.');

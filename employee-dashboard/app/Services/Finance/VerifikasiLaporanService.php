@@ -5,6 +5,7 @@ namespace App\Services\Finance;
 use App\Exceptions\LaporanSudahDiverifikasiException;
 use App\Models\AuditLog;
 use App\Models\KLabaRugi;
+use App\Models\Notifikasi;
 use App\Models\User2;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -42,6 +43,7 @@ class VerifikasiLaporanService
             ]);
 
             $this->catatAudit($user, $laporan, $status, $catatan);
+            $this->notifyPelapor($laporan, $user, $status);
 
             return $laporan;
         });
@@ -76,5 +78,36 @@ class VerifikasiLaporanService
                 'margin_persen' => (float) $laporan->margin_persen,
             ]
         );
+    }
+
+    /**
+     * Kabari Kadiv pelapor hasil verifikasi laporan L/R-nya, termasuk catatan.
+     */
+    private function notifyPelapor(KLabaRugi $laporan, User2 $user, string $status): void
+    {
+        if (! $laporan->user_id_user) {
+            return;
+        }
+
+        $disetujui = $status === KLabaRugi::STATUS_DISETUJUI;
+        $actor = $user->karyawan?->nama ?? $user->username;
+
+        $pesan = 'Laporan laba/rugi periode '.$laporan->periode
+            .' (minggu ke-'.$laporan->minggu_ke.') '
+            .($disetujui ? 'disetujui' : 'memerlukan revisi').' oleh '.$actor.'.';
+
+        if (filled($laporan->catatan_verifikasi)) {
+            $pesan .= ' Catatan: '.$laporan->catatan_verifikasi;
+        }
+
+        Notifikasi::create([
+            'id_notifikasi' => Notifikasi::generateId(),
+            'judul_notifikasi' => $disetujui
+                ? 'Laporan L/R Disetujui'
+                : 'Laporan L/R Perlu Revisi',
+            'isi_notif' => $pesan,
+            'tanggal_notifikasi' => now()->toDateString(),
+            'user_id_user' => $laporan->user_id_user,
+        ]);
     }
 }

@@ -25,6 +25,19 @@ class Notifikasi extends Model
         'user_id_user',
     ];
 
+    /**
+     * Generate a unique notification id using the convention shared by the
+     * notification creators across controllers, services and listeners.
+     */
+    public static function generateId(): string
+    {
+        do {
+            $id = 'NTF'.strtoupper(substr(uniqid(), -8));
+        } while (static::where('id_notifikasi', $id)->exists());
+
+        return $id;
+    }
+
     public function scopeWithoutExpiredBirthdays(Builder $query): Builder
     {
         return $query->where(function (Builder $query) {

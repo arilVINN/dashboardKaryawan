@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\NotifyHrdUsers;
 use App\Models\BookingRequest;
+use App\Models\Notifikasi;
+use App\Models\User2;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,12 +56,23 @@ class BookingController extends Controller
                 ]);
             }
 
-            BookingRequest::create([
+            $booking = BookingRequest::create([
                 ...$validated,
                 'id' => (string) Str::uuid(),
                 'pemohon_id_user' => $request->user()->id_user,
                 'status' => 'Pending',
             ]);
+
+            $pemohon = $request->user();
+            $nama = $pemohon->karyawan?->nama ?? $pemohon->username;
+            $tanggal = $booking->tanggal?->format('d M Y') ?? '-';
+            $jam = substr($booking->jam_mulai, 0, 5).'–'.substr($booking->jam_selesai, 0, 5);
+
+            app(NotifyHrdUsers::class)(
+                'Booking Masuk',
+                'Booking '.$booking->kategori.' ('.$booking->jenis.') dari '.$nama
+                    .' pada '.$tanggal.', '.$jam.' menunggu persetujuan HRD.'
+            );
         });
 
         return back()->with('success', 'Permintaan booking berhasil dikirim dan menunggu persetujuan.');
@@ -86,20 +100,59 @@ class BookingController extends Controller
 
     private function process(Request $request, BookingRequest $booking, string $status): RedirectResponse
     {
-        $updated = BookingRequest::query()
-            ->whereKey($booking->getKey())
-            ->where('status', 'Pending')
-            ->update([
-                'status' => $status,
-                'diproses_oleh_id_user' => $request->user()->id_user,
-                'diproses_pada' => now(),
-                'updated_at' => now(),
-            ]);
+        $updated = DB::transaction(function () use ($request, $booking, $status): int {
+            $updated = BookingRequest::query()
+                ->whereKey($booking->getKey())
+                ->where('status', 'Pending')
+                ->update([
+                    'status' => $status,
+                    'diproses_oleh_id_user' => $request->user()->id_user,
+                    'diproses_pada' => now(),
+                    'updated_at' => now(),
+                ]);
+
+            if ($updated === 1) {
+                $this->notifyRequester($booking, $request->user(), $status);
+            }
+
+            return $updated;
+        });
 
         abort_unless($updated === 1, 409, 'Permintaan booking sudah diproses.');
 
         return back()->with('success', $status === 'ACC'
             ? 'Booking berhasil disetujui.'
             : 'Booking berhasil ditolak.');
+    }
+
+    /**
+     * Kirim hasil keputusan booking ke pemohon agar tampil di pusat notifikasi.
+     */
+    private function notifyRequester(BookingRequest $booking, User2 $processor, string $status): void
+    {
+        $disetujui = $status === 'ACC';
+        $actor = $processor->karyawan?->nama ?? $processor->username;
+        $tanggal = $booking->tanggal?->format('d M Y') ?? '-';
+        $jam = substr($booking->jam_mulai, 0, 5).'–'.substr($booking->jam_selesai, 0, 5);
+
+        $pesan = 'Booking '.$booking->kategori.' ('.$booking->jenis.') pada '.$tanggal
+            .', '.$jam.' '.($disetujui ? 'disetujui' : 'ditolak').' oleh '.$actor.'.';
+
+        Notifikasi::create([
+            'id_notifikasi' => $this->generateNotifikasiId(),
+            'judul_notifikasi' => $disetujui ? 'Booking Disetujui' : 'Booking Ditolak',
+            'isi_notif' => $pesan,
+            'tanggal_notifikasi' => now()->toDateString(),
+            'user_id_user' => $booking->pemohon_id_user,
+        ]);
+    }
+
+    private function generateNotifikasiId(): string
+    {
+        do {
+            $id = 'NTF'.strtoupper(substr(uniqid(), -8));
+        } while (Notifikasi::where('id_notifikasi', $id)->exists());
+
+        return $id;
     }
 }

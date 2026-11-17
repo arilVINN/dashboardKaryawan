@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Direktur\DirekturDashboardController;
 use App\Http\Controllers\Hrd\HrdDivisiController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
@@ -22,6 +23,11 @@ Route::middleware([
 ])->group(function () {
     // Logout (needs token)
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Direktur / Direksi notification center
+    Route::middleware('role:direktur,direksi')->prefix('direktur')->group(function (): void {
+        Route::get('/notifikasi', [DirekturDashboardController::class, 'notifikasi']);
+    });
 
     // Kadiv dashboard & messaging endpoints
     Route::middleware('role:kadiv')->prefix('kadiv')->group(function (): void {

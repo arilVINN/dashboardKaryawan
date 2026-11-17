@@ -300,6 +300,7 @@ class ContentCalendarTest extends TestCase
             ->set('title', 'Kampanye Ramadan')
             ->set('post_time', '17:00')
             ->set('content_type', 'carousel')
+            ->set('caption', 'Caption kampanye Ramadan')
             ->set('description', 'Teaser dan carousel.')
             ->set('contentLinks', ['https://example.test/konten', 'https://example.test/konten-2'])
             ->call('save')
@@ -316,6 +317,7 @@ class ContentCalendarTest extends TestCase
             'content_account_id' => $this->defaultAccount->id,
             'status' => 'process',
             'content_url' => 'https://example.test/konten',
+            'caption' => 'Caption kampanye Ramadan',
             'created_by' => $this->staffHr->id_user,
         ]);
 
@@ -1091,6 +1093,68 @@ class ContentCalendarTest extends TestCase
             ->assertDispatched('content-saved');
 
         $this->assertDatabaseHas('content_events', ['id' => $event->id, 'title' => 'Judul Baru']);
+    }
+
+    public function test_caption_is_autosaved_from_the_detail_modal(): void
+    {
+        $event = $this->event($this->staffHr, ['title' => 'Event Caption']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSet('caption', '')
+            ->set('caption', 'Caption baru')
+            ->call('saveField', 'caption')
+            ->assertHasNoErrors()
+            ->assertDispatched('content-saved');
+
+        $this->assertDatabaseHas('content_events', ['id' => $event->id, 'caption' => 'Caption baru']);
+    }
+
+    public function test_caption_field_sits_above_the_description_field(): void
+    {
+        $html = Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->html();
+
+        $this->assertStringContainsString('id="content-caption"', $html);
+        $this->assertStringContainsString('id="content-description"', $html);
+        $this->assertLessThan(
+            strpos($html, 'id="content-description"'),
+            strpos($html, 'id="content-caption"')
+        );
+    }
+
+    public function test_create_form_has_comment_field(): void
+    {
+        $html = Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->html();
+
+        $this->assertStringContainsString('id="content-form-comment"', $html);
+    }
+
+    public function test_comment_from_create_form_is_saved_with_the_event(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Event Dengan Komentar')
+            ->set('content_type', 'carousel')
+            ->set('commentBody', 'Komentar dari form create')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $event = ContentEvent::where('title', 'Event Dengan Komentar')->firstOrFail();
+
+        $this->assertDatabaseHas('content_event_comments', [
+            'content_event_id' => $event->id,
+            'user_id_user' => $this->staffHr->id_user,
+            'body' => 'Komentar dari form create',
+        ]);
     }
 
     public function test_autosave_rejects_an_invalid_value(): void

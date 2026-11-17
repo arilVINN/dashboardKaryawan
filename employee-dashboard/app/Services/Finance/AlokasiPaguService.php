@@ -4,6 +4,7 @@ namespace App\Services\Finance;
 
 use App\Models\AuditLog;
 use App\Models\KeuanganAldiv;
+use App\Models\Notifikasi;
 use App\Models\User2;
 use Illuminate\Support\Facades\DB;
 
@@ -38,6 +39,8 @@ class AlokasiPaguService
                 $alokasi->keterangan
             );
 
+            $this->notifyPenanggungJawab($alokasi, $user, true);
+
             return $alokasi;
         });
     }
@@ -64,6 +67,8 @@ class AlokasiPaguService
                 $alokasi->keterangan,
                 $keteranganLama
             );
+
+            $this->notifyPenanggungJawab($alokasi, $user, false);
 
             return $alokasi;
         });
@@ -100,5 +105,40 @@ class AlokasiPaguService
                 'keterangan_baru' => $alokasi->keterangan,
             ]
         );
+    }
+
+    /**
+     * Kabari penanggung jawab divisi ketika pagu anggarannya dibuat/diubah.
+     */
+    private function notifyPenanggungJawab(
+        KeuanganAldiv $alokasi,
+        User2 $user,
+        bool $baru
+    ): void {
+        $penerima = $alokasi->divisi?->penanggungJawab()?->user;
+
+        if (! $penerima || $penerima->id_user === $user->id_user) {
+            return;
+        }
+
+        $actor = $user->karyawan?->nama ?? $user->username;
+        $nominal = 'Rp '.number_format((float) $alokasi->nominal_alokasi, 0, ',', '.');
+
+        $pesan = 'Pagu anggaran divisi '.$alokasi->divisi?->nama_divisi
+            .' periode '.$alokasi->periode
+            .' '.($baru ? 'ditetapkan' : 'diperbarui').' oleh '.$actor
+            .' menjadi '.$nominal.'.';
+
+        if (filled($alokasi->keterangan)) {
+            $pesan .= ' Keterangan: '.$alokasi->keterangan;
+        }
+
+        Notifikasi::create([
+            'id_notifikasi' => Notifikasi::generateId(),
+            'judul_notifikasi' => $baru ? 'Pagu Anggaran Ditetapkan' : 'Pagu Anggaran Diperbarui',
+            'isi_notif' => $pesan,
+            'tanggal_notifikasi' => now()->toDateString(),
+            'user_id_user' => $penerima->id_user,
+        ]);
     }
 }
