@@ -40,6 +40,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // ─── Direktur / Direksi (executive monitoring) ───────────────────────────────
 Route::middleware(['auth', 'role:direktur,direksi', 'throttle:umum'])->prefix('direktur')->group(function () {
     Route::get('/dashboard', [DirekturDashboardController::class, 'index'])->name('direktur.dashboard');
+    Route::get('/notifikasi', [DirekturDashboardController::class, 'notifikasi'])->name('direktur.notifikasi');
 });
 
 // Shared content calendar (HR and Marketing Communication only)
@@ -312,9 +313,6 @@ Route::post('/profile', function (Request $request) {
 Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
     Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('hrd.strukturOrganisasi');
-
-    // Legacy URL from the old direktur sidebar; the real page is /suratIzin.
-    Route::get('/suratIzin', fn () => redirect()->route('hrd.suratIzin'))->name('hrd.suratIzin.legacy');
 
     // Kalender
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexHrd'])->name('hrd.kalender');

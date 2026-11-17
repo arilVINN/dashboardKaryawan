@@ -11,6 +11,7 @@ use App\Models\KPemasukan;
 use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
 use App\Models\KLabaRugi;
+use App\Models\Notifikasi;
 use App\Models\SuratIzin;
 use App\Models\Tugas;
 use Illuminate\Http\Request;
@@ -31,16 +32,16 @@ class DirekturDashboardController extends Controller
         // "Manajemen" nodes are excluded from the headcount cards.
         $totalDivisi = Divisi::query()->unit()->aktif()->count();
 
-        $suratIzinPending = SuratIzin::where('status', 'menunggu')->count();
+        $suratIzinPending = SuratIzin::where('status', 'Pending')->count();
         $suratIzinList = SuratIzin::with('karyawan.divisi')
-            ->where('status', 'menunggu')
+            ->where('status', 'Pending')
             ->latest()
             ->take(5)
             ->get();
 
-        $bookingPending = BookingRequest::where('status', 'menunggu')->count();
+        $bookingPending = BookingRequest::where('status', 'Pending')->count();
         $bookingList = BookingRequest::with(['pemohon.karyawan.divisi'])
-            ->where('status', 'menunggu')
+            ->where('status', 'Pending')
             ->latest()
             ->take(5)
             ->get();
@@ -102,6 +103,13 @@ class DirekturDashboardController extends Controller
             ->take(5)
             ->get();
 
+        $notifikasiTerbaru = Notifikasi::query()
+            ->where('user_id_user', $request->user()->id_user)
+            ->withoutExpiredBirthdays()
+            ->latest('created_at')
+            ->limit(5)
+            ->get();
+
         return view('direktur.dashboard', compact(
             'totalKaryawan',
             'totalDivisi',
@@ -124,7 +132,29 @@ class DirekturDashboardController extends Controller
             'tugasRevisi',
             'tugasTerbaru',
             'divisiList',
-            'carousels'
+            'carousels',
+            'notifikasiTerbaru'
         ));
+    }
+
+    /**
+     * Pusat notifikasi untuk Direktur/Direksi (dipakai web & API).
+     */
+    public function notifikasi(Request $request)
+    {
+        $data = Notifikasi::query()
+            ->where('user_id_user', $request->user()->id_user)
+            ->withoutExpiredBirthdays()
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (Notifikasi $notifikasi) => [
+                'id_notifikasi' => $notifikasi->id_notifikasi,
+                'judul_notifikasi' => $notifikasi->judul_notifikasi,
+                'isi_notif' => $notifikasi->displayMessage(),
+                'tanggal_notifikasi' => $notifikasi->tanggal_notifikasi,
+                'created_at' => $notifikasi->created_at,
+            ]);
+
+        return response()->json(['data' => $data->all()]);
     }
 }

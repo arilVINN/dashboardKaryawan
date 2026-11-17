@@ -185,7 +185,10 @@ class HrdDashboardController extends Controller
     {
         abort_unless($suratIzin->status === 'Pending', 409, 'Surat izin sudah diproses.');
 
-        $suratIzin->update(['status' => 'Disetujui']);
+        DB::transaction(function () use ($suratIzin): void {
+            $suratIzin->update(['status' => 'Disetujui']);
+            $this->notifySuratIzinRequester($suratIzin, 'Disetujui');
+        });
 
         $suratIzin->loadMissing('karyawan.user');
         AuditLog::catat(
@@ -208,7 +211,10 @@ class HrdDashboardController extends Controller
     {
         abort_unless($suratIzin->status === 'Pending', 409, 'Surat izin sudah diproses.');
 
-        $suratIzin->update(['status' => 'Ditolak']);
+        DB::transaction(function () use ($suratIzin): void {
+            $suratIzin->update(['status' => 'Ditolak']);
+            $this->notifySuratIzinRequester($suratIzin, 'Ditolak');
+        });
 
         $suratIzin->loadMissing('karyawan.user');
         AuditLog::catat(
@@ -376,5 +382,31 @@ class HrdDashboardController extends Controller
             'totalKaryawanTidakAktif',
             'daftarKeluar'
         ));
+    }
+
+    /**
+     * Kirim hasil keputusan surat izin ke pemohon agar tampil di pusat notifikasi.
+     */
+    private function notifySuratIzinRequester(SuratIzin $suratIzin, string $status): void
+    {
+        $penerima = $suratIzin->karyawan?->user;
+
+        if (! $penerima) {
+            return;
+        }
+
+        $disetujui = $status === 'Disetujui';
+        $judul = $suratIzin->judul_surat ?: ($suratIzin->jenis_izin ?: 'Surat Izin');
+        $actor = auth()->user()?->karyawan?->nama ?? auth()->user()?->username ?? 'HRD';
+
+        $pesan = 'Surat izin "'.$judul.'" '.($disetujui ? 'disetujui' : 'ditolak').' oleh '.$actor.'.';
+
+        Notifikasi::create([
+            'id_notifikasi' => Notifikasi::generateId(),
+            'judul_notifikasi' => $disetujui ? 'Surat Izin Disetujui' : 'Surat Izin Ditolak',
+            'isi_notif' => $pesan,
+            'tanggal_notifikasi' => now()->toDateString(),
+            'user_id_user' => $penerima->id_user,
+        ]);
     }
 }

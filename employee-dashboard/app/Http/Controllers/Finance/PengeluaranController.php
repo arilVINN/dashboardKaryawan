@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Divisi;
 use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
+use App\Models\Notifikasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -127,6 +128,8 @@ class PengeluaranController extends Controller
 
             // Update status permintaan
             $permintaan->update(['status' => KPermintDana::STATUS_DICAIRKAN]);
+
+            $this->notifyPemohonPencairan($permintaan);
         });
 
         // Audit log pencairan: user dan waktu direkam otomatis oleh AuditLog,
@@ -158,5 +161,28 @@ class PengeluaranController extends Controller
         );
 
         return back()->with('success', 'Dana berhasil dicairkan dan pengeluaran tercatat.');
+    }
+
+    /**
+     * Kabari Kadiv pemohon bahwa dananya sudah dicairkan.
+     */
+    private function notifyPemohonPencairan(KPermintDana $permintaan): void
+    {
+        $penerima = $permintaan->pemohon;
+
+        if (! $penerima) {
+            return;
+        }
+
+        $actor = Auth::user()?->karyawan?->nama ?? Auth::user()?->username ?? 'Finance';
+
+        Notifikasi::create([
+            'id_notifikasi' => Notifikasi::generateId(),
+            'judul_notifikasi' => 'Dana Dicairkan',
+            'isi_notif' => 'Pengajuan "'.$permintaan->judul_pengajuan.'" ('.$permintaan->nomor_pengajuan.') '
+                .'telah dicairkan oleh '.$actor.'.',
+            'tanggal_notifikasi' => now()->toDateString(),
+            'user_id_user' => $penerima->id_user,
+        ]);
     }
 }

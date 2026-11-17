@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Actions\NotifyFinanceUsers;
 use App\Exceptions\PermintaanSudahDiprosesException;
 use App\Http\Controllers\Controller;
 use App\Models\Divisi;
@@ -223,7 +224,14 @@ class PermintaanDanaController extends Controller
         $data['divisi_id_divisi'] = $user->karyawan?->divisi_id_divisi;
         $data['user_id_user']    = $user->id_user;
 
-        KPermintDana::create($data);
+        $permintaan = KPermintDana::create($data);
+
+        $pengirim = $user->karyawan?->nama ?? $user->username;
+        app(NotifyFinanceUsers::class)(
+            'Pengajuan Dana Baru',
+            'Pengajuan "'.$permintaan->judul_pengajuan.'" ('.$permintaan->nomor_pengajuan.') dari '
+                .$pengirim.' menunggu verifikasi Finance.'
+        );
 
         return redirect()->route('kadiv.pengajuanDana.riwayat')
             ->with('success', 'Pengajuan dana berhasil dikirim ke Finance.');
