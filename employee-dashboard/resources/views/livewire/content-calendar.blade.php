@@ -243,7 +243,7 @@
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
                 </svg>
-                Tambah event
+                Tambah konten
             </button>
         </div>
     </div>
@@ -304,7 +304,7 @@
                                     @drop.prevent="if (draggingId) { const id = draggingId; draggingId = null; dragOver = null; $wire.moveEvent(id, '{{ $date }}'); }">
                                     <button type="button" id="content-day-{{ $date }}"
                                         @click="remember($el); $wire.openCreate('{{ $date }}')"
-                                        aria-label="Tambah event pada {{ $day['label'] }}"
+                                        aria-label="Tambah konten pada {{ $day['label'] }}"
                                         class="absolute inset-0 z-0 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#146C94]"></button>
 
                                     <div class="pointer-events-none relative z-10 flex flex-col gap-1">
@@ -396,7 +396,7 @@
                         </span>
                         <p class="mt-4 text-sm font-semibold text-[#172B36]">Belum ada event bulan ini</p>
                         <p class="mt-1 text-xs text-[#4B5563]">
-                            {{ $hasActiveFilters ? 'Coba ubah filter atau tambahkan event baru.' : 'Tambahkan event pertama untuk '.($activeAccount?->name ?? 'akun ini').'.' }}
+                            {{ $hasActiveFilters ? 'Coba ubah filter atau tambahkan catatan konten baru.' : 'Tambahkan catatan konten pertama untuk '.($activeAccount?->name ?? 'akun ini').'.' }}
                         </p>
                     </div>
                 @else
@@ -500,10 +500,6 @@
                 {{-- Top row --}}
                 <div class="flex items-center justify-between gap-3 px-7 pt-5">
                     @if ($formOpen)
-                        <span class="inline-flex h-7 items-center rounded-full border border-[#E2E8EC] bg-[#F1F5F9] px-3 text-[12px] font-medium text-[#4B5563]">
-                            Event baru
-                        </span>
-                    @else
                         <span></span>
                     @endif
 
@@ -540,9 +536,9 @@
                     @if ($readOnly)
                         <h2 id="content-modal-title" class="max-w-[820px] text-[28px] font-bold leading-[1.25] text-[#172B36]">{{ $title }}</h2>
                     @else
-                        <label for="content-modal-title" class="sr-only">Judul event</label>
+                        <label for="content-modal-title" class="sr-only">Judul Konten</label>
                         <input id="content-modal-title" x-ref="titleInput" type="text" wire:model.blur.live="title"
-                            maxlength="150" placeholder="Judul event" autocomplete="off"
+                            maxlength="150" placeholder="Judul Konten" autocomplete="off"
                             class="w-full max-w-[820px] border-0 bg-transparent p-0 text-[28px] font-bold leading-[1.25] text-[#172B36] placeholder:text-[#8A96A3] focus:outline-none focus:ring-0">
                         @error('title')
                             <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
@@ -896,7 +892,7 @@
                             </button>
                             <button type="button" wire:click="save"
                                 class="inline-flex h-10 items-center rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
-                                Tambah event
+                                Tambah konten
                             </button>
                         </div>
                     @else

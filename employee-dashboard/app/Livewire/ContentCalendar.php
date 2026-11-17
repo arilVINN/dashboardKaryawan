@@ -1021,8 +1021,8 @@ class ContentCalendar extends Component
     private function messages(): array
     {
         return [
-            'title.required' => 'Judul event wajib diisi.',
-            'title.max' => 'Judul event maksimal 150 karakter.',
+            'title.required' => 'Judul konten wajib diisi.',
+            'title.max' => 'Judul konten maksimal 150 karakter.',
             'event_date.required' => 'Tanggal wajib diisi.',
             'event_date.date' => 'Tanggal tidak valid.',
             'post_time.date_format' => 'Jam posting harus dalam format HH:MM.',
