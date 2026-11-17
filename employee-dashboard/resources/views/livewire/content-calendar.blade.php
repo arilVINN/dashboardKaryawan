@@ -812,6 +812,23 @@
                         @endif
                     </div>
 
+                    @if ($formOpen)
+                        <div class="mt-6 border-t border-[#E8EDF2] pt-5">
+                            <label for="content-form-comment" class="block text-[14px] font-semibold text-[#172B36]">Komentar</label>
+                            @if (! $readOnly)
+                                <textarea id="content-form-comment" wire:model="commentBody" rows="2" maxlength="1000"
+                                    placeholder="Tulis komentar pertama untuk event ini (opsional)..."
+                                    class="mt-2 min-h-[76px] w-full resize-y rounded-lg border border-[#D5DEE3] bg-white p-3 text-sm leading-relaxed text-[#172B36] placeholder:text-[#8A96A3] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]"></textarea>
+                                @error('commentBody')
+                                    <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-[12px] text-[#4B5563]">Komentar akan disimpan bersama event saat Anda menekan Simpan.</p>
+                            @else
+                                <p class="mt-2 text-sm text-[#4B5563]">Belum ada komentar.</p>
+                            @endif
+                        </div>
+                    @endif
+
                     @if ($detailOpen)
                         <div class="mt-5 border-t border-[#E8EDF2] pt-5">
                             <p class="mb-3 flex items-center gap-1.5 text-[14px] font-semibold text-[#172B36]">

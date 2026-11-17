@@ -1126,6 +1126,37 @@ class ContentCalendarTest extends TestCase
         );
     }
 
+    public function test_create_form_has_comment_field(): void
+    {
+        $html = Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->html();
+
+        $this->assertStringContainsString('id="content-form-comment"', $html);
+    }
+
+    public function test_comment_from_create_form_is_saved_with_the_event(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Event Dengan Komentar')
+            ->set('content_type', 'carousel')
+            ->set('commentBody', 'Komentar dari form create')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $event = ContentEvent::where('title', 'Event Dengan Komentar')->firstOrFail();
+
+        $this->assertDatabaseHas('content_event_comments', [
+            'content_event_id' => $event->id,
+            'user_id_user' => $this->staffHr->id_user,
+            'body' => 'Komentar dari form create',
+        ]);
+    }
+
     public function test_autosave_rejects_an_invalid_value(): void
     {
         $event = $this->event($this->staffHr, ['title' => 'Judul Lama']);

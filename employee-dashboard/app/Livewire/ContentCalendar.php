@@ -716,6 +716,7 @@ class ContentCalendar extends Component
             'todos.*.done' => ['boolean'],
             'contentLinks' => ['array'],
             'contentLinks.*' => ['nullable', 'url:http,https', 'max:2048'],
+            'commentBody' => ['nullable', 'string', 'max:1000'],
         ], $this->messages());
 
         $links = $this->normalizeLinks($validated['contentLinks'] ?? []);
@@ -735,10 +736,20 @@ class ContentCalendar extends Component
 
         $account = ContentAccount::resolve($this->account);
 
-        ContentEvent::create($payload + [
+        $event = ContentEvent::create($payload + [
             'content_account_id' => $account?->id,
             'created_by' => auth()->id(),
         ]);
+
+        if (trim($this->commentBody) !== '') {
+            ContentEventComment::create([
+                'content_event_id' => $event->id,
+                'user_id_user' => auth()->id(),
+                'body' => trim($this->commentBody),
+            ]);
+        }
+
+        $this->commentBody = '';
 
         $this->dispatch('content-toast', message: 'Event ditambahkan', type: 'success');
 
