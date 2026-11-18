@@ -28,22 +28,17 @@ class FinanceSeeder extends Seeder
         );
 
         $karyawanFinance = Karyawan::firstOrCreate(
-            ['id_karyawan' => 'KR008'],
+            ['id_karyawan' => 'KR011'],
             [
                 'nama'                  => 'Bu Sari Handayani',
                 'jenis_kelamin'         => 'Perempuan',
                 'tanggal_lahir'         => '1988-03-25',
                 'tanggal_masuk'         => '2019-04-01',
                 'tanggal_akhir_kontrak' => now()->addYears(2)->toDateString(),
-                'no_rekening'           => '8234567890',
-                'no_telepon'            => '081233445566',
                 'email'                 => 'sari.finance@silindo.co.id',
-                'alamat'                => 'Salatiga, Jawa Tengah',
                 'jabatan'               => 'Kepala Divisi Finance',
                 'status_aktif'          => 'Aktif',
-                'foto'                  => null,
                 'divisi_id_divisi'      => $divisiFinance->id_divisi,
-                'pendidikan'            => 'S1 Akuntansi',
                 'job_level'             => 'Manager',
                 'status_karyawan'       => 'tetap',
                 'aktif'                 => true,
@@ -51,9 +46,9 @@ class FinanceSeeder extends Seeder
         );
 
         User2::firstOrCreate(
-            ['id_user' => 'US008'],
+            ['username' => 'sarifin'],
             [
-                'username'             => 'sarifin',
+                'id_user'              => 'US011',
                 'password'             => Hash::make('pass123'),
                 'role_id_role'         => $roleKadiv->id_role,
                 'karyawan_id_karyawan' => $karyawanFinance->id_karyawan,
