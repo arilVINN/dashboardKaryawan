@@ -40,6 +40,9 @@
         </div>
         <form id="formTambahKaryawan" onsubmit="submitFormKaryawan(event)" class="flex flex-col overflow-hidden">
             @csrf
+            <div id="formTambahKaryawanError"
+                class="hidden mx-5 mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                role="alert" aria-live="polite"></div>
             <div class="p-5 overflow-y-auto space-y-7">
                 <section class="space-y-4">
                     <div class="flex items-center gap-2">
@@ -259,6 +262,9 @@
         </div>
         <form id="formEditKaryawan" onsubmit="submitEditKaryawan(event)" class="flex flex-col overflow-hidden">
             @csrf
+            <div id="formEditKaryawanError"
+                class="hidden mx-5 mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                role="alert" aria-live="polite"></div>
             <input type="hidden" name="id_karyawan">
             <div class="p-5 overflow-y-auto space-y-7">
                 <section class="space-y-4">
@@ -464,11 +470,13 @@
     }
 
     function bukaModalKaryawan() {
+        resetKaryawanError('formTambahKaryawanError');
         showKaryawanModal(modalTambahKaryawan, modalBoxTambahKaryawan);
     }
 
     function tutupModalKaryawan() {
         hideKaryawanModal(modalTambahKaryawan, modalBoxTambahKaryawan);
+        resetKaryawanError('formTambahKaryawanError');
         document.getElementById('formTambahKaryawan').reset();
     }
 
@@ -477,6 +485,8 @@
 
         const form = document.getElementById('formEditKaryawan');
         if (!form) return;
+
+        resetKaryawanError('formEditKaryawanError');
 
         // Cegah pengeditan jika karyawan sudah keluar
         const sudahKeluar = Boolean(button.dataset.tanggalKeluar && button.dataset.tanggalKeluar !== 'null');
@@ -569,6 +579,100 @@
 
     function tutupEditKaryawan() {
         hideKaryawanModal(modalEditKaryawan, modalBoxEditKaryawan);
+        resetKaryawanError('formEditKaryawanError');
+    }
+
+    const KARYAWAN_FIELD_LABELS = {
+        nama: 'Nama karyawan',
+        jenis_kelamin: 'Jenis kelamin',
+        tanggal_lahir: 'Tanggal lahir',
+        tanggal_masuk: 'Tanggal masuk',
+        tanggal_rekrut: 'Tanggal rekrut',
+        tanggal_akhir_kontrak: 'Tanggal akhir kontrak',
+        no_rekening: 'No. rekening',
+        no_telepon: 'Nomor telepon',
+        email: 'Email',
+        alamat: 'Alamat',
+        jabatan: 'Jabatan',
+        divisi_id_divisi: 'Divisi',
+        pendidikan: 'Pendidikan',
+        job_level: 'Job level',
+        status_aktif: 'Status',
+        username: 'Username',
+        password: 'Password',
+        role_id_role: 'Role akun',
+        lampiran: 'Lampiran',
+        foto: 'Foto profil',
+    };
+
+    function escapeKaryawanHtml(value) {
+        const div = document.createElement('div');
+        div.textContent = String(value);
+        return div.innerHTML;
+    }
+
+    function resetKaryawanError(panelId) {
+        const panel = document.getElementById(panelId);
+        if (!panel) return;
+        panel.innerHTML = '';
+        panel.classList.add('hidden');
+    }
+
+    function tampilkanKaryawanError(panelId, result) {
+        const panel = document.getElementById(panelId);
+        const fallback = (result && result.message) ? result.message : 'Terjadi kesalahan. Silakan coba lagi.';
+
+        if (!panel) {
+            alert(fallback);
+            return;
+        }
+
+        const items = [];
+        const errors = (result && result.errors && typeof result.errors === 'object') ? result.errors : null;
+
+        if (errors) {
+            Object.entries(errors).forEach(([field, messages]) => {
+                const base = String(field).split('.')[0];
+                const label = KARYAWAN_FIELD_LABELS[base] || base;
+                (Array.isArray(messages) ? messages : [messages]).forEach((msg) => {
+                    items.push('<li><span class="font-semibold">' + escapeKaryawanHtml(label) + ':</span> ' + escapeKaryawanHtml(msg) + '</li>');
+                });
+            });
+        }
+
+        if (items.length === 0) {
+            items.push('<li>' + escapeKaryawanHtml(fallback) + '</li>');
+        }
+
+        panel.innerHTML = '<p class="mb-1 font-semibold">Data belum bisa disimpan:</p>'
+            + '<ul class="list-disc space-y-1 pl-5">' + items.join('') + '</ul>';
+        panel.classList.remove('hidden');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    async function bacaJsonResponse(response) {
+        const text = await response.text();
+        let data = {};
+
+        if (text) {
+            try {
+                data = JSON.parse(text);
+            } catch (error) {
+                data = {};
+            }
+        }
+
+        if (!response.ok && !data.message) {
+            if (response.status === 419) {
+                data.message = 'Sesi Anda sudah berakhir. Muat ulang halaman lalu coba lagi.';
+            } else if (response.status === 429) {
+                data.message = 'Terlalu banyak percobaan. Tunggu sekitar satu menit lalu coba lagi.';
+            } else {
+                data.message = 'Permintaan gagal (HTTP ' + response.status + '). Silakan coba lagi.';
+            }
+        }
+
+        return data;
     }
 
     function karyawanCsrf(form) {
@@ -585,7 +689,7 @@
             },
             body: body ? JSON.stringify(body) : undefined,
         });
-        const result = await response.json();
+        const result = await bacaJsonResponse(response);
         if (!response.ok) {
             const errors = result.errors ? Object.values(result.errors).flat().join('\n') : result.message;
             throw new Error(errors || 'Permintaan gagal.');
@@ -606,7 +710,7 @@
             },
             body,
         });
-        const result = await response.json();
+        const result = await bacaJsonResponse(response);
         if (!response.ok) {
             const errors = result.errors ? Object.values(result.errors).flat().join('\n') : result.message;
             throw new Error(errors || 'Gagal mengunggah foto.');
@@ -619,6 +723,7 @@
         const form = event.currentTarget;
         const button = document.getElementById('btnSubmitKaryawan');
         const formData = new FormData(form);
+        resetKaryawanError('formTambahKaryawanError');
         button.disabled = true;
         try {
             const response = await fetch('{{ url('/hrd/staff') }}', {
@@ -629,20 +734,28 @@
                 },
                 body: formData,
             });
-            const result = await response.json();
+            const result = await bacaJsonResponse(response);
             if (!response.ok) {
-                const errors = result.errors ? Object.values(result.errors).flat().join('\n') : result.message;
-                throw new Error(errors || 'Permintaan gagal.');
+                tampilkanKaryawanError('formTambahKaryawanError', result);
+                return;
             }
             const createdId = result.data && result.data.karyawan ? result.data.karyawan.id_karyawan : null;
             if (createdId) {
-                await unggahFotoKaryawan('{{ url('/hrd/staff') }}/' + encodeURIComponent(createdId) + '/foto',
-                    'input-foto-karyawan', form);
+                try {
+                    await unggahFotoKaryawan('{{ url('/hrd/staff') }}/' + encodeURIComponent(createdId) + '/foto',
+                        'input-foto-karyawan', form);
+                } catch (fotoError) {
+                    // Karyawan sudah tersimpan; kegagalan foto tidak boleh
+                    // membatalkan proses tambah karyawan.
+                    console.warn('Foto profil gagal diunggah:', fotoError);
+                }
             }
             alert(result.message || 'Karyawan berhasil ditambahkan.');
             window.location.reload();
         } catch (error) {
-            alert(error.message || 'Gagal terhubung ke server.');
+            tampilkanKaryawanError('formTambahKaryawanError', {
+                message: error.message || 'Gagal terhubung ke server. Periksa koneksi lalu coba lagi.',
+            });
         } finally {
             button.disabled = false;
         }
@@ -654,8 +767,9 @@
         const button = document.getElementById('btnSimpanEditKaryawan');
         const formData = new FormData(form);
         const id = formData.get('id_karyawan');
+        resetKaryawanError('formEditKaryawanError');
         if (!id) {
-            alert('ID Karyawan tidak ditemukan.');
+            tampilkanKaryawanError('formEditKaryawanError', { message: 'ID karyawan tidak ditemukan.' });
             return;
         }
 
@@ -685,17 +799,23 @@
                 },
                 body: formData,
             });
-            const result = await response.json();
+            const result = await bacaJsonResponse(response);
             if (!response.ok) {
-                const errors = result.errors ? Object.values(result.errors).flat().join('\n') : result.message;
-                throw new Error(errors || 'Gagal mengubah data karyawan.');
+                tampilkanKaryawanError('formEditKaryawanError', result);
+                return;
             }
-            await unggahFotoKaryawan('{{ url('/hrd/staff') }}/' + encodeURIComponent(id) + '/foto',
-                'input-foto-edit-karyawan', form);
+            try {
+                await unggahFotoKaryawan('{{ url('/hrd/staff') }}/' + encodeURIComponent(id) + '/foto',
+                    'input-foto-edit-karyawan', form);
+            } catch (fotoError) {
+                console.warn('Foto profil gagal diunggah:', fotoError);
+            }
             alert(result.message || 'Data karyawan berhasil diperbarui.');
             window.location.reload();
         } catch (error) {
-            alert(error.message || 'Gagal mengubah data karyawan.');
+            tampilkanKaryawanError('formEditKaryawanError', {
+                message: error.message || 'Gagal terhubung ke server. Periksa koneksi lalu coba lagi.',
+            });
         } finally {
             button.disabled = false;
         }

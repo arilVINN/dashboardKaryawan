@@ -137,7 +137,7 @@
                             class="cal-btn {{ $viewMode === 'rekap_divisi' ? 'is-active' : '' }}">
                         Progres Divisi
                     </button>
-                @elseif(in_array($role, ['direktur', 'direksi'], true))
+                @elseif(in_array($role, ['direktur', 'direksi', 'superadmin'], true))
                     <button type="button" wire:click="setViewMode('all')"
                             class="cal-btn {{ $viewMode === 'all' ? 'is-active' : '' }}">
                         Monitoring Karyawan
@@ -151,7 +151,7 @@
 
             {{-- Dropdown Divisi & Karyawan --}}
             @if($viewMode === 'rekap_divisi')
-                @if(in_array($role, ['hrd', 'direktur', 'direksi'], true))
+                @if(in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true))
                     <select wire:model.live="filterDivisiId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none">
                         <option value="">Semua Divisi</option>
                         @foreach($divisions as $div)
@@ -160,7 +160,7 @@
                     </select>
                 @endif
             @elseif($viewMode !== 'my')
-                @if(in_array($role, ['hrd', 'direktur', 'direksi'], true))
+                @if(in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true))
                     <select wire:model.live="filterDivisiId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none">
                         <option value="">Semua Divisi</option>
                         @foreach($divisions as $div)
@@ -169,7 +169,7 @@
                     </select>
                 @endif
 
-                @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi'], true))
+                @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true))
                     <select wire:model.live="filterKaryawanId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none min-w-[150px]">
                         <option value="">Pilih Karyawan</option>
                         @foreach($employeeOptions as $emp)
@@ -272,7 +272,7 @@
                                 <th class="py-3.5 px-4 text-center">Total To Do</th>
                                 <th class="py-3.5 px-4 text-center">Rincian Status</th>
                                 <th class="py-3.5 px-6 min-w-[200px]">Persentase Minggu Ini</th>
-                                @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi'], true))
+                                @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true))
                                     <th class="py-3.5 px-6 text-center">Aksi Review</th>
                                 @endif
                             </tr>
@@ -359,7 +359,7 @@
                                     </td>
 
                                     {{-- Aksi Review --}}
-                                    @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi'], true))
+                                    @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true))
                                         <td class="py-3.5 px-6 text-center">
                                             <button type="button"
                                                     wire:click="selectStaffForReview('{{ $sp['karyawan']->id_karyawan }}')"
@@ -374,7 +374,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi'], true) ? 6 : 5 }}" class="py-8 text-center text-slate-400">
+                                    <td colspan="{{ in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true) ? 6 : 5 }}" class="py-8 text-center text-slate-400">
                                         Tidak ada data anggota divisi yang ditemukan.
                                     </td>
                                 </tr>
@@ -484,7 +484,7 @@
                                                     'revisi' => 'Revisi (50%)',
                                                     default => 'Pending (0%)',
                                                 };
-                                                $canEditStatus = ! $isViewingOther || in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi'], true);
+                                                $canEditStatus = ! $isViewingOther || in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true);
                                             @endphp
                                             <div class="h-8 flex items-center justify-center">
                                                 @if($canEditStatus)
@@ -815,7 +815,7 @@
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">
                                         Status Progress <span class="text-rose-500">*</span>
                                     </label>
-                                    @if(in_array($role, ['kadiv', 'hrd'], true))
+                                    @if(in_array($role, ['kadiv', 'hrd', 'superadmin'], true))
                                         <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                                             <button type="button" wire:click="$set('status', 'pending')"
                                                     class="py-1.5 px-1 text-center rounded-lg border text-[11px] font-bold transition

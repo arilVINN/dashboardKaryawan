@@ -5,7 +5,7 @@
     // role from the account instead of the URL; otherwise the profile dropdown
     // never initialises for Kadiv and profile links fall back to the staff route.
     $pageRole = match (strtolower((string) $topbarUser?->role?->nama_role)) {
-        'direktur', 'direksi' => 'direktur',
+        'direktur', 'direksi', 'superadmin' => 'direktur',
         'hrd' => 'hrd',
         'kadiv' => 'kadiv',
         default => 'staff',

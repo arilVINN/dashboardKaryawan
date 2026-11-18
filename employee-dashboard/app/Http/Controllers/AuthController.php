@@ -89,7 +89,7 @@ class AuthController extends Controller
 
         $roleName = strtolower($user->role?->nama_role ?? '');
 
-        if ($roleName === 'direktur' || $roleName === 'direksi') {
+        if ($roleName === 'direktur' || $roleName === 'direksi' || $roleName === 'superadmin') {
             return redirect()->route('direktur.dashboard');
         } elseif ($roleName === 'hrd') {
             return redirect()->intended('/hrd/dashboard');

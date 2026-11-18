@@ -37,12 +37,29 @@ class HrdProtectionService
     }
 
     /**
+     * Cek apakah user target memiliki role superadmin.
+     * Akun superadmin hanya boleh dikelola lewat perintah artisan.
+     */
+    public static function isSuperAdminUser(?User2 $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        return strtolower($user->role?->nama_role ?? '') === 'superadmin';
+    }
+
+    /**
      * Validasi sebelum menghapus karyawan.
      * Mengembalikan pesan error jika melanggar proteksi, atau null jika lolos.
      */
     public static function validateDeletion(?User2 $authUser, Karyawan $karyawan): ?string
     {
         $targetUser = $karyawan->user;
+
+        if (self::isSuperAdminUser($targetUser)) {
+            return 'Akun superadmin hanya dapat dikelola melalui perintah artisan.';
+        }
 
         if ($authUser && $targetUser && $authUser->id_user === $targetUser->id_user) {
             return 'Anda tidak dapat menghapus akun Anda sendiri.';
@@ -64,6 +81,10 @@ class HrdProtectionService
     public static function validateDeactivation(?User2 $authUser, Karyawan $karyawan): ?string
     {
         $targetUser = $karyawan->user;
+
+        if (self::isSuperAdminUser($targetUser)) {
+            return 'Akun superadmin hanya dapat dikelola melalui perintah artisan.';
+        }
 
         if ($authUser && $targetUser && $authUser->id_user === $targetUser->id_user) {
             return 'Anda tidak dapat menonaktifkan akun Anda sendiri.';
@@ -87,6 +108,10 @@ class HrdProtectionService
         $targetUser = $karyawan->user;
         if (! $targetUser) {
             return null;
+        }
+
+        if (self::isSuperAdminUser($targetUser)) {
+            return 'Role akun superadmin hanya dapat diubah melalui perintah artisan.';
         }
 
         if ($targetUser->role_id_role === $newRoleId) {
