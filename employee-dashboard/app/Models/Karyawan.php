@@ -80,6 +80,7 @@ class Karyawan extends Model
     public const JABATAN_STAFF = 'Staff';
     public const JABATAN_HRD_MANAGER = 'HRD Manager';
     public const JABATAN_MARKOM = 'Markom';
+    public const JABATAN_LAYOUTER = 'Layouter';
 
     public const JABATAN_OPTIONS = [
         self::JABATAN_DIREKTUR,
@@ -87,6 +88,7 @@ class Karyawan extends Model
         self::JABATAN_STAFF,
         self::JABATAN_HRD_MANAGER,
         self::JABATAN_MARKOM,
+        self::JABATAN_LAYOUTER,
     ];
 
     public const STATUS_OPTIONS = [

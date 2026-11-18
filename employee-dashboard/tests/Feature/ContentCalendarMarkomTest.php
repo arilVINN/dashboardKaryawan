@@ -24,6 +24,7 @@ class ContentCalendarMarkomTest extends TestCase
 
     private User2 $staffPb;
     private User2 $markomPb;
+    private User2 $layouterPb;
     private User2 $kadivPb;
     private User2 $staffHr;
     private User2 $direktur;
@@ -51,6 +52,7 @@ class ContentCalendarMarkomTest extends TestCase
 
         $this->staffPb = $this->makeUser('U-SPB', 'staffpb', 'Staff PB', 'Staff', $pb, 'RL-STAFF');
         $this->markomPb = $this->makeUser('U-MPB', 'markompb', 'Markom PB', 'Markom', $pb, 'RL-STAFF');
+        $this->layouterPb = $this->makeUser('U-LPB', 'layouterpb', 'Layouter PB', 'Layouter', $pb, 'RL-STAFF');
         $this->kadivPb = $this->makeUser('U-KPB', 'kadivpb', 'Kadiv PB', 'Kepala Divisi Publikasi Buku', $pb, 'RL-KADIV');
         $this->staffHr = $this->makeUser('U-SHR', 'staffhr', 'Staff HR', 'Staff', $hr, 'RL-STAFF');
         $this->direktur = $this->makeUser('U-DIR', 'direkturtest', 'Direktur', 'Direktur Utama', $hr, 'RL-DIR');
@@ -89,9 +91,43 @@ class ContentCalendarMarkomTest extends TestCase
         $this->assertTrue($this->markomPb->karyawan->fresh()->isMarkom());
     }
 
+    public function test_layouter_is_an_available_jabatan_option_for_publikasi_buku(): void
+    {
+        $this->assertContains(Karyawan::JABATAN_LAYOUTER, Karyawan::JABATAN_OPTIONS);
+        $this->assertSame('Layouter', Karyawan::JABATAN_LAYOUTER);
+
+        $this->assertTrue($this->layouterPb->karyawan->hasRole('staff'));
+        $this->assertFalse($this->layouterPb->karyawan->isMarkom());
+    }
+
+    public function test_layouter_in_publikasi_buku_is_view_and_comment_only(): void
+    {
+        $this->assertTrue(ContentCalendarAccess::allows($this->layouterPb));
+        $this->assertFalse(ContentCalendarAccess::canManage($this->layouterPb));
+
+        $this->assertTrue(Gate::forUser($this->layouterPb)->allows('view', $this->event));
+        $this->assertFalse(Gate::forUser($this->layouterPb)->allows('create', ContentEvent::class));
+        $this->assertFalse(Gate::forUser($this->layouterPb)->allows('update', $this->event));
+        $this->assertFalse(Gate::forUser($this->layouterPb)->allows('delete', $this->event));
+
+        Livewire::actingAs($this->layouterPb)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $this->event->id)
+            ->assertSet('readOnly', true)
+            ->set('commentBody', 'Komentar layouter')
+            ->call('addComment')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('content_event_comments', [
+            'content_event_id' => $this->event->id,
+            'user_id_user' => $this->layouterPb->id_user,
+            'body' => 'Komentar layouter',
+        ]);
+    }
+
     public function test_publikasi_buku_access_rules(): void
     {
-        foreach ([$this->staffPb, $this->markomPb, $this->kadivPb] as $user) {
+        foreach ([$this->staffPb, $this->markomPb, $this->layouterPb, $this->kadivPb] as $user) {
             $this->assertTrue(ContentCalendarAccess::allows($user));
         }
 

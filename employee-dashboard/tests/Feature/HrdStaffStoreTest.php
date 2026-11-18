@@ -121,6 +121,36 @@ class HrdStaffStoreTest extends TestCase
         ]);
     }
 
+    public function test_layouter_jabatan_creates_a_staff_account(): void
+    {
+        Divisi::create([
+            'id_divisi' => 'DIV-PB',
+            'kode_divisi' => 'PB',
+            'nama_divisi' => 'Publikasi Buku',
+            'tipe' => Divisi::TIPE_DIVISI,
+            'status_aktif' => 'Aktif',
+        ]);
+
+        $response = $this->actingAs($this->hrd)->postJson('/hrd/staff', $this->payload([
+            'nama' => 'Layouter Baru',
+            'username' => 'layouterbaru',
+            'jabatan' => 'Layouter',
+            'divisi_id_divisi' => 'DIV-PB',
+        ]));
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('karyawans', [
+            'nama' => 'Layouter Baru',
+            'jabatan' => 'Layouter',
+            'divisi_id_divisi' => 'DIV-PB',
+        ]);
+        $this->assertDatabaseHas('users2', [
+            'username' => 'layouterbaru',
+            'role_id_role' => 'RL-STAFF',
+        ]);
+    }
+
     public function test_duplicate_username_returns_a_clear_message(): void
     {
         $this->actingAs($this->hrd)
