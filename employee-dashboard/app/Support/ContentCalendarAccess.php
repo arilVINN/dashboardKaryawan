@@ -7,6 +7,10 @@ use App\Models\User2;
 
 class ContentCalendarAccess
 {
+    /** Divisi dengan aturan CRUD khusus (kode / nama). */
+    private const RESTRICTED_KODE = 'PB';
+    private const RESTRICTED_NAMA = 'publikasi buku';
+
     /** @var array<string, bool> */
     private static array $cache = [];
 
@@ -64,6 +68,43 @@ class ContentCalendarAccess
         );
 
         return self::$cache[$divisionId] = in_array(mb_strtolower(trim((string) $division->nama_divisi)), $configuredNames, true);
+    }
+
+    /**
+     * Whether the user may create/edit/delete content-calendar events.
+     *
+     * In Publikasi Buku only the division head (kadiv) and Markom may manage
+     * events; other employees may view the calendar and add comments.
+     * Other divisions (including HR) keep full access as before.
+     */
+    public static function canManage(?User2 $user): bool
+    {
+        if (! self::allows($user)) {
+            return false;
+        }
+
+        if ($user->isDirektur()) {
+            return true;
+        }
+
+        $division = $user->karyawan?->divisi;
+
+        if ($division === null) {
+            return false;
+        }
+
+        if (self::isRestrictedDivision($division)) {
+            return (bool) $user->karyawan?->isKadiv()
+                || (bool) $user->karyawan?->isMarkom();
+        }
+
+        return true;
+    }
+
+    private static function isRestrictedDivision(Divisi $division): bool
+    {
+        return strtoupper(trim((string) $division->kode_divisi)) === self::RESTRICTED_KODE
+            || mb_strtolower(trim((string) $division->nama_divisi)) === self::RESTRICTED_NAMA;
     }
 
     /**
