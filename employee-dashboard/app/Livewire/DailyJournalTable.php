@@ -103,8 +103,8 @@ class DailyJournalTable extends Component
         $role = strtolower(auth()->user()?->role?->nama_role ?? 'staff');
         $allowedModes = match ($role) {
             'kadiv' => ['my', 'team', 'rekap_divisi'],
-            'hrd', 'direktur', 'direksi', 'superadmin' => ['my', 'all', 'rekap_divisi'],
-            default => ['my'],
+            'hrd', 'direktur', 'direksi' => ['my', 'all', 'rekap_divisi'],
+            default => ['my', 'rekap_divisi'],
         };
 
         if (! in_array($mode, $allowedModes, true)) {
@@ -461,7 +461,14 @@ class DailyJournalTable extends Component
 
     public function selectStaffForReview(string $karyawanId): void
     {
-        $this->viewMode = 'team';
+        $role = strtolower(auth()->user()?->role?->nama_role ?? 'staff');
+        if (! in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true)) {
+            $this->feedbackMessage = 'Anda tidak memiliki akses untuk mereview to do karyawan lain.';
+            $this->feedbackType = 'error';
+            return;
+        }
+
+        $this->viewMode = $role === 'kadiv' ? 'team' : 'all';
         $this->filterKaryawanId = $karyawanId;
         $this->resetFeedback();
     }
