@@ -807,7 +807,7 @@
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">
                                         Status Progress <span class="text-rose-500">*</span>
                                     </label>
-                                    @if(in_array($role, ['kadiv', 'hrd'], true))
+                                    @if(in_array($role, ['kadiv', 'hrd', 'superadmin'], true))
                                         <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                                             <button type="button" wire:click="$set('status', 'pending')"
                                                     class="py-1.5 px-1 text-center rounded-lg border text-[11px] font-bold transition
