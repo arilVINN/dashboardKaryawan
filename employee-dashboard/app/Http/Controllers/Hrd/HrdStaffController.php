@@ -100,6 +100,14 @@ class HrdStaffController extends Controller
                 ], 422);
             }
 
+            // Akun superadmin tidak boleh dibuat lewat UI/API HRD.
+            if (Role::where('id_role', $roleId)->whereRaw('LOWER(nama_role) = ?', ['superadmin'])->exists()) {
+                return response()->json([
+                    'message' => 'Akun superadmin hanya dapat dibuat melalui perintah artisan.',
+                    'errors' => ['role_id_role' => ['Akun superadmin hanya dapat dibuat melalui perintah artisan.']],
+                ], 422);
+            }
+
             // Gunakan transaksi agar data karyawan + user konsisten
             DB::beginTransaction();
 
@@ -214,6 +222,13 @@ class HrdStaffController extends Controller
 
         if (!$karyawan) {
             return response()->json(['message' => 'Staff tidak ditemukan'], 404);
+        }
+
+        // Akun superadmin dikelola lewat CLI, bukan form HRD.
+        if (HrdProtectionService::isSuperAdminUser($karyawan->user)) {
+            return response()->json([
+                'message' => 'Akun superadmin hanya dapat dikelola melalui perintah artisan.',
+            ], 403);
         }
 
         if ($request->has('tanggal_rekrut') && !$request->has('tanggal_masuk')) {
@@ -443,6 +458,12 @@ class HrdStaffController extends Controller
 
         if (! $karyawan) {
             return response()->json(['message' => 'Staff tidak ditemukan'], 404);
+        }
+
+        if (HrdProtectionService::isSuperAdminUser($karyawan->user)) {
+            return response()->json([
+                'message' => 'Akun superadmin hanya dapat dikelola melalui perintah artisan.',
+            ], 403);
         }
 
         $path = StoreKaryawanFoto::handle($karyawan, $request->file('foto'));

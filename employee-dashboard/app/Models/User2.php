@@ -98,11 +98,24 @@ class User2 extends Authenticatable
     /**
      * Role names that hold the highest (super-admin) authority.
      * "Direksi" is accepted as an equivalent alias of "Direktur".
+     *
+     * "superadmin" is a real role (created only via the superadmin:create
+     * command). It inherits every Direktur-level bypass, but unlike Direktur
+     * it is allowed to write data (see DenySuperAdmin).
      */
-    public const SUPERADMIN_ROLES = ['direktur', 'direksi'];
+    public const SUPERADMIN_ROLES = ['direktur', 'direksi', 'superadmin'];
 
     /**
-     * Cek apakah user ini adalah Direktur / Direksi (super-admin).
+     * Cek apakah user ini memiliki role superadmin (CLI-managed account).
+     */
+    public function isSuperAdmin(): bool
+    {
+        return strtolower($this->role?->nama_role ?? '') === 'superadmin';
+    }
+
+    /**
+     * Cek apakah user ini adalah Direktur / Direksi / Superadmin
+     * (tingkat akses tertinggi).
      */
     public function isDirektur(): bool
     {

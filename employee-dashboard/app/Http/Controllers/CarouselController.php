@@ -17,7 +17,7 @@ class CarouselController extends Controller
         $user?->loadMissing(['role', 'karyawan']);
         $role = strtolower($user?->role?->nama_role ?? '');
 
-        abort_unless(in_array($role, ['hrd', 'kadiv'], true), 403);
+        abort_unless(in_array($role, ['hrd', 'kadiv', 'superadmin'], true), 403);
 
         $divisiId = $user->karyawan?->divisi_id_divisi;
         abort_if($role === 'kadiv' && ! $divisiId, 403);
@@ -56,7 +56,7 @@ class CarouselController extends Controller
         $user?->loadMissing(['role', 'karyawan']);
         $role = strtolower($user?->role?->nama_role ?? '');
 
-        abort_unless(in_array($role, ['hrd', 'kadiv'], true), 403);
+        abort_unless(in_array($role, ['hrd', 'kadiv', 'superadmin'], true), 403);
         if (
             $role === 'kadiv'
             && (
