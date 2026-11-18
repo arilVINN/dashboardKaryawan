@@ -14,12 +14,20 @@ class DenySuperAdmin
      * deleting company data (tugas, karyawan, divisi, keuangan) is reserved for
      * HRD/Kadiv. This middleware blocks those write actions while leaving the
      * read (monitoring), approval and messaging endpoints untouched.
+     *
+     * The literal "superadmin" role is deliberately NOT blocked: despite
+     * sharing Direktur-level read access, it is the one account allowed to
+     * write everywhere.
      */
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
 
-        if ($user instanceof User2 && $user->isDirektur()) {
+        if ($user instanceof User2 && in_array(
+            strtolower($user->role?->nama_role ?? ''),
+            ['direktur', 'direksi'],
+            true
+        )) {
             $message = 'Direksi hanya dapat memantau data (read-only).';
 
             if ($request->expectsJson() || $request->is('api/*')) {

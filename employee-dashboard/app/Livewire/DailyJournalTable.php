@@ -103,7 +103,7 @@ class DailyJournalTable extends Component
         $role = strtolower(auth()->user()?->role?->nama_role ?? 'staff');
         $allowedModes = match ($role) {
             'kadiv' => ['my', 'team', 'rekap_divisi'],
-            'hrd', 'direktur', 'direksi' => ['my', 'all', 'rekap_divisi'],
+            'hrd', 'direktur', 'direksi', 'superadmin' => ['my', 'all', 'rekap_divisi'],
             default => ['my'],
         };
 
@@ -131,7 +131,7 @@ class DailyJournalTable extends Component
 
     public function updatedFilterDivisiId(): void
     {
-        if (! in_array(strtolower(auth()->user()?->role?->nama_role ?? ''), ['hrd', 'direktur', 'direksi'], true)) {
+        if (! in_array(strtolower(auth()->user()?->role?->nama_role ?? ''), ['hrd', 'direktur', 'direksi', 'superadmin'], true)) {
             $this->filterDivisiId = null;
         }
 
@@ -419,7 +419,7 @@ class DailyJournalTable extends Component
         $targetDivisiId = $journal->user?->karyawan?->divisi_id_divisi ?? $journal->karyawan?->divisi_id_divisi;
 
         $isKadivOfDivision = ($role === 'kadiv' && $userDivisiId && $targetDivisiId === $userDivisiId);
-        $isHrdOrDirektur = in_array($role, ['hrd', 'direktur', 'direksi'], true);
+        $isHrdOrDirektur = in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true);
         $isAssigner = ($journal->assigned_by_user_id === $user->id_user);
 
         // Hak akses perubahan status:
@@ -507,22 +507,22 @@ class DailyJournalTable extends Component
 
     private function canAssignTodos(User2 $user): bool
     {
-        return in_array(strtolower($user->role?->nama_role ?? ''), ['kadiv', 'hrd', 'direktur', 'direksi'], true);
+        return in_array(strtolower($user->role?->nama_role ?? ''), ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true);
     }
 
     private function canAssignToKaryawan(User2 $user, ?string $karyawanId): bool
     {
         if (! $karyawanId) {
             return $user->karyawan_id_karyawan === null
-                && in_array(strtolower($user->role?->nama_role ?? ''), ['staff', 'kadiv', 'hrd', 'direktur', 'direksi'], true);
+                && in_array(strtolower($user->role?->nama_role ?? ''), ['staff', 'kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true);
         }
 
         if ($karyawanId === $user->karyawan_id_karyawan) {
-            return in_array(strtolower($user->role?->nama_role ?? ''), ['staff', 'kadiv', 'hrd', 'direktur', 'direksi'], true);
+            return in_array(strtolower($user->role?->nama_role ?? ''), ['staff', 'kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true);
         }
 
         $role = strtolower($user->role?->nama_role ?? '');
-        if (! in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi'], true)) {
+        if (! in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true)) {
             return false;
         }
 
@@ -533,7 +533,7 @@ class DailyJournalTable extends Component
     {
         $role = strtolower($user->role?->nama_role ?? '');
 
-        if (in_array($role, ['hrd', 'direktur', 'direksi'], true)) {
+        if (in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true)) {
             return Karyawan::whereKey($karyawanId)->whereHas('user')->exists();
         }
 
@@ -559,7 +559,7 @@ class DailyJournalTable extends Component
             }
 
             $query->where('divisi_id_divisi', $divisionId);
-        } elseif (! in_array($role, ['hrd', 'direktur', 'direksi'], true)) {
+        } elseif (! in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true)) {
             return collect();
         }
 
@@ -573,7 +573,7 @@ class DailyJournalTable extends Component
             || $journal->karyawan_id_karyawan === $user->karyawan_id_karyawan;
         $isAssigner = $journal->assigned_by_user_id === $user->id_user;
 
-        if ($isRecipient || $isAssigner || in_array($role, ['hrd', 'direktur', 'direksi'], true)) {
+        if ($isRecipient || $isAssigner || in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true)) {
             return true;
         }
 
@@ -599,7 +599,7 @@ class DailyJournalTable extends Component
         }
 
         $role = strtolower($user->role?->nama_role ?? '');
-        if (in_array($role, ['hrd', 'direktur', 'direksi'], true)) {
+        if (in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true)) {
             return true;
         }
 
@@ -771,7 +771,7 @@ class DailyJournalTable extends Component
         if ($role === 'kadiv') {
             $divisiId = $user?->karyawan?->divisi_id_divisi;
             $employeeOptions = $assignableKaryawan = $this->assignableEmployees($user);
-        } elseif (in_array($role, ['hrd', 'direktur', 'direksi'], true)) {
+        } elseif (in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true)) {
             $divisions = Divisi::query()->ordered()->get();
             $empQuery = Karyawan::query()->orderBy('nama');
             if ($this->filterDivisiId) {
@@ -792,7 +792,7 @@ class DailyJournalTable extends Component
         $currentDivisiId = null;
         if ($role === 'kadiv' || $role === 'staff') {
             $currentDivisiId = $user?->karyawan?->divisi_id_divisi;
-        } elseif (in_array($role, ['hrd', 'direktur', 'direksi'], true)) {
+        } elseif (in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true)) {
             $currentDivisiId = $this->filterDivisiId ?: ($divisions->first()?->id_divisi ?? null);
         }
 

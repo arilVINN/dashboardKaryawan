@@ -79,12 +79,16 @@ class Karyawan extends Model
     public const JABATAN_KEPALA = 'Kepala Divisi';
     public const JABATAN_STAFF = 'Staff';
     public const JABATAN_HRD_MANAGER = 'HRD Manager';
+    public const JABATAN_MARKOM = 'Markom';
+    public const JABATAN_LAYOUTER = 'Layouter';
 
     public const JABATAN_OPTIONS = [
         self::JABATAN_DIREKTUR,
         self::JABATAN_KEPALA,
         self::JABATAN_STAFF,
         self::JABATAN_HRD_MANAGER,
+        self::JABATAN_MARKOM,
+        self::JABATAN_LAYOUTER,
     ];
 
     public const STATUS_OPTIONS = [
@@ -176,6 +180,15 @@ class Karyawan extends Model
     public function isStaff(): bool
     {
         return $this->hasRole('staff') || $this->isDirektur();
+    }
+
+    /**
+     * Jabatan Markom (bisa diberi keterangan, mis. "Markom Publikasi Buku").
+     */
+    public function isMarkom(): bool
+    {
+        // Termasuk variasi "Marcom Buku" yang sudah dipakai di data lama.
+        return preg_match('/(^|\s)(?:markom|marcom)(\s|$)/i', trim((string) $this->jabatan)) === 1;
     }
 
     /**

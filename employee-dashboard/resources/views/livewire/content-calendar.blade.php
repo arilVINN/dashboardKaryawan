@@ -238,6 +238,7 @@
                 @endforeach
             </div>
 
+            @can('create', \App\Models\ContentEvent::class)
             <button type="button" id="content-add-event" wire:click="openCreate()" @click="remember($el)"
                 class="inline-flex h-10 items-center gap-1.5 rounded-lg bg-[#0097B2] px-3 text-[13px] font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -245,6 +246,7 @@
                 </svg>
                 Tambah konten
             </button>
+            @endcan
         </div>
     </div>
 
@@ -302,10 +304,12 @@
                                     @dragover.prevent="dragOver = '{{ $date }}'"
                                     @dragleave="if (dragOver === '{{ $date }}') dragOver = null"
                                     @drop.prevent="if (draggingId) { const id = draggingId; draggingId = null; dragOver = null; $wire.moveEvent(id, '{{ $date }}'); }">
+                                    @can('create', \App\Models\ContentEvent::class)
                                     <button type="button" id="content-day-{{ $date }}"
                                         @click="remember($el); $wire.openCreate('{{ $date }}')"
                                         aria-label="Tambah konten pada {{ $day['label'] }}"
                                         class="absolute inset-0 z-0 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#146C94]"></button>
+                                    @endcan
 
                                     <div class="pointer-events-none relative z-10 flex flex-col gap-1">
                                         <div class="flex justify-end">
@@ -374,10 +378,12 @@
                                     @endforeach
 
                                     @if (empty($day['items']))
+                                        @can('create', \App\Models\ContentEvent::class)
                                         <button type="button" id="content-day-add-{{ $date }}" wire:click="openCreate('{{ $date }}')" @click="remember($el)"
                                             class="w-full rounded-md border border-dashed border-[#D5DEE3] px-2 py-1.5 text-[11px] font-medium text-[#8A96A3] opacity-0 transition group-hover:opacity-100 hover:border-[#146C94] hover:text-[#146C94] focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
                                             + Tambah
                                         </button>
+                                        @endcan
                                     @endif
                                 </div>
                             </div>

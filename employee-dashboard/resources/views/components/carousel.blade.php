@@ -1,10 +1,11 @@
 @php
     $carousels = $carousels ?? collect();
     $userRole = strtolower(auth()->user()?->role?->nama_role ?? '');
-    $isAuthorized = in_array($userRole, ['hrd', 'kadiv']);
+    $isAuthorized = in_array($userRole, ['hrd', 'kadiv', 'superadmin']);
     $currentUserId = auth()->user()?->id_user;
-    $storeRoute = $userRole === 'hrd' ? 'hrd.carousel.store' : 'carousel.store';
-    $destroyRoute = $userRole === 'hrd' ? 'hrd.carousel.destroy' : 'carousel.destroy';
+    $usesHrdRoutes = in_array($userRole, ['hrd', 'superadmin'], true);
+    $storeRoute = $usesHrdRoutes ? 'hrd.carousel.store' : 'carousel.store';
+    $destroyRoute = $usesHrdRoutes ? 'hrd.carousel.destroy' : 'carousel.destroy';
 @endphp
 
 <!-- CSS Swiper -->

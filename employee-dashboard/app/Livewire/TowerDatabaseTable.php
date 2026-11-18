@@ -114,7 +114,7 @@ class TowerDatabaseTable extends Component
 
     public function isExecutiveRole(): bool
     {
-        return in_array($this->currentUserRole(), ['hrd', 'admin', 'direktur'], true);
+        return in_array($this->currentUserRole(), ['hrd', 'admin', 'direktur', 'direksi', 'superadmin'], true);
     }
 
     public function currentUserDivisiId(): ?string
@@ -124,7 +124,7 @@ class TowerDatabaseTable extends Component
 
     public function canManage(): bool
     {
-        return in_array($this->currentUserRole(), ['hrd', 'kadiv', 'admin', 'direktur'], true);
+        return in_array($this->currentUserRole(), ['hrd', 'kadiv', 'admin', 'direktur', 'direksi', 'superadmin'], true);
     }
 
     public function canAccessItem(TowerDatabase $item): bool

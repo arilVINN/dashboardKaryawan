@@ -3,11 +3,13 @@
     $sidebar = match ($role) {
         'hrd' => 'component_hrd.sidebar',
         'kadiv' => 'component_kadiv.sidebar',
+        'superadmin' => 'component_direktur.sidebar',
         default => 'component.sidebar',
     };
     $dashboardUrl = match ($role) {
         'hrd' => url('/hrd/dashboard'),
         'kadiv' => url('/kadiv/dashboard'),
+        'superadmin' => url('/direktur/dashboard'),
         default => url('/'),
     };
 
