@@ -113,7 +113,7 @@
 
         {{-- Role Tabs & Dropdowns Filter --}}
         <div class="flex flex-wrap items-center gap-2">
-            @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi'], true))
+            @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true))
                 <div class="cal-view-group">
                     <button type="button" wire:click="setViewMode('my')"
                             class="cal-btn {{ $viewMode === 'my' ? 'is-active' : '' }}">
@@ -138,7 +138,7 @@
                                 class="cal-btn {{ $viewMode === 'rekap_divisi' ? 'is-active' : '' }}">
                             Progres Divisi
                         </button>
-                    @elseif(in_array($role, ['direktur', 'direksi'], true))
+                    @elseif(in_array($role, ['direktur', 'direksi', 'superadmin'], true))
                         <button type="button" wire:click="setViewMode('all')"
                                 class="cal-btn {{ $viewMode === 'all' ? 'is-active' : '' }}">
                             Monitoring Karyawan
@@ -148,7 +148,7 @@
 
                 {{-- Dropdown Divisi & Karyawan --}}
                 @if($viewMode === 'rekap_divisi')
-                    @if(in_array($role, ['hrd', 'direktur', 'direksi'], true))
+                    @if(in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true))
                         <select wire:model.live="filterDivisiId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none">
                             <option value="">Semua Divisi</option>
                             @foreach($divisions as $div)
@@ -157,7 +157,7 @@
                         </select>
                     @endif
                 @elseif($viewMode !== 'my')
-                    @if(in_array($role, ['hrd', 'direktur', 'direksi'], true))
+                    @if(in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true))
                         <select wire:model.live="filterDivisiId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none">
                             <option value="">Semua Divisi</option>
                             @foreach($divisions as $div)
@@ -476,7 +476,7 @@
                                                     'revisi' => 'Revisi (50%)',
                                                     default => 'Pending (0%)',
                                                 };
-                                                $canEditStatus = ! $isViewingOther || in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi'], true);
+                                                $canEditStatus = ! $isViewingOther || in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true);
                                             @endphp
                                             <div class="h-8 flex items-center justify-center">
                                                 @if($canEditStatus)

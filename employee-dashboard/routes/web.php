@@ -54,6 +54,12 @@ Route::middleware(['auth', 'throttle:umum', EnsureContentCalendarAccess::class])
 Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     Route::get('/', function (BirthdayNotificationService $birthdayNotifications) {
         $user = auth()->user();
+
+        // Superadmin stays on the executive dashboard instead of the staff home.
+        if ($user?->isSuperAdmin()) {
+            return redirect()->route('direktur.dashboard');
+        }
+
         $divisionId = auth()->user()?->karyawan?->divisi_id_divisi;
         $carousels = Carousel::query()
             ->with(['user.karyawan', 'divisi'])
@@ -467,7 +473,7 @@ Route::fallback(function (Request $request) {
 
     $role = strtolower($user->role?->nama_role ?? '');
     $dashboardRoute = match ($role) {
-        'direktur', 'direksi' => 'direktur.dashboard',
+        'direktur', 'direksi', 'superadmin' => 'direktur.dashboard',
         'hrd'   => 'hrd.dashboard',
         'kadiv' => 'kadiv.dashboard',
         'staff' => 'dashboard',

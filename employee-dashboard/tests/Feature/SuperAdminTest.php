@@ -73,10 +73,20 @@ class SuperAdminTest extends TestCase
     {
         $this->actingAs($this->superadmin);
 
+        $this->get('/')->assertRedirect('/direktur/dashboard');
         $this->get('/direktur/dashboard')->assertOk();
         $this->get('/hrd/dashboard')->assertOk();
         $this->get('/kadiv/dashboard')->assertOk();
         $this->get('/kalender-konten')->assertOk();
+    }
+
+    public function test_login_form_redirects_superadmin_to_the_direktur_dashboard(): void
+    {
+        $this->withoutVite();
+
+        $html = $this->get('/login')->assertOk()->getContent();
+
+        $this->assertStringContainsString("role === 'superadmin'", $html);
     }
 
     public function test_superadmin_can_write_while_direktur_stays_read_only(): void
