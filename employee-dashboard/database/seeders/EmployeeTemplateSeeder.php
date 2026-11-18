@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Hash;
  * TEMPLATE seeder untuk menambah karyawan + akun login secara manual.
  *
  * Cara pakai:
- *   1. Isi array $rows di bawah (contoh sudah disiapkan, masih di-comment).
+ *   1. Ubah 5 data contoh di array $rows (tambahkan/hapus baris sesuai perlu).
  *   2. Jalankan: php artisan db:seed --class=EmployeeTemplateSeeder
  *
  * ID karyawan (KR001, KR002, ...) dan ID user (US001, ...) dibuat OTOMATIS,
@@ -25,37 +25,97 @@ use Illuminate\Support\Facades\Hash;
  * CATATAN:
  * - 'username': WAJIB huruf/angka saja. Login menolak titik/spasi.
  * - 'role'  : staff | kadiv | hrd | direktur (huruf besar/kecil bebas).
- * - 'divisi': KODE divisi (kode_divisi), mis. HR, FIN, IT01.
- * - 'jabatan': memengaruhi izin. 'Kepala Divisi ...' / 'Kadiv ...' dianggap
- *              kadiv; 'Kadiv Finance' + divisi FIN = Kadiv Finance.
+ * - 'divisi': KODE divisi (kode_divisi): DIRUT, MGT, HR, FIN, IT, KJ, PB, PJ, AE, KD.
+ * - 'jabatan': memengaruhi izin. 'Kepala Divisi' = kadiv; 'Markom' = staff
+ *              dengan akses CRUD kalender konten divisi Publikasi Buku.
  */
 class EmployeeTemplateSeeder extends Seeder
 {
     /**
      * ─────────────────────────────────────────────────────────────────────
-     * TULIS DATA ANDA DI SINI
+     * 5 DATA CONTOH — ubah namanya, username, divisi, dan jabatannya.
+     *
+     * - Hapus satu blok [...] untuk melewati baris tersebut.
+     * - Field wajib: nama, username, role, divisi, jabatan.
+     * - Field opsional: password (default pass123), jenis_kelamin,
+     *   email, no_telepon, tanggal_masuk.
      * ─────────────────────────────────────────────────────────────────────
      */
     private array $rows = [
-        // [
-        //     'nama'      => 'Nama Karyawan',
-        //     'username'  => 'stfnew',          // huruf/angka SAJA, unik
-        //     'password'  => 'pass123',         // opsional, default: pass123
-        //     'role'      => 'staff',           // staff | kadiv | hrd | direktur
-        //     'divisi'    => 'IT01',            // kode_divisi
-        //     'jabatan'   => 'Staff',
-        //     'jenis_kelamin' => 'Laki-laki',   // opsional
-        //     'email'     => 'stfnew@example.test', // opsional
-        //     'no_telepon'=> '081234567890',   // opsional
-        //     'tanggal_masuk' => '2026-01-01',  // opsional
-        // ],
-        //
-        // Contoh Kadiv Finance:
-        // [
-        //     'nama' => 'Kadiv Finance Baru', 'username' => 'finnew',
-        //     'role' => 'kadiv', 'divisi' => 'FIN', 'jabatan' => 'Kadiv Finance',
-        // ],
+        [
+            'nama' => 'Karyawan Contoh 1',
+            'username' => 'contoh01',
+            'password' => 'pass123',
+            'role' => 'staff',
+            'divisi' => 'IT',
+            'jabatan' => 'Staff',
+            'jenis_kelamin' => 'Laki-laki',
+            'email' => 'contoh01@example.test',
+            'no_telepon' => '081200000001',
+            'tanggal_masuk' => '2026-01-05',
+        ],
+        [
+            'nama' => 'Karyawan Contoh 2',
+            'username' => 'contoh02',
+            'password' => 'pass123',
+            'role' => 'staff',
+            'divisi' => 'PB',
+            'jabatan' => 'Staff',
+            'jenis_kelamin' => 'Perempuan',
+            'email' => 'contoh02@example.test',
+            'no_telepon' => '081200000002',
+            'tanggal_masuk' => '2026-02-02',
+        ],
+        [
+            // Markom: staff di Publikasi Buku yang boleh CRUD kalender konten.
+            'nama' => 'Karyawan Contoh 3',
+            'username' => 'contoh03',
+            'password' => 'pass123',
+            'role' => 'staff',
+            'divisi' => 'PB',
+            'jabatan' => 'Markom',
+            'jenis_kelamin' => 'Laki-laki',
+            'email' => 'contoh03@example.test',
+            'no_telepon' => '081200000003',
+            'tanggal_masuk' => '2026-02-10',
+        ],
+        [
+            'nama' => 'Karyawan Contoh 4',
+            'username' => 'contoh04',
+            'password' => 'pass123',
+            'role' => 'staff',
+            'divisi' => 'AE',
+            'jabatan' => 'Staff',
+            'jenis_kelamin' => 'Perempuan',
+            'email' => 'contoh04@example.test',
+            'no_telepon' => '081200000004',
+            'tanggal_masuk' => '2026-03-01',
+        ],
+        [
+            'nama' => 'Karyawan Contoh 5',
+            'username' => 'contoh05',
+            'password' => 'pass123',
+            'role' => 'staff',
+            'divisi' => 'KD',
+            'jabatan' => 'Staff',
+            'jenis_kelamin' => 'Laki-laki',
+            'email' => 'contoh05@example.test',
+            'no_telepon' => '081200000005',
+            'tanggal_masuk' => '2026-04-01',
+        ],
     ];
+
+    /*
+     * Contoh baris KADIV — salin ke dalam $rows bila perlu:
+     * [
+     *     'nama' => 'Kadiv Publikasi Jurnal',
+     *     'username' => 'kadivpj',
+     *     'password' => 'pass123',
+     *     'role' => 'kadiv',
+     *     'divisi' => 'PJ',
+     *     'jabatan' => 'Kepala Divisi',
+     * ],
+     */
 
     public function run(): void
     {
