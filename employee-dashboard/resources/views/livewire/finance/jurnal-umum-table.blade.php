@@ -4,6 +4,8 @@
         if ($wire.showCoaPanel) { $wire.closeCoaPanel(); }
         else if ($wire.showDivisionDialog) { $wire.closeDivisionDialog(); }
         else if ($wire.showManualModal) { $wire.closeManualModal(); }
+        else if ($wire.editingLineId) { $wire.closeLineEdit(); }
+        else if ($wire.deletingLineId) { $wire.cancelDeleteLine(); }
         else if ($wire.cancelEntryId) { $wire.closeCancelModal(); }
      ">
 
@@ -107,7 +109,7 @@
     {{-- ── Journal card ───────────────────────────────────────────────── --}}
     <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white">
         <div class="max-h-[62vh] overflow-auto rounded-t-xl">
-            <table class="w-full min-w-[880px] border-collapse text-[13px]">
+            <table class="w-full min-w-[980px] border-collapse text-[13px]">
                 <thead class="sticky top-0 z-10 bg-[#EAF4F8] text-[12px] font-medium text-[#334155]">
                     <tr>
                         <th scope="col" class="whitespace-nowrap px-3 py-2.5 text-left font-medium">Tanggal</th>
@@ -116,6 +118,7 @@
                         <th scope="col" title="Kode divisi" class="whitespace-nowrap px-3 py-2.5 text-left font-medium">Kode</th>
                         <th scope="col" class="whitespace-nowrap px-3 py-2.5 text-right font-medium">Debit (Rp)</th>
                         <th scope="col" class="whitespace-nowrap px-3 py-2.5 text-right font-medium">Kredit (Rp)</th>
+                        <th scope="col" class="whitespace-nowrap px-3 py-2.5 text-right font-medium">Aksi</th>
                     </tr>
                 </thead>
 
@@ -159,11 +162,22 @@
                                 <td class="whitespace-nowrap px-3 py-1 text-right tabular-nums {{ $line->credit > 0 ? 'text-[#172B36]' : 'text-[#4B5563]' }}">
                                     {{ $line->credit > 0 ? number_format($line->credit, 0, ',', '.') : '-' }}
                                 </td>
+                                <td class="whitespace-nowrap px-3 py-1 text-right">
+                                    @can('update', \App\Models\JurnalEntry::class)
+                                        <button type="button" wire:click="openLineEdit({{ $line->id }})"
+                                            class="text-[12px] font-medium text-[#146C94] hover:underline">Ubah</button>
+                                    @endcan
+                                    @can('delete', \App\Models\JurnalEntry::class)
+                                        <span class="mx-1 text-[#CBD5E1]">|</span>
+                                        <button type="button" wire:click="askDeleteLine({{ $line->id }})"
+                                            class="text-[12px] font-medium text-[#B91C1C] hover:underline">Hapus</button>
+                                    @endcan
+                                </td>
                             </tr>
                         @endforeach
                         @can('cancel', \App\Models\JurnalEntry::class)
                             <tr>
-                                <td colspan="6" class="px-3 pb-2 pt-0.5 text-right">
+                                <td colspan="7" class="px-3 pb-2 pt-0.5 text-right">
                                     <button type="button" wire:click="openCancelModal({{ $entry->id }})"
                                         class="text-[11px] text-[#146C94] transition hover:underline">Batalkan</button>
                                 </td>
@@ -173,7 +187,7 @@
                 @empty
                     <tbody>
                         <tr>
-                            <td colspan="6" class="px-4 py-14 text-center">
+                            <td colspan="7" class="px-4 py-14 text-center">
                                 <p class="text-[14px] font-medium text-[#334155]">Belum ada jurnal untuk {{ $this->periodeLabel }}</p>
                                 <p class="mx-auto mt-1 max-w-md text-[12px] text-[#4B5563]">
                                     Jurnal dibuat otomatis dari transaksi kas masuk, kas keluar, dan pencairan dana.
@@ -436,6 +450,77 @@
                         class="h-9 rounded-lg border border-[#D5DEE3] bg-white px-4 text-[13px] font-medium text-[#334155]">Batal</button>
                     <button type="button" wire:click="confirmCancel"
                         class="h-9 rounded-lg bg-[#146C94] px-4 text-[13px] font-medium text-white hover:bg-[#105A7A]">Batalkan jurnal</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ── Ubah baris jurnal ───────────────────────────────────────────── --}}
+    @if ($editingLineId)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(15, 40, 55, .45)"
+             wire:click.self="closeLineEdit">
+            <div class="w-full max-w-[420px] rounded-xl bg-white shadow-xl" role="dialog" aria-modal="true" aria-label="Ubah baris jurnal">
+                <div class="border-b border-[#E2E8EC] px-4 py-3">
+                    <h2 class="text-[15px] font-semibold text-[#172B36]">Ubah baris jurnal</h2>
+                </div>
+                <div class="space-y-3 px-4 py-4">
+                    <div>
+                        <label class="mb-1 block text-[12px] font-medium text-[#334155]">Akun <span class="text-red-500">*</span></label>
+                        <select wire:model="editAccountId"
+                            class="h-9 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] focus:border-[#146C94] focus:outline-none">
+                            <option value="">Pilih akun</option>
+                            @foreach ($this->activeAccounts as $kelompok => $accounts)
+                                <optgroup label="{{ $kelompok }}">
+                                    @foreach ($accounts as $akun)
+                                        <option value="{{ $akun->id }}">{{ $akun->kode }} {{ $akun->nama }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
+                        </select>
+                        @error('editAccountId') <p class="mt-1 text-[11px] text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-[12px] font-medium text-[#334155]">Keterangan <span class="text-red-500">*</span></label>
+                        <input type="text" wire:model="editKeterangan" maxlength="500"
+                            class="h-9 w-full rounded-lg border border-[#D5DEE3] px-3 text-[13px] focus:border-[#146C94] focus:outline-none">
+                        @error('editKeterangan') <p class="mt-1 text-[11px] text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="mb-1 block text-[12px] font-medium text-[#334155]">Debit</label>
+                            <input type="number" min="0" step="1" wire:model.live="editDebit"
+                                class="h-9 w-full rounded-lg border border-[#D5DEE3] px-3 text-right tabular-nums focus:border-[#146C94] focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-[12px] font-medium text-[#334155]">Kredit</label>
+                            <input type="number" min="0" step="1" wire:model.live="editCredit"
+                                class="h-9 w-full rounded-lg border border-[#D5DEE3] px-3 text-right tabular-nums focus:border-[#146C94] focus:outline-none">
+                        </div>
+                    </div>
+                    @error('editDebit') <p class="mt-1 text-[11px] text-red-600">{{ $message }}</p> @enderror
+                    <p class="text-[11px] text-[#4B5563]">Satu baris hanya boleh berisi debit atau kredit.</p>
+                </div>
+                <div class="flex justify-end gap-2 border-t border-[#E2E8EC] px-4 py-3">
+                    <button type="button" wire:click="closeLineEdit"
+                        class="h-9 rounded-lg border border-[#D5DEE3] bg-white px-4 text-[13px] font-medium text-[#334155]">Batal</button>
+                    <button type="button" wire:click="saveLine"
+                        class="h-9 rounded-lg bg-[#146C94] px-4 text-[13px] font-medium text-white hover:bg-[#105A7A]">Simpan</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ── Hapus baris jurnal ──────────────────────────────────────────── --}}
+    @if ($deletingLineId)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(15, 40, 55, .45)">
+            <div class="w-full max-w-[380px] rounded-xl bg-white p-4 shadow-xl" role="dialog" aria-modal="true" aria-label="Hapus baris jurnal">
+                <h2 class="text-[15px] font-semibold text-[#172B36]">Hapus baris jurnal?</h2>
+                <p class="mt-2 text-[13px] text-[#4B5563]">Baris yang dihapus akan dicatat pada log audit. Total jurnal dapat menjadi tidak seimbang.</p>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button type="button" wire:click="cancelDeleteLine"
+                        class="h-9 rounded-lg border border-[#D5DEE3] bg-white px-4 text-[13px] font-medium text-[#334155]">Batal</button>
+                    <button type="button" wire:click="deleteLine"
+                        class="h-9 rounded-lg bg-[#B91C1C] px-4 text-[13px] font-medium text-white hover:bg-[#991B1B]">Hapus</button>
                 </div>
             </div>
         </div>

@@ -448,4 +448,97 @@ class JurnalUmumTest extends TestCase
             ->assertSee('Uang masuk dari klien')
             ->assertSee('Pendapatan jasa klien');
     }
+
+    public function test_finance_can_edit_a_journal_line_and_it_is_audited(): void
+    {
+        $kas = CoaAkun::where('kode', '1101')->firstOrFail();
+        $pendapatan = CoaAkun::where('kode', '4101')->firstOrFail();
+
+        $entry = app(JurnalEntryService::class)->createManual([
+            'entry_date' => '2026-11-12',
+            'jurnal_divisi_id' => JurnalDivisi::first()->id,
+            'lines' => [
+                ['account_id' => $kas->id, 'keterangan' => 'Kas lama', 'debit' => 100000, 'credit' => 0],
+                ['account_id' => $pendapatan->id, 'keterangan' => 'Pendapatan', 'debit' => 0, 'credit' => 100000],
+            ],
+        ], $this->finance->id_user);
+
+        $line = $entry->lines->first(fn (JurnalLine $l) => $l->debit > 0);
+
+        Livewire::actingAs($this->finance)
+            ->test(JurnalUmumTable::class)
+            ->call('openLineEdit', $line->id)
+            ->assertSet('editKeterangan', 'Kas lama')
+            ->set('editKeterangan', 'Kas dikoreksi')
+            ->set('editDebit', 125000)
+            ->call('saveLine')
+            ->assertSet('editingLineId', null);
+
+        $line->refresh();
+        $this->assertSame('Kas dikoreksi', $line->keterangan);
+        $this->assertSame(125000, $line->debit);
+        $this->assertDatabaseHas('audit_logs', [
+            'aksi' => 'jurnal_baris_diubah',
+            'target_tipe' => 'jurnal_line',
+            'target_id' => (string) $line->id,
+        ]);
+    }
+
+    public function test_setting_both_debit_and_credit_keeps_only_one_side(): void
+    {
+        $kas = CoaAkun::where('kode', '1101')->firstOrFail();
+        $pendapatan = CoaAkun::where('kode', '4101')->firstOrFail();
+
+        $entry = app(JurnalEntryService::class)->createManual([
+            'entry_date' => '2026-11-12',
+            'jurnal_divisi_id' => JurnalDivisi::first()->id,
+            'lines' => [
+                ['account_id' => $kas->id, 'keterangan' => 'Kas', 'debit' => 100000, 'credit' => 0],
+                ['account_id' => $pendapatan->id, 'keterangan' => 'Pendapatan', 'debit' => 0, 'credit' => 100000],
+            ],
+        ], $this->finance->id_user);
+
+        $line = $entry->lines->first();
+
+        Livewire::actingAs($this->finance)
+            ->test(JurnalUmumTable::class)
+            ->call('openLineEdit', $line->id)
+            ->set('editDebit', 5000)
+            ->set('editCredit', 5000)
+            ->assertSet('editDebit', '')
+            ->assertSet('editCredit', 5000)
+            ->call('saveLine')
+            ->assertSet('editingLineId', null);
+    }
+
+    public function test_finance_can_delete_a_journal_line_and_it_is_audited(): void
+    {
+        $kas = CoaAkun::where('kode', '1101')->firstOrFail();
+        $pendapatan = CoaAkun::where('kode', '4101')->firstOrFail();
+
+        $entry = app(JurnalEntryService::class)->createManual([
+            'entry_date' => '2026-11-12',
+            'jurnal_divisi_id' => JurnalDivisi::first()->id,
+            'lines' => [
+                ['account_id' => $kas->id, 'keterangan' => 'Kas', 'debit' => 100000, 'credit' => 0],
+                ['account_id' => $pendapatan->id, 'keterangan' => 'Pendapatan', 'debit' => 0, 'credit' => 100000],
+            ],
+        ], $this->finance->id_user);
+
+        $line = $entry->lines->first();
+
+        Livewire::actingAs($this->finance)
+            ->test(JurnalUmumTable::class)
+            ->call('askDeleteLine', $line->id)
+            ->call('deleteLine')
+            ->assertSet('deletingLineId', null);
+
+        $this->assertSame(1, JurnalLine::count());
+        $this->assertDatabaseMissing('jurnal_lines', ['id' => $line->id]);
+        $this->assertDatabaseHas('audit_logs', [
+            'aksi' => 'jurnal_baris_dihapus',
+            'target_tipe' => 'jurnal_line',
+            'target_id' => (string) $line->id,
+        ]);
+    }
 }
