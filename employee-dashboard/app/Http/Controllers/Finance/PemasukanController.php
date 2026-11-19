@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Finance;
 use App\Http\Controllers\Controller;
 use App\Models\KPemasukan;
 use App\Models\Divisi;
+use App\Services\Finance\JurnalEntryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Manajemen Pemasukan Kas — hanya untuk Kadiv Finance.
@@ -72,7 +74,12 @@ class PemasukanController extends Controller
         $data['kode_transaksi']  = 'IN' . now()->format('ym') . str_pad($count + 1, 4, '0', STR_PAD_LEFT);
         $data['user_id_user']    = Auth::id();
 
-        KPemasukan::create($data);
+        DB::transaction(function () use ($data) {
+            $pemasukan = KPemasukan::create($data);
+
+            // Jurnal dan transaksi sumber dibuat dalam satu transaksi yang sama.
+            app(JurnalEntryService::class)->createFromPemasukan($pemasukan);
+        });
 
         return back()->with('success', 'Pemasukan kas berhasil dicatat.');
     }

@@ -103,12 +103,6 @@
             <h2 class="truncate text-lg md:text-xl font-bold text-[#172B36] tracking-tight">
                 {{ $weekTitle }}
             </h2>
-
-            @if($activeTargetKaryawan && $viewMode !== 'my')
-                <span class="text-xs px-2.5 py-1 bg-slate-100 text-slate-700 font-medium rounded-md">
-                    Catatan: <strong class="text-slate-900">{{ $activeTargetKaryawan->nama }}</strong>
-                </span>
-            @endif
         </div>
 
         {{-- Role Tabs & Dropdowns Filter --}}
