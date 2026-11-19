@@ -6,7 +6,6 @@
         else if ($wire.showManualModal) { $wire.closeManualModal(); }
         else if ($wire.editingLineId) { $wire.closeLineEdit(); }
         else if ($wire.deletingLineId) { $wire.cancelDeleteLine(); }
-        else if ($wire.cancelEntryId) { $wire.closeCancelModal(); }
      ">
 
     {{-- ── Header ─────────────────────────────────────────────────────── --}}
@@ -88,7 +87,7 @@
             class="h-9 min-w-[180px] rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] text-[#334155] focus:border-[#146C94] focus:outline-none">
             <option value="">Semua divisi</option>
             @foreach ($divisions as $divisi)
-                <option value="{{ $divisi->id }}">{{ $divisi->nama }}</option>
+                <option wire:key="filter-divisi-{{ $divisi->id }}" value="{{ $divisi->id }}">{{ $divisi->nama }}</option>
             @endforeach
         </select>
 
@@ -175,14 +174,6 @@
                                 </td>
                             </tr>
                         @endforeach
-                        @can('cancel', \App\Models\JurnalEntry::class)
-                            <tr>
-                                <td colspan="7" class="px-3 pb-2 pt-0.5 text-right">
-                                    <button type="button" wire:click="openCancelModal({{ $entry->id }})"
-                                        class="text-[11px] text-[#146C94] transition hover:underline">Batalkan</button>
-                                </td>
-                            </tr>
-                        @endcan
                     </tbody>
                 @empty
                     <tbody>
@@ -328,7 +319,7 @@
                                 class="h-9 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] text-[#172B36] focus:border-[#146C94] focus:outline-none">
                                 <option value="">Pilih divisi</option>
                                 @foreach ($divisions as $divisi)
-                                    <option value="{{ $divisi->id }}">{{ $divisi->nama }} ({{ $divisi->kode }})</option>
+                                    <option wire:key="manual-divisi-{{ $divisi->id }}" value="{{ $divisi->id }}">{{ $divisi->nama }} ({{ $divisi->kode }})</option>
                                 @endforeach
                             </select>
                             @error('manualDivisiId') <p class="mt-1 text-[11px] text-red-600">{{ $message }}</p> @enderror
@@ -366,9 +357,9 @@
                                                     class="h-8 w-full rounded-md border border-[#D5DEE3] bg-white px-2 text-[12px] focus:border-[#146C94] focus:outline-none">
                                                     <option value="">Pilih akun</option>
                                                     @foreach ($this->activeAccounts as $kelompok => $accounts)
-                                                        <optgroup label="{{ $kelompok }}">
+                                                        <optgroup wire:key="manual-grup-{{ $index }}-{{ $kelompok }}" label="{{ $kelompok }}">
                                                             @foreach ($accounts as $akun)
-                                                                <option value="{{ $akun->id }}">{{ $akun->kode }} {{ $akun->nama }}</option>
+                                                                <option wire:key="manual-akun-{{ $index }}-{{ $akun->id }}" value="{{ $akun->id }}">{{ $akun->kode }} {{ $akun->nama }}</option>
                                                             @endforeach
                                                         </optgroup>
                                                     @endforeach
@@ -424,37 +415,6 @@
         </div>
     @endif
 
-    {{-- ── Cancel / reversing entry modal ─────────────────────────────── --}}
-    @if ($cancelEntryId)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(15, 40, 55, .45)"
-             wire:click.self="closeCancelModal">
-            <div class="w-full max-w-[420px] overflow-hidden rounded-xl bg-white shadow-xl"
-                 role="dialog" aria-modal="true" aria-label="Batalkan jurnal">
-                <div class="border-b border-[#E2E8EC] px-4 py-3">
-                    <h2 class="text-[15px] font-semibold text-[#172B36]">Batalkan jurnal</h2>
-                </div>
-                <div class="space-y-3 px-4 py-4">
-                    <p class="text-[13px] text-[#4B5563]">
-                        Jurnal <span class="font-mono text-[#172B36]">{{ $cancelEntryRef }}</span> tidak akan dihapus.
-                        Sistem akan membuat jurnal balik dengan Ref baru.
-                    </p>
-                    <div>
-                        <label class="mb-1 block text-[12px] font-medium text-[#334155]">Alasan pembatalan <span class="text-red-500">*</span></label>
-                        <textarea wire:model="cancelReason" rows="3" placeholder="Tuliskan alasan pembatalan"
-                            class="w-full resize-none rounded-lg border border-[#D5DEE3] bg-white px-3 py-2 text-[13px] focus:border-[#146C94] focus:outline-none"></textarea>
-                        @error('cancelReason') <p class="mt-1 text-[11px] text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                </div>
-                <div class="flex justify-end gap-2 border-t border-[#E2E8EC] px-4 py-3">
-                    <button type="button" wire:click="closeCancelModal"
-                        class="h-9 rounded-lg border border-[#D5DEE3] bg-white px-4 text-[13px] font-medium text-[#334155]">Batal</button>
-                    <button type="button" wire:click="confirmCancel"
-                        class="h-9 rounded-lg bg-[#146C94] px-4 text-[13px] font-medium text-white hover:bg-[#105A7A]">Batalkan jurnal</button>
-                </div>
-            </div>
-        </div>
-    @endif
-
     {{-- ── Ubah baris jurnal ───────────────────────────────────────────── --}}
     @if ($editingLineId)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(15, 40, 55, .45)"
@@ -470,9 +430,9 @@
                             class="h-9 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] focus:border-[#146C94] focus:outline-none">
                             <option value="">Pilih akun</option>
                             @foreach ($this->activeAccounts as $kelompok => $accounts)
-                                <optgroup label="{{ $kelompok }}">
+                                <optgroup wire:key="edit-grup-{{ $kelompok }}" label="{{ $kelompok }}">
                                     @foreach ($accounts as $akun)
-                                        <option value="{{ $akun->id }}">{{ $akun->kode }} {{ $akun->nama }}</option>
+                                        <option wire:key="edit-akun-{{ $akun->id }}" value="{{ $akun->id }}">{{ $akun->kode }} {{ $akun->nama }}</option>
                                     @endforeach
                                 </optgroup>
                             @endforeach

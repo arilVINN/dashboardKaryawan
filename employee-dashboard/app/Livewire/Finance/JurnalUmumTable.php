@@ -36,12 +36,6 @@ class JurnalUmumTable extends Component
 
     public string $coaSearch = '';
 
-    public ?int $cancelEntryId = null;
-
-    public ?string $cancelEntryRef = null;
-
-    public string $cancelReason = '';
-
     public ?string $manualDivisiId = null;
 
     public string $manualTanggal = '';
@@ -73,6 +67,9 @@ class JurnalUmumTable extends Component
         $this->periode = now()->format('Y-m');
         $this->manualTanggal = now()->toDateString();
         $this->resetLines();
+
+        // Tautan "Daftar akun (COA)" di sidebar membuka panel langsung.
+        $this->showCoaPanel = request()->query('panel') === 'coa';
     }
 
     // ── Filters ───────────────────────────────────────────────────────────
@@ -377,54 +374,6 @@ class JurnalUmumTable extends Component
             $this->feedbackMessage = $e->getMessage();
             $this->feedbackType = 'error';
         }
-    }
-
-    // ── Reversing entry ───────────────────────────────────────────────────
-
-    public function openCancelModal(int $id): void
-    {
-        $this->authorizeAbility('cancel');
-
-        $entry = JurnalEntry::findOrFail($id);
-        $this->cancelEntryId = $entry->id;
-        $this->cancelEntryRef = $entry->ref_code;
-        $this->cancelReason = '';
-        $this->resetValidation();
-        $this->resetFeedback();
-    }
-
-    public function closeCancelModal(): void
-    {
-        $this->cancelEntryId = null;
-        $this->cancelEntryRef = null;
-        $this->cancelReason = '';
-        $this->resetValidation();
-    }
-
-    public function confirmCancel(): void
-    {
-        $this->authorizeAbility('cancel');
-
-        $this->validate([
-            'cancelReason' => ['required', 'string', 'max:500'],
-        ], [
-            'cancelReason.required' => 'Alasan pembatalan wajib diisi.',
-        ]);
-
-        $entry = JurnalEntry::find($this->cancelEntryId);
-        if (! $entry) {
-            $this->closeCancelModal();
-
-            return;
-        }
-
-        DB::transaction(function () use ($entry) {
-            app(JurnalEntryService::class)->reverse($entry, $this->cancelReason, auth()->id());
-        });
-
-        $this->feedbackMessage = 'Jurnal ' . $entry->ref_code . ' dibatalkan dengan jurnal balik.';
-        $this->feedbackType = 'success';
-        $this->closeCancelModal();
     }
 
     // ── Edit / hapus baris jurnal ─────────────────────────────────────────

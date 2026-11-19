@@ -247,11 +247,8 @@ class JurnalUmumTest extends TestCase
             ],
         ], $this->finance->id_user);
 
-        Livewire::actingAs($this->finance)
-            ->test(JurnalUmumTable::class)
-            ->call('openCancelModal', $original->id)
-            ->set('cancelReason', 'Salah input nominal')
-            ->call('confirmCancel');
+        // Aksi pembatalan sudah dihapus dari UI; layanan balik tetap teruji langsung.
+        app(JurnalEntryService::class)->reverse($original, 'Salah input nominal', $this->finance->id_user);
 
         $this->assertSame(2, JurnalEntry::count());
         $reversal = JurnalEntry::where('source_type', \App\Models\JurnalEntry::class)
@@ -265,6 +262,19 @@ class JurnalUmumTest extends TestCase
         $this->assertSame(400000, (int) $reversal->lines->sum('credit'));
         $this->assertSame('Jurnal asli', $original->fresh()->lines->first()->keterangan);
         $this->assertTrue($original->fresh()->lines->first(fn (JurnalLine $l) => $l->debit > 0)->debit === 400000);
+    }
+
+    public function test_batalkan_button_is_gone_and_sidebar_coa_link_opens_panel(): void
+    {
+        $this->actingAs($this->finance)->get(route('kadiv.keuangan.jurnalUmum'))
+            ->assertOk()
+            ->assertDontSee('Batalkan jurnal')
+            ->assertSee('Daftar akun (COA)');
+
+        $this->actingAs($this->finance)
+            ->get(route('kadiv.keuangan.jurnalUmum', ['panel' => 'coa']))
+            ->assertOk()
+            ->assertSee('Cari kode atau nama akun');
     }
 
     public function test_coa_panel_hides_inactive_accounts_and_filters_by_search(): void
@@ -333,6 +343,31 @@ class JurnalUmumTest extends TestCase
             ->set('manualLines', $lines)
             ->assertSet('manualLines.2.debit', 100000)
             ->assertSet('manualLines.2.credit', '');
+    }
+
+    public function test_division_selection_survives_adding_rows_and_saving(): void
+    {
+        $divisi = JurnalDivisi::firstOrFail();
+        $kas = CoaAkun::where('kode', '1101')->firstOrFail();
+        $pendapatan = CoaAkun::where('kode', '4101')->firstOrFail();
+
+        Livewire::actingAs($this->finance)
+            ->test(JurnalUmumTable::class)
+            ->call('openManualModal')
+            ->set('manualDivisiId', (string) $divisi->id)
+            ->set('manualLines.0.account_id', (string) $kas->id)
+            ->set('manualLines.0.keterangan', 'Kas')
+            ->set('manualLines.0.debit', 200000)
+            ->set('manualLines.1.account_id', (string) $pendapatan->id)
+            ->set('manualLines.1.keterangan', 'Pendapatan')
+            ->set('manualLines.1.credit', 200000)
+            ->call('addLine')
+            ->assertSet('manualDivisiId', (string) $divisi->id)
+            ->call('saveManual')
+            ->assertSet('showManualModal', false);
+
+        $this->assertSame($divisi->id, JurnalEntry::first()->jurnal_divisi_id);
+        $this->assertSame(200000, (int) JurnalLine::sum('debit'));
     }
 
     public function test_adding_two_rows_can_be_balanced_and_saved(): void
