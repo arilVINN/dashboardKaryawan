@@ -17,6 +17,7 @@ class ContentEvent extends Model
         'event_date',
         'post_time',
         'content_type',
+        'content_pillar',
         'content_account_id',
         'status',
         'caption',

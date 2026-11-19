@@ -6,6 +6,7 @@ use App\Livewire\ContentCalendar;
 use App\Models\ContentAccount;
 use App\Models\ContentEvent;
 use App\Models\ContentEventComment;
+use App\Models\ContentPillar;
 use App\Models\ContentType;
 use App\Models\Divisi;
 use App\Models\Holiday;
@@ -13,6 +14,7 @@ use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\User2;
 use App\Support\ContentCalendarAccess;
+use Database\Seeders\ContentPillarSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -90,6 +92,13 @@ class ContentCalendarTest extends TestCase
             ['slug' => 'reels', 'name' => 'Reels', 'sort_order' => 1],
             ['slug' => 'single-image', 'name' => 'Single Image', 'sort_order' => 2],
             ['slug' => 'carousel', 'name' => 'Carousel', 'sort_order' => 3],
+        ]);
+
+        ContentPillar::insert([
+            ['slug' => 'informasi', 'name' => 'Informasi', 'color' => '#2563EB', 'sort_order' => 1],
+            ['slug' => 'edukasi', 'name' => 'Edukasi', 'color' => '#059669', 'sort_order' => 2],
+            ['slug' => 'entertain', 'name' => 'Entertain', 'color' => '#7C3AED', 'sort_order' => 3],
+            ['slug' => 'promosi', 'name' => 'Promosi', 'color' => '#EA580C', 'sort_order' => 4],
         ]);
 
         $this->defaultAccount = ContentAccount::create([
@@ -1303,4 +1312,77 @@ class ContentCalendarTest extends TestCase
             ->call('closeModal', true)
             ->assertSet('formOpen', false);
     }
+
+    public function test_content_pillar_seeder_has_four_coloured_pillars(): void
+    {
+        $this->seed(ContentPillarSeeder::class);
+
+        $this->assertSame([
+            ['slug' => 'informasi', 'name' => 'Informasi', 'color' => '#2563EB', 'sort_order' => 1],
+            ['slug' => 'edukasi', 'name' => 'Edukasi', 'color' => '#059669', 'sort_order' => 2],
+            ['slug' => 'entertain', 'name' => 'Entertain', 'color' => '#7C3AED', 'sort_order' => 3],
+            ['slug' => 'promosi', 'name' => 'Promosi', 'color' => '#EA580C', 'sort_order' => 4],
+        ], ContentPillar::orderBy('sort_order')->get(['slug', 'name', 'color', 'sort_order'])->toArray());
+    }
+
+    public function test_create_saves_the_selected_content_pillar(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Konten Edukasi')
+            ->set('content_type', 'reels')
+            ->set('content_pillar', 'edukasi')
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertSet('formOpen', false);
+
+        $this->assertDatabaseHas('content_events', [
+            'title' => 'Konten Edukasi',
+            'content_pillar' => 'edukasi',
+        ]);
+    }
+
+    public function test_invalid_content_pillar_is_rejected(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Konten Salah Pillar')
+            ->set('content_type', 'reels')
+            ->set('content_pillar', 'belum-ada')
+            ->call('save')
+            ->assertHasErrors(['content_pillar']);
+    }
+
+    public function test_content_pillar_autosaves_from_the_detail_modal(): void
+    {
+        $event = $this->event($this->staffHr, ['title' => 'Pillar Autosave']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSet('content_pillar', '')
+            ->set('content_pillar', 'promosi')
+            ->assertDispatched('content-saved');
+
+        $this->assertSame('promosi', $event->fresh()->content_pillar);
+    }
+
+    public function test_content_pillar_pill_is_rendered_on_calendar_cards(): void
+    {
+        $this->event($this->staffHr, [
+            'title' => 'Kartu Pillar',
+            'event_date' => '2026-11-10',
+            'content_pillar' => 'entertain',
+        ]);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->assertSee('Kartu Pillar')
+            ->assertSee('Entertain')
+            ->assertSeeHtml('background-color: #7C3AED; border-color: #7C3AED; color: #FFFFFF;');
+    }
+
 }

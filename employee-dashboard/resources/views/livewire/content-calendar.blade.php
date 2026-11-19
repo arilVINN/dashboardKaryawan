@@ -425,6 +425,9 @@
                                                     <span>· {{ $item['time_label'] }}</span>
                                                 @endif
                                                 <x-content-type-tag :name="$item['type_name']" :fill="$item['type_fill']" :border="$item['type_border']" quiet />
+                                                @if (! empty($item['pillar_name']))
+                                                    <x-content-pillar-pill :name="$item['pillar_name']" :color="$item['pillar_color']" />
+                                                @endif
                                             </span>
                                         </span>
                                         <x-status-badge variant="content" dot solid :status="$item['status']" />
@@ -490,7 +493,17 @@
                 ];
             })->values()->all();
 
+            $pillarSelectOptions = collect($contentPillars)->map(fn ($pillar) => [
+                'value' => $pillar['slug'],
+                'label' => $pillar['name'],
+                'fill' => $pillar['color'],
+                'border' => $pillar['color'],
+                'text' => '#FFFFFF',
+                'kind' => 'tag',
+            ])->values()->all();
+
             $selectedType = $contentTypes[$content_type] ?? null;
+            $selectedPillar = $contentPillars[$content_pillar] ?? null;
             $selectedStatusColors = \App\Support\StatusPalette::content($formStatus);
         @endphp
 
@@ -552,7 +565,7 @@
                     @endif
 
                     {{-- Properties --}}
-                    <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
                         <div class="min-w-0">
                             <p class="mb-1.5 flex items-center gap-1.5 text-[13px] text-[#4B5563]">
                                 <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -591,6 +604,30 @@
                                 <x-property-select id="content-type" label="Jenis konten" model="content_type"
                                     :value="$content_type" :options="$typeSelectOptions" placeholder="Pilih jenis" />
                                 @error('content_type')
+                                    <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
+                                @enderror
+                            @endif
+                        </div>
+
+                        <div class="min-w-0">
+                            <p class="mb-1.5 flex items-center gap-1.5 text-[13px] text-[#4B5563]">
+                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 5h5v14H4zM10.5 5h5v14h-5zM17 5h3v14h-3z"></path>
+                                </svg>
+                                Konten pillar
+                            </p>
+                            @if ($readOnly)
+                                <div class="flex h-[42px] items-center rounded-lg border border-[#D5DEE3] bg-white px-2.5">
+                                    @if ($selectedPillar)
+                                        <x-content-pillar-pill :name="$selectedPillar['name']" :color="$selectedPillar['color']" />
+                                    @else
+                                        <span class="text-sm text-[#4B5563]">-</span>
+                                    @endif
+                                </div>
+                            @else
+                                <x-property-select id="content-pillar" label="Konten pillar" model="content_pillar"
+                                    :value="$content_pillar" :options="$pillarSelectOptions" placeholder="Pilih pillar" />
+                                @error('content_pillar')
                                     <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
                                 @enderror
                             @endif
