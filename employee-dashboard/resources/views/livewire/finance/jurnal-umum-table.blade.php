@@ -122,11 +122,12 @@
                 @forelse ($entries as $entry)
                     @php
                         $lines = $entry->lines->sortByDesc(fn ($line) => $line->debit > 0)->values();
+                        $transactionLabel = 'Transaksi ' . ($entry->ref_code ?? '#' . $entry->id);
                     @endphp
-                    <tbody class="border-b border-[#E2E8EC] last:border-b-0" aria-label="Transaksi {{ $entry->ref_code }}">
+                    <tbody class="border-b border-[#E2E8EC] last:border-b-0" aria-label="{{ $transactionLabel }}">
                         @foreach ($lines as $lineIndex => $line)
                             <tr class="min-h-[30px] transition hover:bg-[#F5FAFC]"
-                                @if ($lineIndex === 0) aria-label="Transaksi {{ $entry->ref_code }}" @endif>
+                                @if ($lineIndex === 0) aria-label="{{ $transactionLabel }}" @endif>
                                 <td class="whitespace-nowrap px-3 py-1 text-[#4B5563]">
                                     @if ($lineIndex === 0)
                                         {{ $entry->entry_date->locale('id')->translatedFormat('j M Y') }}
@@ -134,18 +135,18 @@
                                 </td>
                                 <td class="px-3 py-1 text-[#172B36]">
                                     <span class="{{ $line->credit > 0 ? 'block pl-[18px]' : '' }} {{ $lineIndex === 0 ? 'font-medium' : '' }}">
-                                        {{ $line->account?->kode }} {{ $line->account?->nama }}
+                                        @if ($entry->source_url)
+                                            <a href="{{ $entry->source_url }}" class="hover:text-[#146C94] hover:underline">{{ $line->account?->kode }} {{ $line->account?->nama }}</a>
+                                        @else
+                                            {{ $line->account?->kode }} {{ $line->account?->nama }}
+                                        @endif
+                                        @if ($line->keterangan)
+                                            <span class="mt-0.5 block text-[11.5px] font-normal text-[#4B5563]">{{ $line->keterangan }}</span>
+                                        @endif
                                     </span>
                                 </td>
-                                <td class="whitespace-nowrap px-3 py-1">
-                                    @if ($lineIndex === 0)
-                                        @if ($entry->source_url)
-                                            <a href="{{ $entry->source_url }}"
-                                                class="font-mono text-[12px] text-[#146C94] hover:underline">{{ $entry->ref_code }}</a>
-                                        @else
-                                            <span class="font-mono text-[12px] text-[#4B5563]">{{ $entry->ref_code }}</span>
-                                        @endif
-                                    @endif
+                                <td class="whitespace-nowrap px-3 py-1 font-mono text-[12px] text-[#4B5563]">
+                                    {{ $line->account?->kode }}
                                 </td>
                                 <td class="whitespace-nowrap px-3 py-1 font-mono text-[12px] text-[#4B5563]">
                                     @if ($lineIndex === 0)
@@ -160,17 +161,14 @@
                                 </td>
                             </tr>
                         @endforeach
-                        <tr>
-                            <td colspan="6" class="px-3 pb-2 pt-0.5">
-                                <div class="flex items-start justify-between gap-3">
-                                    <span class="text-[11.5px] text-[#4B5563]">{{ $entry->keterangan }}</span>
-                                    @can('cancel', \App\Models\JurnalEntry::class)
-                                        <button type="button" wire:click="openCancelModal({{ $entry->id }})"
-                                            class="shrink-0 text-[11px] text-[#146C94] transition hover:underline">Batalkan</button>
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
+                        @can('cancel', \App\Models\JurnalEntry::class)
+                            <tr>
+                                <td colspan="6" class="px-3 pb-2 pt-0.5 text-right">
+                                    <button type="button" wire:click="openCancelModal({{ $entry->id }})"
+                                        class="text-[11px] text-[#146C94] transition hover:underline">Batalkan</button>
+                                </td>
+                            </tr>
+                        @endcan
                     </tbody>
                 @empty
                     <tbody>
@@ -330,15 +328,6 @@
                     </div>
 
                     <div>
-                        <label class="mb-1 block text-[12px] font-medium text-[#334155]">Keterangan <span class="text-red-500">*</span></label>
-                        <textarea wire:model="manualKeterangan" rows="2"
-                            @if (! $this->canWriteKeterangan) disabled @endif
-                            placeholder="{{ $this->canWriteKeterangan ? 'Uraian transaksi' : 'Pilih divisi dan akun terlebih dahulu' }}"
-                            class="w-full resize-none rounded-lg border border-[#D5DEE3] bg-white px-3 py-2 text-[13px] text-[#172B36] placeholder:text-[#94A3B8] focus:border-[#146C94] focus:outline-none disabled:bg-slate-50 disabled:text-[#94A3B8]"></textarea>
-                        @error('manualKeterangan') <p class="mt-1 text-[11px] text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div>
                         <div class="mb-1 flex items-center justify-between">
                             <span class="text-[12px] font-medium text-[#334155]">Baris jurnal</span>
                             <button type="button" wire:click="addLine"
@@ -370,6 +359,11 @@
                                                         </optgroup>
                                                     @endforeach
                                                 </select>
+                                                <input type="text" wire:model="manualLines.{{ $index }}.keterangan"
+                                                    @if (blank($line['account_id'] ?? null)) disabled @endif
+                                                    maxlength="500"
+                                                    placeholder="{{ filled($line['account_id'] ?? null) ? 'Keterangan akun ini' : 'Pilih akun terlebih dahulu' }}"
+                                                    class="mt-1 h-8 w-full rounded-md border border-[#D5DEE3] bg-white px-2 text-[12px] text-[#172B36] placeholder:text-[#94A3B8] focus:border-[#146C94] focus:outline-none disabled:bg-slate-50 disabled:text-[#94A3B8]">
                                             </td>
                                             <td class="px-2 py-2">
                                                 <input type="number" min="0" step="1" wire:model.live="manualLines.{{ $index }}.debit"

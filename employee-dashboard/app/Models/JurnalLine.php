@@ -11,6 +11,7 @@ class JurnalLine extends Model
     protected $fillable = [
         'jurnal_entry_id',
         'account_id',
+        'keterangan',
         'debit',
         'credit',
         'sort_order',

@@ -96,8 +96,8 @@ class JurnalUmumTest extends TestCase
         $entry = JurnalEntry::with('lines.account')->firstOrFail();
         $this->assertSame('DMIN001', $entry->ref_code);
         $this->assertSame('2026-11-12', $entry->entry_date->toDateString());
-        $this->assertSame('Pembayaran proyek', $entry->keterangan);
         $this->assertCount(2, $entry->lines);
+        $entry->lines->each(fn (JurnalLine $line) => $this->assertSame('Pembayaran proyek', $line->keterangan));
         $this->assertSame(1500000, (int) $entry->lines->sum('debit'));
         $this->assertSame(1500000, (int) $entry->lines->sum('credit'));
 
@@ -158,7 +158,7 @@ class JurnalUmumTest extends TestCase
         $entry = JurnalEntry::with('lines.account', 'source')->firstOrFail();
         $this->assertStringStartsWith('DMOUT', $entry->ref_code);
         $this->assertSame('2026-11-14', $entry->entry_date->toDateString());
-        $this->assertSame('Pencairan dana IT', $entry->keterangan);
+        $entry->lines->each(fn (JurnalLine $line) => $this->assertSame('Pencairan dana IT', $line->keterangan));
         $this->assertSame('KPD0001', $entry->source->kpd_id_kpd);
         $this->assertSame(500000, (int) $entry->lines->sum('debit'));
         $this->assertSame(500000, (int) $entry->lines->sum('credit'));
@@ -175,10 +175,9 @@ class JurnalUmumTest extends TestCase
                 app(JurnalEntryService::class)->createManual([
                     'entry_date' => '2026-11-12',
                     'jurnal_divisi_id' => JurnalDivisi::first()->id,
-                    'keterangan' => 'Tidak seimbang',
                     'lines' => [
-                        ['account_id' => $kas->id, 'debit' => 100000, 'credit' => 0],
-                        ['account_id' => $pendapatan->id, 'debit' => 0, 'credit' => 90000],
+                        ['account_id' => $kas->id, 'keterangan' => 'Tidak seimbang', 'debit' => 100000, 'credit' => 0],
+                        ['account_id' => $pendapatan->id, 'keterangan' => 'Tidak seimbang', 'debit' => 0, 'credit' => 90000],
                     ],
                 ], $this->finance->id_user);
             });
@@ -201,10 +200,9 @@ class JurnalUmumTest extends TestCase
         $component = Livewire::actingAs($this->finance)
             ->test(JurnalUmumTable::class)
             ->call('openManualModal')
-            ->assertSeeHtml('Pilih divisi dan akun terlebih dahulu');
+            ->assertSeeHtml('Pilih akun terlebih dahulu');
 
         $component->set('manualDivisiId', (string) $divisi->id)
-            ->set('manualKeterangan', 'Jurnal manual')
             ->set('manualLines.0.account_id', (string) $kas->id)
             ->set('manualLines.0.debit', 250000)
             ->call('saveManual')
@@ -216,13 +214,23 @@ class JurnalUmumTest extends TestCase
         $component->set('manualLines.1.account_id', (string) $pendapatan->id)
             ->set('manualLines.1.credit', 250000)
             ->call('saveManual')
+            ->assertSet('feedbackType', 'error')
+            ->assertSee('isi keterangan tiap baris');
+
+        $this->assertDatabaseCount('jurnal_entries', 0);
+
+        $component->set('manualLines.0.keterangan', 'Kas masuk')
+            ->set('manualLines.1.keterangan', 'Pendapatan jasa')
+            ->call('saveManual')
             ->assertSet('showManualModal', false);
 
-        $entry = JurnalEntry::firstOrFail();
-        $this->assertSame('JMU0001', $entry->ref_code);
+        $entry = JurnalEntry::with('lines')->firstOrFail();
+        $this->assertNull($entry->ref_code);
         $this->assertSame($divisi->id, $entry->jurnal_divisi_id);
         $this->assertSame(250000, (int) $entry->lines->sum('debit'));
         $this->assertSame(250000, (int) $entry->lines->sum('credit'));
+        $this->assertSame('Kas masuk', $entry->lines->first(fn (JurnalLine $l) => $l->debit > 0)->keterangan);
+        $this->assertSame('Pendapatan jasa', $entry->lines->first(fn (JurnalLine $l) => $l->credit > 0)->keterangan);
     }
 
     public function test_cancel_creates_reversing_entry_without_touching_original(): void
@@ -233,10 +241,9 @@ class JurnalUmumTest extends TestCase
         $original = app(JurnalEntryService::class)->createManual([
             'entry_date' => '2026-11-12',
             'jurnal_divisi_id' => JurnalDivisi::first()->id,
-            'keterangan' => 'Jurnal asli',
             'lines' => [
-                ['account_id' => $kas->id, 'debit' => 400000, 'credit' => 0],
-                ['account_id' => $pendapatan->id, 'debit' => 0, 'credit' => 400000],
+                ['account_id' => $kas->id, 'keterangan' => 'Jurnal asli', 'debit' => 400000, 'credit' => 0],
+                ['account_id' => $pendapatan->id, 'keterangan' => 'Jurnal asli', 'debit' => 0, 'credit' => 400000],
             ],
         ], $this->finance->id_user);
 
@@ -247,12 +254,16 @@ class JurnalUmumTest extends TestCase
             ->call('confirmCancel');
 
         $this->assertSame(2, JurnalEntry::count());
-        $reversal = JurnalEntry::where('ref_code', 'like', 'RV%')->firstOrFail();
+        $reversal = JurnalEntry::where('source_type', \App\Models\JurnalEntry::class)
+            ->where('source_id', (string) $original->id)
+            ->firstOrFail();
+        $this->assertNull($reversal->ref_code);
         $this->assertSame((string) $original->id, $reversal->source_id);
-        $this->assertStringContainsString('Salah input nominal', $reversal->keterangan);
+        $reversal->loadMissing('lines');
+        $reversal->lines->each(fn (JurnalLine $l) => $this->assertStringContainsString('Salah input nominal', $l->keterangan));
         $this->assertSame(400000, (int) $reversal->lines->sum('debit'));
         $this->assertSame(400000, (int) $reversal->lines->sum('credit'));
-        $this->assertSame('Jurnal asli', $original->fresh()->keterangan);
+        $this->assertSame('Jurnal asli', $original->fresh()->lines->first()->keterangan);
         $this->assertTrue($original->fresh()->lines->first(fn (JurnalLine $l) => $l->debit > 0)->debit === 400000);
     }
 
@@ -288,10 +299,9 @@ class JurnalUmumTest extends TestCase
             $service->createManual([
                 'entry_date' => sprintf('2026-11-%02d', $i),
                 'jurnal_divisi_id' => $divisiId,
-                'keterangan' => 'Jurnal ' . $i,
                 'lines' => [
-                    ['account_id' => $kas->id, 'debit' => 100000, 'credit' => 0],
-                    ['account_id' => $pendapatan->id, 'debit' => 0, 'credit' => 100000],
+                    ['account_id' => $kas->id, 'keterangan' => 'Jurnal ' . $i, 'debit' => 100000, 'credit' => 0],
+                    ['account_id' => $pendapatan->id, 'keterangan' => 'Jurnal ' . $i, 'debit' => 0, 'credit' => 100000],
                 ],
             ], $this->finance->id_user);
         }
@@ -337,10 +347,11 @@ class JurnalUmumTest extends TestCase
             ->call('addLine')
             ->call('addLine')
             ->set('manualDivisiId', (string) $divisi->id)
-            ->set('manualKeterangan', 'Jurnal tiga baris')
             ->set('manualLines.0.account_id', (string) $kas->id)
+            ->set('manualLines.0.keterangan', 'Kas')
             ->set('manualLines.0.debit', 300000)
             ->set('manualLines.2.account_id', (string) $pendapatan->id)
+            ->set('manualLines.2.keterangan', 'Pendapatan')
             ->set('manualLines.2.credit', 300000)
             ->assertSet('manualTotals.valid', true)
             ->call('saveManual')
@@ -367,5 +378,74 @@ class JurnalUmumTest extends TestCase
         $this->assertCount(3, array_unique($ids));
         $this->assertCount(3, $component->get('manualLines'));
         $component->assertSeeHtml('Pilih akun');
+    }
+
+    public function test_month_picker_selection_changes_period_without_redirect(): void
+    {
+        Livewire::actingAs($this->finance)
+            ->test(JurnalUmumTable::class)
+            ->call('openMonthPicker')
+            ->assertSet('showMonthPicker', true)
+            ->call('selectMonth', 8)
+            ->assertSet('periode', '2026-08')
+            ->assertSet('showMonthPicker', false)
+            ->call('previousMonth')
+            ->assertSet('periode', '2026-07')
+            ->call('nextMonth')
+            ->assertSet('periode', '2026-08')
+            ->call('resetFilters')
+            ->assertSet('periode', now()->format('Y-m'));
+    }
+
+    public function test_ref_column_renders_coa_code_and_manual_entries_have_no_ref_code(): void
+    {
+        $kas = CoaAkun::where('kode', '1101')->firstOrFail();
+        $pendapatan = CoaAkun::where('kode', '4101')->firstOrFail();
+
+        app(JurnalEntryService::class)->createManual([
+            'entry_date' => '2026-11-12',
+            'jurnal_divisi_id' => JurnalDivisi::first()->id,
+            'lines' => [
+                ['account_id' => $kas->id, 'keterangan' => 'Manual tanpa ref', 'debit' => 100000, 'credit' => 0],
+                ['account_id' => $pendapatan->id, 'keterangan' => 'Manual tanpa ref', 'debit' => 0, 'credit' => 100000],
+            ],
+        ], $this->finance->id_user);
+
+        $this->assertNull(JurnalEntry::first()->ref_code);
+
+        $component = Livewire::actingAs($this->finance)
+            ->test(JurnalUmumTable::class)
+            ->assertSee('1101')
+            ->assertSee('4101')
+            ->assertSee('Manual tanpa ref');
+
+        $this->assertMatchesRegularExpression('/font-mono[^>]*>\s*1101\s*<\/td>/', $component->html());
+        $this->assertMatchesRegularExpression('/font-mono[^>]*>\s*4101\s*<\/td>/', $component->html());
+    }
+
+    public function test_each_line_keeps_its_own_description_and_entry_has_none(): void
+    {
+        $kas = CoaAkun::where('kode', '1101')->firstOrFail();
+        $pendapatan = CoaAkun::where('kode', '4101')->firstOrFail();
+
+        $entry = app(JurnalEntryService::class)->createManual([
+            'entry_date' => '2026-11-15',
+            'jurnal_divisi_id' => JurnalDivisi::first()->id,
+            'lines' => [
+                ['account_id' => $kas->id, 'keterangan' => 'Uang masuk dari klien', 'debit' => 500000, 'credit' => 0],
+                ['account_id' => $pendapatan->id, 'keterangan' => 'Pendapatan jasa klien', 'debit' => 0, 'credit' => 500000],
+            ],
+        ], $this->finance->id_user);
+
+        $this->assertArrayNotHasKey('keterangan', $entry->getAttributes());
+        $this->assertSame(
+            ['Uang masuk dari klien', 'Pendapatan jasa klien'],
+            $entry->lines->pluck('keterangan')->all()
+        );
+
+        Livewire::actingAs($this->finance)
+            ->test(JurnalUmumTable::class)
+            ->assertSee('Uang masuk dari klien')
+            ->assertSee('Pendapatan jasa klien');
     }
 }
