@@ -125,8 +125,8 @@
         @if (auth()->user()?->isKadivFinance())
             @php
                 $permintaanActive = request()->routeIs('kadiv.keuangan.manajemenDana*') || request()->routeIs('kadiv.keuangan.permintaan*') || request()->routeIs('kadiv.keuangan.laporan*');
-                $jurnalUmumActive = request()->routeIs('kadiv.keuangan.jurnalUmum*') && request()->query('panel') !== 'coa';
-                $coaPanelActive = request()->routeIs('kadiv.keuangan.jurnalUmum*') && request()->query('panel') === 'coa';
+                $jurnalUmumActive = request()->routeIs('kadiv.keuangan.jurnalUmum*') && ! session()->has('open_coa_panel');
+                $coaPanelActive = request()->routeIs('kadiv.keuangan.jurnalUmum*') && session()->has('open_coa_panel');
                 $financeGroups = [
                     'ringkasan' => [
                         'label' => 'Ringkasan',
@@ -199,7 +199,7 @@
                         <span class="sidebar-text whitespace-nowrap">Jurnal Umum</span>
                     </a>
 
-                    <a href="{{ route('kadiv.keuangan.jurnalUmum', ['panel' => 'coa']) }}" data-finance-direct="daftar-akun"
+                    <a href="{{ route('kadiv.keuangan.coaPanel') }}" data-finance-direct="daftar-akun"
                         class="flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-left transition {{ $coaPanelActive ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }} focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50">
                         <svg class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75c-1.5-1.1-3.6-1.5-6-1.5-.8 0-1.5.1-2.1.2v13c.6-.1 1.3-.2 2.1-.2 2.4 0 4.5.4 6 1.5 1.5-1.1 3.6-1.5 6-1.5.8 0 1.5.1 2.1.2v-13c-.6-.1-1.3-.2-2.1-.2-2.4 0-4.5.4-6 1.5Zm0 0v13"></path>

@@ -269,12 +269,23 @@ class JurnalUmumTest extends TestCase
         $this->actingAs($this->finance)->get(route('kadiv.keuangan.jurnalUmum'))
             ->assertOk()
             ->assertDontSee('Batalkan jurnal')
-            ->assertSee('Daftar akun (COA)');
+            ->assertSee('Daftar akun (COA)')
+            ->assertDontSee('Cari kode atau nama akun');
 
         $this->actingAs($this->finance)
-            ->get(route('kadiv.keuangan.jurnalUmum', ['panel' => 'coa']))
+            ->get(route('kadiv.keuangan.coaPanel'))
+            ->assertRedirect(route('kadiv.keuangan.jurnalUmum'));
+
+        $this->actingAs($this->finance)
+            ->get(route('kadiv.keuangan.jurnalUmum'))
             ->assertOk()
             ->assertSee('Cari kode atau nama akun');
+
+        // Flag sekali pakai: kunjungan berikutnya tetap halaman jurnal biasa.
+        $this->actingAs($this->finance)
+            ->get(route('kadiv.keuangan.jurnalUmum'))
+            ->assertOk()
+            ->assertDontSee('Cari kode atau nama akun');
     }
 
     public function test_coa_panel_hides_inactive_accounts_and_filters_by_search(): void
