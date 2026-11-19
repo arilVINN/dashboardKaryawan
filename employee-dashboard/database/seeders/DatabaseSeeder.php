@@ -237,6 +237,7 @@ class DatabaseSeeder extends Seeder
             HolidaySeeder::class,
             ContentTypeSeeder::class,
             ContentAccountSeeder::class,
+            JurnalUmumSeeder::class,
         ]);
 
         // 5. Pesan Broadcast dari testadmin ke semua akun
