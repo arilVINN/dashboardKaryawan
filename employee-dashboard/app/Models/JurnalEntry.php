@@ -14,7 +14,6 @@ class JurnalEntry extends Model
         'source_type',
         'source_id',
         'jurnal_divisi_id',
-        'keterangan',
         'created_by',
     ];
 

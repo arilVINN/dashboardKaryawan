@@ -46,17 +46,17 @@ class JurnalEntryService
             : self::KODE_PENDAPATAN;
 
         $nominal = $this->rupiah($pemasukan->nominal);
+        $keterangan = $pemasukan->keterangan ?: $pemasukan->kategori_pemasukan;
 
         return $this->create([
             'entry_date' => $pemasukan->tanggal_masuk->toDateString(),
             'ref_code' => 'DMIN' . str_pad($this->numericPart((string) $pemasukan->id_kp), 3, '0', STR_PAD_LEFT),
             'source_type' => KPemasukan::class,
             'source_id' => (string) $pemasukan->id_kp,
-            'keterangan' => $pemasukan->keterangan ?: $pemasukan->kategori_pemasukan,
             'created_by' => $pemasukan->user_id_user,
             'lines' => [
-                ['account_id' => $this->accountId(self::KODE_KAS), 'debit' => $nominal, 'credit' => 0],
-                ['account_id' => $this->accountId($kodeKredit), 'debit' => 0, 'credit' => $nominal],
+                ['account_id' => $this->accountId(self::KODE_KAS), 'keterangan' => $keterangan, 'debit' => $nominal, 'credit' => 0],
+                ['account_id' => $this->accountId($kodeKredit), 'keterangan' => $keterangan, 'debit' => 0, 'credit' => $nominal],
             ],
         ]);
     }
@@ -72,17 +72,17 @@ class JurnalEntryService
         }
 
         $nominal = $this->rupiah($pengeluaran->nominal);
+        $keterangan = $pengeluaran->keterangan ?: 'Pengeluaran kas';
 
         return $this->create([
             'entry_date' => $pengeluaran->tanggal_cair->toDateString(),
             'ref_code' => 'DMOUT' . str_pad($this->numericPart((string) $pengeluaran->id_kpengeluaran), 2, '0', STR_PAD_LEFT),
             'source_type' => KPengeluaran::class,
             'source_id' => (string) $pengeluaran->id_kpengeluaran,
-            'keterangan' => $pengeluaran->keterangan ?: 'Pengeluaran kas',
             'created_by' => $pengeluaran->user_id_user,
             'lines' => [
-                ['account_id' => $this->accountId(self::KODE_BEBAN), 'debit' => $nominal, 'credit' => 0],
-                ['account_id' => $this->accountId(self::KODE_KAS), 'debit' => 0, 'credit' => $nominal],
+                ['account_id' => $this->accountId(self::KODE_BEBAN), 'keterangan' => $keterangan, 'debit' => $nominal, 'credit' => 0],
+                ['account_id' => $this->accountId(self::KODE_KAS), 'keterangan' => $keterangan, 'debit' => 0, 'credit' => $nominal],
             ],
         ]);
     }
@@ -93,7 +93,7 @@ class JurnalEntryService
     public function createManual(array $payload, ?string $createdBy): JurnalEntry
     {
         return $this->create(array_merge($payload, [
-            'ref_code' => $payload['ref_code'] ?? $this->nextRef('JMU', 4),
+            'ref_code' => null,
             'created_by' => $createdBy,
             'audit_aksi' => 'jurnal_manual_dibuat',
         ]));
@@ -105,19 +105,21 @@ class JurnalEntryService
      */
     public function reverse(JurnalEntry $entry, string $alasan, ?string $createdBy): JurnalEntry
     {
+        $keterangan = 'Pembatalan jurnal #' . $entry->id . '. Alasan: ' . trim($alasan);
+
         $lines = $entry->lines->map(fn (JurnalLine $line) => [
             'account_id' => $line->account_id,
+            'keterangan' => $keterangan,
             'debit' => $line->credit,
             'credit' => $line->debit,
         ])->all();
 
         return $this->create([
             'entry_date' => now()->toDateString(),
-            'ref_code' => $this->nextRef('RV', 4),
+            'ref_code' => null,
             'source_type' => JurnalEntry::class,
             'source_id' => (string) $entry->id,
             'jurnal_divisi_id' => $entry->jurnal_divisi_id,
-            'keterangan' => 'Pembatalan jurnal ' . $entry->ref_code . '. Alasan: ' . trim($alasan),
             'created_by' => $createdBy,
             'lines' => $lines,
             'audit_aksi' => 'jurnal_umum_dibatalkan',
@@ -164,8 +166,11 @@ class JurnalEntryService
 
             $totalDebit += $debit;
             $totalCredit += $credit;
+            $keterangan = trim((string) ($line['keterangan'] ?? ''));
+
             $normalized[] = [
                 'account_id' => $account->id,
+                'keterangan' => $keterangan !== '' ? $keterangan : null,
                 'debit' => $debit,
                 'credit' => $credit,
                 'sort_order' => $index,
@@ -184,7 +189,6 @@ class JurnalEntryService
             'source_type' => $payload['source_type'] ?? null,
             'source_id' => $payload['source_id'] ?? null,
             'jurnal_divisi_id' => $payload['jurnal_divisi_id'] ?? null,
-            'keterangan' => $payload['keterangan'] ?? null,
             'created_by' => $payload['created_by'] ?? null,
         ]);
 
@@ -204,6 +208,7 @@ class JurnalEntryService
                 'total_kredit' => $totalCredit,
                 'source_type' => $entry->source_type,
                 'source_id' => $entry->source_id,
+                'keterangan_baris' => collect($normalized)->pluck('keterangan')->all(),
             ]
         );
 
@@ -236,17 +241,6 @@ class JurnalEntryService
     private function numericPart(string $value): int
     {
         return (int) preg_replace('/\D/', '', $value);
-    }
-
-    private function nextRef(string $prefix, int $length): string
-    {
-        $last = JurnalEntry::where('ref_code', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->value('ref_code');
-
-        $number = $last ? ((int) preg_replace('/\D/', '', $last) + 1) : 1;
-
-        return $prefix . str_pad((string) $number, $length, '0', STR_PAD_LEFT);
     }
 
     private function fail(string $message): never

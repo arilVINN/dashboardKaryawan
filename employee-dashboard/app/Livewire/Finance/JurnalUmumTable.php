@@ -17,7 +17,9 @@ use Livewire\WithPagination;
 
 class JurnalUmumTable extends Component
 {
-    use HasMonthPicker;
+    use HasMonthPicker {
+        selectMonth as protected selectMonthFromTrait;
+    }
     use WithPagination;
 
     public string $periode;
@@ -41,8 +43,6 @@ class JurnalUmumTable extends Component
     public ?string $manualDivisiId = null;
 
     public string $manualTanggal = '';
-
-    public string $manualKeterangan = '';
 
     public array $manualLines = [];
 
@@ -81,7 +81,7 @@ class JurnalUmumTable extends Component
 
     public function selectMonth(int $month): void
     {
-        parent::selectMonth($month);
+        $this->selectMonthFromTrait($month);
         $this->resetPage();
         $this->resetFeedback();
     }
@@ -184,7 +184,6 @@ class JurnalUmumTable extends Component
         $this->resetLines();
         $this->manualDivisiId = null;
         $this->manualTanggal = now()->toDateString();
-        $this->manualKeterangan = '';
         $this->coaSearch = '';
         $this->resetFeedback();
         $this->resetValidation();
@@ -200,15 +199,15 @@ class JurnalUmumTable extends Component
     private function resetLines(): void
     {
         $this->manualLines = [
-            ['account_id' => '', 'debit' => '', 'credit' => ''],
-            ['account_id' => '', 'debit' => '', 'credit' => ''],
+            ['account_id' => '', 'keterangan' => '', 'debit' => '', 'credit' => ''],
+            ['account_id' => '', 'keterangan' => '', 'debit' => '', 'credit' => ''],
         ];
         $this->manualLineIds = [$this->newLineId(), $this->newLineId()];
     }
 
     public function addLine(): void
     {
-        $this->manualLines[] = ['account_id' => '', 'debit' => '', 'credit' => ''];
+        $this->manualLines[] = ['account_id' => '', 'keterangan' => '', 'debit' => '', 'credit' => ''];
         $this->manualLineIds[] = $this->newLineId();
     }
 
@@ -292,17 +291,12 @@ class JurnalUmumTable extends Component
         return Str::uuid()->toString();
     }
 
-    public function getCanWriteKeteranganProperty(): bool
-    {
-        return filled($this->manualDivisiId)
-            && collect($this->manualLines)->contains(fn ($line) => filled($line['account_id']));
-    }
-
     public function getManualTotalsProperty(): array
     {
         $debit = 0;
         $credit = 0;
         $withAccount = 0;
+        $descriptionsReady = true;
 
         foreach ($this->manualLines as $line) {
             $debit += (int) round((float) ($line['debit'] ?? 0));
@@ -310,6 +304,10 @@ class JurnalUmumTable extends Component
 
             if (filled($line['account_id'] ?? null)) {
                 $withAccount++;
+
+                if (! filled(trim((string) ($line['keterangan'] ?? '')))) {
+                    $descriptionsReady = false;
+                }
             }
         }
 
@@ -318,7 +316,8 @@ class JurnalUmumTable extends Component
             'credit' => $credit,
             'selisih' => abs($debit - $credit),
             'balanced' => $debit > 0 && $debit === $credit,
-            'valid' => $debit > 0 && $debit === $credit && $withAccount >= 2,
+            'descriptionsReady' => $descriptionsReady,
+            'valid' => $debit > 0 && $debit === $credit && $withAccount >= 2 && $descriptionsReady,
         ];
     }
 
@@ -329,15 +328,13 @@ class JurnalUmumTable extends Component
         $this->validate([
             'manualDivisiId' => ['required', 'exists:jurnal_divisis,id'],
             'manualTanggal' => ['required', 'date'],
-            'manualKeterangan' => ['required', 'string', 'max:500'],
         ], [
             'manualDivisiId.required' => 'Pilih divisi terlebih dahulu.',
             'manualTanggal.required' => 'Tanggal wajib diisi.',
-            'manualKeterangan.required' => 'Keterangan wajib diisi.',
         ]);
 
-        if (! $this->canWriteKeterangan || ! $this->manualTotals['valid']) {
-            $this->feedbackMessage = 'Pilih divisi dan minimal dua akun, lalu seimbangkan debit dan kredit.';
+        if (! $this->manualTotals['valid']) {
+            $this->feedbackMessage = 'Pilih divisi dan minimal dua akun, isi keterangan tiap baris, lalu seimbangkan debit dan kredit.';
             $this->feedbackType = 'error';
 
             return;
@@ -355,7 +352,6 @@ class JurnalUmumTable extends Component
                 app(JurnalEntryService::class)->createManual([
                     'entry_date' => $this->manualTanggal,
                     'jurnal_divisi_id' => (int) $this->manualDivisiId,
-                    'keterangan' => trim($this->manualKeterangan),
                     'lines' => $lines,
                 ], auth()->id());
             });
