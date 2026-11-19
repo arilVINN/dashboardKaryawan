@@ -38,6 +38,15 @@ return [
             'report' => false,
         ],
 
+        // Private employee photos and documents. Never exposed via /storage.
+        'private' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private'),
+            'serve' => false,
+            'throw' => false,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

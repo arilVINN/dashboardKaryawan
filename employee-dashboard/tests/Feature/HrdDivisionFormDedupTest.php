@@ -97,13 +97,18 @@ class HrdDivisionFormDedupTest extends TestCase
             ->assertDontSee('type="hidden" name="divisi_id_divisi"', false);
     }
 
-    public function test_api_rejects_unlisted_jabatan(): void
+    public function test_api_rejects_jabatan_from_another_division(): void
     {
+        $jabatanLain = \App\Models\Jabatan::create([
+            'division_id' => 'DIV-IT',
+            'nama' => 'Staff',
+        ]);
+
         $this->actingAs($this->hrd)
             ->postJson('/hrd/staff', [
                 'nama' => 'Calon Karyawan',
                 'jenis_kelamin' => 'Laki-laki',
-                'jabatan' => 'Kepala Divisi HR',
+                'jabatan_id' => $jabatanLain->id,
                 'divisi_id_divisi' => 'DIV-EMPTY',
                 'username' => 'calonsatu',
                 'password' => 'password',
@@ -112,50 +117,67 @@ class HrdDivisionFormDedupTest extends TestCase
             ->assertJsonValidationErrors('jabatan');
     }
 
-    public function test_api_accepts_listed_jabatan(): void
+    public function test_api_accepts_jabatan_in_selected_division(): void
     {
+        $jabatan = \App\Models\Jabatan::create([
+            'division_id' => 'DIV-EMPTY',
+            'nama' => 'Staff',
+        ]);
+
         $this->actingAs($this->hrd)
             ->postJson('/hrd/staff', [
                 'nama' => 'Calon Karyawan',
                 'jenis_kelamin' => 'Laki-laki',
-                'jabatan' => 'Staff',
+                'jabatan_id' => $jabatan->id,
                 'divisi_id_divisi' => 'DIV-EMPTY',
                 'username' => 'calondua',
                 'password' => 'password',
             ])
             ->assertCreated();
 
-        $this->assertDatabaseHas('karyawans', ['jabatan' => 'Staff']);
+        $this->assertDatabaseHas('karyawans', ['jabatan' => 'Staff', 'jabatan_id' => $jabatan->id]);
     }
 
-    public function test_api_rejects_lowercase_variant(): void
+    public function test_jabatan_names_are_normalised_and_scoped_to_division(): void
     {
-        // The `in:` rule is exact-case; the UI select always sends exact values.
-        $this->actingAs($this->hrd)
-            ->postJson('/hrd/staff', [
-                'nama' => 'Calon Karyawan',
-                'jenis_kelamin' => 'Laki-laki',
-                'jabatan' => 'staff',
-                'divisi_id_divisi' => 'DIV-EMPTY',
-                'username' => 'calontiga',
-                'password' => 'password',
-            ])
-            ->assertUnprocessable()
-            ->assertJsonValidationErrors('jabatan');
+        $pertama = $this->actingAs($this->hrd)->postJson('/hrd/staff', [
+            'nama' => 'Calon Satu',
+            'jenis_kelamin' => 'Laki-laki',
+            'jabatan' => '  Staff   Administrasi  ',
+            'divisi_id_divisi' => 'DIV-EMPTY',
+            'username' => 'calonnormsatu',
+            'password' => 'password',
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('jabatan', [
+            'division_id' => 'DIV-EMPTY',
+            'nama' => 'Staff Administrasi',
+        ]);
+
+        // The same name may exist in another division.
+        $this->actingAs($this->hrd)->postJson('/hrd/staff', [
+            'nama' => 'Calon Dua',
+            'jenis_kelamin' => 'Laki-laki',
+            'jabatan' => 'Staff Administrasi',
+            'divisi_id_divisi' => 'DIV-IT',
+            'username' => 'calonnormdua',
+            'password' => 'password',
+        ])->assertCreated();
+
+        $this->assertSame(2, \App\Models\Jabatan::where('nama', 'Staff Administrasi')->count());
     }
 
-    public function test_modals_render_jabatan_select_from_fixed_list(): void
+    public function test_form_uses_shared_jabatan_select(): void
     {
         $html = $this->actingAs($this->hrd)
             ->get('/hrd/detailDivisi/DIV-EMPTY')
             ->assertOk()
             ->getContent();
 
-        $this->assertStringContainsString('<select name="jabatan"', $html);
-        $this->assertStringNotContainsString('type="text" name="jabatan"', $html);
-        foreach (Karyawan::JABATAN_OPTIONS as $option) {
-            $this->assertStringContainsString('<option value="'.$option.'">'.$option.'</option>', $html);
-        }
+        $this->assertStringContainsString('<div id="modalTambahKaryawan"', $html);
+        $this->assertStringContainsString('name="jabatan"', $html);
+        $this->assertStringContainsString('Pilih divisi dulu', $html);
+        $this->assertStringNotContainsString('id="formEditKaryawan"', $html);
     }
 
     public function test_create_persists_alamat(): void
@@ -172,9 +194,7 @@ class HrdDivisionFormDedupTest extends TestCase
             ])
             ->assertCreated();
 
-        $this->assertDatabaseHas('karyawans', [
-            'alamat' => 'Jl. Merpati No. 10',
-        ]);
+        $this->assertDatabaseHas('karyawans', ['alamat' => 'Jl. Merpati No. 10']);
     }
 
     public function test_update_persists_alamat(): void
@@ -195,33 +215,23 @@ class HrdDivisionFormDedupTest extends TestCase
             ->putJson('/hrd/staff/'.$id, ['alamat' => 'Jl. Kenari No. 5'])
             ->assertOk();
 
-        $this->assertDatabaseHas('karyawans', [
-            'id_karyawan' => $id,
-            'alamat' => 'Jl. Kenari No. 5',
-        ]);
+        $this->assertDatabaseHas('karyawans', ['id_karyawan' => $id, 'alamat' => 'Jl. Kenari No. 5']);
     }
 
-    public function test_modals_have_alamat_and_photo_in_first_section(): void
+    public function test_shared_form_places_alamat_and_photo_before_kepegawaian(): void
     {
         $html = $this->actingAs($this->hrd)
             ->get('/hrd/detailDivisi/DIV-EMPTY')
             ->assertOk()
             ->getContent();
 
-        // Alamat textarea in both create and edit forms.
-        $this->assertSame(2, substr_count($html, 'name="alamat"'));
+        $this->assertSame(1, substr_count($html, 'wire:model.blur="alamat"'));
+        $this->assertSame(1, substr_count($html, 'id="kf-foto"'));
 
-        // Within the create form, alamat + foto come before the Kepegawaian section.
-        $createChunk = substr($html, strpos($html, 'formTambahKaryawan'));
-        $createChunk = substr($createChunk, 0, strpos($createChunk, 'Kepegawaian'));
-        $this->assertStringContainsString('name="alamat"', $createChunk);
-        $this->assertStringContainsString('input-foto-karyawan', $createChunk);
-
-        // Same for the edit form.
-        $editChunk = substr($html, strpos($html, 'formEditKaryawan'));
-        $editChunk = substr($editChunk, 0, strpos($editChunk, 'Kepegawaian'));
-        $this->assertStringContainsString('name="alamat"', $editChunk);
-        $this->assertStringContainsString('input-foto-edit-karyawan', $editChunk);
+        $chunk = substr($html, strpos($html, 'Data karyawan'));
+        $chunk = substr($chunk, 0, strpos($chunk, 'Kepegawaian'));
+        $this->assertStringContainsString('wire:model.blur="alamat"', $chunk);
+        $this->assertStringContainsString('id="kf-foto"', $chunk);
     }
 
     public function test_create_accepts_tanggal_masuk(): void
@@ -238,30 +248,19 @@ class HrdDivisionFormDedupTest extends TestCase
             ])
             ->assertCreated();
 
-        $this->assertDatabaseHas('karyawans', [
-            'tanggal_masuk' => '2026-02-01',
-        ]);
+        $this->assertDatabaseHas('karyawans', ['tanggal_masuk' => '2026-02-01']);
     }
 
-    public function test_modals_offer_tanggal_masuk_date_input(): void
+    public function test_form_uses_styled_date_picker_in_kepegawaian(): void
     {
         $html = $this->actingAs($this->hrd)
             ->get('/hrd/detailDivisi/DIV-EMPTY')
             ->assertOk()
             ->getContent();
 
-        $this->assertSame(2, substr_count($html, 'type="date" name="tanggal_masuk"'));
-
-        $createChunk = substr($html, strpos($html, 'formTambahKaryawan'));
-        $createChunk = substr($createChunk, 0, strpos($createChunk, 'Kepegawaian'));
-
-        // Email and phone share a row: telepon, then email, with
-        // no other field between them.
-        $posTelepon = strpos($createChunk, 'name="no_telepon"');
-        $posEmail = strpos($createChunk, 'name="email"');
-        $this->assertLessThan($posEmail, $posTelepon);
-        $between = substr($createChunk, $posTelepon, $posEmail - $posTelepon);
-        $this->assertSame(1, substr_count($between, 'name="'));
+        $this->assertStringContainsString('data-name="tanggalMasuk"', $html);
+        $this->assertStringContainsString('placeholder="10 Nov 2026"', $html);
+        $this->assertStringNotContainsString('type="date"', $html);
     }
 
     public function test_tanggal_masuk_lives_in_kepegawaian_section(): void
@@ -271,15 +270,13 @@ class HrdDivisionFormDedupTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        foreach (['formTambahKaryawan', 'formEditKaryawan'] as $formId) {
-            $chunk = substr($html, strpos($html, $formId));
-            $pegawaiChunk = substr($chunk, 0, strpos($chunk, 'Kepegawaian'));
-            $this->assertStringNotContainsString('name="tanggal_masuk"', $pegawaiChunk);
+        $dataChunk = substr($html, strpos($html, 'Data karyawan'));
+        $dataChunk = substr($dataChunk, 0, strpos($dataChunk, 'Kepegawaian'));
+        $this->assertStringNotContainsString('data-name="tanggalMasuk"', $dataChunk);
 
-            $kepegawaianChunk = substr($chunk, strpos($chunk, 'Kepegawaian'));
-            $kepegawaianChunk = substr($kepegawaianChunk, 0, strpos($kepegawaianChunk, 'Akun Login'));
-            $this->assertStringContainsString('type="date" name="tanggal_masuk"', $kepegawaianChunk);
-        }
+        $pegawaiChunk = substr($html, strpos($html, 'Kepegawaian'));
+        $pegawaiChunk = substr($pegawaiChunk, 0, strpos($pegawaiChunk, 'Akun login'));
+        $this->assertStringContainsString('data-name="tanggalMasuk"', $pegawaiChunk);
     }
 
     public function test_create_defaults_status_to_aktif(): void
@@ -342,22 +339,17 @@ class HrdDivisionFormDedupTest extends TestCase
             ->assertJsonValidationErrors('status_aktif');
     }
 
-    public function test_modals_offer_status_select_in_kepegawaian(): void
+    public function test_shared_form_uses_status_select_in_kepegawaian(): void
     {
         $html = $this->actingAs($this->hrd)
             ->get('/hrd/detailDivisi/DIV-EMPTY')
             ->assertOk()
             ->getContent();
 
-        $this->assertSame(2, substr_count($html, '<select name="status_aktif"'));
-
-        foreach (['formTambahKaryawan', 'formEditKaryawan'] as $formId) {
-            $chunk = substr($html, strpos($html, $formId));
-            $kepegawaianChunk = substr($chunk, strpos($chunk, 'Kepegawaian'));
-            $kepegawaianChunk = substr($kepegawaianChunk, 0, strpos($kepegawaianChunk, 'Akun Login'));
-            $this->assertStringContainsString('<select name="status_aktif"', $kepegawaianChunk);
-            $this->assertStringContainsString('<option value="Aktif">Aktif</option>', $kepegawaianChunk);
-            $this->assertStringContainsString('<option value="Tidak Aktif">Tidak Aktif</option>', $kepegawaianChunk);
-        }
+        $this->assertSame(1, substr_count($html, 'id="kf-status"'));
+        $pegawaiChunk = substr($html, strpos($html, 'Kepegawaian'));
+        $pegawaiChunk = substr($pegawaiChunk, 0, strpos($pegawaiChunk, 'Akun login'));
+        $this->assertStringContainsString('<option value="Aktif">Aktif</option>', $pegawaiChunk);
+        $this->assertStringContainsString('<option value="Tidak Aktif">Tidak Aktif</option>', $pegawaiChunk);
     }
 }

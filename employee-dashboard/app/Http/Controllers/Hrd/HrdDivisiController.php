@@ -17,6 +17,11 @@ class HrdDivisiController extends Controller
             ->where('id_divisi', $id)
             ->firstOrFail();
 
+        $daftarJabatan = $divisi->jabatans()
+            ->withCount(['karyawans as jumlah_karyawan' => fn ($q) => $q->whereNull('tanggal_keluar')])
+            ->orderBy('nama')
+            ->get();
+
         $anggotaDivisi = $divisi->karyawans->sortBy('nama')->values();
         $ketuaDivisi = $divisi->penanggungJawab();
         $daftarDivisi = Divisi::query()->ordered()->get();
@@ -28,6 +33,7 @@ class HrdDivisiController extends Controller
             'ketuaDivisi',
             'daftarDivisi',
             'bisaTambahAnggota',
+            'daftarJabatan',
         ));
     }
 
