@@ -103,63 +103,73 @@
             <h2 class="truncate text-lg md:text-xl font-bold text-[#172B36] tracking-tight">
                 {{ $weekTitle }}
             </h2>
+
         </div>
 
         {{-- Role Tabs & Dropdowns Filter --}}
         <div class="flex flex-wrap items-center gap-2">
-            @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true))
-                <div class="cal-view-group">
-                    <button type="button" wire:click="setViewMode('my')"
-                            class="cal-btn {{ $viewMode === 'my' ? 'is-active' : '' }}">
-                        To Do Saya
+            <div class="cal-view-group">
+                <button type="button" wire:click="setViewMode('my')"
+                        class="cal-btn {{ $viewMode === 'my' ? 'is-active' : '' }}">
+                    To Do Saya
+                </button>
+
+                @if($role === 'staff')
+                    <button type="button" wire:click="setViewMode('rekap_divisi')"
+                            class="cal-btn {{ $viewMode === 'rekap_divisi' ? 'is-active' : '' }}">
+                        Progres Divisi
                     </button>
+                @elseif($role === 'kadiv')
+                    <button type="button" wire:click="setViewMode('team')"
+                            class="cal-btn {{ $viewMode === 'team' ? 'is-active' : '' }}">
+                        To Do Tim
+                    </button>
+                    <button type="button" wire:click="setViewMode('rekap_divisi')"
+                            class="cal-btn {{ $viewMode === 'rekap_divisi' ? 'is-active' : '' }}">
+                        Progres Divisi
+                    </button>
+                @elseif($role === 'hrd')
+                    <button type="button" wire:click="setViewMode('all')"
+                            class="cal-btn {{ $viewMode === 'all' ? 'is-active' : '' }}">
+                        Monitoring Karyawan
+                    </button>
+                    <button type="button" wire:click="setViewMode('rekap_divisi')"
+                            class="cal-btn {{ $viewMode === 'rekap_divisi' ? 'is-active' : '' }}">
+                        Progres Divisi
+                    </button>
+                @elseif(in_array($role, ['direktur', 'direksi', 'superadmin'], true))
+                    <button type="button" wire:click="setViewMode('all')"
+                            class="cal-btn {{ $viewMode === 'all' ? 'is-active' : '' }}">
+                        Monitoring Karyawan
+                    </button>
+                    <button type="button" wire:click="setViewMode('rekap_divisi')"
+                            class="cal-btn {{ $viewMode === 'rekap_divisi' ? 'is-active' : '' }}">
+                        Progres Divisi
+                    </button>
+                @endif
+            </div>
 
-                    @if($role === 'kadiv')
-                        <button type="button" wire:click="setViewMode('team')"
-                                class="cal-btn {{ $viewMode === 'team' ? 'is-active' : '' }}">
-                            To Do Tim
-                        </button>
-                        <button type="button" wire:click="setViewMode('rekap_divisi')"
-                                class="cal-btn {{ $viewMode === 'rekap_divisi' ? 'is-active' : '' }}">
-                            Progres Divisi
-                        </button>
-                    @elseif($role === 'hrd')
-                        <button type="button" wire:click="setViewMode('all')"
-                                class="cal-btn {{ $viewMode === 'all' ? 'is-active' : '' }}">
-                            Monitoring Karyawan
-                        </button>
-                        <button type="button" wire:click="setViewMode('rekap_divisi')"
-                                class="cal-btn {{ $viewMode === 'rekap_divisi' ? 'is-active' : '' }}">
-                            Progres Divisi
-                        </button>
-                    @elseif(in_array($role, ['direktur', 'direksi', 'superadmin'], true))
-                        <button type="button" wire:click="setViewMode('all')"
-                                class="cal-btn {{ $viewMode === 'all' ? 'is-active' : '' }}">
-                            Monitoring Karyawan
-                        </button>
-                    @endif
-                </div>
+            {{-- Dropdown Divisi & Karyawan --}}
+            @if($viewMode === 'rekap_divisi')
+                @if(in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true))
+                    <select wire:model.live="filterDivisiId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none">
+                        <option value="">Semua Divisi</option>
+                        @foreach($divisions as $div)
+                            <option value="{{ $div->id_divisi }}">{{ $div->nama_divisi }}</option>
+                        @endforeach
+                    </select>
+                @endif
+            @elseif($viewMode !== 'my')
+                @if(in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true))
+                    <select wire:model.live="filterDivisiId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none">
+                        <option value="">Semua Divisi</option>
+                        @foreach($divisions as $div)
+                            <option value="{{ $div->id_divisi }}">{{ $div->nama_divisi }}</option>
+                        @endforeach
+                    </select>
+                @endif
 
-                {{-- Dropdown Divisi & Karyawan --}}
-                @if($viewMode === 'rekap_divisi')
-                    @if(in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true))
-                        <select wire:model.live="filterDivisiId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none">
-                            <option value="">Semua Divisi</option>
-                            @foreach($divisions as $div)
-                                <option value="{{ $div->id_divisi }}">{{ $div->nama_divisi }}</option>
-                            @endforeach
-                        </select>
-                    @endif
-                @elseif($viewMode !== 'my')
-                    @if(in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true))
-                        <select wire:model.live="filterDivisiId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none">
-                            <option value="">Semua Divisi</option>
-                            @foreach($divisions as $div)
-                                <option value="{{ $div->id_divisi }}">{{ $div->nama_divisi }}</option>
-                            @endforeach
-                        </select>
-                    @endif
-
+                @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true))
                     <select wire:model.live="filterKaryawanId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none min-w-[150px]">
                         <option value="">Pilih Karyawan</option>
                         @foreach($employeeOptions as $emp)
@@ -254,20 +264,22 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-600 font-bold uppercase text-[11px] tracking-wider border-b border-slate-200">
-                                <th class="py-3.5 px-6">Karyawan</th>
-                                <th class="py-3.5 px-4 text-center">Peran</th>
-                                <th class="py-3.5 px-4 text-center">Total To Do</th>
-                                <th class="py-3.5 px-4 text-center">Rincian Status</th>
-                                <th class="py-3.5 px-6 min-w-[200px]">Persentase Minggu Ini</th>
-                                <th class="py-3.5 px-6 text-center">Aksi Review</th>
+                    <table class="w-full text-left border-collapse text-xs text-slate-600">
+                        <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
+                            <tr class="border-b border-slate-200">
+                                <th class="py-3 px-6 font-semibold">Karyawan</th>
+                                <th class="py-3 px-4 font-semibold text-center">Peran</th>
+                                <th class="py-3 px-4 font-semibold text-center">Total To Do</th>
+                                <th class="py-3 px-4 font-semibold text-center">Rincian Status</th>
+                                <th class="py-3 px-6 font-semibold min-w-[200px]">Persentase Minggu Ini</th>
+                                @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true))
+                                    <th class="py-3 px-6 font-semibold text-center">Aksi Review</th>
+                                @endif
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
+                        <tbody class="divide-y divide-[#EEF2F5]">
                             @forelse($staffProgressList as $sp)
-                                <tr class="hover:bg-slate-50/70 transition">
+                                <tr class="hover:bg-[#F5FAFC] transition">
                                     {{-- Karyawan --}}
                                     <td class="py-3.5 px-6">
                                         <div class="flex items-center gap-3">
@@ -276,7 +288,7 @@
                                             </div>
                                             <div>
                                                 <div class="font-bold text-slate-800">{{ $sp['karyawan']->nama }}</div>
-                                                <div class="text-[11px] text-slate-400">{{ $sp['karyawan']->jabatan?->nama_jabatan ?? 'Karyawan' }}</div>
+                                                <div class="text-[11px] text-slate-400">{{ is_string($sp['karyawan']->jabatan) ? $sp['karyawan']->jabatan : ($sp['karyawan']->jabatan?->nama_jabatan ?? 'Karyawan') }}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -285,11 +297,15 @@
                                     <td class="py-3.5 px-4 text-center">
                                         @if($sp['isKadiv'])
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                                                Kepala Divisi
+                                                {{ $sp['roleLabel'] }}
+                                            </span>
+                                        @elseif($sp['roleLabel'] === 'HRD')
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                                                HRD
                                             </span>
                                         @else
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                                                Staff
+                                                {{ $sp['roleLabel'] }}
                                             </span>
                                         @endif
                                     </td>
@@ -347,20 +363,22 @@
                                     </td>
 
                                     {{-- Aksi Review --}}
-                                    <td class="py-3.5 px-6 text-center">
-                                        <button type="button"
-                                                wire:click="selectStaffForReview('{{ $sp['karyawan']->id_karyawan }}')"
-                                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#EAF4F8] hover:bg-[#D4EAF3] text-[#146C94] text-xs font-bold transition">
-                                            <span>Lihat / Review</span>
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </button>
-                                    </td>
+                                    @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true))
+                                        <td class="py-3.5 px-6 text-center">
+                                            <button type="button"
+                                                    wire:click="selectStaffForReview('{{ $sp['karyawan']->id_karyawan }}')"
+                                                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#EAF4F8] hover:bg-[#D4EAF3] text-[#146C94] text-xs font-bold transition">
+                                                <span>Lihat / Review</span>
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="py-8 text-center text-slate-400">
+                                    <td colspan="{{ in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true) ? 6 : 5 }}" class="py-8 text-center text-slate-400">
                                         Tidak ada data anggota divisi yang ditemukan.
                                     </td>
                                 </tr>
@@ -371,30 +389,30 @@
             </div>
         </div>
     @else
-        {{-- Tabel To Do Mingguan (Format Spreadsheet Pastel Pink Sesuai Desain) --}}
+        {{-- Tabel To Do Mingguan --}}
         <div class="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-[#146C94] border-b border-[#0116d1] text-white text-xs font-bold uppercase tracking-wider">
-                            <th class="py-3 px-4 min-w-[280px] border-r border-dashed border-[#F3B7C4]">Tugas</th>
-                            <th class="py-3 px-3 w-36 text-center border-r border-dashed border-[#F3B7C4]">Status</th>
-                            <th class="py-3 px-3 w-32 text-center border-r border-dashed border-[#F3B7C4]">Prioritas</th>
-                            <th class="py-3 px-4 min-w-[220px] border-r border-dashed border-[#F3B7C4]">Catatan / Bukti</th>
-                            <th class="py-3 px-4 w-24 text-center">Aksi</th>
+                <table class="w-full text-left border-collapse text-xs text-slate-600">
+                    <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
+                        <tr class="border-b border-slate-200">
+                            <th class="py-3 px-4 min-w-[280px] font-semibold text-left border-r border-[#EEF2F5]">Tugas</th>
+                            <th class="py-3 px-3 w-36 text-center font-semibold border-r border-[#EEF2F5]">Status</th>
+                            <th class="py-3 px-3 w-32 text-center font-semibold border-r border-[#EEF2F5]">Prioritas</th>
+                            <th class="py-3 px-4 min-w-[220px] font-semibold text-left border-r border-[#EEF2F5]">Catatan / Bukti</th>
+                            <th class="py-3 px-4 w-24 text-center font-semibold">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-dashed divide-slate-200 text-xs bg-white">
+                    <tbody class="divide-y divide-[#EEF2F5] text-xs bg-white">
                         @foreach($calendarDays as $day)
                             @php
-                                $rowBg = 'hover:bg-rose-50/20 transition group';
-                            if ($day['isToday']) {
-                                $rowBg = 'bg-sky-50/30 hover:bg-sky-50/60 transition group';
-                            }
-                        @endphp
-                        <tr class="{{ $rowBg }}">
-                            {{-- 1. Tugas (Memuat Hari & Daftar To Do dalam Baris yang Sama) --}}
-                            <td class="py-3 px-4 align-top border-r border-dashed border-slate-200 font-medium text-slate-800">
+                                $rowBg = 'hover:bg-[#F5FAFC] transition group';
+                                if ($day['isToday']) {
+                                    $rowBg = 'bg-[#EAF4F8]/30 hover:bg-[#EAF4F8]/60 transition group';
+                                }
+                            @endphp
+                            <tr class="{{ $rowBg }}">
+                                {{-- 1. Tugas (Memuat Hari & Daftar To Do dalam Baris yang Sama) --}}
+                                <td class="py-3 px-4 align-top border-r border-[#EEF2F5] font-medium text-slate-800">
                                 {{-- Label Hari & Tanggal --}}
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded font-bold text-[11px] {{ $day['isToday'] ? 'bg-[#146C94] text-white shadow-2xs' : ($day['isWeekend'] ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700') }}">
@@ -448,7 +466,7 @@
                             </td>
 
                             {{-- 2. Status Progress --}}
-                            <td class="py-3 px-3 align-top text-center border-r border-dashed border-slate-200">
+                            <td class="py-3 px-3 align-top text-center border-r border-[#EEF2F5]">
                                 {{-- Spacer penyeimbang label hari --}}
                                 <div class="h-6 mb-2"></div>
 
@@ -522,7 +540,7 @@
                             </td>
 
                             {{-- 3. Prioritas --}}
-                            <td class="py-3 px-3 align-top text-center border-r border-dashed border-slate-200">
+                            <td class="py-3 px-3 align-top text-center border-r border-[#EEF2F5]">
                                 {{-- Spacer penyeimbang label hari --}}
                                 <div class="h-6 mb-2"></div>
 
@@ -584,7 +602,7 @@
                             </td>
 
                             {{-- 4. Catatan / Bukti Pengerjaan --}}
-                            <td class="py-3 px-4 align-top border-r border-dashed border-slate-200">
+                            <td class="py-3 px-4 align-top border-r border-[#EEF2F5]">
                                 {{-- Spacer penyeimbang label hari --}}
                                 <div class="h-6 mb-2"></div>
 
@@ -801,7 +819,7 @@
                                     <label class="block text-xs font-semibold text-slate-700 mb-1">
                                         Status Progress <span class="text-rose-500">*</span>
                                     </label>
-                                    @if(in_array($role, ['kadiv', 'hrd'], true))
+                                    @if(in_array($role, ['kadiv', 'hrd', 'superadmin'], true))
                                         <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                                             <button type="button" wire:click="$set('status', 'pending')"
                                                     class="py-1.5 px-1 text-center rounded-lg border text-[11px] font-bold transition
