@@ -10,6 +10,7 @@ use App\Services\Finance\JurnalEntryService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -45,7 +46,8 @@ class JurnalUmumTable extends Component
 
     public array $manualLines = [];
 
-    public array $lineSearch = [];
+    /** Id stabil per baris, dipakai sebagai wire:key agar DOM tidak tertukar saat reindex. */
+    public array $manualLineIds = [];
 
     public ?string $feedbackMessage = null;
 
@@ -125,9 +127,11 @@ class JurnalUmumTable extends Component
         return $this->filteredAccounts($this->coaSearch);
     }
 
-    public function accountsForLine(int $index): Collection
+    public function getActiveAccountsProperty(): Collection
     {
-        return $this->filteredAccounts($this->lineSearch[$index] ?? '');
+        return CoaAkun::aktif()->orderBy('kode')->get()
+            ->groupBy('kelompok')
+            ->sortBy(fn ($group, $key) => array_search($key, CoaAkun::KELOMPOK, true));
     }
 
     private function filteredAccounts(string $search): Collection
@@ -199,13 +203,13 @@ class JurnalUmumTable extends Component
             ['account_id' => '', 'debit' => '', 'credit' => ''],
             ['account_id' => '', 'debit' => '', 'credit' => ''],
         ];
-        $this->lineSearch = ['', ''];
+        $this->manualLineIds = [$this->newLineId(), $this->newLineId()];
     }
 
     public function addLine(): void
     {
         $this->manualLines[] = ['account_id' => '', 'debit' => '', 'credit' => ''];
-        $this->lineSearch[] = '';
+        $this->manualLineIds[] = $this->newLineId();
     }
 
     public function removeLine(int $index): void
@@ -214,21 +218,32 @@ class JurnalUmumTable extends Component
             return;
         }
 
-        unset($this->manualLines[$index], $this->lineSearch[$index]);
+        unset($this->manualLines[$index], $this->manualLineIds[$index]);
         $this->manualLines = array_values($this->manualLines);
-        $this->lineSearch = array_values($this->lineSearch);
+        $this->manualLineIds = array_values($this->manualLineIds);
+        $this->normalizeManualLines();
         $this->resetValidation();
     }
 
-    public function updatedManualLines(mixed $value, string $key): void
+    /**
+     * Livewire memanggil hook ini dengan $key = null ketika seluruh array
+     * manualLines dikirim ulang (mis. saat "+ Tambah baris" dari browser).
+     */
+    public function updatedManualLines(mixed $value, ?string $key = null): void
     {
-        if (! str_contains($key, '.')) {
+        $this->syncLineIds();
+
+        if ($key === null || ! str_contains($key, '.')) {
+            $this->normalizeManualLines();
+
             return;
         }
 
         [$index, $field] = explode('.', $key, 2);
 
         if (! isset($this->manualLines[$index])) {
+            $this->normalizeManualLines();
+
             return;
         }
 
@@ -237,6 +252,44 @@ class JurnalUmumTable extends Component
         } elseif ($field === 'credit' && (float) $value > 0) {
             $this->manualLines[$index]['debit'] = '';
         }
+    }
+
+    /** Satu baris hanya boleh berisi debit atau kredit. */
+    private function normalizeManualLines(): void
+    {
+        foreach ($this->manualLines as $index => $line) {
+            $debit = (float) ($line['debit'] ?? 0);
+            $credit = (float) ($line['credit'] ?? 0);
+
+            if ($debit <= 0 || $credit <= 0) {
+                continue;
+            }
+
+            if ($debit >= $credit) {
+                $this->manualLines[$index]['credit'] = '';
+            } else {
+                $this->manualLines[$index]['debit'] = '';
+            }
+        }
+    }
+
+    /** Pastikan setiap baris selalu punya id, juga saat array dikirim utuh dari browser. */
+    private function syncLineIds(): void
+    {
+        $lines = array_values($this->manualLines);
+        $ids = [];
+
+        foreach ($lines as $index => $line) {
+            $ids[$index] = $this->manualLineIds[$index] ?? $this->newLineId();
+        }
+
+        $this->manualLines = $lines;
+        $this->manualLineIds = $ids;
+    }
+
+    private function newLineId(): string
+    {
+        return Str::uuid()->toString();
     }
 
     public function getCanWriteKeteranganProperty(): bool

@@ -304,4 +304,68 @@ class JurnalUmumTest extends TestCase
             ->assertSeeHtml(number_format(1200000, 0, ',', '.'))
             ->assertSee('Seimbang');
     }
+
+    /**
+     * Regresi: browser mengirim seluruh array manualLines saat "+ Tambah baris",
+     * sehingga hook updatedManualLines dipanggil dengan $key = null.
+     */
+    public function test_whole_array_update_does_not_crash(): void
+    {
+        $lines = [
+            ['account_id' => '', 'debit' => '', 'credit' => ''],
+            ['account_id' => '', 'debit' => '', 'credit' => ''],
+            ['account_id' => '', 'debit' => '100000', 'credit' => '100000'],
+        ];
+
+        Livewire::actingAs($this->finance)
+            ->test(JurnalUmumTable::class)
+            ->call('openManualModal')
+            ->set('manualLines', $lines)
+            ->assertSet('manualLines.2.debit', 100000)
+            ->assertSet('manualLines.2.credit', '');
+    }
+
+    public function test_adding_two_rows_can_be_balanced_and_saved(): void
+    {
+        $divisi = JurnalDivisi::firstOrFail();
+        $kas = CoaAkun::where('kode', '1101')->firstOrFail();
+        $pendapatan = CoaAkun::where('kode', '4101')->firstOrFail();
+
+        Livewire::actingAs($this->finance)
+            ->test(JurnalUmumTable::class)
+            ->call('openManualModal')
+            ->call('addLine')
+            ->call('addLine')
+            ->set('manualDivisiId', (string) $divisi->id)
+            ->set('manualKeterangan', 'Jurnal tiga baris')
+            ->set('manualLines.0.account_id', (string) $kas->id)
+            ->set('manualLines.0.debit', 300000)
+            ->set('manualLines.2.account_id', (string) $pendapatan->id)
+            ->set('manualLines.2.credit', 300000)
+            ->assertSet('manualTotals.valid', true)
+            ->call('saveManual')
+            ->assertSet('showManualModal', false);
+
+        $entry = JurnalEntry::with('lines')->firstOrFail();
+        $this->assertCount(2, $entry->lines);
+        $this->assertSame(300000, (int) $entry->lines->sum('debit'));
+        $this->assertSame(300000, (int) $entry->lines->sum('credit'));
+    }
+
+    public function test_remove_then_add_row_keeps_stable_keys(): void
+    {
+        $component = Livewire::actingAs($this->finance)
+            ->test(JurnalUmumTable::class)
+            ->call('openManualModal')
+            ->call('addLine')
+            ->call('removeLine', 0)
+            ->call('addLine');
+
+        $ids = $component->get('manualLineIds');
+
+        $this->assertCount(3, $ids);
+        $this->assertCount(3, array_unique($ids));
+        $this->assertCount(3, $component->get('manualLines'));
+        $component->assertSeeHtml('Pilih akun');
+    }
 }
