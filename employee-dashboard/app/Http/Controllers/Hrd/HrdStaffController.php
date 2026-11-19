@@ -29,7 +29,7 @@ class HrdStaffController extends Controller
      */
     public function index()
     {
-        $staffs = Karyawan::with(['user.role', 'divisi', 'jabatan'])
+        $staffs = Karyawan::with(['user.role', 'divisi', 'jabatanRef'])
             ->orderBy('divisi_id_divisi')
             ->orderBy('nama')
             ->get();

@@ -60,6 +60,14 @@ class HrdStaffCrudTest extends TestCase
             ->assertSee(url('/hrd/staff'), false);
     }
 
+    public function test_staff_list_endpoint_used_by_pesan_page_returns_ok(): void
+    {
+        $this->actingAs($this->hrd)
+            ->getJson('/hrd/staff')
+            ->assertOk()
+            ->assertJsonStructure(['message', 'data']);
+    }
+
     public function test_karyawan_create_modal_has_a_divisi_select(): void
     {
         $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan')
