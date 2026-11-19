@@ -8,6 +8,7 @@ use App\Models\Divisi;
 use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
 use App\Models\Notifikasi;
+use App\Services\Finance\JurnalEntryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -76,7 +77,11 @@ class PengeluaranController extends Controller
         $data['kode_pengeluaran'] = 'OUT' . now()->format('ym') . str_pad($count + 1, 4, '0', STR_PAD_LEFT);
         $data['user_id_user']     = Auth::id();
 
-        KPengeluaran::create($data);
+        DB::transaction(function () use ($data) {
+            $pengeluaran = KPengeluaran::create($data);
+
+            app(JurnalEntryService::class)->createFromPengeluaran($pengeluaran);
+        });
 
         return back()->with('success', 'Pengeluaran berhasil dicatat.');
     }
@@ -125,6 +130,9 @@ class PengeluaranController extends Controller
                 'divisi_id_divisi' => $permintaan->divisi_id_divisi,
                 'user_id_user'     => Auth::id(),
             ]);
+
+            // Jurnal pencairan dana dibuat di transaksi yang sama.
+            app(JurnalEntryService::class)->createFromPengeluaran($pengeluaran);
 
             // Update status permintaan
             $permintaan->update(['status' => KPermintDana::STATUS_DICAIRKAN]);

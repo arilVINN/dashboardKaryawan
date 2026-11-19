@@ -32,6 +32,7 @@ use App\Http\Controllers\Finance\AlokasiController;
 use App\Http\Controllers\Finance\PermintaanDanaController;
 use App\Http\Controllers\Finance\PengeluaranController;
 use App\Http\Controllers\Finance\LabaRugiController;
+use App\Http\Controllers\Finance\JurnalUmumController;
 
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -553,6 +554,10 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
         Route::post('/laporan/{id}/verifikasi', [LabaRugiController::class, 'verifikasi'])
             ->middleware('throttle:submit-form')
             ->name('kadiv.keuangan.laporan.verifikasi');
+
+        // Jurnal Umum — entri dibuat otomatis dari transaksi keuangan
+        Route::get('/jurnal-umum', [JurnalUmumController::class, 'index'])
+            ->name('kadiv.keuangan.jurnalUmum');
     });
 
 // ── Semua Kadiv: Pengajuan Dana & Laporan Laba/Rugi ──────────────────────────

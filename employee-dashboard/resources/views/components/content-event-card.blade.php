@@ -17,6 +17,8 @@
         // Revisi uses a clearly grey card (not white) with dark text so it
         // stands apart from both the white Plan card and the coloured blocks.
         $cardStyle = 'background-color: #E2E8F0; border-color: #000000;';
+    } elseif ($status === 'plan') {
+        $cardStyle = 'background-color: #FFFFFF; border-color: #94A3B8;';
     } elseif ($palette) {
         $cardStyle = 'background-color: '.$palette['bg'].'; border-color: '.$palette['border'].';';
     } else {

@@ -160,7 +160,7 @@ class ContentCalendarTest extends TestCase
                 ->assertOk()
                 ->assertSee('Kalender Konten - Silindo Official')
                 ->assertSee('Silindo TikTok')
-                ->assertSee('Tambah event')
+                ->assertSee('Tambah konten')
                 ->assertSee('Semua jenis')
                 ->assertSee('Semua status');
         }
@@ -595,6 +595,7 @@ class ContentCalendarTest extends TestCase
         $this->event($this->staffHr, ['title' => 'Event Publish', 'event_date' => '2026-11-10', 'status' => 'publish']);
         $this->event($this->staffHr, ['title' => 'Event Process', 'event_date' => '2026-11-11', 'status' => 'process']);
         $this->event($this->staffHr, ['title' => 'Event Revisi', 'event_date' => '2026-11-12', 'status' => 'revisi']);
+        $this->event($this->staffHr, ['title' => 'Event Plan', 'event_date' => '2026-11-13', 'status' => 'plan']);
 
         $html = Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)

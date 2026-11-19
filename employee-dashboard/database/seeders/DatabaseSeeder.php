@@ -4,312 +4,264 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use App\Models\Role;
 use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\User2;
-use App\Models\Tugas;
+use App\Models\Pesan;
 
 class DatabaseSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        // ID maksimal 5 karakter!
-
+        // 1. Roles
         $roleStaff = Role::firstOrCreate(
             ['id_role' => 'RL001'],
             ['nama_role' => 'staff']
         );
 
-        $divisiIT = Divisi::firstOrCreate(
-            ['id_divisi' => 'DV001'],
-            ['kode_divisi' => 'IT01', 'nama_divisi' => 'Information Technology', 'status_aktif' => 'Aktif']
-        );
-
-        $karyawan = Karyawan::create([
-            'id_karyawan' => 'KR001',
-            'nama' => 'Budi',
-            'jenis_kelamin' => 'Laki-laki',
-            'tanggal_lahir' => '1995-05-15',
-            'tanggal_masuk' => '2023-01-10',
-            'tanggal_akhir_kontrak' => now()->addYears(1)->toDateString(),
-            'no_rekening' => '1234567890',
-            'no_telepon' => '081234567890',
-            'email' => 'staff@silindo.co.id',
-            'alamat' => 'Salatiga, Jawa Tengah',
-            'jabatan' => 'Content Writer',
-            'status_aktif' => 'Aktif',
-            'foto' => null,
-            'divisi_id_divisi' => $divisiIT->id_divisi,
-            'pendidikan' => 'S1 Komunikasi',
-            'job_level' => 'Staff',
-            'status_karyawan' => 'tetap',
-            'aktif' => true,
-        ]);
-
-        User2::create([
-            'id_user' => 'US001',
-            'username' => 'budist',
-            'password' => Hash::make('pass123'),
-            'role_id_role' => $roleStaff->id_role,
-            'karyawan_id_karyawan' => $karyawan->id_karyawan,
-        ]);
-
-        Tugas::create([
-            'id_tugas' => 'TG001',
-            'karyawan_id_karyawan' => $karyawan->id_karyawan,
-            'judul_tugas' => 'Bikin API',
-            'deskripsi' => 'Buat backend.',
-            'deadline' => now()->addDays(3),
-            'progress' => '0',
-            'status' => 'baru',
-            'tanggal_dibuat' => now(),
-            'tanggal_update' => now(),
-        ]);
-
-        // --- ADD REVA ---
-        $karyawanReva = Karyawan::create([
-            'id_karyawan' => 'KR002',
-            'nama' => 'Reva',
-            'jenis_kelamin' => 'Perempuan',
-            'tanggal_lahir' => '1998-08-20',
-            'tanggal_masuk' => '2024-02-01',
-            'tanggal_akhir_kontrak' => now()->addYears(1)->toDateString(),
-            'no_rekening' => '2234567890',
-            'no_telepon' => '08987654',
-            'email' => 'reva@silindo.co.id',
-            'alamat' => 'Semarang, Jawa Tengah',
-            'jabatan' => 'Frontend',
-            'status_aktif' => 'Aktif',
-            'foto' => null,
-            'divisi_id_divisi' => $divisiIT->id_divisi,
-            'pendidikan' => 'S1 Desain Komunikasi Visual',
-            'job_level' => 'Staff',
-            'status_karyawan' => 'tetap',
-            'aktif' => true,
-        ]);
-
-        User2::create([
-            'id_user' => 'US002',
-            'username' => 'revast',
-            'password' => Hash::make('pass123'),
-            'role_id_role' => $roleStaff->id_role,
-            'karyawan_id_karyawan' => $karyawanReva->id_karyawan,
-        ]);
-
-        Tugas::create([
-            'id_tugas' => 'TG002',
-            'karyawan_id_karyawan' => $karyawanReva->id_karyawan,
-            'judul_tugas' => 'Desain UI Dashboard',
-            'deskripsi' => 'Buat tampilan dashboard yang responsive.',
-            'deadline' => now()->addDays(5),
-            'progress' => '0',
-            'status' => 'baru',
-            'tanggal_dibuat' => now(),
-            'tanggal_update' => now(),
-        ]);
-        // -----------------
-        // --- ADD KADIV (PAK TONO) ---
         $roleKadiv = Role::firstOrCreate(
             ['id_role' => 'RL002'],
             ['nama_role' => 'kadiv']
         );
 
-        $karyawanKadiv = Karyawan::create([
-            'id_karyawan' => 'KR003',
-            'nama' => 'Pak Tono',
-            'jenis_kelamin' => 'Laki-laki',
-            'tanggal_lahir' => '1980-01-01',
-            'tanggal_masuk' => '2015-01-01',
-            'tanggal_akhir_kontrak' => now()->addYears(2)->toDateString(),
-            'no_rekening' => '3234567890',
-            'no_telepon' => '08111222333',
-            'email' => 'tono@silindo.co.id',
-            'alamat' => 'Yogyakarta',
-            'jabatan' => 'Kepala Divisi IT',
-            'status_aktif' => 'Aktif',
-            'foto' => null,
-            'divisi_id_divisi' => $divisiIT->id_divisi,
-            'pendidikan' => 'S1 Teknik Informatika',
-            'job_level' => 'Manager',
-            'status_karyawan' => 'tetap',
-            'aktif' => true,
-        ]);
-
-        User2::create([
-            'id_user' => 'US003',
-            'username' => 'tonokd',
-            'password' => Hash::make('pass123'),
-            'role_id_role' => $roleKadiv->id_role,
-            'karyawan_id_karyawan' => $karyawanKadiv->id_karyawan,
-        ]);
-        // -----------------
-
-        $divisiHR = Divisi::create([
-            'id_divisi' => 'DV002',
-            'kode_divisi' => 'HR01',
-            'nama_divisi' => 'Human Resources',
-            'status_aktif' => 'Aktif',
-        ]);
-
-        $karyawanKadivHR = Karyawan::create([
-            'id_karyawan' => 'KR004',
-            'nama' => 'Bu Rina',
-            'jenis_kelamin' => 'Perempuan',
-            'tanggal_lahir' => '1985-04-12',
-            'tanggal_masuk' => '2018-06-01',
-            'tanggal_akhir_kontrak' => now()->addYears(2)->toDateString(),
-            'no_rekening' => '4234567890',
-            'no_telepon' => '08122334455',
-            'email' => 'rina@silindo.co.id',
-            'alamat' => 'Bandung',
-            'jabatan' => 'Kepala Divisi HR',
-            'status_aktif' => 'Aktif',
-            'foto' => null,
-            'divisi_id_divisi' => $divisiHR->id_divisi,
-            'pendidikan' => 'S2 Manajemen SDM',
-            'job_level' => 'Manager',
-            'status_karyawan' => 'tetap',
-            'aktif' => true,
-        ]);
-
-        User2::create([
-            'id_user' => 'US004',
-            'username' => 'rinakadiv',
-            'password' => Hash::make('pass123'),
-            'role_id_role' => $roleKadiv->id_role,
-            'karyawan_id_karyawan' => $karyawanKadivHR->id_karyawan,
-        ]);
-
-        $karyawanAndi = Karyawan::create([
-            'id_karyawan' => 'KR005',
-            'nama' => 'Andi',
-            'jenis_kelamin' => 'Laki-laki',
-            'tanggal_lahir' => '1997-03-18',
-            'tanggal_masuk' => '2022-08-15',
-            'tanggal_akhir_kontrak' => now()->addYears(1)->toDateString(),
-            'no_rekening' => '5234567890',
-            'no_telepon' => '08133445566',
-            'email' => 'andi@silindo.co.id',
-            'alamat' => 'Magelang',
-            'jabatan' => 'Staff HR',
-            'status_aktif' => 'Aktif',
-            'foto' => null,
-            'divisi_id_divisi' => $divisiHR->id_divisi,
-            'pendidikan' => 'S1 Psikologi',
-            'job_level' => 'Staff',
-            'status_karyawan' => 'tetap',
-            'aktif' => true,
-        ]);
-
-        User2::create([
-            'id_user' => 'US005',
-            'username' => 'andist',
-            'password' => Hash::make('pass123'),
-            'role_id_role' => $roleStaff->id_role,
-            'karyawan_id_karyawan' => $karyawanAndi->id_karyawan,
-        ]);
-
-        Tugas::create([
-            'id_tugas' => 'TG003',
-            'karyawan_id_karyawan' => $karyawanAndi->id_karyawan,
-            'judul_tugas' => 'Perbarui Data Karyawan',
-            'deskripsi' => 'Periksa dan perbarui data karyawan divisi HR.',
-            'deadline' => now()->addDays(4),
-            'progress' => '0',
-            'status' => 'baru',
-            'tanggal_dibuat' => now(),
-            'tanggal_update' => now(),
-        ]);
-
-        $karyawanMaya = Karyawan::create([
-            'id_karyawan' => 'KR006',
-            'nama' => 'Maya',
-            'jenis_kelamin' => 'Perempuan',
-            'tanggal_lahir' => '1999-11-07',
-            'tanggal_masuk' => '2023-05-10',
-            'tanggal_akhir_kontrak' => now()->addYears(1)->toDateString(),
-            'no_rekening' => '6234567890',
-            'no_telepon' => '08144556677',
-            'email' => 'maya@silindo.co.id',
-            'alamat' => 'Surakarta',
-            'jabatan' => 'Staff HR',
-            'status_aktif' => 'Aktif',
-            'foto' => null,
-            'divisi_id_divisi' => $divisiHR->id_divisi,
-            'pendidikan' => 'S1 Hukum',
-            'job_level' => 'Staff',
-            'status_karyawan' => 'tetap',
-            'aktif' => true,
-        ]);
-
-        User2::create([
-            'id_user' => 'US006',
-            'username' => 'mayast',
-            'password' => Hash::make('pass123'),
-            'role_id_role' => $roleStaff->id_role,
-            'karyawan_id_karyawan' => $karyawanMaya->id_karyawan,
-        ]);
-
-        Tugas::create([
-            'id_tugas' => 'TG004',
-            'karyawan_id_karyawan' => $karyawanMaya->id_karyawan,
-            'judul_tugas' => 'Siapkan Orientasi Karyawan',
-            'deskripsi' => 'Siapkan materi orientasi untuk karyawan baru.',
-            'deadline' => now()->addDays(6),
-            'progress' => '0',
-            'status' => 'baru',
-            'tanggal_dibuat' => now(),
-            'tanggal_update' => now(),
-        ]);
-        // --- ADD HRD ---
         $roleHrd = Role::firstOrCreate(
             ['id_role' => 'RL003'],
             ['nama_role' => 'hrd']
         );
 
-        $karyawanHrd = Karyawan::create([
-            'id_karyawan' => 'KR007',
-            'nama' => 'Pak Darmawan',
-            'jenis_kelamin' => 'Laki-laki',
-            'tanggal_lahir' => '1978-06-20',
-            'tanggal_masuk' => '2012-01-15',
-            'tanggal_akhir_kontrak' => now()->addYears(2)->toDateString(),
-            'no_rekening' => '7234567890',
-            'no_telepon' => '08155667788',
-            'email' => 'darmawan@silindo.co.id',
-            'alamat' => 'Solo',
-            'jabatan' => 'HRD Manager',
-            'status_aktif' => 'Aktif',
-            'foto' => null,
-            'divisi_id_divisi' => $divisiHR->id_divisi,
-            'pendidikan' => 'S2 Manajemen Sumber Daya Manusia',
-            'job_level' => 'Manager',
-            'status_karyawan' => 'tetap',
-            'aktif' => true,
-        ]);
+        $roleDirektur = Role::firstOrCreate(
+            ['id_role' => 'RL004'],
+            ['nama_role' => 'direktur']
+        );
 
-        User2::create([
-            'id_user' => 'US007',
-            'username' => 'darmawanhrd',
-            'password' => Hash::make('pass123'),
-            'role_id_role' => $roleHrd->id_role,
-            'karyawan_id_karyawan' => $karyawanHrd->id_karyawan,
-        ]);
-        // -----------------
+        $roleSuperadmin = Role::firstOrCreate(
+            ['id_role' => 'RL005'],
+            ['nama_role' => 'superadmin']
+        );
 
-        $this->command->info('Berhasil Seed Database: 4 Role (staff, kadiv, hrd, direktur), 3 Divisi, Karyawan & Akun Utama!');
-
+        // 2. Struktur Divisi Lengkap (Kosongkan Staff & Kadiv lama, Divisi tetap ada)
         $this->call([
-            FinanceSeeder::class,
             DivisionHierarchySeeder::class,
             DirekturSeeder::class,
-            TugasSeeder::class,
-            TowerDatabaseSeeder::class,
-            PesanSeeder::class,
+        ]);
+
+        // 3. Akun Karyawan & User Baru
+        $accounts = [
+            [
+                'id_karyawan'   => 'KR001',
+                'id_user'       => 'US001',
+                'nama'          => 'Yovita Aryani, S.TP., M.P.',
+                'username'      => 'yovita',
+                'password'      => 'pass001',
+                'role_id'       => $roleStaff->id_role,
+                'divisi_id'     => 'DV008', // Publikasi Jurnal (JURNAL)
+                'jabatan'       => 'Staff',
+                'job_level'     => 'Staff',
+                'jenis_kelamin' => 'Perempuan',
+                'atasan_id'     => 'KR005', // Vini (Kadiv JURNAL)
+            ],
+            [
+                'id_karyawan'   => 'KR002',
+                'id_user'       => 'US002',
+                'nama'          => 'Agnes Galih Chris Roseita',
+                'username'      => 'agnes',
+                'password'      => 'pass002',
+                'role_id'       => $roleHrd->id_role, // Jadikan HRD Manager
+                'divisi_id'     => 'DV002', // HR (HRD)
+                'jabatan'       => 'HRD Manager',
+                'job_level'     => 'Manager',
+                'jenis_kelamin' => 'Perempuan',
+                'atasan_id'     => 'KR000', // Direktur
+            ],
+            [
+                'id_karyawan'   => 'KR003',
+                'id_user'       => 'US003',
+                'nama'          => 'Vega Rossy Danang Pratama',
+                'username'      => 'vega',
+                'password'      => 'pass003',
+                'role_id'       => $roleStaff->id_role,
+                'divisi_id'     => 'DV011', // MARKOM
+                'jabatan'       => 'Staff',
+                'job_level'     => 'Staff',
+                'jenis_kelamin' => 'Laki-laki',
+                'atasan_id'     => 'KR000',
+            ],
+            [
+                'id_karyawan'   => 'KR004',
+                'id_user'       => 'US004',
+                'nama'          => 'Annisa Sholikhatul Fatih',
+                'username'      => 'annisa',
+                'password'      => 'pass004',
+                'role_id'       => $roleStaff->id_role,
+                'divisi_id'     => 'DV008', // Publikasi Jurnal (JURNAL)
+                'jabatan'       => 'Staff',
+                'job_level'     => 'Staff',
+                'jenis_kelamin' => 'Perempuan',
+                'atasan_id'     => 'KR005', // Vini (Kadiv JURNAL)
+            ],
+            [
+                'id_karyawan'   => 'KR005',
+                'id_user'       => 'US005',
+                'nama'          => 'VINI ARUMSARI, S.P., M.',
+                'username'      => 'vini',
+                'password'      => 'pass005',
+                'role_id'       => $roleKadiv->id_role, // Kepala Divisi
+                'divisi_id'     => 'DV008', // Publikasi Jurnal (JURNAL)
+                'jabatan'       => 'Kepala Divisi',
+                'job_level'     => 'Manager',
+                'jenis_kelamin' => 'Perempuan',
+                'atasan_id'     => 'KR000',
+            ],
+            [
+                'id_karyawan'   => 'KR006',
+                'id_user'       => 'US006',
+                'nama'          => 'Cindy Reta Qorinsa',
+                'username'      => 'cindy',
+                'password'      => 'pass006',
+                'role_id'       => $roleStaff->id_role,
+                'divisi_id'     => 'DV007', // Publikasi Buku (BUKU)
+                'jabatan'       => 'Staff',
+                'job_level'     => 'Staff',
+                'jenis_kelamin' => 'Perempuan',
+                'atasan_id'     => 'KR009', // Durotur (Kadiv BUKU)
+            ],
+            [
+                'id_karyawan'   => 'KR007',
+                'id_user'       => 'US007',
+                'nama'          => 'Argha Yudha Prathama',
+                'username'      => 'argha',
+                'password'      => 'pass007',
+                'role_id'       => $roleStaff->id_role, // Layouter jadi Staff
+                'divisi_id'     => 'DV007', // Publikasi Buku (BUKU)
+                'jabatan'       => 'Staff',
+                'job_level'     => 'Staff',
+                'jenis_kelamin' => 'Laki-laki',
+                'atasan_id'     => 'KR009', // Durotur (Kadiv BUKU)
+            ],
+            [
+                'id_karyawan'   => 'KR008',
+                'id_user'       => 'US008',
+                'nama'          => 'Mukhamad Miftakhul',
+                'username'      => 'mukhamad',
+                'password'      => 'pass008',
+                'role_id'       => $roleStaff->id_role,
+                'divisi_id'     => 'DV011', // MARKOM
+                'jabatan'       => 'Staff',
+                'job_level'     => 'Staff',
+                'jenis_kelamin' => 'Laki-laki',
+                'atasan_id'     => 'KR000',
+            ],
+            [
+                'id_karyawan'   => 'KR009',
+                'id_user'       => 'US009',
+                'nama'          => 'Durotur Rohma',
+                'username'      => 'durotur',
+                'password'      => 'pass009',
+                'role_id'       => $roleKadiv->id_role, // Kepala Divisi
+                'divisi_id'     => 'DV007', // Publikasi Buku (BUKU)
+                'jabatan'       => 'Kepala Divisi',
+                'job_level'     => 'Manager',
+                'jenis_kelamin' => 'Perempuan',
+                'atasan_id'     => 'KR000',
+            ],
+            [
+                'id_karyawan'   => 'KR010',
+                'id_user'       => 'US010',
+                'nama'          => 'Test Admin',
+                'username'      => 'testadmin',
+                'password'      => 'pass010',
+                'role_id'       => $roleSuperadmin->id_role, // Superadmin
+                'divisi_id'     => 'DV005', // Manajemen
+                'jabatan'       => 'Superadmin',
+                'job_level'     => 'Superadmin',
+                'jenis_kelamin' => 'Laki-laki',
+                'atasan_id'     => null,
+            ],
+            [
+                'id_karyawan'   => 'KR011',
+                'id_user'       => 'US011',
+                'nama'          => 'Bu Sari Handayani',
+                'username'      => 'sarifin',
+                'password'      => 'pass123',
+                'role_id'       => $roleKadiv->id_role, // Kadiv Finance
+                'divisi_id'     => 'DV003', // Finance & Accounting
+                'jabatan'       => 'Kepala Divisi Finance',
+                'job_level'     => 'Manager',
+                'jenis_kelamin' => 'Perempuan',
+                'atasan_id'     => 'KR000', // Direktur
+            ],
+        ];
+
+        // Pass 1: Buat karyawan tanpa atasan_id agar tidak melanggar foreign key constraint
+        foreach ($accounts as $acc) {
+            Karyawan::create([
+                'id_karyawan'       => $acc['id_karyawan'],
+                'nama'              => $acc['nama'],
+                'jenis_kelamin'     => $acc['jenis_kelamin'],
+                'tanggal_lahir'     => null, // Ignore tanggal lahir
+                'tanggal_masuk'     => now()->subMonths(6)->toDateString(),
+                'status_aktif'      => 'Aktif',
+                'jabatan'           => $acc['jabatan'],
+                'job_level'         => $acc['job_level'],
+                'divisi_id_divisi'  => $acc['divisi_id'],
+                'atasan_id'         => null,
+                'status_karyawan'   => 'tetap',
+                'aktif'             => true,
+            ]);
+
+            User2::create([
+                'id_user'               => $acc['id_user'],
+                'username'              => $acc['username'],
+                'password'              => Hash::make($acc['password']),
+                'role_id_role'          => $acc['role_id'],
+                'karyawan_id_karyawan'  => $acc['id_karyawan'],
+            ]);
+        }
+
+        // Pass 2: Hubungkan atasan_id setelah semua karyawan ada
+        foreach ($accounts as $acc) {
+            if (! empty($acc['atasan_id'])) {
+                Karyawan::whereKey($acc['id_karyawan'])->update([
+                    'atasan_id' => $acc['atasan_id'],
+                ]);
+            }
+        }
+
+        $this->command?->info('Berhasil Seed 11 Akun Karyawan & User Utama!');
+
+        // 4. Data Pendukung Lainnya
+        $this->call([
+            ArsipPusatDataSeeder::class,
             HolidaySeeder::class,
             ContentTypeSeeder::class,
             ContentAccountSeeder::class,
+            JurnalUmumSeeder::class,
         ]);
+
+        // 5. Pesan Broadcast dari testadmin ke semua akun
+        $testadmin = User2::where('username', 'testadmin')->first();
+        if ($testadmin) {
+            $recipients = User2::where('id_user', '!=', $testadmin->id_user)->get();
+            $counter = 1;
+            foreach ($recipients as $recipient) {
+                Pesan::create([
+                    'id_pesan'                   => sprintf('PSN%04d%s', $counter++, strtoupper(Str::random(6))),
+                    'judul_pesan'                => 'testing',
+                    'deskripsi'                  => 'tolong coba ke page todo harian lalu tulis todo harian dan masukan file atau isi link atau catatan. terimakasih.',
+                    'tipe'                       => 'pesan',
+                    'tanggal_pesan'              => now()->toDateString(),
+                    'tugas_id_tugas'             => null,
+                    'tugas_karyawan_id_karyawan' => null,
+                    'pengirim_id_user'           => $testadmin->id_user,
+                    'penerima_id_user'           => $recipient->id_user,
+                    'balasan_dari_id_pesan'      => null,
+                    'link_lampiran'              => null,
+                    'file_lampiran'              => null,
+                ]);
+            }
+            $this->command?->info("Berhasil mengirim pesan broadcast dari testadmin ke {$recipients->count()} akun!");
+        }
     }
 }

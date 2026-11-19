@@ -103,8 +103,8 @@ class DailyJournalTable extends Component
         $role = strtolower(auth()->user()?->role?->nama_role ?? 'staff');
         $allowedModes = match ($role) {
             'kadiv' => ['my', 'team', 'rekap_divisi'],
-            'hrd', 'direktur', 'direksi', 'superadmin' => ['my', 'all', 'rekap_divisi'],
-            default => ['my'],
+            'hrd', 'direktur', 'direksi' => ['my', 'all', 'rekap_divisi'],
+            default => ['my', 'rekap_divisi'],
         };
 
         if (! in_array($mode, $allowedModes, true)) {
@@ -461,7 +461,14 @@ class DailyJournalTable extends Component
 
     public function selectStaffForReview(string $karyawanId): void
     {
-        $this->viewMode = 'team';
+        $role = strtolower(auth()->user()?->role?->nama_role ?? 'staff');
+        if (! in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true)) {
+            $this->feedbackMessage = 'Anda tidak memiliki akses untuk mereview to do karyawan lain.';
+            $this->feedbackType = 'error';
+            return;
+        }
+
+        $this->viewMode = $role === 'kadiv' ? 'team' : 'all';
         $this->filterKaryawanId = $karyawanId;
         $this->resetFeedback();
     }
@@ -731,10 +738,12 @@ class DailyJournalTable extends Component
             // Compute overall day status
             $overallStatus = 'empty';
             if ($count > 0) {
-                if ($onProgressCount > 0) {
+                if ($selesaiCount === $count) {
+                    $overallStatus = 'selesai';
+                } elseif ($onProgressCount > 0) {
                     $overallStatus = 'on_progress';
                 } else {
-                    $overallStatus = 'selesai';
+                    $overallStatus = 'pending';
                 }
             }
 
@@ -823,11 +832,19 @@ class DailyJournalTable extends Component
             $empPct = $empTaskCount > 0 ? round($sumPct / $empTaskCount, 1) : 0;
 
             $isKadivMember = strtolower($emp->user?->role?->nama_role ?? '') === 'kadiv';
+            $empRole = strtolower($emp->user?->role?->nama_role ?? '');
+            $roleLabel = match ($empRole) {
+                'kadiv' => 'Kepala Divisi',
+                'hrd' => 'HRD',
+                'direktur', 'direksi' => 'Direksi',
+                'superadmin' => 'Superadmin',
+                default => 'Staff',
+            };
 
             $staffProgressList->push([
                 'karyawan' => $emp,
                 'isKadiv' => $isKadivMember,
-                'roleLabel' => $isKadivMember ? 'Kepala Divisi' : 'Staff',
+                'roleLabel' => $roleLabel,
                 'totalTasks' => $empTaskCount,
                 'pct' => $empPct,
                 'count100' => $empJournals->filter(fn ($j) => in_array($j->status, ['disetujui', 'approved', 'complete_100', 'fix']))->count(),
