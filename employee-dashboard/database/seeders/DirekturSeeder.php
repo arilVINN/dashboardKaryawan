@@ -42,7 +42,7 @@ class DirekturSeeder extends Seeder
             );
 
             $karyawanDirektur = Karyawan::create([
-                'id_karyawan' => 'KR009',
+                'id_karyawan' => 'KR000',
                 'nama' => 'Hendra Wijaya',
                 'jenis_kelamin' => 'Laki-laki',
                 'tanggal_lahir' => '1975-02-14',

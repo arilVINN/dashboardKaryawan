@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Daftar kode divisi untuk Jurnal Umum.
+     * Ini adalah SUB-PERUSAHAAN, bukan divisi departemen pada tabel divisis.
+     */
+    public function up(): void
+    {
+        Schema::create('jurnal_divisis', function (Blueprint $table) {
+            $table->id();
+            $table->string('kode', 20)->unique();
+            $table->string('nama', 100);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('jurnal_divisis');
+    }
+};
