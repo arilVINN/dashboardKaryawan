@@ -119,13 +119,16 @@
                                         </div>
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-3 text-right text-[13px] font-medium tabular-nums text-[#172B36]">
-                                        {{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->total_pendapatan) }}
+                                        <div>{{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->total_pendapatan) }}</div>
+                                        <div class="text-[10px] text-[#64748B]">Op: {{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->pendapatan_operasional ?: $lap->total_pendapatan) }}</div>
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-3 text-right text-[13px] font-medium tabular-nums text-[#172B36]">
-                                        {{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->total_pengeluaran) }}
+                                        <div>{{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->total_pengeluaran) }}</div>
+                                        <div class="text-[10px] text-[#64748B]">Op: {{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->beban_operasional ?: $lap->total_pengeluaran) }}</div>
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-3 text-right text-[13px] font-semibold tabular-nums {{ $lap->laba_bersih < 0 ? 'text-[#B91C1C]' : 'text-[#172B36]' }}">
-                                        {{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->laba_bersih) }}
+                                        <div>{{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->laba_bersih) }}</div>
+                                        <div class="text-[10px] font-normal text-[#64748B]">Op: {{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->laba_operasional ?: ($lap->total_pendapatan - $lap->total_pengeluaran)) }}</div>
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-3 text-right text-[13px] tabular-nums {{ $lap->margin_persen < 0 ? 'text-[#B91C1C]' : 'text-[#4B5563]' }}">
                                         {{ \App\Helpers\FormatAkuntansi::formatMargin($lap->margin_persen) }}
@@ -165,7 +168,21 @@
                                             @endif
 
                                             <button type="button"
-                                                onclick="openVerifModal('{{ $lap->id_klr }}', '{{ $lap->divisi?->nama_divisi }}', '{{ $lap->minggu_ke }}', '{{ $lap->status_verifikasi }}', '{{ addslashes($lap->catatan_verifikasi ?? '') }}')"
+                                                onclick="openVerifModal(this)"
+                                                data-id="{{ $lap->id_klr }}"
+                                                data-divisi="{{ $lap->divisi?->nama_divisi }}"
+                                                data-minggu="{{ $lap->minggu_ke }}"
+                                                data-status="{{ $lap->status_verifikasi }}"
+                                                data-catatan-verif="{{ $lap->catatan_verifikasi ?? '' }}"
+                                                data-catatan-kadiv="{{ $lap->catatan ?? '' }}"
+                                                data-pend-op="{{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->pendapatan_operasional ?: $lap->total_pendapatan) }}"
+                                                data-beban-op="{{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->beban_operasional ?: $lap->total_pengeluaran) }}"
+                                                data-laba-op="{{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->laba_operasional ?: ($lap->total_pendapatan - $lap->total_pengeluaran)) }}"
+                                                data-pend-non-op="{{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->pendapatan_non_operasional ?: 0) }}"
+                                                data-beban-non-op="{{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->beban_non_operasional ?: 0) }}"
+                                                data-total-pend="{{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->total_pendapatan) }}"
+                                                data-total-peng="{{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->total_pengeluaran) }}"
+                                                data-laba-bersih="{{ \App\Helpers\FormatAkuntansi::formatRupiah($lap->laba_bersih) }}"
                                                 class="inline-flex h-8 items-center rounded-lg bg-[#0097B2] px-2.5 text-[12px] font-medium text-white shadow-sm transition hover:bg-[#008199] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
                                                 Verifikasi
                                             </button>
@@ -202,7 +219,7 @@
     {{-- Modal verifikasi --}}
     <div id="modal-verif" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm">
         <div class="flex min-h-full items-center justify-center">
-            <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-xl">
+            <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-xl">
                 <div class="flex items-start justify-between gap-4 border-b border-[#E2E8EC] pb-4">
                     <div>
                         <h3 class="text-[16px] font-semibold text-[#172B36]">Verifikasi laporan divisi</h3>
@@ -217,7 +234,62 @@
                     </button>
                 </div>
 
-                <form id="form-verif" method="POST" action="" class="mt-4 space-y-4">
+                {{-- Preview Rincian Aktivitas Bisnis --}}
+                <div class="mt-4 space-y-3">
+                    <div class="rounded-lg border border-[#D5DEE3] bg-[#F8FAFC] p-3 space-y-2">
+                        <p class="text-[11px] font-semibold uppercase tracking-wider text-[#0097B2]">1. Aktivitas Operasional</p>
+                        <div class="grid grid-cols-2 gap-2 text-[12px]">
+                            <div>
+                                <span class="text-[#64748B]">Pendapatan Operasional:</span>
+                                <p id="verif-pend-op" class="font-medium tabular-nums text-[#172B36]"></p>
+                            </div>
+                            <div>
+                                <span class="text-[#64748B]">Beban Operasional (OPEX):</span>
+                                <p id="verif-beban-op" class="font-medium tabular-nums text-[#172B36]"></p>
+                            </div>
+                            <div class="col-span-2 border-t border-[#EEF2F5] pt-1.5 flex justify-between">
+                                <span class="font-medium text-[#172B36]">Laba Operasional:</span>
+                                <span id="verif-laba-op" class="font-semibold tabular-nums text-[#172B36]"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-lg border border-[#D5DEE3] bg-[#F8FAFC] p-3 space-y-2">
+                        <p class="text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">2. Aktivitas Non-Operasional</p>
+                        <div class="grid grid-cols-2 gap-2 text-[12px]">
+                            <div>
+                                <span class="text-[#64748B]">Pendapatan Non-Operasional:</span>
+                                <p id="verif-pend-non-op" class="font-medium tabular-nums text-[#172B36]"></p>
+                            </div>
+                            <div>
+                                <span class="text-[#64748B]">Beban Non-Operasional:</span>
+                                <p id="verif-beban-non-op" class="font-medium tabular-nums text-[#172B36]"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 rounded-lg border border-[#D0E2EC] bg-[#EAF4F8] p-2.5 text-center text-[12px]">
+                        <div>
+                            <p class="text-[#64748B]">Total Pendapatan</p>
+                            <p id="verif-total-pend" class="font-semibold text-[#172B36]"></p>
+                        </div>
+                        <div>
+                            <p class="text-[#64748B]">Total Pengeluaran</p>
+                            <p id="verif-total-peng" class="font-semibold text-[#172B36]"></p>
+                        </div>
+                        <div>
+                            <p class="text-[#64748B]">Laba Bersih</p>
+                            <p id="verif-laba-bersih" class="font-bold text-[#172B36]"></p>
+                        </div>
+                    </div>
+
+                    <div id="verif-catatan-kadiv-box">
+                        <p class="text-[11px] text-[#64748B]">Catatan dari pengirim:</p>
+                        <p id="verif-catatan-kadiv" class="mt-0.5 rounded-md border border-[#E2E8EC] bg-[#F8FAFC] p-2 text-[12px] text-[#172B36]"></p>
+                    </div>
+                </div>
+
+                <form id="form-verif" method="POST" action="" class="mt-4 space-y-4 border-t border-[#E2E8EC] pt-4">
                     @csrf
 
                     <div>
@@ -264,16 +336,29 @@
             document.getElementById(id).classList.add('hidden');
         }
 
-        function openVerifModal(idKlr, divisiNama, mingguKe, currentStatus, currentCatatan) {
+        function openVerifModal(button) {
+            const data = button.dataset;
             const form = document.getElementById('form-verif');
-            form.action = '/kadiv/keuangan/laporan/' + idKlr + '/verifikasi';
-            document.getElementById('verif-desc').textContent = divisiNama + ' - Minggu ke-' + mingguKe;
-            if (currentStatus === 'perlu_revisi' || currentStatus === 'disetujui') {
-                document.getElementById('status_verifikasi').value = currentStatus;
+            form.action = '/kadiv/keuangan/laporan/' + data.id + '/verifikasi';
+            document.getElementById('verif-desc').textContent = data.divisi + ' - Minggu ke-' + data.minggu;
+            
+            // Set data values
+            document.getElementById('verif-pend-op').textContent = data.pendOp;
+            document.getElementById('verif-beban-op').textContent = data.bebanOp;
+            document.getElementById('verif-laba-op').textContent = data.labaOp;
+            document.getElementById('verif-pend-non-op').textContent = data.pendNonOp;
+            document.getElementById('verif-beban-non-op').textContent = data.bebanNonOp;
+            document.getElementById('verif-total-pend').textContent = data.totalPend;
+            document.getElementById('verif-total-peng').textContent = data.totalPeng;
+            document.getElementById('verif-laba-bersih').textContent = data.labaBersih;
+            document.getElementById('verif-catatan-kadiv').textContent = data.catatanKadiv || '-';
+
+            if (data.status === 'perlu_revisi' || data.status === 'disetujui') {
+                document.getElementById('status_verifikasi').value = data.status;
             } else {
                 document.getElementById('status_verifikasi').value = 'disetujui';
             }
-            document.getElementById('catatan_verifikasi').value = currentCatatan || '';
+            document.getElementById('catatan_verifikasi').value = data.catatanVerif || '';
             openModal('modal-verif');
         }
     </script>
