@@ -75,7 +75,7 @@ class EmployeeTemplateSeeder extends Seeder
             'password' => 'pass004',
             'role' => 'staff',
             'divisi' => 'PJ',
-            'jabatan' => 'Staff',
+            'jabatan' => 'Manager',
             'jenis_kelamin' => 'Perempuan',
         ],
         [

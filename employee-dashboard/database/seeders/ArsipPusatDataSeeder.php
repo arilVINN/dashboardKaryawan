@@ -6,7 +6,7 @@ use App\Models\Karyawan;
 use App\Models\TowerDatabase;
 use Illuminate\Database\Seeder;
 
-class TowerDatabaseSeeder extends Seeder
+class ArsipPusatDataSeeder extends Seeder
 {
     /**
      * Run the database seeds.

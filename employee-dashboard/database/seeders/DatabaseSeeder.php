@@ -233,7 +233,7 @@ class DatabaseSeeder extends Seeder
 
         // 4. Data Pendukung Lainnya
         $this->call([
-            TowerDatabaseSeeder::class,
+            ArsipPusatDataSeeder::class,
             HolidaySeeder::class,
             ContentTypeSeeder::class,
             ContentAccountSeeder::class,
