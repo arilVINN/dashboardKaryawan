@@ -34,10 +34,18 @@ class JurnalUmumSeeder extends Seeder
 
         // Kode divisi di Jurnal Umum = sub-perusahaan, bukan departemen.
         $divisi = [
-            ['kode' => 'SLI01', 'nama' => 'Silindo Indonesia'],
-            ['kode' => 'SLP02', 'nama' => 'Silindo Publishing'],
-            ['kode' => 'SLT03', 'nama' => 'Silindo Trading'],
-            ['kode' => 'SLM04', 'nama' => 'Silindo Media'],
+            ['kode' => 'D01', 'nama' => 'PT.SILINDO'],
+            ['kode' => 'D02', 'nama' => 'Buku'],
+            ['kode' => 'D03', 'nama' => 'Jurnal'],
+            ['kode' => 'D04', 'nama' => 'MARKOM'],
+            ['kode' => 'D05', 'nama' => 'Academic Events'],
+            ['kode' => 'D06', 'nama' => 'SMK'],
+            ['kode' => 'D07', 'nama' => 'KOS'],
+            ['kode' => 'D08', 'nama' => 'Business Development'],
+            ['kode' => 'D09', 'nama' => 'Kelas Kerjasama'],
+            ['kode' => 'D10', 'nama' => 'Meira English Institute'],
+            ['kode' => 'D11', 'nama' => 'Citra Komunika'],
+            ['kode' => 'D12', 'nama' => 'Public Relations'],
         ];
 
         foreach ($divisi as $row) {
