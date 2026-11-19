@@ -236,6 +236,7 @@ class DatabaseSeeder extends Seeder
             ArsipPusatDataSeeder::class,
             HolidaySeeder::class,
             ContentTypeSeeder::class,
+            ContentPillarSeeder::class,
             ContentAccountSeeder::class,
             JurnalUmumSeeder::class,
         ]);

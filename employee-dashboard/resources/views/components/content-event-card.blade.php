@@ -44,8 +44,13 @@
     @endif
 
     <span class="mt-auto flex items-end justify-between gap-2 pt-1">
-        <span class="flex flex-col items-start gap-1 whitespace-nowrap">
-            <x-content-type-tag :name="$event['type_name']" :fill="$event['type_fill']" :border="$event['type_border']" quiet />
+        <span class="flex min-w-0 flex-col items-start gap-1">
+            <span class="flex flex-wrap items-center gap-1">
+                <x-content-type-tag :name="$event['type_name']" :fill="$event['type_fill']" :border="$event['type_border']" quiet />
+                @if (! empty($event['pillar_name']))
+                    <x-content-pillar-pill :name="$event['pillar_name']" :color="$event['pillar_color']" />
+                @endif
+            </span>
             <x-status-badge variant="content" dot solid :status="$event['status']" />
         </span>
 
