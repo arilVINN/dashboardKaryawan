@@ -9,10 +9,29 @@ class ContractExpiryReminder
 {
     public function forHrd(): array
     {
-        $tanggalPengingat = today()->addDays(14);
+        $hariIni = today();
+        $tanggalPengingat = $hariIni->copy()->addDays(14);
         $tanggalLabel = $tanggalPengingat->locale('id')->isoFormat('D MMMM Y');
 
-        return Karyawan::query()
+        $kontrakBerakhir = Karyawan::query()
+            ->where('aktif', true)
+            ->whereDate('tanggal_akhir_kontrak', '<=', $hariIni->toDateString())
+            ->orderBy('nama')
+            ->get(['id_karyawan', 'nama', 'tanggal_akhir_kontrak'])
+            ->map(function (Karyawan $karyawan) {
+                $tanggalAkhirKontrak = $karyawan->tanggal_akhir_kontrak;
+                $tanggalLabel = $tanggalAkhirKontrak->locale('id')->isoFormat('D MMMM Y');
+
+                return [
+                    'id_notifikasi' => 'kontrak-expired-'.$karyawan->id_karyawan.'-'.$tanggalAkhirKontrak->toDateString(),
+                    'judul_notifikasi' => 'Kontrak Kerja Berakhir',
+                    'isi_notif' => "Kontrak kerja {$karyawan->nama} telah berakhir pada {$tanggalLabel}.",
+                    'created_at' => now()->toISOString(),
+                    'is_contract_expired' => true,
+                ];
+            });
+
+        $pengingatKontrak = Karyawan::query()
             ->where('aktif', true)
             ->whereDate('tanggal_akhir_kontrak', $tanggalPengingat->toDateString())
             ->orderBy('nama')
@@ -26,6 +45,8 @@ class ContractExpiryReminder
                 ];
             })
             ->all();
+
+        return array_merge($kontrakBerakhir->all(), $pengingatKontrak);
     }
 
     public function forUser(User2 $user): ?array
