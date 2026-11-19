@@ -357,15 +357,12 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($manualLines as $index => $line)
-                                        <tr class="border-t border-[#EEF2F5] align-top" wire:key="line-{{ $index }}">
+                                        <tr class="border-t border-[#EEF2F5] align-top" wire:key="line-{{ $manualLineIds[$index] }}">
                                             <td class="px-2 py-2">
-                                                <input type="text" wire:model.live.debounce.300ms="lineSearch.{{ $index }}"
-                                                    placeholder="Cari akun..."
-                                                    class="mb-1 h-8 w-full rounded-md border border-[#D5DEE3] px-2 text-[12px] focus:border-[#146C94] focus:outline-none">
                                                 <select wire:model="manualLines.{{ $index }}.account_id"
                                                     class="h-8 w-full rounded-md border border-[#D5DEE3] bg-white px-2 text-[12px] focus:border-[#146C94] focus:outline-none">
                                                     <option value="">Pilih akun</option>
-                                                    @foreach ($this->accountsForLine($index) as $kelompok => $accounts)
+                                                    @foreach ($this->activeAccounts as $kelompok => $accounts)
                                                         <optgroup label="{{ $kelompok }}">
                                                             @foreach ($accounts as $akun)
                                                                 <option value="{{ $akun->id }}">{{ $akun->kode }} {{ $akun->nama }}</option>
