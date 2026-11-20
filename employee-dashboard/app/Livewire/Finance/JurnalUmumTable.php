@@ -131,7 +131,7 @@ class JurnalUmumTable extends Component
 
     public function getDivisionsProperty(): Collection
     {
-        return JurnalDivisi::orderBy('nama')->get();
+        return JurnalDivisi::orderBy('kode')->get();
     }
 
     public function getCoaGroupsProperty(): Collection

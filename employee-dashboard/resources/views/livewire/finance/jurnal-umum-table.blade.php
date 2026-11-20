@@ -83,13 +83,15 @@
             @endif
         </div>
 
-        <select wire:model.live="divisiFilter" aria-label="Filter divisi"
-            class="h-9 min-w-[180px] rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] text-[#334155] focus:border-[#146C94] focus:outline-none">
-            <option value="">Semua divisi</option>
-            @foreach ($divisions as $divisi)
-                <option wire:key="filter-divisi-{{ $divisi->id }}" value="{{ $divisi->id }}">{{ $divisi->nama }}</option>
-            @endforeach
-        </select>
+        <div class="min-w-[200px]">
+            <x-finance.divisi-select
+                name="divisiFilter"
+                :value="$divisiFilter"
+                :divisions="$divisions"
+                placeholder="Semua divisi"
+                class="h-9 min-w-[200px] rounded-lg px-3 text-[13px]"
+            />
+        </div>
 
         @if ($this->hasActiveFilter)
             <button type="button" wire:click="resetFilters"
@@ -315,13 +317,13 @@
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label class="mb-1 block text-[12px] font-medium text-[#334155]">Divisi <span class="text-red-500">*</span></label>
-                            <select wire:model.live="manualDivisiId"
-                                class="h-9 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] text-[#172B36] focus:border-[#146C94] focus:outline-none">
-                                <option value="">Pilih divisi</option>
-                                @foreach ($divisions as $divisi)
-                                    <option wire:key="manual-divisi-{{ $divisi->id }}" value="{{ $divisi->id }}">{{ $divisi->nama }} ({{ $divisi->kode }})</option>
-                                @endforeach
-                            </select>
+                            <x-finance.divisi-select
+                                name="manualDivisiId"
+                                :value="$manualDivisiId"
+                                :divisions="$divisions"
+                                placeholder="Pilih divisi"
+                                class="h-9 w-full rounded-lg px-3 text-[13px]"
+                            />
                             @error('manualDivisiId') <p class="mt-1 text-[11px] text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
@@ -353,18 +355,15 @@
                                     @foreach ($manualLines as $index => $line)
                                         <tr class="border-t border-[#EEF2F5] align-top" wire:key="line-{{ $manualLineIds[$index] }}">
                                             <td class="px-2 py-2">
-                                                <select wire:model="manualLines.{{ $index }}.account_id"
-                                                    class="h-8 w-full rounded-md border border-[#D5DEE3] bg-white px-2 text-[12px] focus:border-[#146C94] focus:outline-none">
-                                                    <option value="">Pilih akun</option>
-                                                    @foreach ($this->activeAccounts as $kelompok => $accounts)
-                                                        <optgroup wire:key="manual-grup-{{ $index }}-{{ $kelompok }}" label="{{ $kelompok }}">
-                                                            @foreach ($accounts as $akun)
-                                                                <option wire:key="manual-akun-{{ $index }}-{{ $akun->id }}" value="{{ $akun->id }}">{{ $akun->kode }} {{ $akun->nama }}</option>
-                                                            @endforeach
-                                                        </optgroup>
-                                                    @endforeach
-                                                </select>
-                                                <input type="text" wire:model="manualLines.{{ $index }}.keterangan"
+                                                <x-finance.account-select
+                                                    name="manualLines.{{ $index }}.account_id"
+                                                    :value="$line['account_id'] ?? ''"
+                                                    :groupedAccounts="$this->activeAccounts"
+                                                    placeholder="Pilih akun"
+                                                    class="h-8 w-full rounded-md px-2 text-[12px]"
+                                                    wire:key="acc-sel-{{ $manualLineIds[$index] }}"
+                                                />
+                                                <input type="text" wire:model.live.debounce.300ms="manualLines.{{ $index }}.keterangan"
                                                     @if (blank($line['account_id'] ?? null)) disabled @endif
                                                     maxlength="500"
                                                     placeholder="{{ filled($line['account_id'] ?? null) ? 'Keterangan akun ini' : 'Pilih akun terlebih dahulu' }}"
@@ -408,8 +407,10 @@
                     <button type="button" wire:click="closeManualModal"
                         class="h-9 rounded-lg border border-[#D5DEE3] bg-white px-4 text-[13px] font-medium text-[#334155] hover:border-[#146C94]">Batal</button>
                     <button type="button" wire:click="saveManual" wire:loading.attr="disabled"
-                        @if (! $this->manualTotals['valid']) disabled @endif
-                        class="h-9 rounded-lg bg-[#146C94] px-4 text-[13px] font-medium text-white transition hover:bg-[#105A7A] disabled:cursor-not-allowed disabled:bg-slate-300">Simpan</button>
+                        class="inline-flex h-9 items-center justify-center rounded-lg bg-[#146C94] px-4 text-[13px] font-medium text-white transition hover:bg-[#105A7A] disabled:cursor-not-allowed disabled:opacity-50">
+                        <span wire:loading.remove wire:target="saveManual">Simpan</span>
+                        <span wire:loading wire:target="saveManual">Menyimpan...</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -426,17 +427,13 @@
                 <div class="space-y-3 px-4 py-4">
                     <div>
                         <label class="mb-1 block text-[12px] font-medium text-[#334155]">Akun <span class="text-red-500">*</span></label>
-                        <select wire:model="editAccountId"
-                            class="h-9 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] focus:border-[#146C94] focus:outline-none">
-                            <option value="">Pilih akun</option>
-                            @foreach ($this->activeAccounts as $kelompok => $accounts)
-                                <optgroup wire:key="edit-grup-{{ $kelompok }}" label="{{ $kelompok }}">
-                                    @foreach ($accounts as $akun)
-                                        <option wire:key="edit-akun-{{ $akun->id }}" value="{{ $akun->id }}">{{ $akun->kode }} {{ $akun->nama }}</option>
-                                    @endforeach
-                                </optgroup>
-                            @endforeach
-                        </select>
+                        <x-finance.account-select
+                            name="editAccountId"
+                            :value="$editAccountId"
+                            :groupedAccounts="$this->activeAccounts"
+                            placeholder="Pilih akun"
+                            class="h-9 w-full rounded-lg px-3 text-[13px]"
+                        />
                         @error('editAccountId') <p class="mt-1 text-[11px] text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>

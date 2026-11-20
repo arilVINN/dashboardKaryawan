@@ -587,4 +587,45 @@ class JurnalUmumTest extends TestCase
             'target_id' => (string) $line->id,
         ]);
     }
+
+    public function test_divisions_are_ordered_by_code_number(): void
+    {
+        $component = Livewire::actingAs($this->finance)
+            ->test(JurnalUmumTable::class);
+
+        $divisions = $component->get('divisions');
+        $codes = $divisions->pluck('kode')->all();
+
+        $sortedCodes = $codes;
+        sort($sortedCodes, SORT_NATURAL);
+
+        $this->assertSame($sortedCodes, $codes);
+        $this->assertSame('D01', $codes[0]);
+    }
+
+    public function test_manual_entry_saves_smoothly_without_reselecting_division(): void
+    {
+        $divisi = JurnalDivisi::where('kode', 'D02')->firstOrFail();
+        $kas = CoaAkun::where('kode', '1101')->firstOrFail();
+        $pendapatan = CoaAkun::where('kode', '4101')->firstOrFail();
+
+        Livewire::actingAs($this->finance)
+            ->test(JurnalUmumTable::class)
+            ->call('openManualModal')
+            ->set('manualDivisiId', (string) $divisi->id)
+            ->set('manualLines.0.account_id', (string) $kas->id)
+            ->set('manualLines.0.keterangan', 'Keterangan Kas')
+            ->set('manualLines.0.debit', 500000)
+            ->set('manualLines.1.account_id', (string) $pendapatan->id)
+            ->set('manualLines.1.keterangan', 'Keterangan Pendapatan')
+            ->set('manualLines.1.credit', 500000)
+            ->call('saveManual')
+            ->assertSet('showManualModal', false)
+            ->assertSet('feedbackType', 'success');
+
+        $entry = JurnalEntry::with('lines')->latest('id')->firstOrFail();
+        $this->assertSame($divisi->id, $entry->jurnal_divisi_id);
+        $this->assertSame(500000, (int) $entry->lines->sum('debit'));
+        $this->assertSame(500000, (int) $entry->lines->sum('credit'));
+    }
 }
