@@ -99,6 +99,13 @@ class ContentCalendar extends Component
 
     public string $optionColor = '';
 
+    /** Option pending deletion: 'type' | 'pillar' | empty. */
+    public string $optionToDeleteKind = '';
+
+    public string $optionToDeleteSlug = '';
+
+    public string $optionToDeleteName = '';
+
     public function booted(): void
     {
         abort_unless(ContentCalendarAccess::allows(auth()->user()), 403);
@@ -217,11 +224,12 @@ class ContentCalendar extends Component
 
         $this->validate([
             'optionName' => ['required', 'string', 'max:80'],
-            'optionColor' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
         ], $this->messages());
 
         $name = trim($this->optionName);
-        $color = strtoupper(trim($this->optionColor));
+        // The colour comes only from the swatches; normalize defensively in
+        // case a client sends a tampered value instead of a palette hex.
+        $color = OptionColor::normalize($this->optionColor);
 
         /** @var class-string<ContentType|ContentPillar> $model */
         $model = $this->optionForm === 'type' ? ContentType::class : ContentPillar::class;
@@ -258,6 +266,76 @@ class ContentCalendar extends Component
 
         $this->closeOptionForm();
         $this->dispatch('content-toast', message: $label.' ditambahkan', type: 'success');
+    }
+
+    public function requestDeleteOption(string $kind, string $slug): void
+    {
+        abort_unless(ContentCalendarAccess::canManageOptions(auth()->user()), 403);
+        abort_unless(in_array($kind, ['type', 'pillar'], true), 404);
+
+        $model = $kind === 'type' ? ContentType::class : ContentPillar::class;
+        $option = $model::query()->where('slug', $slug)->firstOrFail();
+
+        $this->optionToDeleteKind = $kind;
+        $this->optionToDeleteSlug = $slug;
+        $this->optionToDeleteName = $option->name;
+
+        $this->dispatch('content-confirm-delete-option');
+    }
+
+    public function cancelDeleteOption(): void
+    {
+        $this->optionToDeleteKind = '';
+        $this->optionToDeleteSlug = '';
+        $this->optionToDeleteName = '';
+    }
+
+    public function deleteOption(): void
+    {
+        abort_unless(ContentCalendarAccess::canManageOptions(auth()->user()), 403);
+        abort_unless(in_array($this->optionToDeleteKind, ['type', 'pillar'], true), 404);
+
+        $kind = $this->optionToDeleteKind;
+        $slug = $this->optionToDeleteSlug;
+
+        $this->cancelDeleteOption();
+
+        /** @var class-string<ContentType|ContentPillar> $model */
+        $model = $kind === 'type' ? ContentType::class : ContentPillar::class;
+        $option = $model::query()->where('slug', $slug)->first();
+
+        if (! $option) {
+            return;
+        }
+
+        $column = $kind === 'type' ? 'content_type' : 'content_pillar';
+        $used = ContentEvent::query()->where($column, $slug)->count();
+
+        if ($used > 0) {
+            $this->dispatch('content-toast', message: 'Opsi masih digunakan '.$used.' event.', type: 'error');
+
+            return;
+        }
+
+        if ($model::query()->count() <= 1) {
+            $this->dispatch('content-toast', message: 'Opsi terakhir tidak bisa dihapus.', type: 'error');
+
+            return;
+        }
+
+        $option->delete();
+
+        if ($kind === 'type' && $this->content_type === $slug) {
+            $this->content_type = '';
+        }
+
+        if ($kind === 'pillar' && $this->content_pillar === $slug) {
+            $this->content_pillar = '';
+        }
+
+        $label = $kind === 'type' ? 'Jenis konten' : 'Konten pillar';
+
+        $this->dispatch('content-toast', message: $label.' dihapus', type: 'success');
     }
 
     private function uniqueAccountSlug(string $name): string
@@ -1183,8 +1261,6 @@ class ContentCalendar extends Component
             'commentBody.max' => 'Komentar maksimal 1000 karakter.',
             'optionName.required' => 'Nama wajib diisi.',
             'optionName.max' => 'Nama maksimal 80 karakter.',
-            'optionColor.required' => 'Warna wajib dipilih.',
-            'optionColor.regex' => 'Warna harus berupa kode hex, misal #2563EB.',
         ];
     }
 

@@ -4,6 +4,7 @@
         draggingId: null,
         dragOver: null,
         confirmOpen: false,
+        optionDeleteOpen: false,
         closeConfirm: false,
         copied: false,
         copyTimer: null,
@@ -111,8 +112,10 @@
     @content-focus-modal.window="dirty = false; $nextTick(() => document.querySelector('[data-modal-panel]')?.focus())"
     @content-focus-account-name.window="$nextTick(() => $refs.accountName?.focus())"
     @content-focus-option-name.window="$nextTick(() => $refs.optionName?.focus())"
+    @content-confirm-delete-option.window="optionDeleteOpen = true; $nextTick(() => $refs.deleteOptionCancel?.focus())"
     @keydown.escape.window="
-        if ($wire.get('optionForm')) { $wire.closeOptionForm(); }
+        if (optionDeleteOpen) { optionDeleteOpen = false; $wire.cancelDeleteOption(); }
+        else if ($wire.get('optionForm')) { $wire.closeOptionForm(); }
         else if ($wire.get('accountFormOpen')) { $wire.closeAccountForm(); }
         else if (closeConfirm) { closeConfirm = false; }
         else if (confirmOpen) { closeDelete(); }
@@ -609,7 +612,8 @@
                             @else
                                 <x-property-select id="content-type" label="Jenis konten" model="content_type"
                                     :value="$content_type" :options="$typeSelectOptions" placeholder="Pilih jenis"
-                                    :footer-action="$typeFooterAction" footer-label="Tambah jenis baru" />
+                                    :footer-action="$typeFooterAction" footer-label="Tambah jenis baru"
+                                    :delete-method="$canManageOptions ? 'requestDeleteOption' : ''" delete-kind="type" />
                                 @error('content_type')
                                     <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
                                 @enderror
@@ -634,7 +638,8 @@
                             @else
                                 <x-property-select id="content-pillar" label="Konten pillar" model="content_pillar"
                                     :value="$content_pillar" :options="$pillarSelectOptions" placeholder="Pilih pillar"
-                                    :footer-action="$pillarFooterAction" footer-label="Tambah pillar baru" />
+                                    :footer-action="$pillarFooterAction" footer-label="Tambah pillar baru"
+                                    :delete-method="$canManageOptions ? 'requestDeleteOption' : ''" delete-kind="pillar" />
                                 @error('content_pillar')
                                     <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
                                 @enderror
@@ -1116,17 +1121,14 @@
                     </div>
 
                     <div class="mt-3 flex items-center gap-3">
-                        <input id="content-option-color" type="text" wire:model="optionColor"
-                            maxlength="7" autocomplete="off" placeholder="#2563EB" aria-label="Kode warna hex"
-                            class="h-[42px] w-[130px] rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm uppercase text-[#172B36] placeholder:text-[#8A96A3] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+                        <input id="content-option-color" type="text" value="{{ $optionColor }}"
+                            readonly tabindex="-1" aria-label="Kode warna hex (tidak dapat diubah)"
+                            class="h-[42px] w-[130px] cursor-default rounded-lg border border-[#E2E8EC] bg-[#F8FAFC] px-3 text-sm uppercase text-[#4B5563] focus:outline-none">
                         <span class="inline-flex h-[26px] items-center rounded-md border px-2 text-[11px] font-semibold"
                             style="background-color: {{ $preview['color'] }}; border-color: {{ $preview['color'] }}; color: {{ $preview['text'] }};">
                             Pratinjau
                         </span>
                     </div>
-                    @error('optionColor')
-                        <p class="mt-1.5 text-[12px] text-[#B91C1C]">{{ $message }}</p>
-                    @enderror
 
                     <div class="mt-5 flex justify-end gap-2">
                         <button type="button" wire:click="closeOptionForm"
@@ -1142,4 +1144,31 @@
             </div>
         </div>
     @endif
+
+    {{-- Delete option confirmation --}}
+    <div x-show="optionDeleteOpen" x-cloak
+        class="fixed inset-0 flex items-center justify-center bg-slate-900/40 p-4"
+        style="z-index: 105;"
+        @click.self="optionDeleteOpen = false; $wire.cancelDeleteOption()">
+        <div role="dialog" aria-modal="true" aria-labelledby="hapus-opsi-title"
+            class="w-full max-w-md rounded-xl border border-[#E2E8EC] bg-white p-6 shadow-xl">
+            <h3 id="hapus-opsi-title" class="text-lg font-semibold text-[#172B36]">
+                Hapus {{ $optionToDeleteKind === 'pillar' ? 'konten pillar' : 'jenis konten' }}?
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-[#4B5563]">
+                Opsi &ldquo;{{ $optionToDeleteName }}&rdquo; akan dihapus. Opsi yang masih dipakai event tidak bisa dihapus.
+            </p>
+            <div class="mt-5 flex justify-end gap-2">
+                <button type="button" x-ref="deleteOptionCancel"
+                    @click="optionDeleteOpen = false; $wire.cancelDeleteOption()"
+                    class="inline-flex h-10 items-center rounded-lg border border-[#E2E8EC] bg-white px-4 text-sm font-medium text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                    Batal
+                </button>
+                <button type="button" @click="optionDeleteOpen = false" wire:click="deleteOption"
+                    class="inline-flex h-10 items-center rounded-lg bg-[#B91C1C] px-4 text-sm font-semibold text-white transition hover:bg-[#991B1B] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] focus-visible:ring-offset-2">
+                    Hapus
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

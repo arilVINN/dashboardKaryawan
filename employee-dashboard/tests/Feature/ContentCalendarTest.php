@@ -14,6 +14,7 @@ use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\User2;
 use App\Support\ContentCalendarAccess;
+use App\Support\OptionColor;
 use Database\Seeders\ContentPillarSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
@@ -1483,19 +1484,35 @@ class ContentCalendarTest extends TestCase
             ->assertSeeHtml('background-color: #0891B2; border-color: #0891B2; color: #FFFFFF;');
     }
 
-    public function test_option_name_and_colour_are_validated(): void
+    public function test_option_name_is_validated_and_invalid_colour_falls_back(): void
     {
         Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
             ->call('openOptionForm', 'type')
             ->set('optionName', 'Reels')
-            ->set('optionColor', '#2563EB')
             ->call('saveOption')
             ->assertHasErrors(['optionName'])
             ->set('optionName', 'Podcast Baru')
             ->set('optionColor', 'not-a-colour')
             ->call('saveOption')
-            ->assertHasErrors(['optionColor']);
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('content_types', [
+            'slug' => 'podcast-baru',
+            'color' => OptionColor::FALLBACK,
+        ]);
+    }
+
+    public function test_hex_field_is_read_only_and_not_editable(): void
+    {
+        $html = Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openOptionForm', 'type')
+            ->html();
+
+        $this->assertStringContainsString('id="content-option-color" type="text" value="#2563EB"', $html);
+        $this->assertStringContainsString('readonly tabindex="-1"', $html);
+        $this->assertStringNotContainsString('wire:model="optionColor"', $html);
     }
 
     public function test_option_slugs_get_a_unique_suffix(): void
@@ -1528,6 +1545,101 @@ class ContentCalendarTest extends TestCase
             ->assertSet('content_pillar', 'inspirasi')
             ->assertSet('formOpen', true)
             ->assertSet('optionForm', '');
+    }
+
+
+    public function test_manager_sees_delete_buttons_on_type_and_pillar_rows(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->assertSeeHtml('aria-label="Hapus Reels"')
+            ->assertSeeHtml('aria-label="Hapus Informasi"');
+    }
+
+    public function test_non_manager_does_not_see_delete_buttons(): void
+    {
+        Livewire::actingAs($this->staffMarkom)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->assertDontSeeHtml('aria-label="Hapus Reels"')
+            ->assertDontSeeHtml('aria-label="Hapus Informasi"');
+    }
+
+    public function test_delete_confirmation_can_be_opened_and_cancelled(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('requestDeleteOption', 'type', 'reels')
+            ->assertSet('optionToDeleteKind', 'type')
+            ->assertSet('optionToDeleteSlug', 'reels')
+            ->assertSet('optionToDeleteName', 'Reels')
+            ->assertDispatched('content-confirm-delete-option')
+            ->call('cancelDeleteOption')
+            ->assertSet('optionToDeleteKind', '')
+            ->assertSet('optionToDeleteSlug', '')
+            ->assertSet('optionToDeleteName', '');
+
+        $this->assertDatabaseHas('content_types', ['slug' => 'reels']);
+    }
+
+    public function test_option_used_by_an_event_cannot_be_deleted(): void
+    {
+        $this->event($this->staffHr);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('requestDeleteOption', 'type', 'reels')
+            ->call('deleteOption')
+            ->assertDispatched('content-toast', message: 'Opsi masih digunakan 1 event.', type: 'error');
+
+        $this->assertDatabaseHas('content_types', ['slug' => 'reels']);
+    }
+
+    public function test_unused_option_can_be_deleted_and_selected_value_is_cleared(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->call('openOptionForm', 'type')
+            ->set('optionName', 'Podcast')
+            ->set('optionColor', '#2563EB')
+            ->call('saveOption')
+            ->assertSet('content_type', 'podcast')
+            ->call('requestDeleteOption', 'type', 'podcast')
+            ->assertSet('optionToDeleteName', 'Podcast')
+            ->call('deleteOption')
+            ->assertSet('content_type', '')
+            ->assertSet('optionToDeleteKind', '')
+            ->assertDispatched('content-toast', message: 'Jenis konten dihapus');
+
+        $this->assertDatabaseMissing('content_types', ['slug' => 'podcast']);
+    }
+
+    public function test_last_remaining_option_cannot_be_deleted(): void
+    {
+        ContentType::whereIn('slug', ['single-image', 'carousel'])->delete();
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('requestDeleteOption', 'type', 'reels')
+            ->call('deleteOption')
+            ->assertDispatched('content-toast', message: 'Opsi terakhir tidak bisa dihapus.', type: 'error');
+
+        $this->assertDatabaseHas('content_types', ['slug' => 'reels']);
+    }
+
+    public function test_non_manager_cannot_request_or_delete_options(): void
+    {
+        Livewire::actingAs($this->staffMarkom)
+            ->test(ContentCalendar::class)
+            ->call('requestDeleteOption', 'type', 'reels')
+            ->assertForbidden();
+
+        Livewire::actingAs($this->staffMarkom)
+            ->test(ContentCalendar::class)
+            ->call('deleteOption')
+            ->assertForbidden();
     }
 
 }
