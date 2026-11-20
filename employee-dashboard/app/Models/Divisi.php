@@ -70,6 +70,16 @@ class Divisi extends Model
         );
     }
 
+    public function jabatans(): HasMany
+    {
+        return $this->hasMany(Jabatan::class, 'division_id', 'id_divisi');
+    }
+
+    public function jabatansAktif(): HasMany
+    {
+        return $this->jabatans()->where('aktif', true)->orderBy('nama');
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_id', 'id_divisi');

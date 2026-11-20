@@ -159,13 +159,11 @@ class HrdStaffPhotoTest extends TestCase
         $this->actingAs($this->hrd)
             ->get('/hrd/daftarKaryawan')
             ->assertOk()
-            ->assertSee('id="input-foto-karyawan"', false)
-            ->assertSee('id="input-foto-edit-karyawan"', false);
+            ->assertSee('id="kf-foto"', false);
 
         $this->actingAs($this->hrd)
             ->get('/hrd/detailDivisi/DIV-EMPTY')
             ->assertOk()
-            ->assertSee('id="input-foto-karyawan"', false)
-            ->assertSee('id="input-foto-edit-karyawan"', false);
+            ->assertSee('id="kf-foto"', false);
     }
 }

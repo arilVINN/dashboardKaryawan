@@ -26,7 +26,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'deny.superadmin' => \App\Http\Middleware\DenySuperAdmin::class,
             'gateway.throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'gateway.format'  => \App\Http\Middleware\ApiResponseFormatter::class,
+            'akun.aman'       => \App\Http\Middleware\EnsureAccountSecurity::class,
         ]);
+
+        // Runs on every session-authenticated request. No-op for users without
+        // the forced-change flag or a stale session version.
+        $middleware->web(append: ['akun.aman']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
