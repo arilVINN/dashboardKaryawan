@@ -97,6 +97,14 @@
             <button type="button" wire:click="resetFilters"
                 class="text-[13px] font-medium text-[#146C94] transition hover:underline">Reset</button>
         @endif
+
+        <a href="{{ route('kadiv.keuangan.exportJurnalUmum', ['periode' => $periode, 'divisi_id' => $divisiFilter ?: null]) }}"
+            class="ml-auto inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#16804A] bg-white px-3.5 text-[13px] font-medium text-[#16804A] transition hover:bg-[#F0FDF4] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#16804A]/30">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path>
+            </svg>
+            Export ke Excel
+        </a>
     </div>
 
     {{-- ── Feedback ───────────────────────────────────────────────────── --}}

@@ -31,6 +31,7 @@ class Karyawan extends Model
         'email',
         'alamat',
         'jabatan',
+        'jabatan_id',
         'status_aktif',
         'tanggal_keluar',
         'foto',
@@ -96,6 +97,10 @@ class Karyawan extends Model
         'Tidak Aktif',
     ];
 
+    /**
+     * The select options come from the shared config so the form and the API
+     * validation can never drift apart.
+     */
     public const PENDIDIKAN_OPTIONS = [
         'SMK',
         'D3',
@@ -118,6 +123,26 @@ class Karyawan extends Model
             'divisi_id_divisi',
             'id_divisi'
         );
+    }
+
+    public function jabatanRef(): BelongsTo
+    {
+        return $this->belongsTo(Jabatan::class, 'jabatan_id');
+    }
+
+    public function jabatanLabel(): string
+    {
+        return $this->jabatanRef?->label() ?? ($this->jabatan ?? '-');
+    }
+
+    public static function pendidikanOptions(): array
+    {
+        return config('employee.pendidikan', self::PENDIDIKAN_OPTIONS);
+    }
+
+    public static function jobLevelOptions(): array
+    {
+        return config('employee.job_level', self::JOB_LEVEL_OPTIONS);
     }
 
     public function user(): HasOne

@@ -3,9 +3,11 @@
 namespace App\Livewire\Hrd;
 
 use App\Models\Divisi;
+use App\Models\Jabatan;
 use App\Models\Karyawan;
 use App\Models\User2;
 use App\Queries\HrdKaryawanQuery;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -53,6 +55,12 @@ class KaryawanTable extends Component
         return $user;
     }
 
+    #[On('karyawan-disimpan')]
+    public function refreshList(): void
+    {
+        $this->resetPage();
+    }
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -60,6 +68,16 @@ class KaryawanTable extends Component
 
     public function updatedDivisi(): void
     {
+        // A jabatan name only makes sense together with its division.
+        if ($this->jabatan !== '' && $this->divisi !== '') {
+            $masihAda = Jabatan::where('division_id', $this->divisi)
+                ->where('nama', $this->jabatan)
+                ->exists();
+            if (! $masihAda) {
+                $this->jabatan = '';
+            }
+        }
+
         $this->resetPage();
     }
 
@@ -127,11 +145,14 @@ class KaryawanTable extends Component
         ])->paginate($this->perPage);
 
         $daftarDivisi = Divisi::query()->ordered()->get();
-        $daftarJabatan = Karyawan::query()
-            ->whereNotNull('jabatan')
-            ->distinct()
-            ->orderBy('jabatan')
-            ->pluck('jabatan');
+
+        // Jabatan options follow the selected division (all jabatan when no
+        // division filter is active).
+        $jabatanQuery = Jabatan::query()->orderBy('nama');
+        if ($this->divisi !== '') {
+            $jabatanQuery->where('division_id', $this->divisi);
+        }
+        $daftarJabatan = $jabatanQuery->pluck('nama')->unique()->values();
 
         return view('livewire.hrd.karyawan-table', [
             'rows' => $rows,

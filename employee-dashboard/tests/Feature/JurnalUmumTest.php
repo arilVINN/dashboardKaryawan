@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Exports\JurnalUmumExport;
 use App\Livewire\Finance\JurnalUmumTable;
 use App\Models\AuditLog;
 use App\Models\CoaAkun;
@@ -19,6 +20,7 @@ use Database\Seeders\JurnalUmumSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Livewire\Livewire;
@@ -75,10 +77,52 @@ class JurnalUmumTest extends TestCase
             ->assertSee('Jurnal Umum')
             ->assertSee('Daftar akun (COA)')
             ->assertSee('Panduan kode divisi')
-            ->assertSee('Semua divisi');
+            ->assertSee('Semua divisi')
+            ->assertSee('Export ke Excel');
 
         // Middleware role:kadiv mengalihkan user non-kadiv ke dashboard mereka.
         $this->actingAs($this->staff)->get($url)->assertRedirect();
+    }
+
+    public function test_finance_can_export_jurnal_for_selected_month_and_division(): void
+    {
+        $division = JurnalDivisi::where('kode', 'D01')->firstOrFail();
+        $account = CoaAkun::where('kode', '1101')->firstOrFail();
+
+        $entry = JurnalEntry::create([
+            'entry_date' => '2026-11-12',
+            'ref_code' => 'EXP-TEST-001',
+            'jurnal_divisi_id' => $division->id,
+            'created_by' => $this->finance->id_user,
+        ]);
+        JurnalLine::create([
+            'jurnal_entry_id' => $entry->id,
+            'account_id' => $account->id,
+            'keterangan' => 'Saldo kas',
+            'debit' => 1500000,
+            'credit' => 0,
+            'sort_order' => 0,
+        ]);
+
+        Excel::fake();
+
+        $this->actingAs($this->finance)
+            ->get(route('kadiv.keuangan.exportJurnalUmum', [
+                'periode' => '2026-11',
+                'divisi_id' => $division->id,
+            ]))
+            ->assertOk();
+
+        Excel::assertDownloaded('Jurnal_Umum_2026-11.xlsx', function (JurnalUmumExport $export): bool {
+            $rows = $export->collection();
+
+            return $rows->count() === 2
+                && $rows[0][0] === '2026-11-12'
+                && $rows[0][1] === 'Saldo kas'
+                && $rows[0][4] === '1101'
+                && $rows[1][0] === 'TOTAL'
+                && $rows[1][6] === 1500000;
+        });
     }
 
     public function test_kas_masuk_creates_balanced_journal_with_audit_log(): void
@@ -264,28 +308,14 @@ class JurnalUmumTest extends TestCase
         $this->assertTrue($original->fresh()->lines->first(fn (JurnalLine $l) => $l->debit > 0)->debit === 400000);
     }
 
-    public function test_batalkan_button_is_gone_and_sidebar_coa_link_opens_panel(): void
+    public function test_batalkan_button_and_sidebar_coa_link_are_gone(): void
     {
         $this->actingAs($this->finance)->get(route('kadiv.keuangan.jurnalUmum'))
             ->assertOk()
             ->assertDontSee('Batalkan jurnal')
             ->assertSee('Daftar akun (COA)')
-            ->assertDontSee('Cari kode atau nama akun');
-
-        $this->actingAs($this->finance)
-            ->get(route('kadiv.keuangan.coaPanel'))
-            ->assertRedirect(route('kadiv.keuangan.jurnalUmum'));
-
-        $this->actingAs($this->finance)
-            ->get(route('kadiv.keuangan.jurnalUmum'))
-            ->assertOk()
-            ->assertSee('Cari kode atau nama akun');
-
-        // Flag sekali pakai: kunjungan berikutnya tetap halaman jurnal biasa.
-        $this->actingAs($this->finance)
-            ->get(route('kadiv.keuangan.jurnalUmum'))
-            ->assertOk()
-            ->assertDontSee('Cari kode atau nama akun');
+            ->assertDontSee('Cari kode atau nama akun')
+            ->assertDontSeeHtml('data-finance-direct="daftar-akun"');
     }
 
     public function test_coa_panel_hides_inactive_accounts_and_filters_by_search(): void

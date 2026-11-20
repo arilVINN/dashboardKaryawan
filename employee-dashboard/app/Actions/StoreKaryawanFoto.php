@@ -10,8 +10,8 @@ use Throwable;
 class StoreKaryawanFoto
 {
     /**
-     * Replace the karyawan's profile photo, deleting the previous file.
-     * Returns the stored path (e.g. "foto-profil/abc123.jpg").
+     * Replace the karyawan's profile photo on the PRIVATE disk, deleting the
+     * previous file. Returns the stored relative path.
      */
     public static function handle(Karyawan $karyawan, UploadedFile $file): string
     {
@@ -32,9 +32,14 @@ class StoreKaryawanFoto
         }
 
         if ($oldPath) {
-            Storage::disk('public')->delete($oldPath);
+            self::deleteLegacyPath($oldPath);
         }
 
         return $newPath;
+    }
+
+    public static function deleteLegacyPath(string $path): void
+    {
+        Storage::disk('public')->delete($path);
     }
 }

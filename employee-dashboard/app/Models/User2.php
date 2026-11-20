@@ -19,6 +19,8 @@ class User2 extends Authenticatable
         'id_user',
         'username',
         'password',
+        'must_change_password',
+        'session_version',
         'role_id_role',
         'karyawan_id_karyawan',
         'last_login_at',
@@ -32,6 +34,7 @@ class User2 extends Authenticatable
     // Hapus method casts() dan gunakan properti $casts ini
     protected $casts = [
         'last_login_at' => 'datetime',
+        'must_change_password' => 'boolean',
     ];
 
     public function role()

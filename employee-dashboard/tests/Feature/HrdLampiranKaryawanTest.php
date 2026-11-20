@@ -24,6 +24,7 @@ class HrdLampiranKaryawanTest extends TestCase
         parent::setUp();
 
         Storage::fake('public');
+        Storage::fake('private');
 
         Role::insert([
             ['id_role' => 'ROLE-HRD', 'nama_role' => 'HRD'],
@@ -99,12 +100,12 @@ class HrdLampiranKaryawanTest extends TestCase
         $ktpRecord = $karyawan->lampiran()->where('jenis_lampiran', 'ktp')->first();
         $this->assertNotNull($ktpRecord);
         $this->assertSame('ktp_saya.pdf', $ktpRecord->nama_file);
-        Storage::disk('public')->assertExists($ktpRecord->path_file);
+        Storage::disk('private')->assertExists($ktpRecord->path_file);
 
         $ijazahRecord = $karyawan->lampiran()->where('jenis_lampiran', 'ijazah')->first();
         $this->assertNotNull($ijazahRecord);
         $this->assertSame('ijazah_saya.jpg', $ijazahRecord->nama_file);
-        Storage::disk('public')->assertExists($ijazahRecord->path_file);
+        Storage::disk('private')->assertExists($ijazahRecord->path_file);
     }
 
     public function test_detail_karyawan_page_renders_new_info_and_lampiran(): void
@@ -159,7 +160,7 @@ class HrdLampiranKaryawanTest extends TestCase
         ]);
 
         $filePath = 'lampiran_karyawan/test_transkrip.pdf';
-        Storage::disk('public')->put($filePath, 'fake content');
+        Storage::disk('private')->put($filePath, 'fake content');
 
         $lampiran = LampiranKaryawan::create([
             'id_lampiran' => 'LMP-DL',
@@ -171,7 +172,8 @@ class HrdLampiranKaryawanTest extends TestCase
 
         $response = $this->actingAs($this->hrd)->get(route('hrd.lampiran.download', $lampiran->id_lampiran));
         $response->assertOk();
-        $response->assertDownload('transkrip_nilai.pdf');
+        $response->assertHeader('content-disposition');
+        $this->assertStringContainsString('transkrip_nilai.pdf', $response->headers->get('content-disposition'));
     }
 
     public function test_deleting_karyawan_cascades_to_lampiran(): void

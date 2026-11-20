@@ -27,7 +27,7 @@
                     <div
                         class="w-20 h-20 rounded-full bg-[#0097B2] text-white text-3xl font-bold flex items-center justify-center shrink-0 overflow-hidden">
                         @if ($karyawan->foto)
-                            <img src="{{ asset('storage/' . $karyawan->foto) }}"
+                            <img src="{{ route('hrd.karyawan.foto', $karyawan->id_karyawan) }}"
                                 alt="Foto profil {{ $karyawan->nama }}"
                                 class="w-full h-full object-cover">
                         @else
