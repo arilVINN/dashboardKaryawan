@@ -15,7 +15,7 @@
     <a href="{{ route('hrd.pesan') }}"
        class="bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2 hover:shadow-md transition">
         <div class="flex items-start justify-between">
-            <span class="text-sm font-medium text-[#334155]">Total Pesan</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Pesan</span>
             <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#FDE0E0]">
                 <svg class="w-4 h-4 text-[#DC2626]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -24,10 +24,10 @@
             </span>
         </div>
         <div>
-            <p class="text-[22px] font-medium text-[#172B36] leading-none" data-dashboard-metric="total-pesan">
-                {{ $totalPesanPerusahaan }}<span class="text-sm font-medium text-[#4B5563] ml-1">pesan</span>
+            <p class="text-2xl font-bold text-slate-900 leading-none" data-dashboard-metric="total-pesan">
+                {{ $totalPesanPerusahaan }}<span class="text-sm font-medium text-slate-400 ml-1">pesan</span>
             </p>
-            <p class="text-[11px] text-[#4B5563] mt-1">Pesan masuk</p>
+            <p class="text-xs text-slate-400 mt-1">Pesan masuk</p>
         </div>
     </a>
 
@@ -35,7 +35,7 @@
     <a href="{{ route('hrd.manajemenDivisi') }}"
         class="bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2 hover:shadow-md transition">
         <div class="flex items-start justify-between">
-            <span class="text-sm font-medium text-[#334155]">Total Divisi</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Divisi</span>
             <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#EDE9FE]">
                 <svg class="w-4 h-4 text-[#8B5CF6]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -44,10 +44,10 @@
             </span>
         </div>
         <div>
-            <p class="text-[22px] font-medium text-[#172B36] leading-none" data-dashboard-metric="total-divisi">
-                {{ $totalDivisi }}<span class="text-sm font-medium text-[#4B5563] ml-1">divisi</span>
+            <p class="text-2xl font-bold text-slate-900 leading-none" data-dashboard-metric="total-divisi">
+                {{ $totalDivisi }}<span class="text-sm font-medium text-slate-900 ml-1">divisi</span>
             </p>
-            <p class="text-[11px] text-[#4B5563] mt-1">Unit kerja aktif</p>
+            <p class="text-xs text-slate-400 mt-1">Unit kerja aktif</p>
         </div>
     </a>
 
@@ -55,7 +55,7 @@
     <a href="{{ route('hrd.analitikKaryawan') }}"
        class="group bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2 hover:shadow-md transition">
         <div class="flex items-start justify-between">
-            <span class="text-sm font-medium text-[#334155]">Total Karyawan</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Karyawan</span>
             <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#D9F5E5]">
                 <svg class="w-4 h-4 text-[#059669]" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -64,11 +64,11 @@
             </span>
         </div>
         <div> 
-            <p class="text-[22px] font-medium text-[#172B36] leading-none" data-dashboard-metric="total-staff">
-                {{ $totalStaff }}<span class="text-sm font-medium text-[#4B5563] ml-1">staff</span>
+            <p class="text-2xl font-bold text-slate-900 leading-none" data-dashboard-metric="total-staff">
+                {{ $totalStaff }}<span class="text-sm font-medium text-slate-900 ml-1">staff</span>
             </p>
             <div class="mt-1 flex items-center justify-between gap-2">
-                <p class="text-[11px] text-[#4B5563]">Karyawan terdaftar</p>
+                <p class="text-xs text-slate-400">Karyawan terdaftar</p>
                 <span class="inline-flex items-center gap-1 text-[12px] font-medium text-[#146C94] group-hover:underline">
                     Lihat detail
                     <svg class="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-[3px]" fill="none"
@@ -83,13 +83,13 @@
     {{-- Turnover Karyawan --}}
     <a href="{{ route('hrd.turnoverKaryawan') }}"
         class="group bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2 hover:shadow-md transition">
-        <span class="text-sm font-medium text-[#334155]">Turnover Karyawan</span>
+        <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Turnover Karyawan</span>
 
         <div class="flex items-center gap-3">
             <div class="relative w-12 h-12 shrink-0">
                 <canvas id="miniChartTurnover"></canvas>
             </div>
-            <div class="flex-1 space-y-1 text-[11px] font-medium text-[#4B5563]">
+            <div class="flex-1 space-y-1 text-[10px] font-bold text-slate-600">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
                         <span class="w-2.5 h-2.5 rounded-sm bg-[#DC2626]"></span> Keluar

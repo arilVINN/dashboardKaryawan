@@ -3,7 +3,7 @@
     {{-- Tugas Yang Belum --}}
     <div class="bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2">
         <div class="flex items-start justify-between">
-            <span class="text-sm font-medium text-[#334155]">Tugas Yang Belum</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Yang Belum</span>
             <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#D9F5E5] text-[#059669]">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -13,15 +13,15 @@
             </span>
         </div>
         <div>
-            <p id="stat-berjalan" class="text-[22px] font-medium text-[#172B36] leading-none">0/0 Tugas</p>
-            <p class="text-[11px] text-[#4B5563] mt-1">Belum dikerjakan</p>
+            <p id="stat-berjalan" class="text-3md font-bold text-slate-900 leading-none">0/0 Tugas</p>
+            <p class="text-xs text-slate-400 mt-1">Belum dikerjakan</p>
         </div>
     </div>
 
     {{-- Tugas Belum Di-acc --}}
     <div class="bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2">
         <div class="flex items-start justify-between">
-            <span class="text-sm font-medium text-[#334155]">Tugas Belum Di-acc</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Belum Di-acc</span>
             <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#FEF0C3] text-[#D97706]">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -30,15 +30,15 @@
             </span>
         </div>
         <div>
-            <p id="stat-pending" class="text-[22px] font-medium text-[#172B36] leading-none">0/0 Tugas</p>
-            <p class="text-[11px] text-[#4B5563] mt-1">Menunggu persetujuan</p>
+            <p id="stat-pending" class="text-3md font-bold text-slate-900 leading-none">0/0 Tugas</p>
+            <p class="text-xs text-slate-400 mt-1">Menunggu persetujuan</p>
         </div>
     </div>
 
     {{-- Tugas Selesai --}}
     <div class="bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2">
         <div class="flex items-start justify-between">
-            <span class="text-sm font-medium text-[#334155]">Tugas Selesai</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Selesai</span>
             <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#D5F3F0] text-[#0D9488]">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -46,14 +46,14 @@
             </span>
         </div>
         <div>
-            <p id="stat-selesai" class="text-[22px] font-medium text-[#172B36] leading-none">0/0 Tugas</p>
-            <p class="text-[11px] text-[#4B5563] mt-1">Sudah disetujui</p>
+            <p id="stat-selesai" class="text-3md font-bold text-slate-900 leading-none">0/0 Tugas</p>
+            <p class="text-xs text-slate-400 mt-1">Sudah disetujui</p>
         </div>
     </div>
 
     {{-- Presentase --}}
     <div class="bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2">
-        <span class="text-sm font-medium text-[#334155]">Persentase</span>
+        <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Persentase</span>
         <div class="flex items-center gap-3">
             <div class="relative w-12 h-12 shrink-0">
                 <svg class="block h-12 w-12 -rotate-90" viewBox="0 0 56 56" role="img" aria-label="Grafik persentase tugas">
@@ -63,7 +63,7 @@
                     <circle id="ring-selesai" cx="28" cy="28" r="22" fill="none" stroke="#0D9488" stroke-width="8"></circle>
                 </svg>
             </div>
-            <div class="flex-1 space-y-1 text-[11px] font-medium text-[#4B5563]">
+            <div class="flex-1 space-y-1 text-[10px] font-bold text-slate-600">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
                         <span class="w-2.5 h-2.5 rounded-sm bg-[#059669]"></span> Yang Belum
