@@ -99,9 +99,9 @@
             if (lower.includes('pesan') || lower.includes('chat')) {
                 return {
                     badgeText: 'Pesan Baru',
-                    badgeClass: 'text-emerald-700 bg-emerald-100 border-emerald-200',
-                    borderClass: 'border-emerald-200',
-                    iconBg: 'bg-emerald-100 text-emerald-600',
+                    badgeClass: 'text-[#0D9488] bg-[#D5F3F0] border-[#7DD3C8]',
+                    borderClass: 'border-[#7DD3C8]',
+                    iconBg: 'bg-[#D5F3F0] text-[#0D9488]',
                     linkUrl: '/pesan',
                     actionLabel: 'Buka Pesan',
                     iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />`
@@ -111,9 +111,9 @@
             if (lower.includes('ulang tahun')) {
                 return {
                     badgeText: 'Ulang Tahun',
-                    badgeClass: 'text-sky-700 bg-sky-100 border-sky-200',
-                    borderClass: 'border-sky-200',
-                    iconBg: 'bg-sky-100 text-sky-600',
+                    badgeClass: 'text-[#2563EB] bg-[#DCEEFE] border-[#93C5FD]',
+                    borderClass: 'border-[#93C5FD]',
+                    iconBg: 'bg-[#DCEEFE] text-[#2563EB]',
                     linkUrl: '/',
                     actionLabel: 'Kembali ke Dashboard',
                     iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16v5.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V12Z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 14.5c1.3 0 1.3 1.2 2.6 1.2s1.3-1.2 2.6-1.2 1.3 1.2 2.6 1.2 1.3-1.2 2.6-1.2 1.3 1.2 2.6 1.2 1.3-1.2 2.6-1.2 1.3 1.2 2.6 1.2M8 9V5m4 4V3m4 6V5" /><circle cx="8" cy="3.5" r=".8" fill="currentColor" stroke="none" /><circle cx="12" cy="1.8" r=".8" fill="currentColor" stroke="none" /><circle cx="16" cy="3.5" r=".8" fill="currentColor" stroke="none" />`
@@ -123,9 +123,9 @@
             if (lower.includes('kontrak')) {
                 return {
                     badgeText: 'Kontrak Kerja',
-                    badgeClass: 'text-amber-700 bg-amber-100 border-amber-200',
-                    borderClass: 'border-amber-200',
-                    iconBg: 'bg-amber-100 text-amber-600',
+                    badgeClass: 'text-[#B45309] bg-[#FEF0C3] border-[#F5C85C]',
+                    borderClass: 'border-[#F5C85C]',
+                    iconBg: 'bg-[#FEF0C3] text-[#B45309]',
                     linkUrl: '/profile',
                     actionLabel: 'Lihat Profil',
                     iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />`
@@ -137,9 +137,9 @@
                 const isTugas = lower.includes('tugas');
                 return {
                     badgeText: 'Pengingat',
-                    badgeClass: isTugas ? 'text-amber-700 bg-amber-100 border-amber-200' : 'text-violet-700 bg-violet-100 border-violet-200',
-                    borderClass: isTugas ? 'border-amber-200' : 'border-violet-200',
-                    iconBg: isTugas ? 'bg-amber-100 text-amber-600' : 'bg-violet-100 text-violet-600',
+                    badgeClass: isTugas ? 'text-[#B45309] bg-[#FEF0C3] border-[#F5C85C]' : 'text-[#8B5CF6] bg-[#EDE9FE] border-[#C4B5FD]',
+                    borderClass: isTugas ? 'border-[#F5C85C]' : 'border-[#C4B5FD]',
+                    iconBg: isTugas ? 'bg-[#FEF0C3] text-[#B45309]' : 'bg-[#EDE9FE] text-[#8B5CF6]',
                     linkUrl: isTugas ? '/tugas' : '/kalender',
                     actionLabel: isTugas ? 'Lihat Tugas' : 'Buka Kalender',
                     iconSvg: isTugas
@@ -151,9 +151,9 @@
             if (lower.includes('revisi')) {
                 return {
                     badgeText: 'Revisi Tugas',
-                    badgeClass: 'text-amber-700 bg-amber-100 border-amber-200',
-                    borderClass: 'border-amber-200',
-                    iconBg: 'bg-amber-100 text-amber-600',
+                    badgeClass: 'text-[#B45309] bg-[#FEF0C3] border-[#F5C85C]',
+                    borderClass: 'border-[#F5C85C]',
+                    iconBg: 'bg-[#FEF0C3] text-[#B45309]',
                     linkUrl: '/tugas',
                     actionLabel: 'Lihat Revisi',
                     iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z" />`
@@ -163,9 +163,9 @@
             if (lower.includes('tugas')) {
                 return {
                     badgeText: 'Tugas Baru',
-                    badgeClass: 'text-blue-700 bg-blue-100 border-blue-200',
-                    borderClass: 'border-blue-200',
-                    iconBg: 'bg-blue-100 text-blue-600',
+                    badgeClass: 'text-[#2563EB] bg-[#DCEEFE] border-[#93C5FD]',
+                    borderClass: 'border-[#93C5FD]',
+                    iconBg: 'bg-[#DCEEFE] text-[#2563EB]',
                     linkUrl: '/tugas',
                     actionLabel: 'Lihat Tugas',
                     iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H9m2 0a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />`
@@ -175,9 +175,9 @@
             // Default / Pengumuman
             return {
                 badgeText: 'Notifikasi',
-                badgeClass: 'text-amber-700 bg-amber-100 border-amber-200',
-                borderClass: 'border-amber-200',
-                iconBg: 'bg-amber-100 text-amber-600',
+                badgeClass: 'text-[#B45309] bg-[#FEF0C3] border-[#F5C85C]',
+                borderClass: 'border-[#F5C85C]',
+                iconBg: 'bg-[#FEF0C3] text-[#B45309]',
                 linkUrl: '/tugas',
                 actionLabel: 'Lihat',
                 iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />`
@@ -190,7 +190,7 @@
             if (lower.includes('pesan') || lower.includes('chat')) {
                 return {
                     title: 'Pesan baru',
-                    iconClass: 'bg-emerald-100 text-emerald-600',
+                    iconClass: 'bg-[#D5F3F0] text-[#0D9488]',
                     linkUrl: '/pesan',
                     iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />`
                 };
@@ -199,7 +199,7 @@
             if (lower.includes('ulang tahun')) {
                 return {
                     title: 'Ulang tahun karyawan',
-                    iconClass: 'bg-sky-100 text-sky-600',
+                    iconClass: 'bg-[#DCEEFE] text-[#2563EB]',
                     linkUrl: '/',
                     iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5" />`
                 };
@@ -208,7 +208,7 @@
             if (lower.includes('kontrak')) {
                 return {
                     title: 'Kontrak kerja segera berakhir',
-                    iconClass: 'bg-amber-100 text-amber-600',
+                    iconClass: 'bg-[#FEF0C3] text-[#B45309]',
                     linkUrl: '/profile',
                     iconSvg: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />`
                 };
@@ -278,7 +278,7 @@
             const config = getNotifConfig(notif.judul_notifikasi);
             const toastUrl = notificationUrl(notif, config.linkUrl);
             const toast = document.createElement('div');
-            toast.className = `pointer-events-auto flex items-start gap-3 p-4 bg-white border ${config.borderClass} shadow-xl rounded-2xl w-80 md:w-96 transform transition-all duration-150 ease-out translate-y-[-20px] opacity-0`;
+            toast.className = `pointer-events-auto flex items-start gap-3 p-4 bg-white border ${config.borderClass} shadow-xl rounded-xl w-80 md:w-96 transform transition-all duration-150 ease-out translate-y-[-20px] opacity-0`;
 
             toast.innerHTML = `
                 <div class="p-2.5 ${config.iconBg} rounded-xl shrink-0">
@@ -302,7 +302,7 @@
 
                     <div class="mt-2.5 flex items-center justify-between">
                         <span class="text-[10px] text-slate-400 font-medium">Baru saja</span>
-                        <a href="${toastUrl}" class="text-xs font-semibold text-[#004A65] hover:underline inline-flex items-center gap-1">
+                        <a href="${toastUrl}" class="text-xs font-semibold text-[#146C94] hover:underline inline-flex items-center gap-1">
                             ${config.actionLabel} &rarr;
                         </a>
                     </div>

@@ -17,7 +17,7 @@
         style="background-color: {{ $resolvedPalette['bg'] }}; border-color: {{ $resolvedPalette['border'] }}; color: {{ $resolvedPalette['text'] }};"
         title="{{ $label ?? $resolvedPalette['label'] }}">
         @if ($dot && isset($resolvedPalette['dot']))
-            <span class="h-[7px] w-[7px] shrink-0 rounded-full" style="background-color: {{ $resolvedPalette['dot'] }};" aria-hidden="true"></span>
+            <span class="h-1.5 w-1.5 shrink-0 rounded-full" style="background-color: {{ $resolvedPalette['dot'] }};" aria-hidden="true"></span>
         @endif
         {{ $text }}
     </span>

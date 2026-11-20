@@ -62,9 +62,9 @@
             </button>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="bg-white border border-[#E2E8EC] rounded-xl shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-slate-600">
+                <table class="w-full text-left text-[13px] text-[#4B5563]">
                     <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                         <tr>
                             <th class="px-4 py-3 font-medium whitespace-nowrap text-left">
@@ -90,7 +90,7 @@
                     </thead>
                     <tbody id="tbody-tugas" class="divide-y divide-[#EEF2F5]">
                         <tr id="tugas-loading">
-                            <td colspan="4" class="text-center py-6 text-slate-400">Memuat data tugas dari database...</td>
+                            <td colspan="4" class="text-center py-6 text-[#4B5563]">Memuat data tugas dari database...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -109,13 +109,6 @@
 
 <script>
     const STAFF_STATUS_PALETTE = @json(\App\Support\StatusPalette::all());
-    const STAFF_STATUS_HIGH_CONTRAST = {
-        'baru': 'bg-[#C0E7FF] text-blue-700 border border-blue-500',
-        'berjalan': 'bg-emerald-100 text-emerald-700 border border-emerald-500',
-        'menunggu': 'bg-amber-100 text-amber-700 border border-amber-500',
-        'disetujui': 'bg-emerald-700 text-white border border-emerald-800',
-        'terlambat': 'bg-red-100 text-red-700 border border-red-500',
-    };
     const staffTugasIsCompact = {{ $isCompact ? 'true' : 'false' }};
     const staffTugasSearch = document.getElementById('staffTugasSearch');
     const staffTugasStatus = document.getElementById('staffTugasStatus');
@@ -160,12 +153,10 @@
         const label = palette ? (shortLabel ? palette.short : palette.label) : (status || '-');
 
         if (!palette) {
-            return `<span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-300">${status || '-'}</span>`;
+            return `<span class="inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-[#172B36]">${status || '-'}</span>`;
         }
 
-        const highContrast = STAFF_STATUS_HIGH_CONTRAST[key] || 'bg-slate-100 text-slate-700 border border-slate-300';
-
-        return `<span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${highContrast}">${label}</span>`;
+        return `<span class="inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium" style="background-color: ${palette.bg}; border-color: ${palette.border}; color: ${palette.text};"><span class="h-1.5 w-1.5 shrink-0 rounded-full" style="background-color: ${palette.dot};" aria-hidden="true"></span>${label}</span>`;
     }
 
     function staffStatusCellHtml(task) {
@@ -306,8 +297,8 @@
             button.dataset.page = String(page);
             button.textContent = String(page);
             button.className = page === staffTugasPage
-                ? 'min-w-9 rounded-md border border-[#004A65] bg-[#004A65] px-3 py-1.5 text-sm font-semibold text-white'
-                : 'min-w-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-600 transition hover:border-[#004A65] hover:text-[#004A65]';
+                ? 'min-w-9 rounded-md border border-[#146C94] bg-[#146C94] px-3 py-1.5 text-sm font-semibold text-white'
+                : 'min-w-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-600 transition hover:border-[#146C94] hover:text-[#146C94]';
             button.setAttribute('aria-label', `Ke halaman ${page}`);
 
             if (page === staffTugasPage) {
@@ -456,14 +447,14 @@
                     <tr class="h-[52px] cursor-pointer hover:bg-[#F5FAFC] transition focus:bg-[#F5FAFC] focus:outline-none"
                         data-href="/tugas/detail/${encodeURIComponent(t.id_tugas)}" tabindex="0" role="link">
                         <td class="px-4 py-3">
-                            <span class="block truncate text-[14px] font-medium text-[#172B36]" title="${judul}">${judul}</span>
+                            <span class="block truncate text-[13px] font-medium text-[#172B36]" title="${judul}">${judul}</span>
                         </td>
                         <td class="px-4 py-3">
                             <div class="inline-flex flex-wrap items-center justify-start gap-1">
                                 ${staffStatusCellHtml(t)}
                             </div>
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-[14px] text-[#172B36]">${deadline}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-[13px] text-[#172B36]">${deadline}</td>
                         <td class="px-4 py-3 text-right">
                             <a href="/tugas/detail/${encodeURIComponent(t.id_tugas)}" onclick="event.stopPropagation()"
                                 aria-label="Buka tugas"
@@ -498,7 +489,7 @@
             }
             console.error('Gagal meload tugas', error);
             if (requestId === staffTugasRequestId) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-[13px] text-red-500">Gagal mengambil data tugas</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-[13px] text-[#DC2626]">Gagal mengambil data tugas</td></tr>`;
             }
         }
     }
