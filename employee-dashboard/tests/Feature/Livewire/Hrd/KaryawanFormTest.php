@@ -255,4 +255,15 @@ class KaryawanFormTest extends TestCase
         $this->assertStringContainsString('Staff', $markup);
     }
 
+
+    public function test_date_field_blur_validation_calls_a_component_method(): void
+    {
+        Livewire::actingAs($this->hrd)
+            ->test(KaryawanForm::class)
+            ->call('buka', 'create')
+            ->assertSee('wire:blur="validateField(', false)
+            ->call('validateField', 'tanggalMasuk')
+            ->assertHasErrors('tanggalMasuk');
+    }
+
 }

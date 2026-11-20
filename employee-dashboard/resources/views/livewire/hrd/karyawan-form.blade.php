@@ -17,19 +17,14 @@
 
         <div id="karyawanModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 {{ $show ? '' : 'hidden' }}"
              role="dialog" aria-modal="{{ $show ? 'true' : 'false' }}" aria-labelledby="karyawan-form-title">
-            <div class="absolute inset-0 bg-[rgba(15,40,55,.45)]" wire:click="tutup" aria-hidden="true"></div>
+            <div class="absolute inset-0 bg-[rgba(15,40,55,0.45)]" wire:click="tutup" aria-hidden="true"></div>
 
             <div id="karyawanModalBox"
                  class="karyawan-modal-box relative flex w-full max-w-[720px] max-w-[92vw] max-h-[90vh] flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
                 {{-- Header (fixed) --}}
                 <div class="flex shrink-0 items-center justify-between border-b border-[#E2E8EC] px-5 py-3.5">
                     <div class="flex items-center gap-3">
-                        <span class="flex h-8 w-8 items-center justify-center rounded-lg" style="background:#E3F1F7">
-                            <svg class="h-[18px] w-[18px]" style="color:#146C94" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.497c0-.856-.337-1.678-.94-2.28a3.375 3.375 0 0 0-4.778 0A3.222 3.222 0 0 0 8.34 18.63v.497M18 7.5a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.128v-.11a6.375 6.375 0 0 1 12.75 0v.109" />
-                            </svg>
-                        </span>
-                        <h3 id="karyawan-form-title" class="text-[16px] font-semibold text-[#172B36]">{{ $judul }}</h3>
+                        <h3 id="karyawan-form-title" class="font-semibold text-lg text-[#172B36]">{{ $judul }}</h3>
                     </div>
                     <button type="button" wire:click="tutup" aria-label="Tutup form karyawan"
                             class="flex h-8 w-8 items-center justify-center rounded-lg text-[#4B5563] hover:bg-[#F4F7F9] hover:text-[#172B36] transition">
@@ -434,7 +429,7 @@
 
                 {{-- Dialog: tambah jabatan baru --}}
                 @if ($showJabatanDialog)
-                    <div class="absolute inset-0 z-10 flex items-center justify-center p-4 bg-[rgba(15,40,55,.45)]">
+                    <div class="absolute inset-0 z-10 flex items-center justify-center p-4 bg-[rgba(15,40,55,0.45)]">
                         <div id="kf-jabatan-dialog" class="w-full max-w-[400px] max-w-[92vw] rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-2xl"
                              role="dialog" aria-modal="true" aria-labelledby="jabatan-dialog-title">
                             <h3 id="jabatan-dialog-title" class="text-[16px] font-semibold text-[#172B36]">Tambah jabatan baru</h3>
@@ -473,7 +468,7 @@
 
                 {{-- Dialog: konfirmasi atur ulang password --}}
                 @if ($showResetDialog)
-                    <div class="absolute inset-0 z-20 flex items-center justify-center p-4 bg-[rgba(15,40,55,.45)]">
+                    <div class="absolute inset-0 z-20 flex items-center justify-center p-4 bg-[rgba(15,40,55,0.45)]">
                         <div class="w-full max-w-[400px] max-w-[92vw] rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-2xl"
                              role="dialog" aria-modal="true" aria-labelledby="reset-dialog-title">
                             <h3 id="reset-dialog-title" class="text-[16px] font-semibold text-[#172B36]">Atur ulang password untuk {{ $nama }}?</h3>
@@ -608,15 +603,26 @@
                     picker._kfView = new Date(date.getFullYear(), date.getMonth(), 1);
                 }
 
-                picker.querySelector('[data-kf-toggle]').addEventListener('click', (e) => {
-                    e.stopPropagation();
+                const bukaPicker = (e) => {
+                    if (e) e.stopPropagation();
                     const willOpen = popover.classList.contains('hidden');
                     document.querySelectorAll('[data-kf-popover]').forEach((p) => p.classList.add('hidden'));
-                    if (willOpen) {
-                        kfRenderCalendar(picker);
-                        popover.classList.remove('hidden');
-                    }
-                });
+                    if (!willOpen) return;
+
+                    // The form body scrolls, so flip the calendar upwards when
+                    // there is not enough room below the field.
+                    const spaceBawah = window.innerHeight - display.getBoundingClientRect().bottom;
+                    const keAtas = spaceBawah < 300;
+                    popover.classList.toggle('top-full', !keAtas);
+                    popover.classList.toggle('mt-1', !keAtas);
+                    popover.classList.toggle('bottom-full', keAtas);
+                    popover.classList.toggle('mb-1', keAtas);
+
+                    kfRenderCalendar(picker);
+                    popover.classList.remove('hidden');
+                };
+                picker.querySelector('[data-kf-toggle]').addEventListener('click', bukaPicker);
+                display.addEventListener('click', bukaPicker);
                 picker.querySelector('[data-kf-prev]').addEventListener('click', () => {
                     picker._kfView = new Date(picker._kfView.getFullYear(), picker._kfView.getMonth() - 1, 1);
                     kfRenderCalendar(picker);
@@ -664,39 +670,39 @@
             kfToastTimer = setTimeout(() => el.classList.add('hidden'), 3500);
         }
 
-        document.addEventListener('livewire:init', () => {
-            Livewire.on('buka-karyawan-form', () => {
-                kfTrigger = window.__karyawanTrigger || document.activeElement;
-                kfDirty = false;
-                requestAnimationFrame(kfInitDatePickers);
-            });
+        // Livewire dispatches `livewire:init` before script blocks run, so
+        // registering handlers inside that event would never fire.
+        Livewire.on('buka-karyawan-form', () => {
+            kfTrigger = window.__karyawanTrigger || document.activeElement;
+            kfDirty = false;
+            requestAnimationFrame(kfInitDatePickers);
+        });
 
-            Livewire.on('karyawan-modal-opened', () => {
-                requestAnimationFrame(() => { kfInitDatePickers(); kfFocusPertama(); });
-            });
+        Livewire.on('karyawan-modal-opened', () => {
+            requestAnimationFrame(() => { kfInitDatePickers(); kfFocusPertama(); });
+        });
 
-            Livewire.on('karyawan-modal-closed', () => {
-                kfDirty = false;
-                if (kfTrigger && document.contains(kfTrigger)) kfTrigger.focus();
-                kfTrigger = null;
-            });
+        Livewire.on('karyawan-modal-closed', () => {
+            kfDirty = false;
+            if (kfTrigger && document.contains(kfTrigger)) kfTrigger.focus();
+            kfTrigger = null;
+        });
 
-            Livewire.on('karyawan-validation-error', () => {
-                requestAnimationFrame(() => {
-                    const first = document.querySelector('#karyawanFormBody [data-error]');
-                    if (first) {
-                        first.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        const field = first.parentElement.querySelector('input:not([type=hidden]), select, textarea');
-                        if (field) field.focus({ preventScroll: true });
-                    }
-                });
+        Livewire.on('karyawan-validation-error', () => {
+            requestAnimationFrame(() => {
+                const first = document.querySelector('#karyawanFormBody [data-error]');
+                if (first) {
+                    first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const field = first.parentElement.querySelector('input:not([type=hidden]), select, textarea');
+                    if (field) field.focus({ preventScroll: true });
+                }
             });
+        });
 
-            Livewire.on('toast', ({ message }) => kfToast(message || 'Perubahan disimpan'));
+        Livewire.on('toast', ({ message }) => kfToast(message || 'Perubahan disimpan'));
 
-            Livewire.on('karyawan-password-diatur', () => {
-                kfFocusPertama();
-            });
+        Livewire.on('karyawan-password-diatur', () => {
+            kfFocusPertama();
         });
 
         document.addEventListener('input', (e) => {
@@ -765,6 +771,12 @@
                 kfToast(pesan);
             }
         });
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => requestAnimationFrame(kfInitDatePickers));
+        } else {
+            requestAnimationFrame(kfInitDatePickers);
+        }
 
         window.kfTutupDenganKonfirmasi = kfTutupDenganKonfirmasi;
     })();

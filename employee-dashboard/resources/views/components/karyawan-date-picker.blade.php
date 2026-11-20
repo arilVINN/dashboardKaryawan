@@ -20,7 +20,7 @@
     <div class="relative">
         <input id="{{ $id }}" type="text" data-date-display readonly autocomplete="off"
                placeholder="10 Nov 2026" aria-label="{{ $label }}"
-               wire:blur="validateOnly('{{ $name }}')"
+               wire:blur="validateField('{{ $name }}')"
                class="w-full h-9 pl-3 pr-10 text-[13px] text-[#172B36] bg-white border border-[#D5DEE3] rounded-lg outline-none transition cursor-pointer focus:ring-2 focus:ring-[#146C94] focus:border-[#146C94] placeholder:text-[#6B7680]">
         <button type="button" data-kf-toggle aria-label="Pilih {{ strtolower($label) }}"
                 class="absolute inset-y-0 right-0 flex w-9 items-center justify-center text-[#4B5563] hover:text-[#146C94]">
