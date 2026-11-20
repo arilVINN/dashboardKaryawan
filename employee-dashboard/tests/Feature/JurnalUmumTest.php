@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Exports\JurnalUmumExport;
 use App\Livewire\Finance\JurnalUmumTable;
 use App\Models\AuditLog;
 use App\Models\CoaAkun;
@@ -19,6 +20,7 @@ use Database\Seeders\JurnalUmumSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Livewire\Livewire;
@@ -75,10 +77,52 @@ class JurnalUmumTest extends TestCase
             ->assertSee('Jurnal Umum')
             ->assertSee('Daftar akun (COA)')
             ->assertSee('Panduan kode divisi')
-            ->assertSee('Semua divisi');
+            ->assertSee('Semua divisi')
+            ->assertSee('Export ke Excel');
 
         // Middleware role:kadiv mengalihkan user non-kadiv ke dashboard mereka.
         $this->actingAs($this->staff)->get($url)->assertRedirect();
+    }
+
+    public function test_finance_can_export_jurnal_for_selected_month_and_division(): void
+    {
+        $division = JurnalDivisi::where('kode', 'D01')->firstOrFail();
+        $account = CoaAkun::where('kode', '1101')->firstOrFail();
+
+        $entry = JurnalEntry::create([
+            'entry_date' => '2026-11-12',
+            'ref_code' => 'EXP-TEST-001',
+            'jurnal_divisi_id' => $division->id,
+            'created_by' => $this->finance->id_user,
+        ]);
+        JurnalLine::create([
+            'jurnal_entry_id' => $entry->id,
+            'account_id' => $account->id,
+            'keterangan' => 'Saldo kas',
+            'debit' => 1500000,
+            'credit' => 0,
+            'sort_order' => 0,
+        ]);
+
+        Excel::fake();
+
+        $this->actingAs($this->finance)
+            ->get(route('kadiv.keuangan.exportJurnalUmum', [
+                'periode' => '2026-11',
+                'divisi_id' => $division->id,
+            ]))
+            ->assertOk();
+
+        Excel::assertDownloaded('Jurnal_Umum_2026-11.xlsx', function (JurnalUmumExport $export): bool {
+            $rows = $export->collection();
+
+            return $rows->count() === 2
+                && $rows[0][0] === '2026-11-12'
+                && $rows[0][1] === 'Saldo kas'
+                && $rows[0][4] === '1101'
+                && $rows[1][0] === 'TOTAL'
+                && $rows[1][6] === 1500000;
+        });
     }
 
     public function test_kas_masuk_creates_balanced_journal_with_audit_log(): void
