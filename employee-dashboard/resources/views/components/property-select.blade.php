@@ -5,6 +5,10 @@
     'value' => '',
     'placeholder' => 'Pilih',
     'options' => [],
+    'footerAction' => '',
+    'footerLabel' => '',
+    'deleteMethod' => '',
+    'deleteKind' => '',
 ])
 
 @php
@@ -41,7 +45,7 @@
             const below = window.innerHeight - rect.bottom - gap;
             const above = rect.top - gap;
             this.width = Math.max(rect.width, 200);
-            this.height = Math.min(this.items().length * 36 + 8, 240);
+            this.height = Math.min(this.items().length * 36 + (this.$refs.footer ? 48 : 8), 240);
             this.left = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - this.width - 8));
             this.top = below >= this.height || below >= above
                 ? rect.bottom + gap
@@ -108,25 +112,52 @@
         @keydown.escape.prevent.stop="close()">
 
         @foreach ($options as $option)
-            <button type="button" role="option" data-value="{{ $option['value'] }}"
+            <div role="option" tabindex="-1" data-value="{{ $option['value'] }}"
                 aria-selected="{{ $option['value'] === $value ? 'true' : 'false' }}"
-                @click="choose($el)"
-                class="flex w-full items-center px-2.5 py-1.5 text-left transition hover:bg-[#F1F5F9] focus:bg-[#E3F1F7] focus:outline-none">
-                @if (($option['kind'] ?? 'plain') === 'tag')
-                    <span class="inline-flex h-[22px] items-center rounded-md border px-2 text-[11px] font-semibold"
-                        style="background-color: {{ $option['fill'] }}; border-color: {{ $option['border'] }}; color: {{ $option['text'] ?? '#172B36' }};">
-                        {{ $option['label'] }}
-                    </span>
-                @elseif (($option['kind'] ?? 'plain') === 'status')
-                    <span class="inline-flex h-[22px] items-center gap-1.5 rounded-full border px-2 text-[11px] font-semibold"
-                        style="background-color: {{ $option['fill'] }}; border-color: {{ $option['border'] }}; color: {{ $option['text'] ?? '#172B36' }};">
-                        <span class="h-[7px] w-[7px] shrink-0 rounded-full" style="background-color: {{ $option['dot'] }};" aria-hidden="true"></span>
-                        {{ $option['label'] }}
-                    </span>
-                @else
-                    <span class="truncate text-sm text-[#172B36]">{{ $option['label'] }}</span>
+                @keydown.enter.prevent="choose($el)"
+                @keydown.space.prevent="choose($el)"
+                class="group flex w-full items-center gap-1 px-2.5 py-1.5 text-left transition hover:bg-[#F1F5F9] focus:bg-[#E3F1F7] focus:outline-none">
+                <button type="button" tabindex="-1" @click="choose($el.closest('[role=option]'))"
+                    class="flex min-w-0 flex-1 items-center text-left focus:outline-none">
+                    @if (($option['kind'] ?? 'plain') === 'tag')
+                        <span class="inline-flex h-[22px] items-center rounded-md border px-2 text-[11px] font-semibold"
+                            style="background-color: {{ $option['fill'] }}; border-color: {{ $option['border'] }}; color: {{ $option['text'] ?? '#172B36' }};">
+                            {{ $option['label'] }}
+                        </span>
+                    @elseif (($option['kind'] ?? 'plain') === 'status')
+                        <span class="inline-flex h-[22px] items-center gap-1.5 rounded-full border px-2 text-[11px] font-semibold"
+                            style="background-color: {{ $option['fill'] }}; border-color: {{ $option['border'] }}; color: {{ $option['text'] ?? '#172B36' }};">
+                            <span class="h-[7px] w-[7px] shrink-0 rounded-full" style="background-color: {{ $option['dot'] }};" aria-hidden="true"></span>
+                            {{ $option['label'] }}
+                        </span>
+                    @else
+                        <span class="truncate text-sm text-[#172B36]">{{ $option['label'] }}</span>
+                    @endif
+                </button>
+
+                @if ($deleteMethod !== '')
+                    <button type="button" @click.stop
+                        wire:click="{{ $deleteMethod }}('{{ $deleteKind }}', '{{ $option['value'] }}')"
+                        aria-label="Hapus {{ $option['label'] }}" title="Hapus {{ $option['label'] }}"
+                        class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[#8A96A3] opacity-0 transition hover:bg-red-50 hover:text-[#B91C1C] focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C] group-hover:opacity-100">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 @endif
-            </button>
+            </div>
         @endforeach
+
+        @if ($footerAction !== '')
+            <div x-ref="footer" class="mt-1 border-t border-[#E8EDF2] pt-1">
+                <button type="button" wire:click="{{ $footerAction }}"
+                    class="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-left text-[12px] font-semibold text-[#146C94] transition hover:bg-[#E3F1F7] focus:bg-[#E3F1F7] focus:outline-none">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
+                    </svg>
+                    {{ $footerLabel }}
+                </button>
+            </div>
+        @endif
     </div>
 </div>

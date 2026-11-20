@@ -101,6 +101,33 @@ class ContentCalendarAccess
         return true;
     }
 
+    /**
+     * Only HR and Markom may add new jenis konten / konten pillar options.
+     * Everyone who can open the calendar can still use the existing options.
+     */
+    public static function canManageOptions(?User2 $user): bool
+    {
+        if (! self::allows($user)) {
+            return false;
+        }
+
+        if ($user->isDirektur()) {
+            return true;
+        }
+
+        $karyawan = $user->karyawan;
+
+        if ($karyawan === null) {
+            return false;
+        }
+
+        $code = strtoupper(trim((string) $karyawan->divisi?->kode_divisi));
+
+        return $code === 'HR'
+            || $code === 'MARKOM'
+            || $karyawan->isMarkom();
+    }
+
     private static function isRestrictedDivision(Divisi $division): bool
     {
         return strtoupper(trim((string) $division->kode_divisi)) === self::RESTRICTED_KODE

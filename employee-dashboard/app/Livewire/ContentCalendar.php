@@ -8,7 +8,7 @@ use App\Models\ContentEventComment;
 use App\Models\ContentPillar;
 use App\Models\ContentType;
 use App\Support\ContentCalendarAccess;
-use App\Support\ContentTypePalette;
+use App\Support\OptionColor;
 use App\Support\StatusPalette;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -91,6 +91,20 @@ class ContentCalendar extends Component
     public bool $accountFormOpen = false;
 
     public string $accountName = '';
+
+    /** Add-option modal: 'type', 'pillar' or empty. */
+    public string $optionForm = '';
+
+    public string $optionName = '';
+
+    public string $optionColor = '';
+
+    /** Option pending deletion: 'type' | 'pillar' | empty. */
+    public string $optionToDeleteKind = '';
+
+    public string $optionToDeleteSlug = '';
+
+    public string $optionToDeleteName = '';
 
     public function booted(): void
     {
@@ -182,15 +196,165 @@ class ContentCalendar extends Component
         $this->dispatch('content-toast', message: 'Akun ditambahkan', type: 'success');
     }
 
+    public function openOptionForm(string $kind): void
+    {
+        abort_unless(ContentCalendarAccess::canManageOptions(auth()->user()), 403);
+        abort_unless(in_array($kind, ['type', 'pillar'], true), 404);
+
+        $this->resetValidation();
+        $this->optionForm = $kind;
+        $this->optionName = '';
+        $this->optionColor = array_key_first(OptionColor::SWATCHES);
+
+        $this->dispatch('content-focus-option-name');
+    }
+
+    public function closeOptionForm(): void
+    {
+        $this->optionForm = '';
+        $this->optionName = '';
+        $this->optionColor = '';
+        $this->resetValidation();
+    }
+
+    public function saveOption(): void
+    {
+        abort_unless(ContentCalendarAccess::canManageOptions(auth()->user()), 403);
+        abort_unless(in_array($this->optionForm, ['type', 'pillar'], true), 404);
+
+        $this->validate([
+            'optionName' => ['required', 'string', 'max:80'],
+        ], $this->messages());
+
+        $name = trim($this->optionName);
+        // The colour comes only from the swatches; normalize defensively in
+        // case a client sends a tampered value instead of a palette hex.
+        $color = OptionColor::normalize($this->optionColor);
+
+        /** @var class-string<ContentType|ContentPillar> $model */
+        $model = $this->optionForm === 'type' ? ContentType::class : ContentPillar::class;
+
+        $duplicate = $model::query()
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->exists();
+
+        if ($duplicate) {
+            $this->addError('optionName', 'Nama sudah dipakai.');
+
+            return;
+        }
+
+        $slug = $this->uniqueSlugFor($model, $name, $this->optionForm === 'type' ? 'jenis' : 'pillar');
+
+        $model::create([
+            'slug' => $slug,
+            'name' => $name,
+            'color' => $color,
+            'sort_order' => (int) $model::query()->max('sort_order') + 1,
+        ]);
+
+        // Pick the new option straight away when the event form is open.
+        if ($this->optionForm === 'type' && ($this->formOpen || $this->detailOpen)) {
+            $this->content_type = $slug;
+        }
+
+        if ($this->optionForm === 'pillar' && ($this->formOpen || $this->detailOpen)) {
+            $this->content_pillar = $slug;
+        }
+
+        $label = $this->optionForm === 'type' ? 'Jenis konten' : 'Konten pillar';
+
+        $this->closeOptionForm();
+        $this->dispatch('content-toast', message: $label.' ditambahkan', type: 'success');
+    }
+
+    public function requestDeleteOption(string $kind, string $slug): void
+    {
+        abort_unless(ContentCalendarAccess::canManageOptions(auth()->user()), 403);
+        abort_unless(in_array($kind, ['type', 'pillar'], true), 404);
+
+        $model = $kind === 'type' ? ContentType::class : ContentPillar::class;
+        $option = $model::query()->where('slug', $slug)->firstOrFail();
+
+        $this->optionToDeleteKind = $kind;
+        $this->optionToDeleteSlug = $slug;
+        $this->optionToDeleteName = $option->name;
+
+        $this->dispatch('content-confirm-delete-option');
+    }
+
+    public function cancelDeleteOption(): void
+    {
+        $this->optionToDeleteKind = '';
+        $this->optionToDeleteSlug = '';
+        $this->optionToDeleteName = '';
+    }
+
+    public function deleteOption(): void
+    {
+        abort_unless(ContentCalendarAccess::canManageOptions(auth()->user()), 403);
+        abort_unless(in_array($this->optionToDeleteKind, ['type', 'pillar'], true), 404);
+
+        $kind = $this->optionToDeleteKind;
+        $slug = $this->optionToDeleteSlug;
+
+        $this->cancelDeleteOption();
+
+        /** @var class-string<ContentType|ContentPillar> $model */
+        $model = $kind === 'type' ? ContentType::class : ContentPillar::class;
+        $option = $model::query()->where('slug', $slug)->first();
+
+        if (! $option) {
+            return;
+        }
+
+        $column = $kind === 'type' ? 'content_type' : 'content_pillar';
+        $used = ContentEvent::query()->where($column, $slug)->count();
+
+        if ($used > 0) {
+            $this->dispatch('content-toast', message: 'Opsi masih digunakan '.$used.' event.', type: 'error');
+
+            return;
+        }
+
+        if ($model::query()->count() <= 1) {
+            $this->dispatch('content-toast', message: 'Opsi terakhir tidak bisa dihapus.', type: 'error');
+
+            return;
+        }
+
+        $option->delete();
+
+        if ($kind === 'type' && $this->content_type === $slug) {
+            $this->content_type = '';
+        }
+
+        if ($kind === 'pillar' && $this->content_pillar === $slug) {
+            $this->content_pillar = '';
+        }
+
+        $label = $kind === 'type' ? 'Jenis konten' : 'Konten pillar';
+
+        $this->dispatch('content-toast', message: $label.' dihapus', type: 'success');
+    }
+
     private function uniqueAccountSlug(string $name): string
     {
+        return $this->uniqueSlugFor(ContentAccount::class, $name, 'akun');
+    }
+
+    /**
+     * @param  class-string<ContentAccount|ContentType|ContentPillar>  $model
+     */
+    private function uniqueSlugFor(string $model, string $name, string $fallback): string
+    {
         $base = rtrim(Str::slug($name), '-');
-        $base = $base !== '' ? substr($base, 0, 40) : 'akun';
+        $base = $base !== '' ? substr($base, 0, 40) : $fallback;
 
         $slug = $base;
         $suffix = 2;
 
-        while (ContentAccount::query()->where('slug', $slug)->exists()) {
+        while ($model::query()->where('slug', $slug)->exists()) {
             $slug = $base.'-'.$suffix;
             $suffix++;
         }
@@ -914,35 +1078,48 @@ class ContentCalendar extends Component
             'comments' => $comments,
             'monthLabel' => $this->periodLabel(),
             'hasActiveFilters' => $this->hasActiveFilters(),
+            'canManageOptions' => ContentCalendarAccess::canManageOptions(auth()->user()),
         ]);
     }
 
     /**
-     * @return array<string, array{slug: string, name: string, fill: string, border: string, text: string}>
+     * @return array<string, array{slug: string, name: string, color: string, fill: string, border: string, text: string, fill_text: string}>
      */
     private function contentTypeOptions(): array
     {
         $options = [];
 
-        foreach (ContentType::ordered() as $index => $type) {
+        foreach (ContentType::ordered() as $type) {
             $options[$type->slug] = [
                 'slug' => $type->slug,
                 'name' => $type->name,
-            ] + ContentTypePalette::for($index);
+            ] + OptionColor::for($type->color);
         }
 
         return $options;
     }
 
     /**
-     * @return array<string, array{slug: string, name: string, color: string}>
+     * @return array<string, array{slug: string, name: string, color: string, fill: string, border: string, text: string, fill_text: string}>
      */
     private function contentPillarOptions(): array
     {
+        try {
+            $pillars = ContentPillar::ordered();
+        } catch (Throwable $exception) {
+            // A stale database should not make the whole calendar unreachable.
+            report($exception);
+
+            return [];
+        }
+
         $options = [];
 
-        foreach (ContentPillar::ordered() as $pillar) {
-            $options[$pillar['slug']] = $pillar;
+        foreach ($pillars as $pillar) {
+            $options[$pillar['slug']] = [
+                'slug' => $pillar['slug'],
+                'name' => $pillar['name'],
+            ] + OptionColor::for($pillar['color'] ?? null);
         }
 
         return $options;
@@ -1049,9 +1226,11 @@ class ContentCalendar extends Component
             'type_name' => $type['name'] ?? 'Tanpa jenis',
             'type_fill' => $type['fill'] ?? '#F1F5F9',
             'type_border' => $type['border'] ?? '#CBD5E1',
+            'type_text' => $type['text'] ?? '#172B36',
             'pillar_slug' => $event->content_pillar,
             'pillar_name' => $pillar['name'] ?? '',
             'pillar_color' => $pillar['color'] ?? ContentPillar::fallback()['color'],
+            'pillar_text' => $pillar['text'] ?? '#FFFFFF',
             'status' => $event->status,
             'can_edit' => auth()->user()?->can('update', $event) ?? false,
         ];
@@ -1080,6 +1259,8 @@ class ContentCalendar extends Component
             'todos.*.text.max' => 'Setiap to-do maksimal 200 karakter.',
             'commentBody.required' => 'Komentar wajib diisi.',
             'commentBody.max' => 'Komentar maksimal 1000 karakter.',
+            'optionName.required' => 'Nama wajib diisi.',
+            'optionName.max' => 'Nama maksimal 80 karakter.',
         ];
     }
 
