@@ -10,7 +10,10 @@ use App\Models\SuratIzin;
 use App\Models\User2;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class HrdPesanController extends Controller
 {
@@ -95,12 +98,23 @@ class HrdPesanController extends Controller
 
         $validated = $request->validate([
             'penerima_id_user' => 'required|exists:users2,id_user',
-            'judul_pesan' => 'required|string|max:200',
-            'deskripsi' => 'required|string',
+            'judul_pesan' => 'required|string|max:150',
+            'deskripsi' => 'required|string|max:2000',
             'tipe' => 'required|in:pesan,surat',
             'file_lampiran' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
             'link_lampiran' => 'nullable|url|max:2048'
         ]);
+
+        $recipient = User2::with(['role', 'karyawan'])->findOrFail($validated['penerima_id_user']);
+        Gate::forUser($user)->authorize('create', [Pesan::class, $recipient]);
+
+        $rateKey = 'hrd-pesan:'.$user->id_user;
+        if (RateLimiter::tooManyAttempts($rateKey, 20)) {
+            throw ValidationException::withMessages([
+                'penerima_id_user' => 'Terlalu banyak pesan dikirim. Tunggu sebentar sebelum mencoba lagi.',
+            ]);
+        }
+        RateLimiter::hit($rateKey, 60);
 
         $filePath = null;
         if ($request->hasFile('file_lampiran')) {

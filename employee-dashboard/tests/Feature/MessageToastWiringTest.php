@@ -36,8 +36,8 @@ class MessageToastWiringTest extends TestCase
             $this->viewSource('hrd/detailPesan.blade.php')
         );
         $this->assertStringContainsString(
-            "appToastPending('Pesan berhasil dikirim.'",
-            $this->viewSource('component_hrd/tabelPesan.blade.php')
+            "dispatch('app-toast', message: 'Pesan terkirim'",
+            (string) file_get_contents(app_path('Livewire/Hrd/ComposeMessage.php'))
         );
     }
 
