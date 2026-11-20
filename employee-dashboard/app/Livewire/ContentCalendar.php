@@ -939,9 +939,18 @@ class ContentCalendar extends Component
      */
     private function contentPillarOptions(): array
     {
+        try {
+            $pillars = ContentPillar::ordered();
+        } catch (Throwable $exception) {
+            // A stale database should not make the whole calendar unreachable.
+            report($exception);
+
+            return [];
+        }
+
         $options = [];
 
-        foreach (ContentPillar::ordered() as $pillar) {
+        foreach ($pillars as $pillar) {
             $options[$pillar['slug']] = $pillar;
         }
 
