@@ -135,7 +135,7 @@
             const f = this.files[0];
             if (!f) { label.textContent = 'Pilih File (Bukti Surat)'; return; }
             if (f.size > 20 * 1024 * 1024) {
-                alert('Ukuran file maksimal 20 MB');
+                window.appToast('Ukuran file maksimal 20 MB', 'error');
                 this.value = '';
                 label.textContent = 'Pilih File (Bukti Surat)';
                 return;

@@ -4,12 +4,6 @@
 
 <div>
     <div class="w-full">
-        @if (session('pesan_success'))
-            <div class="mb-4 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
-                {{ session('pesan_success') }}
-            </div>
-        @endif
-
         {{-- Compact filters --}}
         <div class="mb-4 flex flex-wrap items-center gap-3">
             <div class="relative min-w-0 flex-1">

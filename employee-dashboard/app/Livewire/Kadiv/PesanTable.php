@@ -148,7 +148,7 @@ class PesanTable extends Component
             PesanDikirim::dispatch($message);
 
             $this->reset(['recipientUserId', 'isi', 'divisiId', 'judul']);
-            session()->flash('pesan_success', 'Pesan berhasil dikirim.');
+            $this->dispatch('app-toast', message: 'Pesan berhasil dikirim.', type: 'success');
             $this->dispatch('tutup-modal-pesan');
             $this->resetPage();
         } catch (\Throwable $e) {
@@ -192,7 +192,7 @@ class PesanTable extends Component
             );
 
             $this->reset(['jenisIzin', 'judulSurat', 'tanggalMulai', 'tanggalSelesai', 'fileSurat', 'keteranganSurat']);
-            session()->flash('pesan_success', 'Surat izin berhasil dikirim.');
+            $this->dispatch('app-toast', message: 'Surat izin berhasil dikirim.', type: 'success');
             $this->dispatch('tutup-modal-surat');
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('kirimSuratIzin error: ' . $e->getMessage());

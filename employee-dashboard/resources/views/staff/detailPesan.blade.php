@@ -247,7 +247,7 @@
             formSubmit.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const currentToken = token || sessionStorage.getItem('staff_token') || localStorage.getItem('staff_token');
-                if (!currentToken) return alert('Silakan login terlebih dahulu');
+                if (!currentToken) return window.appToast('Silakan login terlebih dahulu', 'error');
                 
                 const isiBalasan = pesanInput.value.trim();
                 if (!isiBalasan) return;
@@ -267,13 +267,12 @@
 
                     if (response.ok) {
                         isFormDirty = false;
-                        alert('Balasan berhasil dikirim!');
-                        window.location.reload();
+                        window.appToastPending('Balasan berhasil dikirim.', 'success');
                     } else {
-                        alert(data.message || 'Gagal membalas pesan.');
+                        window.appToast(data.message || 'Gagal membalas pesan.', 'error');
                     }
                 } catch (err) {
-                    alert('Terjadi kesalahan jaringan.');
+                    window.appToast('Terjadi kesalahan jaringan.', 'error');
                 }
             });
         }

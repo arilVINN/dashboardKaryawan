@@ -122,18 +122,18 @@
             loadRecipients().catch((error) => {
                 console.error('Gagal memuat penerima pesan HRD:', error);
                 recipientSelect.replaceChildren(new Option('Penerima gagal dimuat', ''));
-                alert(error.message);
+                window.appToast(error.message || 'Pesan gagal dikirim.', 'error');
             });
 
             form.addEventListener('submit', async function(event) {
                 event.preventDefault();
                 const description = document.getElementById('isiPesanBaruHrd').value.trim();
                 if (!description) {
-                    alert('Isi pesan wajib diisi.');
+                    window.appToast('Isi pesan wajib diisi.', 'error');
                     return;
                 }
                 if (!recipientSelect.value) {
-                    alert('Pilih penerima terlebih dahulu.');
+                    window.appToast('Pilih penerima terlebih dahulu.', 'error');
                     return;
                 }
 
@@ -160,9 +160,9 @@
 
                     form.reset();
                     tutupModalPesanHrd();
-                    window.location.reload();
+                    window.appToastPending('Pesan berhasil dikirim.', 'success');
                 } catch (error) {
-                    alert(error.message);
+                    window.appToast(error.message || 'Pesan gagal dikirim.', 'error');
                 }
             });
 
