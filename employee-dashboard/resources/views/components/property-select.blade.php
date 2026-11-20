@@ -5,6 +5,8 @@
     'value' => '',
     'placeholder' => 'Pilih',
     'options' => [],
+    'footerAction' => '',
+    'footerLabel' => '',
 ])
 
 @php
@@ -41,7 +43,7 @@
             const below = window.innerHeight - rect.bottom - gap;
             const above = rect.top - gap;
             this.width = Math.max(rect.width, 200);
-            this.height = Math.min(this.items().length * 36 + 8, 240);
+            this.height = Math.min(this.items().length * 36 + (this.$refs.footer ? 48 : 8), 240);
             this.left = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - this.width - 8));
             this.top = below >= this.height || below >= above
                 ? rect.bottom + gap
@@ -128,5 +130,17 @@
                 @endif
             </button>
         @endforeach
+
+        @if ($footerAction !== '')
+            <div x-ref="footer" class="mt-1 border-t border-[#E8EDF2] pt-1">
+                <button type="button" wire:click="{{ $footerAction }}"
+                    class="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-left text-[12px] font-semibold text-[#146C94] transition hover:bg-[#E3F1F7] focus:bg-[#E3F1F7] focus:outline-none">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"></path>
+                    </svg>
+                    {{ $footerLabel }}
+                </button>
+            </div>
+        @endif
     </div>
 </div>

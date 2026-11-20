@@ -18,7 +18,7 @@ return [
             'trim',
             explode(',', (string) env(
                 'CONTENT_CALENDAR_DIVISIONS',
-                'HR,Kelas Kerjasama,Publikasi Buku,Publikasi Jurnal,Academic Event,Kreatif Digital'
+                'HR,Kelas Kerjasama,Publikasi Buku,Publikasi Jurnal,Academic Event,Kreatif Digital,Markom'
             ))
         ))),
 
@@ -26,7 +26,7 @@ return [
         // in the HRD UI does not silently revoke calendar access.
         'codes' => array_values(array_filter(array_map(
             'trim',
-            explode(',', (string) env('CONTENT_CALENDAR_DIVISION_CODES', 'HR,KJ,PB,PJ,AE,KD'))
+            explode(',', (string) env('CONTENT_CALENDAR_DIVISION_CODES', 'HR,KJ,PB,PJ,AE,KD,MARKOM'))
         ))),
 
         'ids' => array_values(array_filter(array_map(

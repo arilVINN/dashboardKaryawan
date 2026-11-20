@@ -110,8 +110,10 @@
     @content-focus-title.window="dirty = false; $nextTick(() => $refs.titleInput?.focus())"
     @content-focus-modal.window="dirty = false; $nextTick(() => document.querySelector('[data-modal-panel]')?.focus())"
     @content-focus-account-name.window="$nextTick(() => $refs.accountName?.focus())"
+    @content-focus-option-name.window="$nextTick(() => $refs.optionName?.focus())"
     @keydown.escape.window="
-        if ($wire.get('accountFormOpen')) { $wire.closeAccountForm(); }
+        if ($wire.get('optionForm')) { $wire.closeOptionForm(); }
+        else if ($wire.get('accountFormOpen')) { $wire.closeAccountForm(); }
         else if (closeConfirm) { closeConfirm = false; }
         else if (confirmOpen) { closeDelete(); }
         else if ($wire.get('popoverDate')) { $wire.closePopover(); }
@@ -424,9 +426,9 @@
                                                 @if (! empty($item['time_label']))
                                                     <span>· {{ $item['time_label'] }}</span>
                                                 @endif
-                                                <x-content-type-tag :name="$item['type_name']" :fill="$item['type_fill']" :border="$item['type_border']" quiet />
+                                                <x-content-type-tag :name="$item['type_name']" :fill="$item['type_fill']" :border="$item['type_border']" :text="$item['type_text']" quiet />
                                                 @if (! empty($item['pillar_name']))
-                                                    <x-content-pillar-pill :name="$item['pillar_name']" :color="$item['pillar_color']" />
+                                                    <x-content-pillar-pill :name="$item['pillar_name']" :color="$item['pillar_color']" :text="$item['pillar_text']" />
                                                 @endif
                                             </span>
                                         </span>
@@ -477,6 +479,7 @@
                 'label' => $type['name'],
                 'fill' => $type['fill'],
                 'border' => $type['border'],
+                'text' => $type['fill_text'],
                 'kind' => 'tag',
             ])->values()->all();
 
@@ -496,11 +499,14 @@
             $pillarSelectOptions = collect($contentPillars)->map(fn ($pillar) => [
                 'value' => $pillar['slug'],
                 'label' => $pillar['name'],
-                'fill' => $pillar['color'],
-                'border' => $pillar['color'],
-                'text' => '#FFFFFF',
+                'fill' => $pillar['fill'],
+                'border' => $pillar['border'],
+                'text' => $pillar['fill_text'],
                 'kind' => 'tag',
             ])->values()->all();
+
+            $typeFooterAction = $canManageOptions ? "openOptionForm('type')" : '';
+            $pillarFooterAction = $canManageOptions ? "openOptionForm('pillar')" : '';
 
             $selectedType = $contentTypes[$content_type] ?? null;
             $selectedPillar = $contentPillars[$content_pillar] ?? null;
@@ -595,14 +601,15 @@
                             @if ($readOnly)
                                 <div class="flex h-[42px] items-center rounded-lg border border-[#D5DEE3] bg-white px-2.5">
                                     @if ($selectedType)
-                                        <x-content-type-tag :name="$selectedType['name']" :fill="$selectedType['fill']" :border="$selectedType['border']" />
+                                        <x-content-type-tag :name="$selectedType['name']" :fill="$selectedType['fill']" :border="$selectedType['border']" :text="$selectedType['text']" />
                                     @else
                                         <span class="text-sm text-[#4B5563]">-</span>
                                     @endif
                                 </div>
                             @else
                                 <x-property-select id="content-type" label="Jenis konten" model="content_type"
-                                    :value="$content_type" :options="$typeSelectOptions" placeholder="Pilih jenis" />
+                                    :value="$content_type" :options="$typeSelectOptions" placeholder="Pilih jenis"
+                                    :footer-action="$typeFooterAction" footer-label="Tambah jenis baru" />
                                 @error('content_type')
                                     <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
                                 @enderror
@@ -619,14 +626,15 @@
                             @if ($readOnly)
                                 <div class="flex h-[42px] items-center rounded-lg border border-[#D5DEE3] bg-white px-2.5">
                                     @if ($selectedPillar)
-                                        <x-content-pillar-pill :name="$selectedPillar['name']" :color="$selectedPillar['color']" />
+                                        <x-content-pillar-pill :name="$selectedPillar['name']" :color="$selectedPillar['color']" :text="$selectedPillar['text']" />
                                     @else
                                         <span class="text-sm text-[#4B5563]">-</span>
                                     @endif
                                 </div>
                             @else
                                 <x-property-select id="content-pillar" label="Konten pillar" model="content_pillar"
-                                    :value="$content_pillar" :options="$pillarSelectOptions" placeholder="Pilih pillar" />
+                                    :value="$content_pillar" :options="$pillarSelectOptions" placeholder="Pilih pillar"
+                                    :footer-action="$pillarFooterAction" footer-label="Tambah pillar baru" />
                                 @error('content_pillar')
                                     <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p>
                                 @enderror
@@ -1059,6 +1067,75 @@
                         <button type="submit"
                             class="inline-flex h-10 items-center rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
                             Simpan akun
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    {{-- Add jenis konten / konten pillar --}}
+    @if ($optionForm !== '')
+        @php $preview = \App\Support\OptionColor::for($optionColor); @endphp
+        <div data-option-modal
+            class="fixed inset-0 flex items-center justify-center bg-slate-900/40 p-4"
+            style="z-index: 95;"
+            @click.self="$wire.closeOptionForm()">
+            <div data-option-panel role="dialog" aria-modal="true" aria-labelledby="content-option-modal-title"
+                tabindex="-1"
+                class="w-full max-w-md rounded-xl border border-[#E2E8EC] bg-white p-6 shadow-xl"
+                @keydown.tab="trap($event, '[data-option-modal] [data-option-panel]')">
+                <h3 id="content-option-modal-title" class="text-lg font-semibold text-[#172B36]">
+                    {{ $optionForm === 'type' ? 'Tambah jenis konten' : 'Tambah konten pillar' }}
+                </h3>
+                <p class="mt-1 text-sm text-[#4B5563]">
+                    Opsi baru langsung tersedia di kalender ini.
+                </p>
+
+                <form wire:submit.prevent="saveOption" class="mt-4">
+                    <label for="content-option-name" class="block text-[13px] font-medium text-[#4B5563]">
+                        Nama
+                    </label>
+                    <input id="content-option-name" x-ref="optionName" type="text"
+                        wire:model="optionName" maxlength="80" autocomplete="off"
+                        placeholder="{{ $optionForm === 'type' ? 'Contoh: Podcast' : 'Contoh: Inspirasi' }}"
+                        class="mt-1.5 h-[42px] w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm text-[#172B36] placeholder:text-[#8A96A3] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+                    @error('optionName')
+                        <p class="mt-1.5 text-[12px] text-[#B91C1C]">{{ $message }}</p>
+                    @enderror
+
+                    <p class="mt-4 text-[13px] font-medium text-[#4B5563]">Warna</p>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        @foreach (\App\Support\OptionColor::SWATCHES as $hex => $swatchLabel)
+                            <button type="button" @click="$wire.set('optionColor', '{{ $hex }}')"
+                                aria-label="Warna {{ $swatchLabel }}"
+                                title="{{ $swatchLabel }}"
+                                class="h-7 w-7 rounded-full transition hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]"
+                                style="background-color: {{ $hex }}; @if (strtoupper((string) $optionColor) === $hex) outline: 2px solid #172B36; outline-offset: 2px; @endif"></button>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-3 flex items-center gap-3">
+                        <input id="content-option-color" type="text" wire:model="optionColor"
+                            maxlength="7" autocomplete="off" placeholder="#2563EB" aria-label="Kode warna hex"
+                            class="h-[42px] w-[130px] rounded-lg border border-[#D5DEE3] bg-white px-3 text-sm uppercase text-[#172B36] placeholder:text-[#8A96A3] focus:border-[#146C94] focus:outline-none focus:ring-2 focus:ring-[#146C94]">
+                        <span class="inline-flex h-[26px] items-center rounded-md border px-2 text-[11px] font-semibold"
+                            style="background-color: {{ $preview['color'] }}; border-color: {{ $preview['color'] }}; color: {{ $preview['text'] }};">
+                            Pratinjau
+                        </span>
+                    </div>
+                    @error('optionColor')
+                        <p class="mt-1.5 text-[12px] text-[#B91C1C]">{{ $message }}</p>
+                    @enderror
+
+                    <div class="mt-5 flex justify-end gap-2">
+                        <button type="button" wire:click="closeOptionForm"
+                            class="inline-flex h-10 items-center rounded-lg border border-[#E2E8EC] bg-white px-4 text-sm font-medium text-[#4B5563] transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="inline-flex h-10 items-center rounded-lg bg-[#0097B2] px-4 text-sm font-semibold text-white transition hover:bg-[#0086A0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2">
+                            Simpan
                         </button>
                     </div>
                 </form>
