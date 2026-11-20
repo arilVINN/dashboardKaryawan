@@ -154,6 +154,19 @@ class KaryawanForm extends Component
         $this->validateOnly('divisiId');
     }
 
+    /**
+     * Livewire only allows calls to methods defined on the component itself;
+     * the inherited validateOnly() cannot be called from wire:blur directly.
+     */
+    public function validateField(string $field): void
+    {
+        if (! in_array($field, ['tanggalLahir', 'tanggalMasuk', 'tanggalAkhirKontrak'], true)) {
+            return;
+        }
+
+        $this->validateOnly($field);
+    }
+
     public function updatedUsername(): void
     {
         $this->checkUsername();
