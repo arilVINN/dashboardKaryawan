@@ -121,4 +121,39 @@ class PesanTableTest extends TestCase
     {
         Livewire::actingAs($this->abby)->test(PesanTable::class)->assertForbidden();
     }
+
+    public function test_recipient_combobox_filters_and_selects(): void
+    {
+        Livewire::actingAs($this->kadiv)
+            ->test(PesanTable::class)
+            ->dispatch('open-compose-message')
+            ->assertSet('showCompose', true)
+            ->set('recipientSearch', 'Abby')
+            ->assertSee('kadivRecipientList', false)
+            ->assertSee('Abby')
+            ->assertDontSee('Outsider')
+            ->call('selectRecipient', $this->abby->id_user)
+            ->assertSet('recipientUserId', $this->abby->id_user)
+            ->call('clearRecipient')
+            ->assertSet('recipientUserId', '');
+    }
+
+    public function test_sending_from_compose_modal_toasts_and_closes(): void
+    {
+        Livewire::actingAs($this->kadiv)
+            ->test(PesanTable::class)
+            ->dispatch('open-compose-message')
+            ->call('selectRecipient', $this->outsider->id_user)
+            ->set('judul', 'Koordinasi')
+            ->set('isi', 'Halo tim HR')
+            ->call('sendMessage')
+            ->assertHasNoErrors()
+            ->assertDispatched('app-toast', message: 'Pesan terkirim')
+            ->assertSet('showCompose', false);
+
+        $this->assertDatabaseHas('pesans', [
+            'penerima_id_user' => $this->outsider->id_user,
+            'judul_pesan' => 'Koordinasi',
+        ]);
+    }
 }

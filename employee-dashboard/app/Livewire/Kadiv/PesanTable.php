@@ -5,12 +5,15 @@ namespace App\Livewire\Kadiv;
 use App\Actions\NotifyHrdUsers;
 use App\Events\PesanDikirim;
 use App\Models\Divisi;
+use App\Models\Karyawan;
 use App\Models\Pesan;
 use App\Models\SuratIzin;
 use App\Models\User2;
 use App\Presenters\MessagePresenter;
 use App\Queries\KadivMessageQuery;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -40,6 +43,15 @@ class PesanTable extends Component
     public string $recipientUserId = '';
     public string $judul = '';
     public string $isi = '';
+
+    public bool $showCompose = false;
+    public bool $listOpen = false;
+    public bool $confirmDiscard = false;
+    public bool $sending = false;
+    public string $recipientSearch = '';
+    /** @var array{id: string, nama: string, jabatan: string, divisi: string, foto: ?string, initials: string}|null */
+    public ?array $recipient = null;
+    public string $errorMessage = '';
 
     // Properti untuk form Kirim Surat Izin (Diperbarui)
     public string $jenisIzin = '';
@@ -72,7 +84,147 @@ class PesanTable extends Component
     public function updatedDivisiId(): void
     {
         $this->recipientUserId = '';
+        $this->recipient = null;
+        $this->recipientSearch = '';
+        $this->listOpen = true;
         $this->resetValidation('recipientUserId');
+    }
+
+    #[On('open-compose-message')]
+    public function openCompose(): void
+    {
+        $this->reset(['divisiId', 'recipientUserId', 'recipient', 'recipientSearch', 'judul', 'isi', 'errorMessage']);
+        $this->resetValidation();
+        $this->listOpen = false;
+        $this->confirmDiscard = false;
+        $this->showCompose = true;
+    }
+
+    public function closeCompose(): void
+    {
+        $this->showCompose = false;
+        $this->listOpen = false;
+        $this->confirmDiscard = false;
+        $this->dispatch('compose-message-closed');
+    }
+
+    #[On('compose-close-list')]
+    public function closeList(): void
+    {
+        $this->listOpen = false;
+    }
+
+    public function openList(): void
+    {
+        if (! $this->recipientUserId) {
+            $this->listOpen = true;
+        }
+    }
+
+    public function updatedRecipientSearch(): void
+    {
+        $this->listOpen = true;
+    }
+
+    public function requestClose(): void
+    {
+        if ($this->divisiId !== '' || $this->recipientUserId || trim($this->judul) !== ''
+            || trim($this->isi) !== '' || trim($this->recipientSearch) !== '') {
+            $this->confirmDiscard = true;
+            return;
+        }
+        $this->closeCompose();
+    }
+
+    public function cancelDiscard(): void
+    {
+        $this->confirmDiscard = false;
+        $this->dispatch('compose-focus-cancel');
+    }
+
+    public function confirmDiscard(): void
+    {
+        $this->confirmDiscard = false;
+        $this->closeCompose();
+    }
+
+    public function selectRecipient(string $id): void
+    {
+        $karyawan = $this->eligibleKaryawan()
+            ->whereHas('user', fn ($query) => $query->where('users2.id_user', $id))
+            ->first();
+
+        if (! $karyawan?->user) {
+            $this->addError('recipientUserId', 'Penerima tidak valid.');
+            return;
+        }
+
+        $this->recipientUserId = $karyawan->user->id_user;
+        $this->recipient = $this->present($karyawan);
+        $this->recipientSearch = '';
+        $this->listOpen = false;
+        $this->errorMessage = '';
+        $this->resetErrorBag('recipientUserId');
+    }
+
+    public function clearRecipient(): void
+    {
+        $this->recipientUserId = '';
+        $this->recipient = null;
+        $this->recipientSearch = '';
+        $this->listOpen = false;
+    }
+
+    /**
+     * @return array<int, array{id: string, nama: string, jabatan: string, divisi: string, foto: ?string, initials: string}>
+     */
+    public function getRecipientResultsProperty(): array
+    {
+        $term = mb_strtolower(trim($this->recipientSearch));
+        $query = $this->eligibleKaryawan();
+
+        if ($term !== '') {
+            $query->where(function ($query) use ($term): void {
+                $query->whereRaw('LOWER(nama) LIKE ?', ['%'.$term.'%'])
+                    ->orWhereRaw('LOWER(jabatan) LIKE ?', ['%'.$term.'%'])
+                    ->orWhereHas('divisi', fn ($q) => $q->whereRaw('LOWER(nama_divisi) LIKE ?', ['%'.$term.'%']));
+            })->orderByRaw('LOWER(nama) = ? DESC', [$term]);
+        }
+
+        return $query->orderBy('nama')->limit(20)->get()
+            ->map(fn (Karyawan $karyawan) => $this->present($karyawan))->all();
+    }
+
+    private function eligibleKaryawan()
+    {
+        $sender = $this->kadiv();
+        $query = Karyawan::query()
+            ->with(['user.role', 'divisi'])
+            ->whereHas('user', fn ($q) => $q->where('users2.id_user', '!=', $sender->id_user))
+            ->where('status_aktif', 'Aktif')
+            ->where(function ($q): void { $q->where('aktif', true)->orWhereNull('aktif'); });
+
+        if ($this->divisiId !== '') {
+            $query->where('divisi_id_divisi', $this->divisiId);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return array{id: string, nama: string, jabatan: string, divisi: string, foto: ?string, initials: string}
+     */
+    private function present(Karyawan $karyawan): array
+    {
+        $nama = (string) $karyawan->nama;
+        return [
+            'id' => (string) $karyawan->user?->id_user,
+            'nama' => $nama,
+            'jabatan' => $karyawan->jabatan ?: ($karyawan->user?->role?->nama_role ?? 'Staff'),
+            'divisi' => $karyawan->divisi?->nama_divisi ?: '-',
+            'foto' => $karyawan->foto ? route('hrd.karyawan.foto', $karyawan->id_karyawan) : null,
+            'initials' => mb_strtoupper(mb_substr($nama, 0, 1)),
+        ];
     }
 
     public function updatedSearch(): void
@@ -114,6 +266,10 @@ class PesanTable extends Component
 
     public function sendMessage(): void
     {
+        if ($this->sending) {
+            return;
+        }
+
         $kadiv = $this->kadiv();
 
         $this->validate([
@@ -130,7 +286,17 @@ class PesanTable extends Component
             return;
         }
 
+        $rateKey = 'kadiv-pesan:'.$kadiv->id_user;
+        if (RateLimiter::tooManyAttempts($rateKey, 20)) {
+            $this->errorMessage = 'Terlalu banyak pesan dikirim. Tunggu sebentar sebelum mencoba lagi.';
+            return;
+        }
+
+        $this->sending = true;
+
         try {
+            RateLimiter::hit($rateKey, 60);
+
             $judulPesan = ! empty(trim($this->judul))
                 ? strip_tags(trim($this->judul))
                 : (Str::limit($this->isi, 200, '') ?: 'Pesan baru');
@@ -147,13 +313,16 @@ class PesanTable extends Component
 
             PesanDikirim::dispatch($message);
 
-            $this->reset(['recipientUserId', 'isi', 'divisiId', 'judul']);
-            $this->dispatch('app-toast', message: 'Pesan berhasil dikirim.', type: 'success');
-            $this->dispatch('tutup-modal-pesan');
+            $this->reset(['divisiId', 'recipientUserId', 'recipient', 'recipientSearch', 'judul', 'isi', 'errorMessage']);
+            $this->listOpen = false;
+            $this->dispatch('app-toast', message: 'Pesan terkirim', type: 'success');
+            $this->closeCompose();
             $this->resetPage();
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('sendMessage error: ' . $e->getMessage());
-            $this->addError('isi', 'Gagal mengirim pesan: ' . $e->getMessage());
+            report($e);
+            $this->errorMessage = 'Gagal mengirim pesan. Periksa kembali lalu coba lagi.';
+        } finally {
+            $this->sending = false;
         }
     }
 
