@@ -3,9 +3,11 @@
 namespace App\Livewire\Finance;
 
 use App\Livewire\Finance\Concerns\HasMonthPicker;
+use App\Models\AuditLog;
 use App\Models\CoaAkun;
 use App\Models\JurnalDivisi;
 use App\Models\JurnalEntry;
+use App\Models\JurnalLine;
 use App\Services\Finance\JurnalEntryService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -34,12 +36,6 @@ class JurnalUmumTable extends Component
 
     public string $coaSearch = '';
 
-    public ?int $cancelEntryId = null;
-
-    public ?string $cancelEntryRef = null;
-
-    public string $cancelReason = '';
-
     public ?string $manualDivisiId = null;
 
     public string $manualTanggal = '';
@@ -48,6 +44,18 @@ class JurnalUmumTable extends Component
 
     /** Id stabil per baris, dipakai sebagai wire:key agar DOM tidak tertukar saat reindex. */
     public array $manualLineIds = [];
+
+    public ?int $editingLineId = null;
+
+    public string $editAccountId = '';
+
+    public string $editKeterangan = '';
+
+    public string $editDebit = '';
+
+    public string $editCredit = '';
+
+    public ?int $deletingLineId = null;
 
     public ?string $feedbackMessage = null;
 
@@ -59,6 +67,10 @@ class JurnalUmumTable extends Component
         $this->periode = now()->format('Y-m');
         $this->manualTanggal = now()->toDateString();
         $this->resetLines();
+
+        // Tautan "Daftar akun (COA)" di sidebar membuka panel sekali saja;
+        // flag dihapus setelah dipakai agar URL/page berikutnya tetap bersih.
+        $this->showCoaPanel = (bool) session()->pull('open_coa_panel');
     }
 
     // ── Filters ───────────────────────────────────────────────────────────
@@ -365,52 +377,146 @@ class JurnalUmumTable extends Component
         }
     }
 
-    // ── Reversing entry ───────────────────────────────────────────────────
+    // ── Edit / hapus baris jurnal ─────────────────────────────────────────
 
-    public function openCancelModal(int $id): void
+    public function openLineEdit(int $lineId): void
     {
-        $this->authorizeAbility('cancel');
+        $this->authorizeAbility('update');
 
-        $entry = JurnalEntry::findOrFail($id);
-        $this->cancelEntryId = $entry->id;
-        $this->cancelEntryRef = $entry->ref_code;
-        $this->cancelReason = '';
+        $line = JurnalLine::with('account')->findOrFail($lineId);
+        $this->editingLineId = $line->id;
+        $this->editAccountId = (string) $line->account_id;
+        $this->editKeterangan = (string) ($line->keterangan ?? '');
+        $this->editDebit = $line->debit > 0 ? (string) $line->debit : '';
+        $this->editCredit = $line->credit > 0 ? (string) $line->credit : '';
         $this->resetValidation();
         $this->resetFeedback();
     }
 
-    public function closeCancelModal(): void
+    public function closeLineEdit(): void
     {
-        $this->cancelEntryId = null;
-        $this->cancelEntryRef = null;
-        $this->cancelReason = '';
+        $this->editingLineId = null;
         $this->resetValidation();
     }
 
-    public function confirmCancel(): void
+    public function updatedEditDebit(mixed $value): void
     {
-        $this->authorizeAbility('cancel');
+        if ((float) $value > 0) {
+            $this->editCredit = '';
+        }
+    }
+
+    public function updatedEditCredit(mixed $value): void
+    {
+        if ((float) $value > 0) {
+            $this->editDebit = '';
+        }
+    }
+
+    public function saveLine(): void
+    {
+        $this->authorizeAbility('update');
 
         $this->validate([
-            'cancelReason' => ['required', 'string', 'max:500'],
+            'editAccountId' => ['required', 'exists:coa_akuns,id'],
+            'editKeterangan' => ['required', 'string', 'max:500'],
+            'editDebit' => ['nullable', 'numeric', 'min:0'],
+            'editCredit' => ['nullable', 'numeric', 'min:0'],
         ], [
-            'cancelReason.required' => 'Alasan pembatalan wajib diisi.',
+            'editAccountId.required' => 'Akun wajib dipilih.',
+            'editKeterangan.required' => 'Keterangan baris wajib diisi.',
         ]);
 
-        $entry = JurnalEntry::find($this->cancelEntryId);
-        if (! $entry) {
-            $this->closeCancelModal();
+        $debit = (int) round((float) ($this->editDebit ?: 0));
+        $credit = (int) round((float) ($this->editCredit ?: 0));
+
+        if (($debit > 0) === ($credit > 0)) {
+            $this->addError('editDebit', 'Satu baris hanya boleh berisi debit atau kredit.');
 
             return;
         }
 
-        DB::transaction(function () use ($entry) {
-            app(JurnalEntryService::class)->reverse($entry, $this->cancelReason, auth()->id());
+        $line = JurnalLine::find($this->editingLineId);
+        if (! $line) {
+            $this->closeLineEdit();
+
+            return;
+        }
+
+        $lama = [
+            'account_id' => $line->account_id,
+            'keterangan' => $line->keterangan,
+            'debit' => $line->debit,
+            'credit' => $line->credit,
+        ];
+
+        DB::transaction(function () use ($line, $debit, $credit, $lama) {
+            $line->update([
+                'account_id' => (int) $this->editAccountId,
+                'keterangan' => trim($this->editKeterangan),
+                'debit' => $debit,
+                'credit' => $credit,
+            ]);
+
+            AuditLog::catat(auth()->id(), 'jurnal_baris_diubah', 'jurnal_line', (string) $line->id, [
+                'lama' => $lama,
+                'baru' => [
+                    'account_id' => $line->account_id,
+                    'keterangan' => $line->keterangan,
+                    'debit' => $line->debit,
+                    'credit' => $line->credit,
+                ],
+            ]);
         });
 
-        $this->feedbackMessage = 'Jurnal ' . $entry->ref_code . ' dibatalkan dengan jurnal balik.';
+        $this->feedbackMessage = 'Baris jurnal berhasil diperbarui.';
         $this->feedbackType = 'success';
-        $this->closeCancelModal();
+        $this->closeLineEdit();
+    }
+
+    public function askDeleteLine(int $lineId): void
+    {
+        $this->authorizeAbility('delete');
+        $this->deletingLineId = $lineId;
+        $this->resetValidation();
+        $this->resetFeedback();
+    }
+
+    public function cancelDeleteLine(): void
+    {
+        $this->deletingLineId = null;
+    }
+
+    public function deleteLine(): void
+    {
+        $this->authorizeAbility('delete');
+
+        $line = JurnalLine::find($this->deletingLineId);
+        if (! $line) {
+            $this->deletingLineId = null;
+
+            return;
+        }
+
+        $lama = [
+            'jurnal_entry_id' => $line->jurnal_entry_id,
+            'account_id' => $line->account_id,
+            'keterangan' => $line->keterangan,
+            'debit' => $line->debit,
+            'credit' => $line->credit,
+        ];
+
+        DB::transaction(function () use ($line, $lama) {
+            $line->delete();
+
+            AuditLog::catat(auth()->id(), 'jurnal_baris_dihapus', 'jurnal_line', (string) $line->id, [
+                'lama' => $lama,
+            ]);
+        });
+
+        $this->feedbackMessage = 'Baris jurnal berhasil dihapus.';
+        $this->feedbackType = 'success';
+        $this->deletingLineId = null;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────

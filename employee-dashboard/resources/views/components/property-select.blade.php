@@ -78,12 +78,12 @@
         @if ($selected)
             @if (($selected['kind'] ?? 'plain') === 'tag')
                 <span class="inline-flex h-[22px] items-center rounded-md border px-2 text-[11px] font-semibold"
-                    style="background-color: {{ $selected['fill'] }}; border-color: {{ $selected['border'] }}; color: #172B36;">
+                    style="background-color: {{ $selected['fill'] }}; border-color: {{ $selected['border'] }}; color: {{ $selected['text'] ?? '#172B36' }};">
                     {{ $selected['label'] }}
                 </span>
             @elseif (($selected['kind'] ?? 'plain') === 'status')
                 <span class="inline-flex h-[22px] items-center gap-1.5 rounded-full border px-2 text-[11px] font-semibold"
-                    style="background-color: {{ $selected['fill'] }}; border-color: {{ $selected['border'] }}; color: #172B36;">
+                    style="background-color: {{ $selected['fill'] }}; border-color: {{ $selected['border'] }}; color: {{ $selected['text'] ?? '#172B36' }};">
                     <span class="h-[7px] w-[7px] shrink-0 rounded-full" style="background-color: {{ $selected['dot'] }};" aria-hidden="true"></span>
                     {{ $selected['label'] }}
                 </span>
@@ -114,12 +114,12 @@
                 class="flex w-full items-center px-2.5 py-1.5 text-left transition hover:bg-[#F1F5F9] focus:bg-[#E3F1F7] focus:outline-none">
                 @if (($option['kind'] ?? 'plain') === 'tag')
                     <span class="inline-flex h-[22px] items-center rounded-md border px-2 text-[11px] font-semibold"
-                        style="background-color: {{ $option['fill'] }}; border-color: {{ $option['border'] }}; color: #172B36;">
+                        style="background-color: {{ $option['fill'] }}; border-color: {{ $option['border'] }}; color: {{ $option['text'] ?? '#172B36' }};">
                         {{ $option['label'] }}
                     </span>
                 @elseif (($option['kind'] ?? 'plain') === 'status')
                     <span class="inline-flex h-[22px] items-center gap-1.5 rounded-full border px-2 text-[11px] font-semibold"
-                        style="background-color: {{ $option['fill'] }}; border-color: {{ $option['border'] }}; color: #172B36;">
+                        style="background-color: {{ $option['fill'] }}; border-color: {{ $option['border'] }}; color: {{ $option['text'] ?? '#172B36' }};">
                         <span class="h-[7px] w-[7px] shrink-0 rounded-full" style="background-color: {{ $option['dot'] }};" aria-hidden="true"></span>
                         {{ $option['label'] }}
                     </span>

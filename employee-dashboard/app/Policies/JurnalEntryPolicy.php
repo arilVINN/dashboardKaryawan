@@ -29,4 +29,14 @@ class JurnalEntryPolicy
     {
         return $user->isKadivFinance();
     }
+
+    public function update(User2 $user): bool
+    {
+        return $user->isKadivFinance();
+    }
+
+    public function delete(User2 $user): bool
+    {
+        return $user->isKadivFinance();
+    }
 }
