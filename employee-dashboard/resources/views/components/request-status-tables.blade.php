@@ -30,10 +30,7 @@
                             </td>
                             <td class="max-w-xs px-5 py-4">{{ $surat->keterangan ?: '-' }}</td>
                             <td class="whitespace-nowrap px-5 py-4">
-                                <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold
-                                    {{ in_array(strtolower($surat->status), ['disetujui', 'acc'], true) ? 'bg-emerald-100 text-emerald-700' : (in_array(strtolower($surat->status), ['ditolak', 'tolak'], true) ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }}">
-                                    {{ $surat->status }}
-                                </span>
+                                <x-status-badge :status="$surat->status" :label="$surat->status" />
                             </td>
                             <td class="whitespace-nowrap px-5 py-4 text-xs">
                                 {{ $surat->created_at?->format('d M Y') ?? '-' }}
@@ -77,10 +74,7 @@
                             </td>
                             <td class="max-w-xs px-5 py-4">{{ $booking->keperluan }}</td>
                             <td class="whitespace-nowrap px-5 py-4">
-                                <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold
-                                    {{ $booking->status === 'ACC' ? 'bg-emerald-100 text-emerald-700' : ($booking->status === 'Tolak' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }}">
-                                    {{ $booking->status }}
-                                </span>
+                                <x-status-badge :status="$booking->status" :label="$booking->status" />
                             </td>
                             <td class="whitespace-nowrap px-5 py-4 text-xs">
                                 {{ $booking->created_at?->format('d M Y') ?? '-' }}

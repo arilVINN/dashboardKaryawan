@@ -84,9 +84,11 @@
                                 {{ $contact?->karyawan?->nama ?? ($contact?->username ?? 'Pengguna tidak tersedia') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2.5 py-1 bg-cyan-50 text-cyan-700 rounded-full text-xs font-bold">
-                                    {{ ucfirst($pesan->tipe ?? 'pesan') }}
-                                </span>
+                                <x-status-badge
+                                    :status="$pesan->tipe ?? 'pesan'"
+                                    :label="ucfirst($pesan->tipe ?? 'pesan')"
+                                    :palette="\App\Support\StatusPalette::messageType($pesan->tipe)"
+                                    dot />
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-slate-600">
                                 {{ $pesan->tanggal_pesan }}

@@ -107,8 +107,9 @@
     </div>
 @endif
 
+@include('components.status-badge-js')
+
 <script>
-    const STAFF_STATUS_PALETTE = @json(\App\Support\StatusPalette::all());
     const staffTugasIsCompact = {{ $isCompact ? 'true' : 'false' }};
     const staffTugasSearch = document.getElementById('staffTugasSearch');
     const staffTugasStatus = document.getElementById('staffTugasStatus');
@@ -148,15 +149,7 @@
     }
 
     function staffStatusBadgeHtml(status, shortLabel = false) {
-        const key = staffStatusKey(status);
-        const palette = STAFF_STATUS_PALETTE[key];
-        const label = palette ? (shortLabel ? palette.short : palette.label) : (status || '-');
-
-        if (!palette) {
-            return `<span class="inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-[#172B36]">${status || '-'}</span>`;
-        }
-
-        return `<span class="inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium" style="background-color: ${palette.bg}; border-color: ${palette.border}; color: ${palette.text};"><span class="h-1.5 w-1.5 shrink-0 rounded-full" style="background-color: ${palette.dot};" aria-hidden="true"></span>${label}</span>`;
+        return window.statusBadgeHtml(status, { short: shortLabel });
     }
 
     function staffStatusCellHtml(task) {

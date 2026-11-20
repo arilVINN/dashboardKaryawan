@@ -211,9 +211,10 @@
         </div>
     </div>
 
+    @include('components.status-badge-js')
+
     <script>
         const tugasId = window.location.pathname.split('/').filter(Boolean).pop();
-        const STATUS_PALETTE = @json(\App\Support\StatusPalette::all());
 
         const fileInput = document.getElementById('file_tugas');
         const deskripsiInput = document.getElementById('deskripsi_tugas');
@@ -366,36 +367,16 @@
             return fmtDate(raw) + ', ' + pad2(date.getHours()) + ':' + pad2(date.getMinutes());
         }
 
-        function normalizeStatus(status) {
-            const value = String(status || '').toLowerCase().trim();
-            if (!value) return null;
-
-            if (value.includes('tidak') && value.includes('aktif')) return 'tidak_aktif';
-            if (value === 'aktif') return 'aktif';
-            if (value === 'baru') return 'baru';
-            if (value === 'berjalan') return 'berjalan';
-            if (value.includes('menunggu')) return 'menunggu';
-            if (value.includes('sudah') || value.includes('disetujui') || value.includes('selesai')) return 'disetujui';
-            if (value.includes('terlambat') || value.includes('telat')) return 'terlambat';
-
-            return null;
-        }
-
         function renderStatusBadge(status) {
             const badge = document.getElementById('tugas-status');
-            const palette = STATUS_PALETTE[normalizeStatus(status)] || null;
 
-            if (!palette) {
+            if (!window.statusBadgeKey(status)) {
                 badge.textContent = '';
                 badge.className = 'hidden';
                 return;
             }
 
-            badge.textContent = palette.label;
-            badge.className = 'inline-flex w-fit items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold';
-            badge.style.backgroundColor = palette.bg;
-            badge.style.borderColor = palette.border;
-            badge.style.color = palette.text;
+            window.statusBadgeRender(badge, status);
         }
 
         function renderMeta(tugas) {

@@ -182,12 +182,7 @@
                                 </td>
 
                                 <td class="px-4 py-2 align-middle">
-                                    <span class="inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[12px] font-medium text-[#172B36]"
-                                        style="background-color: {{ $meta['bg'] }}; border-color: {{ $meta['border'] }};">
-                                        <span class="h-[7px] w-[7px] shrink-0 rounded-full"
-                                            style="background-color: {{ $meta['dot'] }};" aria-hidden="true"></span>
-                                        {{ $meta['label'] }}
-                                    </span>
+                                    <x-status-badge :status="$p->status" :label="$meta['label']" :palette="$meta" dot />
                                     @if ($p->status !== \App\Models\KPermintDana::STATUS_MENUNGGU && $p->disetujuiOleh)
                                         <p class="mt-1 text-[12px] text-[#4B5563]">
                                             oleh {{ $p->disetujuiOleh?->karyawan?->nama ?? $p->disetujuiOleh?->username }}, {{ ($p->tanggal_disetujui ?? $p->updated_at)?->format('d M') }}

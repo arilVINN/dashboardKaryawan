@@ -198,7 +198,7 @@
                 <span class="text-[13px] font-semibold text-[#172B36]">Total</span>
                 @if ($totals['debit'] === $totals['credit'])
                     <span class="inline-flex items-center gap-1.5 rounded-full border border-[#7DD3C8] bg-[#D5F3F0] px-2 py-0.5 text-[11px] font-medium text-[#0D9488]">
-                        <span class="h-[7px] w-[7px] rounded-full bg-[#0D9488]"></span>
+                        <span class="h-1.5 w-1.5 rounded-full bg-[#0D9488]"></span>
                         Seimbang
                     </span>
                 @else
@@ -394,7 +394,7 @@
                             <span class="text-[#4B5563]">Kredit: <strong class="tabular-nums text-[#172B36]">{{ number_format($this->manualTotals['credit'], 0, ',', '.') }}</strong></span>
                             @if ($this->manualTotals['balanced'])
                                 <span class="inline-flex items-center gap-1.5 rounded-full border border-[#7DD3C8] bg-[#D5F3F0] px-2 py-0.5 text-[11px] font-medium text-[#0D9488]">
-                                    <span class="h-[7px] w-[7px] rounded-full bg-[#0D9488]"></span> Seimbang
+                                    <span class="h-1.5 w-1.5 rounded-full bg-[#0D9488]"></span> Seimbang
                                 </span>
                             @else
                                 <span class="inline-flex items-center rounded-full border border-[#F5A3A3] bg-[#FDE0E0] px-2 py-0.5 text-[11px] font-medium text-[#B91C1C]">Tidak seimbang</span>

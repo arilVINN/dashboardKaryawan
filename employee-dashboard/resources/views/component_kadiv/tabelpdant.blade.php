@@ -18,9 +18,9 @@
     </section>
 </div>
 
-<script>
-    const KADIV_STATUS_PALETTE = @json(\App\Support\StatusPalette::all());
+@include('components.status-badge-js')
 
+<script>
     function kadivStatusKey(status) {
         const value = String(status || '').toLowerCase().trim();
 
@@ -34,30 +34,10 @@
     }
 
     function kadivStatusBadge(key, shortLabel = false) {
-        const palette = KADIV_STATUS_PALETTE[key];
+        const holder = document.createElement('span');
+        holder.innerHTML = window.statusBadgeHtml(key, { short: shortLabel });
 
-        if (!palette) {
-            const fallback = document.createElement('span');
-            fallback.className = 'inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-[#172B36]';
-            fallback.textContent = key || '-';
-            return fallback;
-        }
-
-        const badge = document.createElement('span');
-        badge.className = 'inline-flex w-fit items-center inline-flex w-fit items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium';
-        badge.style.backgroundColor = palette.bg;
-        badge.style.borderColor = palette.border;
-        badge.style.color = palette.text;
-        badge.title = palette.label;
-
-        const dot = document.createElement('span');
-        dot.className = 'h-1.5 w-1.5 shrink-0 rounded-full';
-        dot.style.backgroundColor = palette.dot;
-        dot.setAttribute('aria-hidden', 'true');
-        badge.appendChild(dot);
-        badge.appendChild(document.createTextNode(shortLabel ? palette.short : palette.label));
-
-        return badge;
+        return holder.firstElementChild;
     }
 
     function makeKadivClickableRow(url) {

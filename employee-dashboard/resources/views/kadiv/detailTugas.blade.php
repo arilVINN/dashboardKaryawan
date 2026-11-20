@@ -312,6 +312,8 @@
     </div>
 
     {{-- SCRIPT --}}
+    @include('components.status-badge-js')
+
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
             const token = sessionStorage.getItem('staff_token');
@@ -352,39 +354,16 @@
                 };
             };
 
-            const STATUS_PALETTE = @json(\App\Support\StatusPalette::all());
-
-            function normalizeStatus(status) {
-                const value = String(status || '').toLowerCase().trim();
-                if (!value) return null;
-
-                if (value.includes('tidak') && value.includes('aktif')) return 'tidak_aktif';
-                if (value === 'aktif') return 'aktif';
-                if (value === 'baru') return 'baru';
-                if (value === 'berjalan') return 'berjalan';
-                if (value.includes('menunggu')) return 'menunggu';
-                if (value.includes('sudah') || value.includes('disetujui') || value.includes('selesai')) return 'disetujui';
-                if (value.includes('terlambat') || value.includes('telat')) return 'terlambat';
-
-                return null;
-            }
-
             function renderStatusBadge(status) {
                 const badge = document.getElementById('detail-task-badge');
-                const key = normalizeStatus(status);
-                const palette = key ? STATUS_PALETTE[key] : null;
 
-                if (!palette) {
+                if (!window.statusBadgeKey(status)) {
                     badge.textContent = '';
                     badge.className = 'hidden';
                     return;
                 }
 
-                badge.textContent = palette.label;
-                badge.className = 'inline-flex w-fit items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold';
-                badge.style.backgroundColor = palette.bg;
-                badge.style.borderColor = palette.border;
-                badge.style.color = palette.text;
+                window.statusBadgeRender(badge, status);
             }
 
             const attachmentIconPaths = {

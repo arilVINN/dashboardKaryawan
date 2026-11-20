@@ -8,6 +8,7 @@ use App\Models\Divisi;
 use App\Models\KLabaRugi;
 use App\Models\KPermintDana;
 use App\Services\Finance\VerifikasiLaporanService;
+use App\Support\StatusPalette;
 use Carbon\Carbon;
 use Illuminate\View\View;
 use Livewire\Attributes\Url;
@@ -240,34 +241,10 @@ class ManajemenDana extends Component
     public function statusMetaPermintaan(?string $status): array
     {
         return match ($status) {
-            KPermintDana::STATUS_MENUNGGU => [
-                'label' => 'Menunggu',
-                'bg' => '#FEF0C3',
-                'border' => '#F5C85C',
-                'dot' => '#D97706',
-                'text' => '#172B36',
-            ],
-            KPermintDana::STATUS_DISETUJUI => [
-                'label' => 'Disetujui',
-                'bg' => '#D5F3F0',
-                'border' => '#7DD3C8',
-                'dot' => '#0D9488',
-                'text' => '#172B36',
-            ],
-            KPermintDana::STATUS_DITOLAK => [
-                'label' => 'Ditolak',
-                'bg' => '#FDE0E0',
-                'border' => '#F5A3A3',
-                'dot' => '#DC2626',
-                'text' => '#172B36',
-            ],
-            default => [
-                'label' => 'Dicairkan',
-                'bg' => '#E2E8EC',
-                'border' => '#D5DEE3',
-                'dot' => '#4B5563',
-                'text' => '#172B36',
-            ],
+            KPermintDana::STATUS_MENUNGGU => StatusPalette::pill('menunggu', 'Menunggu'),
+            KPermintDana::STATUS_DISETUJUI => StatusPalette::pill('disetujui', 'Disetujui'),
+            KPermintDana::STATUS_DITOLAK => StatusPalette::pill('ditolak', 'Ditolak'),
+            default => StatusPalette::pill('dicairkan', 'Dicairkan'),
         };
     }
 
@@ -277,27 +254,9 @@ class ManajemenDana extends Component
     public function statusMetaLaporan(?string $status): array
     {
         return match ($status) {
-            KLabaRugi::STATUS_DISETUJUI => [
-                'label' => 'Terverifikasi',
-                'bg' => '#D5F3F0',
-                'border' => '#7DD3C8',
-                'dot' => '#0D9488',
-                'text' => '#172B36',
-            ],
-            KLabaRugi::STATUS_PERLU_REVISI => [
-                'label' => 'Perlu revisi',
-                'bg' => '#FDE0E0',
-                'border' => '#F5A3A3',
-                'dot' => '#DC2626',
-                'text' => '#172B36',
-            ],
-            default => [
-                'label' => 'Menunggu',
-                'bg' => '#FEF0C3',
-                'border' => '#F5C85C',
-                'dot' => '#D97706',
-                'text' => '#172B36',
-            ],
+            KLabaRugi::STATUS_DISETUJUI => StatusPalette::pill('terverifikasi', 'Terverifikasi'),
+            KLabaRugi::STATUS_PERLU_REVISI => StatusPalette::pill('perlu_revisi', 'Perlu revisi'),
+            default => StatusPalette::pill('menunggu', 'Menunggu'),
         };
     }
 
