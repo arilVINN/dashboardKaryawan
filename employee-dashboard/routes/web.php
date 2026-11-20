@@ -558,8 +558,6 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
         // Jurnal Umum — entri dibuat otomatis dari transaksi keuangan
         Route::get('/jurnal-umum', [JurnalUmumController::class, 'index'])
             ->name('kadiv.keuangan.jurnalUmum');
-        Route::get('/daftar-akun', [JurnalUmumController::class, 'coaPanel'])
-            ->name('kadiv.keuangan.coaPanel');
     });
 
 // ── Semua Kadiv: Pengajuan Dana & Laporan Laba/Rugi ──────────────────────────
