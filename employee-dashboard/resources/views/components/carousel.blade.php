@@ -229,9 +229,9 @@
 <!-- MODAL POP-UP FORM TAMBAH KONTEN -->
 @if ($isAuthorized)
     <div id="carouselModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+        class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,40,55,.45)] hidden">
         <div
-            class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden transform transition-all m-4 border border-slate-100">
+            class="modal-panel-in bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden transform transition-all m-4 border border-slate-100">
 
             <!-- Header Modal -->
             <div class="flex justify-between items-center px-6 py-4 border-b border-slate-100">

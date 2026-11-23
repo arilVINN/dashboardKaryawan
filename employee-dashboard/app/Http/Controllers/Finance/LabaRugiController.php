@@ -103,8 +103,8 @@ class LabaRugiController extends Controller
         // Hitung pengelompokan aktivitas bisnis: Operasional & Non-Operasional
         $pendOp = (float) ($data['pendapatan_operasional'] ?? 0);
         $pendNonOp = (float) ($data['pendapatan_non_operasional'] ?? 0);
-        $totalPendapatan = isset($data['pendapatan_operasional']) 
-            ? ($pendOp + $pendNonOp) 
+        $totalPendapatan = isset($data['pendapatan_operasional'])
+            ? ($pendOp + $pendNonOp)
             : (float) ($data['total_pendapatan'] ?? 0);
         if (!isset($data['pendapatan_operasional'])) {
             $pendOp = $totalPendapatan;
@@ -112,8 +112,8 @@ class LabaRugiController extends Controller
 
         $bebanOp = (float) ($data['beban_operasional'] ?? 0);
         $bebanNonOp = (float) ($data['beban_non_operasional'] ?? 0);
-        $totalPengeluaran = isset($data['beban_operasional']) 
-            ? ($bebanOp + $bebanNonOp) 
+        $totalPengeluaran = isset($data['beban_operasional'])
+            ? ($bebanOp + $bebanNonOp)
             : (float) ($data['total_pengeluaran'] ?? 0);
         if (!isset($data['beban_operasional'])) {
             $bebanOp = $totalPengeluaran;

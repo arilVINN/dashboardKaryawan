@@ -1262,7 +1262,7 @@
     </div>
 
     <!-- Modal Detail Tugas (Staff) -->
-    <div id="modal-event" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" style="display:none; pointer-events:none;">
+    <div id="modal-event" class="fixed inset-0 z-50 bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4" style="display:none; pointer-events:none;">
         <div data-modal-panel
              class="bg-white w-full flex flex-col overflow-hidden"
              onclick="event.stopPropagation()">
@@ -1392,7 +1392,7 @@
     </style>
 
     <!-- Modal Tambah Catatan -->
-    <div id="modal-tambah-note" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" style="display:none; pointer-events:none;">
+    <div id="modal-tambah-note" class="fixed inset-0 z-50 bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4" style="display:none; pointer-events:none;">
         <div data-modal-panel
              class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-[520px] overflow-hidden flex flex-col max-h-[90vh]"
              onclick="event.stopPropagation()">
@@ -1531,7 +1531,7 @@
     </div>
 
     <!-- Modal Detail Note -->
-    <div id="modal-detail-note" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" style="display:none; pointer-events:none;">
+    <div id="modal-detail-note" class="fixed inset-0 z-50 bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4" style="display:none; pointer-events:none;">
         <div data-modal-panel
              class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden flex flex-col max-h-[calc(100vh-2rem)]"
              onclick="event.stopPropagation()">

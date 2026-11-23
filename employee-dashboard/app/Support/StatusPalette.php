@@ -13,59 +13,109 @@ class StatusPalette
         'baru' => [
             'label' => 'Baru',
             'short' => 'Baru',
-            'bg' => '#C0E7FF',
-            'border' => '#3B82F6',
-            'dot' => '#1D4ED8',
-            'text' => '#1D4ED8',
+            'bg' => '#DCEEFE',
+            'border' => '#93C5FD',
+            'dot' => '#2563EB',
+            'text' => '#172B36',
         ],
         'berjalan' => [
             'label' => 'Berjalan',
             'short' => 'Berjalan',
-            'bg' => '#D1FAE5',
-            'border' => '#10B981',
-            'dot' => '#047857',
-            'text' => '#047857',
+            'bg' => '#D9F5E5',
+            'border' => '#86D9AE',
+            'dot' => '#059669',
+            'text' => '#172B36',
         ],
         'menunggu' => [
             'label' => 'Menunggu persetujuan',
             'short' => 'Menunggu',
-            'bg' => '#FEF3C7',
-            'border' => '#F59E0B',
-            'dot' => '#B45309',
-            'text' => '#B45309',
+            'bg' => '#FEF0C3',
+            'border' => '#F5C85C',
+            'dot' => '#D97706',
+            'text' => '#172B36',
         ],
         'disetujui' => [
             'label' => 'Disetujui',
             'short' => 'Disetujui',
-            'bg' => '#047857',
-            'border' => '#065F46',
-            'dot' => '#D1FAE5',
-            'text' => '#FFFFFF',
+            'bg' => '#D5F3F0',
+            'border' => '#7DD3C8',
+            'dot' => '#0D9488',
+            'text' => '#172B36',
         ],
         'terlambat' => [
             'label' => 'Terlambat',
             'short' => 'Terlambat',
-            'bg' => '#FEE2E2',
-            'border' => '#EF4444',
-            'dot' => '#B91C1C',
-            'text' => '#B91C1C',
+            'bg' => '#FDE0E0',
+            'border' => '#F5A3A3',
+            'dot' => '#DC2626',
+            'text' => '#172B36',
         ],
         'aktif' => [
             'label' => 'Aktif',
             'short' => 'Aktif',
-            'bg' => '#D1FAE5',
-            'border' => '#10B981',
-            'dot' => '#047857',
-            'text' => '#047857',
+            'bg' => '#D9F5E5',
+            'border' => '#86D9AE',
+            'dot' => '#059669',
+            'text' => '#172B36',
         ],
         'tidak_aktif' => [
             'label' => 'Tidak aktif',
             'short' => 'Tidak aktif',
             'bg' => '#F1F5F9',
-            'border' => '#94A3B8',
-            'dot' => '#475569',
-            'text' => '#475569',
+            'border' => '#CBD5E1',
+            'dot' => '#64748B',
+            'text' => '#172B36',
         ],
+        // Finance workflow states — same tokens, domain-specific labels.
+        'ditolak' => [
+            'label' => 'Ditolak',
+            'short' => 'Ditolak',
+            'bg' => '#FDE0E0',
+            'border' => '#F5A3A3',
+            'dot' => '#DC2626',
+            'text' => '#172B36',
+        ],
+        'dicairkan' => [
+            'label' => 'Dicairkan',
+            'short' => 'Dicairkan',
+            'bg' => '#E2E8EC',
+            'border' => '#D5DEE3',
+            'dot' => '#4B5563',
+            'text' => '#172B36',
+        ],
+        'terverifikasi' => [
+            'label' => 'Terverifikasi',
+            'short' => 'Terverifikasi',
+            'bg' => '#D5F3F0',
+            'border' => '#7DD3C8',
+            'dot' => '#0D9488',
+            'text' => '#172B36',
+        ],
+        'perlu_revisi' => [
+            'label' => 'Perlu revisi',
+            'short' => 'Perlu revisi',
+            'bg' => '#FDE0E0',
+            'border' => '#F5A3A3',
+            'dot' => '#DC2626',
+            'text' => '#172B36',
+        ],
+    ];
+
+    /**
+     * Semantic category pills shown next to status badges. Kept separate from
+     * STATUSES so editing a workflow colour never changes a category label.
+     *
+     * @var array<string, array{bg: string, border: string, dot: string, text: string}>
+     */
+    public const DIVISION_TYPES = [
+        'direktur' => ['bg' => '#FEF0C3', 'border' => '#F5C85C', 'dot' => '#D97706', 'text' => '#172B36'],
+        'manajemen' => ['bg' => '#EDE9FE', 'border' => '#C4B5FD', 'dot' => '#8B5CF6', 'text' => '#172B36'],
+        'divisi' => ['bg' => '#DCEEFE', 'border' => '#93C5FD', 'dot' => '#2563EB', 'text' => '#172B36'],
+    ];
+
+    public const MESSAGE_TYPES = [
+        'pesan' => ['bg' => '#DCEEFE', 'border' => '#93C5FD', 'dot' => '#2563EB', 'text' => '#172B36'],
+        'surat' => ['bg' => '#FEF0C3', 'border' => '#F5C85C', 'dot' => '#D97706', 'text' => '#172B36'],
     ];
 
     /**
@@ -144,6 +194,26 @@ class StatusPalette
     }
 
     /**
+     * @return array{bg: string, border: string, dot: string, text: string}
+     */
+    public static function divisionType(?string $type): array
+    {
+        $key = strtolower(trim((string) $type));
+
+        return self::DIVISION_TYPES[$key] ?? self::DIVISION_TYPES['divisi'];
+    }
+
+    /**
+     * @return array{bg: string, border: string, dot: string, text: string}
+     */
+    public static function messageType(?string $type): array
+    {
+        $key = strtolower(trim((string) $type));
+
+        return self::MESSAGE_TYPES[$key] ?? self::MESSAGE_TYPES['pesan'];
+    }
+
+    /**
      * @return array{label: string, bg: string, border: string, dot: string, text: string}|null
      */
     public static function content(?string $status): ?array
@@ -214,10 +284,16 @@ class StatusPalette
             $status === 'aktif' => 'aktif',
             $status === 'baru' => 'baru',
             $status === 'berjalan' => 'berjalan',
+            $status === 'pending' => 'menunggu',
             str_contains($status, 'menunggu') => 'menunggu',
+            $status === 'acc' => 'disetujui',
             str_contains($status, 'sudah'),
             str_contains($status, 'disetujui'),
             str_contains($status, 'selesai') => 'disetujui',
+            $status === 'ditolak' || $status === 'tolak' => 'ditolak',
+            $status === 'dicairkan' => 'dicairkan',
+            $status === 'terverifikasi' => 'terverifikasi',
+            $status === 'perlu revisi' || $status === 'perlu_revisi' => 'perlu_revisi',
             str_contains($status, 'terlambat'),
             str_contains($status, 'telat') => 'terlambat',
             default => null,
@@ -225,7 +301,30 @@ class StatusPalette
     }
 
     /**
-     * @return array{label: string, short: string, bg: string, border: string, dot: string}|null
+     * Canonical pill data for a status, with an optional label override.
+     * Use this from both Blade and Livewire so colours never get redefined.
+     *
+     * @return array{label: string, short: string, bg: string, border: string, dot: string, text: string}|null
+     */
+    public static function pill(?string $status, ?string $label = null, bool $short = false): ?array
+    {
+        $palette = self::for($status);
+
+        if ($palette === null) {
+            return null;
+        }
+
+        if ($label !== null) {
+            $palette['label'] = $label;
+        } elseif ($short) {
+            $palette['label'] = $palette['short'];
+        }
+
+        return $palette;
+    }
+
+    /**
+     * @return array{label: string, short: string, bg: string, border: string, dot: string, text: string}|null
      */
     public static function for(?string $status): ?array
     {

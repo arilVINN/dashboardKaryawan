@@ -1,7 +1,7 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
     {{-- Tugas Yang Belum --}}
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
+    <div class="bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2">
         <div class="flex items-start justify-between">
             <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Yang Belum</span>
             <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#D9F5E5] text-[#059669]">
@@ -19,7 +19,7 @@
     </div>
 
     {{-- Tugas Belum Di-acc --}}
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
+    <div class="bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2">
         <div class="flex items-start justify-between">
             <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Belum Di-acc</span>
             <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#FEF0C3] text-[#D97706]">
@@ -36,7 +36,7 @@
     </div>
 
     {{-- Tugas Selesai --}}
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
+    <div class="bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2">
         <div class="flex items-start justify-between">
             <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Tugas Selesai</span>
             <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#D5F3F0] text-[#0D9488]">
@@ -52,8 +52,8 @@
     </div>
 
     {{-- Presentase --}}
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2">
-        <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Presentase</span>
+    <div class="bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2">
+        <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Persentase</span>
         <div class="flex items-center gap-3">
             <div class="relative w-12 h-12 shrink-0">
                 <svg class="block h-12 w-12 -rotate-90" viewBox="0 0 56 56" role="img" aria-label="Grafik persentase tugas">
@@ -66,19 +66,19 @@
             <div class="flex-1 space-y-1 text-[10px] font-bold text-slate-600">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-[#05962c]"></span> Yang Belum
+                        <span class="w-2.5 h-2.5 rounded-sm bg-[#059669]"></span> Yang Belum
                     </div>
                     <span id="pct-berjalan" class="text-slate-800">0%</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-[#ffb157]"></span> Belum Di-acc
+                        <span class="w-2.5 h-2.5 rounded-sm bg-[#D97706]"></span> Belum Di-acc
                     </div>
                     <span id="pct-pending" class="text-slate-800">0%</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-[#34f9e9]"></span> Selesai
+                        <span class="w-2.5 h-2.5 rounded-sm bg-[#0D9488]"></span> Selesai
                     </div>
                     <span id="pct-selesai" class="text-slate-800">0%</span>
                 </div>

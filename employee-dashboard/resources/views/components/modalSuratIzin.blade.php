@@ -1,6 +1,6 @@
 <div id="modalSuratIzin"
      class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4
-            bg-[rgba(86,94,116,0.4)] backdrop-blur-sm
+            bg-[rgba(15,40,55,.45)]
             transition-opacity duration-150 ease-in-out">
 
     <form data-modal-panel
@@ -135,7 +135,7 @@
             const f = this.files[0];
             if (!f) { label.textContent = 'Pilih File (Bukti Surat)'; return; }
             if (f.size > 20 * 1024 * 1024) {
-                alert('Ukuran file maksimal 20 MB');
+                window.appToast('Ukuran file maksimal 20 MB', 'error');
                 this.value = '';
                 label.textContent = 'Pilih File (Bukti Surat)';
                 return;

@@ -383,7 +383,7 @@
 
     {{-- MODAL TAMBAH / EDIT DATA ARSIP --}}
     @if ($showModal)
-        <div class="arsip-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+        <div class="arsip-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(15,40,55,.45)]"
              wire:click.self="tutupModal">
             <div class="arsip-modal-panel bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden"
                  onclick="event.stopPropagation()">
@@ -570,7 +570,7 @@
 
     {{-- Dialog Konfirmasi Hapus --}}
     <div x-show="confirmOpen" x-cloak
-         class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm"
+         class="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(15,40,55,.45)] p-4"
          @click.self="confirmOpen = false"
          @keydown.escape.window="confirmOpen = false">
         <div class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl"

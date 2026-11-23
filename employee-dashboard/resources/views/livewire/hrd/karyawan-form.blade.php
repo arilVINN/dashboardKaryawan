@@ -17,7 +17,7 @@
 
         <div id="karyawanModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 {{ $show ? '' : 'hidden' }}"
              role="dialog" aria-modal="{{ $show ? 'true' : 'false' }}" aria-labelledby="karyawan-form-title">
-            <div class="absolute inset-0 bg-[rgba(15,40,55,0.45)]" wire:click="tutup" aria-hidden="true"></div>
+            <div class="absolute inset-0 bg-[rgba(15,40,55,.45)]" wire:click="tutup" aria-hidden="true"></div>
 
             <div id="karyawanModalBox"
                  class="karyawan-modal-box relative flex w-full max-w-[720px] max-w-[92vw] max-h-[90vh] flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
@@ -429,7 +429,7 @@
 
                 {{-- Dialog: tambah jabatan baru --}}
                 @if ($showJabatanDialog)
-                    <div class="absolute inset-0 z-10 flex items-center justify-center p-4 bg-[rgba(15,40,55,0.45)]">
+                    <div class="absolute inset-0 z-10 flex items-center justify-center p-4 bg-[rgba(15,40,55,.45)]">
                         <div id="kf-jabatan-dialog" class="w-full max-w-[400px] max-w-[92vw] rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-2xl"
                              role="dialog" aria-modal="true" aria-labelledby="jabatan-dialog-title">
                             <h3 id="jabatan-dialog-title" class="text-[16px] font-semibold text-[#172B36]">Tambah jabatan baru</h3>
@@ -468,7 +468,7 @@
 
                 {{-- Dialog: konfirmasi atur ulang password --}}
                 @if ($showResetDialog)
-                    <div class="absolute inset-0 z-20 flex items-center justify-center p-4 bg-[rgba(15,40,55,0.45)]">
+                    <div class="absolute inset-0 z-20 flex items-center justify-center p-4 bg-[rgba(15,40,55,.45)]">
                         <div class="w-full max-w-[400px] max-w-[92vw] rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-2xl"
                              role="dialog" aria-modal="true" aria-labelledby="reset-dialog-title">
                             <h3 id="reset-dialog-title" class="text-[16px] font-semibold text-[#172B36]">Atur ulang password untuk {{ $nama }}?</h3>

@@ -1,7 +1,7 @@
 <div id="modalTambahDivisi"
     class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-150">
 
-    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="tutupModalDivisi()"></div>
+    <div class="absolute inset-0 bg-[rgba(15,40,55,.45)]" onclick="tutupModalDivisi()"></div>
 
     <div id="modalBox"
         class="transform scale-95 translate-y-4 relative bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto transition-all duration-150">

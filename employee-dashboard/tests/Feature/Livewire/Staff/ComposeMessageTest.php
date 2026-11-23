@@ -98,6 +98,7 @@ class ComposeMessageTest extends TestCase
     {
         Livewire::actingAs($this->staff)
             ->test(ComposeMessage::class)
+            ->dispatch('open-compose-message')
             ->set('divisiId', 'DIV-IT')
             ->assertSee('Staff Dua')
             ->assertDontSee('HR Satu');
@@ -113,7 +114,9 @@ class ComposeMessageTest extends TestCase
             ->set('isi', 'Mohon bantuannya untuk koordinasi.')
             ->call('send')
             ->assertHasNoErrors()
-            ->assertRedirect(route('pesan'));
+            ->assertDispatched('app-toast', message: 'Pesan terkirim')
+            ->assertDispatched('pesan-dikirim')
+            ->assertSet('showModal', false);
 
         $this->assertDatabaseHas('pesans', [
             'pengirim_id_user' => $this->staff->id_user,
@@ -160,5 +163,20 @@ class ComposeMessageTest extends TestCase
             ->test(ComposeMessage::class)
             ->call('send')
             ->assertHasErrors(['divisiId', 'recipientUserId', 'judul', 'isi']);
+    }
+
+    public function test_recipient_search_filters_by_name_and_can_be_selected(): void
+    {
+        Livewire::actingAs($this->staff)
+            ->test(ComposeMessage::class)
+            ->dispatch('open-compose-message')
+            ->set('divisiId', 'DIV-IT')
+            ->set('search', 'dua')
+            ->assertSee('Staff Dua')
+            ->assertDontSee('Staff Satu')
+            ->call('selectRecipient', $this->otherStaff->id_user)
+            ->assertSet('recipientUserId', $this->otherStaff->id_user)
+            ->call('clearRecipient')
+            ->assertSet('recipientUserId', '');
     }
 }

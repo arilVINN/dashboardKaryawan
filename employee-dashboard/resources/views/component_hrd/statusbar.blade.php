@@ -13,11 +13,11 @@
 
     {{-- Total Pesan --}}
     <a href="{{ route('hrd.pesan') }}"
-       class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2 hover:shadow-md transition">
+       class="bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2 hover:shadow-md transition">
         <div class="flex items-start justify-between">
             <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Pesan</span>
-            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100">
-                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#FDE0E0]">
+                <svg class="w-4 h-4 text-[#DC2626]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                 </svg>
@@ -33,11 +33,11 @@
 
     {{-- Total Divisi --}}
     <a href="{{ route('hrd.manajemenDivisi') }}"
-        class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2 hover:shadow-md transition">
+        class="bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2 hover:shadow-md transition">
         <div class="flex items-start justify-between">
             <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Divisi</span>
-            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-violet-100">
-                <svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#EDE9FE]">
+                <svg class="w-4 h-4 text-[#8B5CF6]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21" />
                 </svg>
@@ -53,11 +53,11 @@
 
     {{-- Total Karyawan --}}
     <a href="{{ route('hrd.analitikKaryawan') }}"
-       class="group bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2 hover:shadow-md transition">
+       class="group bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2 hover:shadow-md transition">
         <div class="flex items-start justify-between">
             <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Total Karyawan</span>
-            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-green-100">
-                <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <span class="w-8 h-8 flex items-center justify-center rounded-full bg-[#D9F5E5]">
+                <svg class="w-4 h-4 text-[#059669]" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
                 </svg>
@@ -82,7 +82,7 @@
 
     {{-- Turnover Karyawan --}}
     <a href="{{ route('hrd.turnoverKaryawan') }}"
-        class="group bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex flex-col gap-2 hover:shadow-md transition">
+        class="group bg-white rounded-xl shadow-sm border border-[#E2E8EC] p-3 flex flex-col gap-2 hover:shadow-md transition">
         <span class="text-xs font-bold uppercase tracking-widest text-slate-700">Turnover Karyawan</span>
 
         <div class="flex items-center gap-3">
@@ -92,13 +92,13 @@
             <div class="flex-1 space-y-1 text-[10px] font-bold text-slate-600">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span> Keluar
+                        <span class="w-2.5 h-2.5 rounded-sm bg-[#DC2626]"></span> Keluar
                     </div>
                     <span class="text-slate-800">{{ $totalKeluarTahunIni ?? 0 }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span> Aktif
+                        <span class="w-2.5 h-2.5 rounded-sm bg-[#059669]"></span> Aktif
                     </div>
                     <span class="text-slate-800">{{ $totalKaryawanAktif ?? 0 }}</span>
                 </div>
@@ -128,7 +128,7 @@
                     labels: ['Keluar', 'Aktif'],
                     datasets: [{
                         data: [{{ $totalKeluarTahunIni ?? 0 }}, {{ $totalKaryawanAktif ?? 0 }}],
-                        backgroundColor: ['#ef4444', '#22c55e'],
+                        backgroundColor: ['#DC2626', '#059669'],
                         borderWidth: 0,
                         cutout: '60%'
                     }]

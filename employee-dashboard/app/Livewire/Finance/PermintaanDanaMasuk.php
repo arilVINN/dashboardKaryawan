@@ -6,6 +6,7 @@ use App\Exceptions\PermintaanSudahDiprosesException;
 use App\Helpers\FormatAkuntansi;
 use App\Models\Divisi;
 use App\Models\KPermintDana;
+use App\Support\StatusPalette;
 use App\Services\Finance\PermintaanDanaService;
 use Illuminate\View\View;
 use Livewire\Attributes\Url;
@@ -196,30 +197,10 @@ class PermintaanDanaMasuk extends Component
     public function statusMeta(?string $status): array
     {
         return match ($status) {
-            KPermintDana::STATUS_MENUNGGU => [
-                'label' => 'Menunggu',
-                'bg' => '#FEF0C3',
-                'border' => '#F5C85C',
-                'dot' => '#D97706',
-            ],
-            KPermintDana::STATUS_DISETUJUI => [
-                'label' => 'Disetujui',
-                'bg' => '#D5F3F0',
-                'border' => '#7DD3C8',
-                'dot' => '#0D9488',
-            ],
-            KPermintDana::STATUS_DITOLAK => [
-                'label' => 'Ditolak',
-                'bg' => '#FDE0E0',
-                'border' => '#F5A3A3',
-                'dot' => '#DC2626',
-            ],
-            default => [
-                'label' => 'Dicairkan',
-                'bg' => '#E2E8EC',
-                'border' => '#D5DEE3',
-                'dot' => '#4B5563',
-            ],
+            KPermintDana::STATUS_MENUNGGU => StatusPalette::pill('menunggu', 'Menunggu'),
+            KPermintDana::STATUS_DISETUJUI => StatusPalette::pill('disetujui', 'Disetujui'),
+            KPermintDana::STATUS_DITOLAK => StatusPalette::pill('ditolak', 'Ditolak'),
+            default => StatusPalette::pill('dicairkan', 'Dicairkan'),
         };
     }
 

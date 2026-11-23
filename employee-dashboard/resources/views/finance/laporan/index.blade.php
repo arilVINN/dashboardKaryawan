@@ -217,9 +217,9 @@
     </div>
 
     {{-- Modal verifikasi --}}
-    <div id="modal-verif" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm">
+    <div id="modal-verif" class="modal-overlay-in fixed inset-0 z-50 hidden overflow-y-auto bg-[rgba(15,40,55,.45)] p-4">
         <div class="flex min-h-full items-center justify-center">
-            <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-xl">
+            <div class="modal-panel-in max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-xl">
                 <div class="flex items-start justify-between gap-4 border-b border-[#E2E8EC] pb-4">
                     <div>
                         <h3 class="text-[16px] font-semibold text-[#172B36]">Verifikasi laporan divisi</h3>
@@ -341,7 +341,7 @@
             const form = document.getElementById('form-verif');
             form.action = '/kadiv/keuangan/laporan/' + data.id + '/verifikasi';
             document.getElementById('verif-desc').textContent = data.divisi + ' - Minggu ke-' + data.minggu;
-            
+
             // Set data values
             document.getElementById('verif-pend-op').textContent = data.pendOp;
             document.getElementById('verif-beban-op').textContent = data.bebanOp;

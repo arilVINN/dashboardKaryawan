@@ -33,7 +33,12 @@ use App\Http\Controllers\Finance\PermintaanDanaController;
 use App\Http\Controllers\Finance\PengeluaranController;
 use App\Http\Controllers\Finance\LabaRugiController;
 use App\Http\Controllers\Finance\JurnalUmumController;
+use App\Http\Controllers\ProfilePhotoController;
 
+// Fallback for legacy profile photos stored on the private disk. The public
+// disk symlink serves these URLs first; only missing files reach this route.
+Route::get('/storage/foto-profil/{filename}', [ProfilePhotoController::class, 'show'])
+    ->where('filename', '[A-Za-z0-9_.-]+');
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])

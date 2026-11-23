@@ -84,7 +84,7 @@
                 <span class="text-xs text-slate-400 mt-1">Semua Pesan</span>
             </div>
         </div>
-        <svg class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 p-2" fill="none" stroke="currentColor"
+        <svg class="w-10 h-10 rounded-lg bg-[#DCEEFE] text-[#2563EB] p-2" fill="none" stroke="currentColor"
             stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
                 d="M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 0 0 1.183 1.981l6.478 3.488m8.839 2.51-4.66-2.51m0 0-1.023-.55a2.25 2.25 0 0 0-2.134 0l-1.022.55m0 0-4.661 2.51m16.5 1.615a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V8.844a2.25 2.25 0 0 1 1.183-1.981l7.5-4.039a2.25 2.25 0 0 1 2.134 0l7.5 4.039a2.25 2.25 0 0 1 1.183 1.98V19.5Z">
@@ -107,7 +107,7 @@
                 </span>
             </div>
         </div>
-        <svg class="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 p-2" fill="none" stroke="currentColor"
+        <svg class="w-10 h-10 rounded-lg bg-[#FEF0C3] text-[#D97706] p-2" fill="none" stroke="currentColor"
             stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
                 d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z">
@@ -132,7 +132,7 @@
                 </span>
             </div>
         </div>
-        <svg class="w-10 h-10 rounded-lg bg-violet-100 text-violet-600 p-2" fill="none" stroke="currentColor"
+        <svg class="w-10 h-10 rounded-lg bg-[#EDE9FE] text-[#8B5CF6] p-2" fill="none" stroke="currentColor"
             stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
                 d="M9 3.75H6.912a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859M12 3v8.25m0 0-3-3m3 3 3-3">

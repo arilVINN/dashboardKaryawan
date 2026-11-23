@@ -610,7 +610,7 @@
     {{-- MODAL DETAIL PROFIL KARYAWAN (TAMPILAN ASLI SEPERTI AWAL)       --}}
     {{-- ============================================================== --}}
     <div id="employee-profile-modal"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-[rgba(15,40,55,.45)] p-4"
         role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="employee-profile-title">
 
         <div class="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl">

@@ -103,7 +103,7 @@
                 staffWrap.className = 'flex min-w-0 items-center gap-3';
 
                 const avatar = document.createElement('span');
-                avatar.className = 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#AFD3E2] text-[11px] font-semibold text-[#0B4A66]';
+                avatar.className = 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#E3F1F7] text-[11px] font-semibold text-[#146C94]';
                 avatar.textContent = kadivStaffInitials(person.nama);
 
                 const identity = document.createElement('div');

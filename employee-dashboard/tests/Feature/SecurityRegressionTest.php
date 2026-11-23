@@ -264,10 +264,10 @@ class SecurityRegressionTest extends TestCase
         $this->assertDatabaseCount('personal_access_tokens', 0);
     }
 
-    public function test_login_rejects_dotted_username_format(): void
+    public function test_login_accepts_dotted_username_format(): void
     {
-        // Contract: login usernames are dotless (`alpha_num:ascii`). Even a
-        // dotted account that already exists must not be able to log in.
+        // Contract: dots are valid username characters (employee creation
+        // already allows them), so login must accept a dotted account too.
         DB::table('karyawans')->insert([
             'id_karyawan' => 'KRY-DOT',
             'nama' => 'Staff Dot',
@@ -294,10 +294,11 @@ class SecurityRegressionTest extends TestCase
             'username' => 'john.doe',
             'password' => 'pass123',
         ])
-            ->assertUnprocessable()
-            ->assertJsonStructure(['data' => ['username']]);
+            ->assertOk()
+            ->assertJsonPath('user.username', 'john.doe')
+            ->assertJsonStructure(['access_token', 'token_type']);
 
-        $this->assertDatabaseCount('personal_access_tokens', 0);
+        $this->assertDatabaseCount('personal_access_tokens', 1);
     }
 
     private function createStaff(string $employeeId, string $username): User2
