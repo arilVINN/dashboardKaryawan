@@ -14,6 +14,9 @@ class MessagePresenter
             'id_user' => $account->id_user,
             'username' => $account->username,
             'nama' => $account->karyawan?->nama,
+            'foto_url' => $account->karyawan?->foto
+                ? '/storage/'.$account->karyawan->foto
+                : null,
         ] : null;
 
         return [

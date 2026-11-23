@@ -24,17 +24,13 @@ class MessageToastWiringTest extends TestCase
     public function test_every_message_success_path_announces_its_result(): void
     {
         $this->assertStringContainsString(
-            "appToastPending('Balasan berhasil dikirim.'",
-            $this->viewSource('staff/detailPesan.blade.php')
+            "window.appToast('Balasan terkirim', 'success')",
+            $this->viewSource('components/message-conversation-script.blade.php')
         );
-        $this->assertStringContainsString(
-            "appToast('Balasan berhasil dikirim.'",
-            $this->viewSource('kadiv/detailPesan.blade.php')
-        );
-        $this->assertStringContainsString(
-            "appToastPending('Balasan berhasil dikirim.'",
-            $this->viewSource('hrd/detailPesan.blade.php')
-        );
+
+        foreach (['staff/detailPesan.blade.php', 'kadiv/detailPesan.blade.php', 'hrd/detailPesan.blade.php'] as $view) {
+            $this->assertStringContainsString('<x-message-conversation', $this->viewSource($view), $view);
+        }
         $this->assertStringContainsString(
             "dispatch('app-toast', message: 'Pesan terkirim'",
             (string) file_get_contents(app_path('Livewire/Hrd/ComposeMessage.php'))

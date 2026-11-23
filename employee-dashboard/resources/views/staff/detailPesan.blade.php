@@ -1,302 +1,65 @@
+@php
+    $viewer = auth()->user();
+    $viewerKaryawan = $viewer?->karyawan;
+    $data = $data ?? null;
+    $rootData = $data['pesan'] ?? $data ?? [];
+    $tipe = strtolower((string) ($rootData['tipe'] ?? 'pesan'));
+    $typeLabel = $tipe === 'surat' ? 'Surat izin' : 'Pesan';
+
+    $threadRaw = array_merge([$rootData], $data['balasan'] ?? []);
+    $threadItems = array_map(function ($item) use ($viewer) {
+        $person = $item['pengirim'] ?? [];
+        $nama = $person['nama'] ?? $person['username'] ?? 'Pengguna tidak tersedia';
+        $timestamp = $item['created_at'] ?? ($item['tanggal_pesan'] ?? null);
+        $date = $timestamp ? \Carbon\Carbon::parse($timestamp) : now();
+
+        return [
+            'nama' => $nama,
+            'foto_url' => $person['foto_url'] ?? null,
+            'initials' => mb_strtoupper(mb_substr($nama, 0, 1)),
+            'time_label' => $date->translatedFormat('j M Y').', '.$date->format('H:i'),
+            'body' => $item['deskripsi'] ?? '',
+            'is_mine' => ($person['id_user'] ?? null) === $viewer?->id_user,
+        ];
+    }, $threadRaw);
+
+    $pengirimNama = $rootData['pengirim']['nama'] ?? $rootData['pengirim']['username'] ?? 'Pengguna tidak tersedia';
+    $penerimaNama = $rootData['penerima']['nama'] ?? $rootData['penerima']['username'] ?? 'Pengguna tidak tersedia';
+    $tanggal = $rootData['tanggal_pesan'] ?? ($rootData['created_at'] ?? null);
+    $meta = $pengirimNama.' → '.$penerimaNama.' · '.($tanggal ? \Carbon\Carbon::parse($tanggal)->translatedFormat('j M Y') : '');
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Pesan Staff - PT Silindo</title>
+    <title>Detail Pesan - PT Silindo</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body class="bg-slate-50 flex h-screen overflow-hidden">
-
     @include('component.sidebar')
-    
-    <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
 
+    <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
 
-        <main class="flex-1 overflow-y-auto px-10 py-8">
-            @include('component.breadcrumbs', ['parentText' => 'Daftar Pesan', 'parentUrl' => url('/pesan'), 'currentPage' => 'Detail Pesan', 'inline' => true])
-            <h1 class="text-2xl font-bold text-slate-900 mb-6">Pesan</h1>
-
-            <!-- Detail Pesan -->
-            <div class="space-y-4 bg-white p-5 rounded-3xl w-full drop-shadow-2xl">
-                <div>
-                    <h2 id="pesan-judul" class="text-2xl font-bold text-slate-900 leading-snug">Memuat judul pesan...</h2>
-                    <p id="pesan-pengirim" class="text-sm font-semibold text-slate-900 mt-1">Dari : -</p>
-                    <p id="pesan-tanggal" class="text-sm font-semibold text-slate-900">Tanggal : -</p>
-                </div>
-
-                <div class="text-sm text-slate-800 leading-relaxed text-justify pt-2">
-                    <p id="pesan-isi">Memuat isi pesan...</p>
-                </div>
-
-                <div id="pesan-lampiran" class="flex flex-wrap gap-3"></div>
-                
-                <!-- Balasan thread -->
-                <div id="thread-balasan" class="mt-4 space-y-3">
-                    <!-- Balasan akan diload di sini -->
-                </div>
-
-                <hr class="border-t border-slate-300 my-6">
-
-                <div>
-                    <button type="button" id="btn-toggle-balas"
-                        class="px-6 py-2.5 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-semibold rounded-lg shadow-sm transition">
-                        Balas Pesan
-                    </button>
-                </div>
-            </div>
-
-            <!-- Form Balasan -->
-            <div id="form-balasan" class="hidden pt-6 space-y-4 max-w-xl transition-all">
-                <h2 class="text-xl font-bold text-slate-900">Kirim Balasan</h2>
-
-                <form id="form-submit-balasan" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-900 mb-1.5">Tulis Pesan</label>
-                        <textarea name="pesan_balasan" id="pesanInput" placeholder="Ketik pesan Anda di sini..." rows="3"
-                            class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-cyan-500"></textarea>
-                    </div>
-
-                    <div class="flex items-center gap-4 pt-1">
-                        <button type="button" id="btn-batal-balas"
-                            class="px-7 py-2 bg-[#d32f2f] hover:bg-[#b71c1c] text-white text-sm font-medium rounded-lg shadow-sm transition">
-                            Batal
-                        </button>
-
-                        <button type="submit"
-                            class="px-7 py-2 bg-[#0097B2] hover:bg-[#008199] text-white text-sm font-medium rounded-lg shadow-sm transition">
-                            Kirim
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <main class="flex-1 overflow-y-auto">
+            <x-message-conversation
+                :topic="$rootData['judul_pesan'] ?? 'Pesan'"
+                :type-label="$typeLabel"
+                :meta="$meta"
+                :thread="$threadItems"
+                :can-reply="(bool) ($data['can_reply'] ?? false)"
+                :reply-endpoint="'/api/staff/pesan/'.($id ?? '').'/balas'"
+                :message-id="$id ?? ''"
+                :list-url="url('/pesan')"
+                :token="$token ?? null"
+                :current-user-id="$viewer?->id_user"
+                :current-name="$viewerKaryawan?->nama ?? $viewer?->username"
+                :current-foto="$viewerKaryawan?->foto ? '/storage/'.$viewerKaryawan->foto : null"
+            />
         </main>
     </div>
-
-    <script>
-    (function () {
-        const pesanId = @json($id ?? null) || window.location.pathname.split('/').filter(Boolean).pop();
-        const serverToken = @json($token ?? null);
-        let token = serverToken || sessionStorage.getItem('staff_token') || localStorage.getItem('staff_token');
-
-        if (serverToken) {
-            sessionStorage.setItem('staff_token', serverToken);
-            localStorage.setItem('staff_token', serverToken);
-        }
-
-        const btnToggleBalas = document.getElementById('btn-toggle-balas');
-        const formBalasan = document.getElementById('form-balasan');
-        const btnBatal = document.getElementById('btn-batal-balas');
-        const pesanInput = document.getElementById('pesanInput');
-        const formSubmit = document.getElementById('form-submit-balasan');
-        let isFormDirty = false;
-
-        function renderAttachments(container, attachment) {
-            container.replaceChildren();
-            if (!attachment) return;
-
-            [
-                { url: attachment.file, label: 'File lampiran' },
-                { url: attachment.link, label: 'Tautan lampiran' }
-            ].forEach(({ url, label }) => {
-                if (typeof url !== 'string' || !url.trim() || url.trim() === '-') return;
-
-                let safeUrl;
-                try {
-                    safeUrl = new URL(url.trim(), window.location.origin);
-                } catch {
-                    return;
-                }
-                if (safeUrl.protocol !== 'http:' && safeUrl.protocol !== 'https:') return;
-
-                const link = document.createElement('a');
-                link.href = safeUrl.href;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                link.className = 'inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-cyan-700 underline shadow-sm hover:bg-slate-50';
-                link.textContent = label;
-                container.appendChild(link);
-            });
-        }
-
-        async function loadDetailPesan() {
-            if (!token || !pesanId) {
-                document.getElementById('pesan-judul').textContent = 'Sesi Login Tidak Ditemukan';
-                document.getElementById('pesan-isi').textContent = 'Silakan login kembali untuk melihat pesan.';
-                if (btnToggleBalas) btnToggleBalas.classList.add('hidden');
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/staff/pesan/' + encodeURIComponent(pesanId), {
-                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-                });
-                const json = await res.json();
-                
-                if (!res.ok) {
-                    document.getElementById('pesan-judul').textContent = 'Pesan Tidak Ditemukan';
-                    document.getElementById('pesan-isi').textContent = json.message || 'Gagal memuat pesan.';
-                    if (btnToggleBalas) btnToggleBalas.classList.add('hidden');
-                    return;
-                }
-
-                let p = json.data; 
-                let balasan = [];
-                let pesanUtama = p;
-
-                if (p && p.tugas && p.pesan) {
-                    const rootPesan = p.pesan[0];
-                    pesanUtama = rootPesan;
-                    balasan = p.pesan.slice(1);
-                    
-                    document.getElementById('pesan-judul').textContent = 'Tugas: ' + p.tugas.judul_tugas;
-                    document.getElementById('pesan-pengirim').textContent = 'Dari: ' + (rootPesan.pengirim ? (rootPesan.pengirim.nama || rootPesan.pengirim.username) : 'Sistem');
-                    document.getElementById('pesan-tanggal').textContent = 'Tanggal: ' + (rootPesan.tanggal_pesan || '-');
-                    document.getElementById('pesan-isi').textContent = rootPesan.deskripsi || '-';
-                    
-                } else if (p && p.id_pesan) {
-                    balasan = p.balasan || [];
-                    document.getElementById('pesan-judul').textContent = p.judul_pesan || '-';
-                    document.getElementById('pesan-pengirim').textContent = 'Dari: ' + (p.pengirim ? (p.pengirim.nama || p.pengirim.username) : 'Sistem');
-                    document.getElementById('pesan-tanggal').textContent = 'Tanggal: ' + (p.tanggal_pesan || p.created_at || '-');
-                    document.getElementById('pesan-isi').textContent = p.deskripsi || '-';
-
-                    if (!p.can_reply && btnToggleBalas) {
-                        btnToggleBalas.classList.add('hidden');
-                    }
-                }
-
-                const crumb = document.querySelector('[data-breadcrumb-current]');
-                if (crumb) crumb.textContent = document.getElementById('pesan-judul').textContent;
-
-                renderAttachments(document.getElementById('pesan-lampiran'), pesanUtama?.lampiran);
-
-                const threadContainer = document.getElementById('thread-balasan');
-                threadContainer.replaceChildren();
-
-                balasan.forEach((b) => {
-                    const pengirim = b.pengirim ? (b.pengirim.nama || b.pengirim.username) : 'Sistem';
-                    const reply = document.createElement('div');
-                    reply.className = 'mt-4 p-4 rounded-xl border border-slate-100 bg-slate-50';
-
-                    const metadata = document.createElement('div');
-                    metadata.className = 'flex justify-between items-center mb-2';
-                    const sender = document.createElement('span');
-                    sender.className = 'text-xs font-bold text-slate-800';
-                    sender.textContent = pengirim;
-                    const date = document.createElement('span');
-                    date.className = 'text-[10px] text-slate-500';
-                    date.textContent = b.tanggal_pesan || b.created_at || '-';
-                    metadata.append(sender, date);
-                    reply.appendChild(metadata);
-
-                    const description = document.createElement('p');
-                    description.className = 'text-sm text-slate-700';
-                    description.textContent = b.deskripsi || '-';
-                    reply.appendChild(description);
-
-                    const attachmentContainer = document.createElement('div');
-                    attachmentContainer.className = 'mt-3 flex flex-wrap gap-3';
-                    renderAttachments(attachmentContainer, b.lampiran);
-                    if (attachmentContainer.childElementCount) {
-                        reply.appendChild(attachmentContainer);
-                    }
-
-                    threadContainer.appendChild(reply);
-                });
-
-            } catch(e) {
-                console.error('Gagal load pesan', e);
-                document.getElementById('pesan-judul').textContent = 'Terjadi Kesalahan';
-                document.getElementById('pesan-isi').textContent = 'Gagal mengambil data pesan: ' + e.message;
-            }
-        }
-        
-        loadDetailPesan();
-
-        if (btnToggleBalas) {
-            btnToggleBalas.addEventListener('click', () => {
-                formBalasan.classList.remove('hidden');
-                btnToggleBalas.classList.add('hidden');
-            });
-        }
-
-        if (btnBatal) {
-            btnBatal.addEventListener('click', () => {
-                if (pesanInput && pesanInput.value.trim() !== '') {
-                    const konfirmasi = confirm("Perubahan belum disimpan. Yakin ingin membatalkan?");
-                    if (!konfirmasi) return;
-                }
-                formBalasan.classList.add('hidden');
-                if (btnToggleBalas) btnToggleBalas.classList.remove('hidden');
-                if (pesanInput) pesanInput.value = '';
-                isFormDirty = false;
-            });
-        }
-
-        if (pesanInput) {
-            pesanInput.addEventListener('input', function() {
-                isFormDirty = this.value.trim().length > 0;
-            });
-        }
-
-        if (formSubmit) {
-            formSubmit.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const currentToken = token || sessionStorage.getItem('staff_token') || localStorage.getItem('staff_token');
-                if (!currentToken) return window.appToast('Silakan login terlebih dahulu', 'error');
-                
-                const isiBalasan = pesanInput.value.trim();
-                if (!isiBalasan) return;
-
-                try {
-                    const response = await fetch('/api/staff/pesan/' + encodeURIComponent(pesanId) + '/balas', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + currentToken,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                        },
-                        body: JSON.stringify({ deskripsi: isiBalasan })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        isFormDirty = false;
-                        window.appToastPending('Balasan berhasil dikirim.', 'success');
-                    } else {
-                        window.appToast(data.message || 'Gagal membalas pesan.', 'error');
-                    }
-                } catch (err) {
-                    window.appToast('Terjadi kesalahan jaringan.', 'error');
-                }
-            });
-        }
-
-        document.addEventListener('click', function(e) {
-            const link = e.target.closest('a');
-            if (link && isFormDirty) {
-                if (link.getAttribute('target') === '_blank' || link.getAttribute('href')?.startsWith('#')) return;
-                const konfirmasi = confirm("Perubahan belum disimpan. Yakin ingin meninggalkan halaman ini?");
-                if (!konfirmasi) {
-                    e.preventDefault(); 
-                } else {
-                    isFormDirty = false;
-                }
-            }
-        });
-
-        window.addEventListener('beforeunload', function(e) {
-            if (isFormDirty) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        });
-    })();
-    </script>
 </body>
 </html>

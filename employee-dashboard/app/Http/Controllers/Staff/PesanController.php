@@ -132,6 +132,9 @@ class PesanController extends Controller
             'id_user' => $account->id_user,
             'username' => $account->username,
             'nama' => $account->karyawan?->nama,
+            'foto_url' => $account->karyawan?->foto
+                ? '/storage/'.$account->karyawan->foto
+                : null,
         ] : null;
         $root = $pesan->balasanDari ?? $pesan;
         $thread = $root->id_pesan === $pesan->id_pesan ? $pesan : $root;

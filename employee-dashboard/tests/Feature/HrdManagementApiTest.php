@@ -559,13 +559,13 @@ class HrdManagementApiTest extends TestCase
             ->get('/hrd/detailPesan/PSN-HRD-001')
             ->assertOk()
             ->assertSee('Mohon data terbaru.')
-            ->assertSee('Balas Pesan');
+            ->assertSee('Kirim balasan');
 
         $this->actingAs($this->hrd)
             ->get('/hrd/detailPesan/PSN-PRIVATE')
             ->assertOk()
             ->assertSee('Pesan antar pengguna untuk dipantau HRD.')
-            ->assertDontSee('Balas Pesan')
+            ->assertDontSee('Kirim balasan')
             ->assertSee('tidak dapat dibalas');
 
         $this->actingAs($otherUser)
