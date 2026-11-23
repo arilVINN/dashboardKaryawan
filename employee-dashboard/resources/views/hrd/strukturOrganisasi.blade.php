@@ -673,7 +673,7 @@
         {{-- ============================================================== --}}
         {{-- MODAL TAMBAH ANGGOTA / KARYAWAN (SEDERHANA & CEPAT)             --}}
         {{-- ============================================================== --}}
-        <div id="modalAddNode" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden p-4">
+        <div id="modalAddNode" class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,40,55,.45)] hidden p-4">
             <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                     <div class="flex items-center gap-2">
@@ -863,7 +863,7 @@
         {{-- ============================================================== --}}
         {{-- MODAL EDIT ANGGOTA / KARYAWAN                                  --}}
         {{-- ============================================================== --}}
-        <div id="modalEditNode" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden p-4">
+        <div id="modalEditNode" class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,40,55,.45)] hidden p-4">
             <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                     <div class="flex items-center gap-2">
