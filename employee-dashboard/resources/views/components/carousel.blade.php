@@ -105,7 +105,9 @@
                         $divisionName = $item->divisi?->nama_divisi ?? 'Seluruh divisi';
                     @endphp
                     <div class="swiper-slide">
-                        <div class="relative h-52 rounded-2xl overflow-hidden shadow-md group">
+                        <div class="relative h-52 rounded-2xl overflow-hidden shadow-md group cursor-pointer transition-transform duration-300 hover:shadow-lg"
+                            onclick="window.location.href='{{ route('carousel.show', $item->id) }}'"
+                            title="Klik untuk melihat detail kegiatan">
 
                             @if ($item->image)
                                 <img src="{{ asset('storage/' . $item->image) }}"
@@ -174,7 +176,8 @@
                             {{-- Tombol Hapus (hover) --}}
                             @if ($userRole === 'hrd' || ($userRole === 'kadiv' && $item->user_id_user === $currentUserId))
                                 <div
-                                    class="absolute top-3 right-3 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    class="absolute top-3 right-3 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    onclick="event.stopPropagation()">
                                     <form action="{{ route($destroyRoute, $item->id) }}" method="POST"
                                         onsubmit="return confirm('Yakin ingin menghapus konten ini?')">
                                         @csrf
@@ -260,11 +263,33 @@
 
                 <!-- Judul / Keterangan -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keterangan/Isi</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Judul / Kegiatan</label>
                     <input type="text" name="title"
-                        placeholder="Contoh: Event A/ Selamat pagi/ Pengumuman penting"
+                        placeholder="Contoh: Kegiatan Rapat Besar / Pengumuman Penting"
                         class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                         required>
+                </div>
+
+                <!-- Sub-judul / Ringkasan -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                        Sub-judul / Tagline
+                        <span class="ml-1 font-normal text-slate-400 normal-case">(Opsional)</span>
+                    </label>
+                    <input type="text" name="subtitle"
+                        placeholder="Contoh: Bersama membangun kolaborasi yang lebih baik"
+                        class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+
+                <!-- Deskripsi Lengkap / Isi Detail Kegiatan -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
+                        Deskripsi Detail Kegiatan
+                        <span class="ml-1 font-normal text-slate-400 normal-case">(Opsional)</span>
+                    </label>
+                    <textarea name="description" rows="3"
+                        placeholder="Tuliskan keterangan lengkap kegiatan, tujuan acara, apresiasi tim, dll..."
+                        class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
                 </div>
 
                 <div>
