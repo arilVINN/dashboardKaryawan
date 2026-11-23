@@ -6,6 +6,7 @@ use App\Livewire\ContentCalendar;
 use App\Models\ContentAccount;
 use App\Models\ContentEvent;
 use App\Models\ContentEventComment;
+use App\Models\ContentPillar;
 use App\Models\ContentType;
 use App\Models\Divisi;
 use App\Models\Holiday;
@@ -13,6 +14,8 @@ use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\User2;
 use App\Support\ContentCalendarAccess;
+use App\Support\OptionColor;
+use Database\Seeders\ContentPillarSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -30,11 +33,15 @@ class ContentCalendarTest extends TestCase
 
     private Divisi $markom;
 
+    private Divisi $markomDivision;
+
     private User2 $staffHr;
 
     private User2 $otherStaffHr;
 
     private User2 $staffMarkom;
+
+    private User2 $staffMarkomDivision;
 
     private User2 $staffIt;
 
@@ -77,9 +84,17 @@ class ContentCalendarTest extends TestCase
             'status_aktif' => 'Aktif',
         ]);
 
+        $this->markomDivision = Divisi::create([
+            'id_divisi' => 'DV-MARKOM',
+            'kode_divisi' => 'MARKOM',
+            'nama_divisi' => 'MARKOM',
+            'status_aktif' => 'Aktif',
+        ]);
+
         $this->staffHr = $this->makeUser('U-STAFF-HR', 'staffhr', 'Staff HR', 'Staff', $this->hr, 'RL-STAFF');
         $this->otherStaffHr = $this->makeUser('U-STAFF-HR-2', 'staffhr2', 'Staff HR Lain', 'Staff', $this->hr, 'RL-STAFF');
         $this->staffMarkom = $this->makeUser('U-STAFF-MK', 'staffmk', 'Staff MarKom', 'Staff', $this->markom, 'RL-STAFF');
+        $this->staffMarkomDivision = $this->makeUser('U-STAFF-MARKOM', 'staffmarkom', 'Staff Markom Division', 'Staff', $this->markomDivision, 'RL-STAFF');
         $this->staffIt = $this->makeUser('U-STAFF-IT', 'staffit', 'Staff IT', 'Staff', $this->it, 'RL-STAFF');
         $this->kadivHr = $this->makeUser('U-KADIV-HR', 'kadivhr', 'Kadiv HR', 'Kepala Divisi HR', $this->hr, 'RL-KADIV');
         $this->hrd = $this->makeUser('U-HRD', 'hrduser', 'HRD Manager', 'HRD Manager', $this->hr, 'RL-HRD');
@@ -87,9 +102,16 @@ class ContentCalendarTest extends TestCase
         ContentCalendarAccess::flush();
 
         ContentType::insert([
-            ['slug' => 'reels', 'name' => 'Reels', 'sort_order' => 1],
-            ['slug' => 'single-image', 'name' => 'Single Image', 'sort_order' => 2],
-            ['slug' => 'carousel', 'name' => 'Carousel', 'sort_order' => 3],
+            ['slug' => 'reels', 'name' => 'Reels', 'color' => '#9DB9F5', 'sort_order' => 1],
+            ['slug' => 'single-image', 'name' => 'Single Image', 'color' => '#F3C581', 'sort_order' => 2],
+            ['slug' => 'carousel', 'name' => 'Carousel', 'color' => '#F3A8C9', 'sort_order' => 3],
+        ]);
+
+        ContentPillar::insert([
+            ['slug' => 'informasi', 'name' => 'Informasi', 'color' => '#2563EB', 'sort_order' => 1],
+            ['slug' => 'edukasi', 'name' => 'Edukasi', 'color' => '#059669', 'sort_order' => 2],
+            ['slug' => 'entertain', 'name' => 'Entertain', 'color' => '#7C3AED', 'sort_order' => 3],
+            ['slug' => 'promosi', 'name' => 'Promosi', 'color' => '#EA580C', 'sort_order' => 4],
         ]);
 
         $this->defaultAccount = ContentAccount::create([
@@ -160,7 +182,7 @@ class ContentCalendarTest extends TestCase
                 ->assertOk()
                 ->assertSee('Kalender Konten - Silindo Official')
                 ->assertSee('Silindo TikTok')
-                ->assertSee('Tambah event')
+                ->assertSee('Tambah konten')
                 ->assertSee('Semua jenis')
                 ->assertSee('Semua status');
         }
@@ -595,6 +617,7 @@ class ContentCalendarTest extends TestCase
         $this->event($this->staffHr, ['title' => 'Event Publish', 'event_date' => '2026-11-10', 'status' => 'publish']);
         $this->event($this->staffHr, ['title' => 'Event Process', 'event_date' => '2026-11-11', 'status' => 'process']);
         $this->event($this->staffHr, ['title' => 'Event Revisi', 'event_date' => '2026-11-12', 'status' => 'revisi']);
+        $this->event($this->staffHr, ['title' => 'Event Plan', 'event_date' => '2026-11-13', 'status' => 'plan']);
 
         $html = Livewire::actingAs($this->staffHr)
             ->test(ContentCalendar::class)
@@ -1302,4 +1325,321 @@ class ContentCalendarTest extends TestCase
             ->call('closeModal', true)
             ->assertSet('formOpen', false);
     }
+
+    public function test_content_pillar_seeder_has_four_coloured_pillars(): void
+    {
+        $this->seed(ContentPillarSeeder::class);
+
+        $this->assertSame([
+            ['slug' => 'informasi', 'name' => 'Informasi', 'color' => '#2563EB', 'sort_order' => 1],
+            ['slug' => 'edukasi', 'name' => 'Edukasi', 'color' => '#059669', 'sort_order' => 2],
+            ['slug' => 'entertain', 'name' => 'Entertain', 'color' => '#7C3AED', 'sort_order' => 3],
+            ['slug' => 'promosi', 'name' => 'Promosi', 'color' => '#EA580C', 'sort_order' => 4],
+        ], ContentPillar::orderBy('sort_order')->get(['slug', 'name', 'color', 'sort_order'])->toArray());
+    }
+
+    public function test_create_saves_the_selected_content_pillar(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Konten Edukasi')
+            ->set('content_type', 'reels')
+            ->set('content_pillar', 'edukasi')
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertSet('formOpen', false);
+
+        $this->assertDatabaseHas('content_events', [
+            'title' => 'Konten Edukasi',
+            'content_pillar' => 'edukasi',
+        ]);
+    }
+
+    public function test_invalid_content_pillar_is_rejected(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->set('title', 'Konten Salah Pillar')
+            ->set('content_type', 'reels')
+            ->set('content_pillar', 'belum-ada')
+            ->call('save')
+            ->assertHasErrors(['content_pillar']);
+    }
+
+    public function test_content_pillar_autosaves_from_the_detail_modal(): void
+    {
+        $event = $this->event($this->staffHr, ['title' => 'Pillar Autosave']);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openEvent', $event->id)
+            ->assertSet('content_pillar', '')
+            ->set('content_pillar', 'promosi')
+            ->assertDispatched('content-saved');
+
+        $this->assertSame('promosi', $event->fresh()->content_pillar);
+    }
+
+    public function test_content_pillar_pill_is_rendered_on_calendar_cards(): void
+    {
+        $this->event($this->staffHr, [
+            'title' => 'Kartu Pillar',
+            'event_date' => '2026-11-10',
+            'content_pillar' => 'entertain',
+        ]);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->assertSee('Kartu Pillar')
+            ->assertSee('Entertain')
+            ->assertSeeHtml('background-color: #7C3AED; border-color: #7C3AED; color: #FFFFFF;');
+    }
+
+
+    public function test_markom_division_users_can_open_the_calendar_and_manage_options(): void
+    {
+        $this->actingAs($this->staffMarkomDivision)
+            ->get('/kalender-konten')
+            ->assertOk();
+
+        Livewire::actingAs($this->staffMarkomDivision)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->assertSee('Tambah jenis baru')
+            ->assertSee('Tambah pillar baru');
+    }
+
+    public function test_allowed_non_manager_has_no_add_option_actions_and_is_blocked(): void
+    {
+        Livewire::actingAs($this->staffMarkom)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->assertDontSee('Tambah jenis baru')
+            ->assertDontSee('Tambah pillar baru')
+            ->call('openOptionForm', 'type')
+            ->assertForbidden();
+    }
+
+    public function test_hr_can_add_a_content_type_with_a_custom_colour_and_use_it(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openOptionForm', 'type')
+            ->assertSet('optionForm', 'type')
+            ->set('optionName', 'Podcast')
+            ->set('optionColor', '#DC2626')
+            ->call('saveOption')
+            ->assertHasNoErrors()
+            ->assertSet('optionForm', '');
+
+        $this->assertDatabaseHas('content_types', [
+            'slug' => 'podcast',
+            'name' => 'Podcast',
+            'color' => '#DC2626',
+        ]);
+
+        $this->event($this->staffHr, [
+            'title' => 'Podcast Card',
+            'event_date' => '2026-11-10',
+            'content_type' => 'podcast',
+        ]);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->assertSee('Podcast Card')
+            ->assertSeeHtml('background-color: #DC2626; border-color: #DC2626; color: #FFFFFF;');
+    }
+
+    public function test_hr_can_add_a_pillar_with_a_custom_colour_and_use_it(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openOptionForm', 'pillar')
+            ->set('optionName', 'Inspirasi')
+            ->set('optionColor', '#0891B2')
+            ->call('saveOption')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('content_pillars', [
+            'slug' => 'inspirasi',
+            'name' => 'Inspirasi',
+            'color' => '#0891B2',
+        ]);
+
+        $this->event($this->staffHr, [
+            'title' => 'Pillar Baru Card',
+            'event_date' => '2026-11-10',
+            'content_pillar' => 'inspirasi',
+        ]);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->set('month', '2026-11')
+            ->assertSee('Pillar Baru Card')
+            ->assertSee('Inspirasi')
+            ->assertSeeHtml('background-color: #0891B2; border-color: #0891B2; color: #FFFFFF;');
+    }
+
+    public function test_option_name_is_validated_and_invalid_colour_falls_back(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openOptionForm', 'type')
+            ->set('optionName', 'Reels')
+            ->call('saveOption')
+            ->assertHasErrors(['optionName'])
+            ->set('optionName', 'Podcast Baru')
+            ->set('optionColor', 'not-a-colour')
+            ->call('saveOption')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('content_types', [
+            'slug' => 'podcast-baru',
+            'color' => OptionColor::FALLBACK,
+        ]);
+    }
+
+    public function test_hex_field_is_read_only_and_not_editable(): void
+    {
+        $html = Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openOptionForm', 'type')
+            ->html();
+
+        $this->assertStringContainsString('id="content-option-color" type="text" value="#2563EB"', $html);
+        $this->assertStringContainsString('readonly tabindex="-1"', $html);
+        $this->assertStringNotContainsString('wire:model="optionColor"', $html);
+    }
+
+    public function test_option_slugs_get_a_unique_suffix(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openOptionForm', 'type')
+            ->set('optionName', 'Podcast A B')
+            ->set('optionColor', '#2563EB')
+            ->call('saveOption')
+            ->call('openOptionForm', 'type')
+            ->set('optionName', 'Podcast A-B')
+            ->set('optionColor', '#059669')
+            ->call('saveOption')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('content_types', ['slug' => 'podcast-a-b', 'name' => 'Podcast A B']);
+        $this->assertDatabaseHas('content_types', ['slug' => 'podcast-a-b-2', 'name' => 'Podcast A-B']);
+    }
+
+    public function test_new_option_is_selected_when_created_from_the_event_form(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->call('openOptionForm', 'pillar')
+            ->set('optionName', 'Inspirasi')
+            ->set('optionColor', '#0891B2')
+            ->call('saveOption')
+            ->assertSet('content_pillar', 'inspirasi')
+            ->assertSet('formOpen', true)
+            ->assertSet('optionForm', '');
+    }
+
+
+    public function test_manager_sees_delete_buttons_on_type_and_pillar_rows(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->assertSeeHtml('aria-label="Hapus Reels"')
+            ->assertSeeHtml('aria-label="Hapus Informasi"');
+    }
+
+    public function test_non_manager_does_not_see_delete_buttons(): void
+    {
+        Livewire::actingAs($this->staffMarkom)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->assertDontSeeHtml('aria-label="Hapus Reels"')
+            ->assertDontSeeHtml('aria-label="Hapus Informasi"');
+    }
+
+    public function test_delete_confirmation_can_be_opened_and_cancelled(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('requestDeleteOption', 'type', 'reels')
+            ->assertSet('optionToDeleteKind', 'type')
+            ->assertSet('optionToDeleteSlug', 'reels')
+            ->assertSet('optionToDeleteName', 'Reels')
+            ->assertDispatched('content-confirm-delete-option')
+            ->call('cancelDeleteOption')
+            ->assertSet('optionToDeleteKind', '')
+            ->assertSet('optionToDeleteSlug', '')
+            ->assertSet('optionToDeleteName', '');
+
+        $this->assertDatabaseHas('content_types', ['slug' => 'reels']);
+    }
+
+    public function test_option_used_by_an_event_cannot_be_deleted(): void
+    {
+        $this->event($this->staffHr);
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('requestDeleteOption', 'type', 'reels')
+            ->call('deleteOption')
+            ->assertDispatched('content-toast', message: 'Opsi masih digunakan 1 event.', type: 'error');
+
+        $this->assertDatabaseHas('content_types', ['slug' => 'reels']);
+    }
+
+    public function test_unused_option_can_be_deleted_and_selected_value_is_cleared(): void
+    {
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('openCreate', '2026-11-12')
+            ->call('openOptionForm', 'type')
+            ->set('optionName', 'Podcast')
+            ->set('optionColor', '#2563EB')
+            ->call('saveOption')
+            ->assertSet('content_type', 'podcast')
+            ->call('requestDeleteOption', 'type', 'podcast')
+            ->assertSet('optionToDeleteName', 'Podcast')
+            ->call('deleteOption')
+            ->assertSet('content_type', '')
+            ->assertSet('optionToDeleteKind', '')
+            ->assertDispatched('content-toast', message: 'Jenis konten dihapus');
+
+        $this->assertDatabaseMissing('content_types', ['slug' => 'podcast']);
+    }
+
+    public function test_last_remaining_option_cannot_be_deleted(): void
+    {
+        ContentType::whereIn('slug', ['single-image', 'carousel'])->delete();
+
+        Livewire::actingAs($this->staffHr)
+            ->test(ContentCalendar::class)
+            ->call('requestDeleteOption', 'type', 'reels')
+            ->call('deleteOption')
+            ->assertDispatched('content-toast', message: 'Opsi terakhir tidak bisa dihapus.', type: 'error');
+
+        $this->assertDatabaseHas('content_types', ['slug' => 'reels']);
+    }
+
+    public function test_non_manager_cannot_request_or_delete_options(): void
+    {
+        Livewire::actingAs($this->staffMarkom)
+            ->test(ContentCalendar::class)
+            ->call('requestDeleteOption', 'type', 'reels')
+            ->assertForbidden();
+
+        Livewire::actingAs($this->staffMarkom)
+            ->test(ContentCalendar::class)
+            ->call('deleteOption')
+            ->assertForbidden();
+    }
+
 }

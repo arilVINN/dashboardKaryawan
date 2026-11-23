@@ -132,7 +132,7 @@ class HrdManagementApiTest extends TestCase
             ->get('/hrd/detailDivisi/DIV-EMPTY')
             ->assertOk()
             ->assertSee('modalTambahKaryawan', false)
-            ->assertSee('HRD Manager')
+            ->assertSee('Pilih divisi dulu')
             ->assertSee('name="jabatan"', false);
 
         $response = $this->actingAs($this->hrd)

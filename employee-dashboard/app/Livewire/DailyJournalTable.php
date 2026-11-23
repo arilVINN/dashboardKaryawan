@@ -738,10 +738,12 @@ class DailyJournalTable extends Component
             // Compute overall day status
             $overallStatus = 'empty';
             if ($count > 0) {
-                if ($onProgressCount > 0) {
+                if ($selesaiCount === $count) {
+                    $overallStatus = 'selesai';
+                } elseif ($onProgressCount > 0) {
                     $overallStatus = 'on_progress';
                 } else {
-                    $overallStatus = 'selesai';
+                    $overallStatus = 'pending';
                 }
             }
 
@@ -830,11 +832,19 @@ class DailyJournalTable extends Component
             $empPct = $empTaskCount > 0 ? round($sumPct / $empTaskCount, 1) : 0;
 
             $isKadivMember = strtolower($emp->user?->role?->nama_role ?? '') === 'kadiv';
+            $empRole = strtolower($emp->user?->role?->nama_role ?? '');
+            $roleLabel = match ($empRole) {
+                'kadiv' => 'Kepala Divisi',
+                'hrd' => 'HRD',
+                'direktur', 'direksi' => 'Direksi',
+                'superadmin' => 'Superadmin',
+                default => 'Staff',
+            };
 
             $staffProgressList->push([
                 'karyawan' => $emp,
                 'isKadiv' => $isKadivMember,
-                'roleLabel' => $isKadivMember ? 'Kepala Divisi' : 'Staff',
+                'roleLabel' => $roleLabel,
                 'totalTasks' => $empTaskCount,
                 'pct' => $empPct,
                 'count100' => $empJournals->filter(fn ($j) => in_array($j->status, ['disetujui', 'approved', 'complete_100', 'fix']))->count(),

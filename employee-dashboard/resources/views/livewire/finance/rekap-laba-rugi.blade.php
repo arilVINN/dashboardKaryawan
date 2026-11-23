@@ -133,6 +133,98 @@
         </div>
     </div>
 
+    {{-- Detail Berdasarkan Aktivitas Bisnis Utama (Operasional & Non-Operasional) --}}
+    <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {{-- Card Aktivitas Operasional --}}
+        <div class="rounded-xl border border-[#D0E2EC] bg-white p-4 shadow-sm">
+            <div class="flex items-center justify-between border-b border-[#EEF2F5] pb-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E3F1F7] text-[#146C94]">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3 class="text-[14px] font-semibold text-[#172B36]">Aktivitas Operasional</h3>
+                        <p class="text-[11px] text-[#64748B]">Pendapatan &amp; beban operasional bisnis utama</p>
+                    </div>
+                </div>
+                <span class="rounded-md bg-[#F1F5F9] px-2 py-0.5 text-[11px] font-medium text-[#475569]">
+                    Operational Core
+                </span>
+            </div>
+
+            <div class="mt-3 space-y-2.5 text-[13px]">
+                <div class="flex items-center justify-between">
+                    <span class="text-[#4B5563]">Pendapatan Operasional</span>
+                    <span class="font-medium tabular-nums text-[#172B36]">
+                        {{ \App\Helpers\FormatAkuntansi::formatRupiah($grandPendapatanOperasional) }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex flex-col">
+                        <span class="text-[#4B5563]">Beban Operasional (Operational Expense)</span>
+                    </div>
+                    <span class="font-medium tabular-nums text-[#172B36]">
+                        {{ \App\Helpers\FormatAkuntansi::formatRupiah($grandBebanOperasional) }}
+                    </span>
+                </div>
+                <div class="border-t border-[#EEF2F5] pt-2.5 flex items-center justify-between font-semibold">
+                    <span class="text-[#172B36]">Laba Operasional (Operating Profit)</span>
+                    <span class="tabular-nums {{ $grandLabaOperasional > 0 ? 'text-[#047857]' : ($grandLabaOperasional < 0 ? 'text-[#B91C1C]' : 'text-[#172B36]') }}">
+                        {{ \App\Helpers\FormatAkuntansi::formatRupiah($grandLabaOperasional) }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Card Aktivitas Non-Operasional --}}
+        <div class="rounded-xl border border-[#D0E2EC] bg-white p-4 shadow-sm">
+            <div class="flex items-center justify-between border-b border-[#EEF2F5] pb-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EAF0F6] text-[#475569]">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3 class="text-[14px] font-semibold text-[#172B36]">Aktivitas Non-Operasional</h3>
+                        <p class="text-[11px] text-[#64748B]">Pendapatan &amp; beban di luar aktivitas utama</p>
+                    </div>
+                </div>
+                <span class="rounded-md bg-[#F1F5F9] px-2 py-0.5 text-[11px] font-medium text-[#475569]">
+                    Non-Operational
+                </span>
+            </div>
+
+            @php
+                $netNonOp = $grandPendapatanNonOperasional - $grandBebanNonOperasional;
+            @endphp
+            <div class="mt-3 space-y-2.5 text-[13px]">
+                <div class="flex items-center justify-between">
+                    <span class="text-[#4B5563]">Pendapatan Non-Operasional</span>
+                    <span class="font-medium tabular-nums text-[#172B36]">
+                        {{ \App\Helpers\FormatAkuntansi::formatRupiah($grandPendapatanNonOperasional) }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex flex-col">
+                        <span class="text-[#4B5563]">Beban Non-Operasional</span>
+                    </div>
+                    <span class="font-medium tabular-nums text-[#172B36]">
+                        {{ \App\Helpers\FormatAkuntansi::formatRupiah($grandBebanNonOperasional) }}
+                    </span>
+                </div>
+                <div class="border-t border-[#EEF2F5] pt-2.5 flex items-center justify-between font-semibold">
+                    <span class="text-[#172B36]">Laba / (Rugi) Non-Operasional</span>
+                    <span class="tabular-nums {{ $netNonOp > 0 ? 'text-[#047857]' : ($netNonOp < 0 ? 'text-[#B91C1C]' : 'text-[#172B36]') }}">
+                        {{ \App\Helpers\FormatAkuntansi::formatRupiah($netNonOp) }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Table card --}}
     <div class="mt-5 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
         <div class="px-4 py-4 sm:px-5">
@@ -196,6 +288,7 @@
                                 onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); window.location.href = this.dataset.href; }">
                                 <td class="px-4 py-2.5">
                                     <p class="text-[13px] font-medium text-[#172B36]">{{ $d->nama_divisi }}</p>
+                                    <p class="text-[11px] text-[#64748B]">Op: {{ \App\Helpers\FormatAkuntansi::formatRupiah($d->laba_operasional_rekap) }} &bull; Non-Op: {{ \App\Helpers\FormatAkuntansi::formatRupiah($d->pendapatan_non_operasional_rekap - $d->beban_non_operasional_rekap) }}</p>
                                 </td>
                                 <td class="px-4 py-2.5 text-right text-[13px] font-medium tabular-nums text-[#172B36]">
                                     {{ \App\Helpers\FormatAkuntansi::formatRupiah($p) }}

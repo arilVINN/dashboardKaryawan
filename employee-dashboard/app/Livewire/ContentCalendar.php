@@ -5,9 +5,10 @@ namespace App\Livewire;
 use App\Models\ContentAccount;
 use App\Models\ContentEvent;
 use App\Models\ContentEventComment;
+use App\Models\ContentPillar;
 use App\Models\ContentType;
 use App\Support\ContentCalendarAccess;
-use App\Support\ContentTypePalette;
+use App\Support\OptionColor;
 use App\Support\StatusPalette;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -61,6 +62,8 @@ class ContentCalendar extends Component
 
     public string $content_type = '';
 
+    public string $content_pillar = '';
+
     public string $formStatus = 'process';
 
     public string $caption = '';
@@ -88,6 +91,20 @@ class ContentCalendar extends Component
     public bool $accountFormOpen = false;
 
     public string $accountName = '';
+
+    /** Add-option modal: 'type', 'pillar' or empty. */
+    public string $optionForm = '';
+
+    public string $optionName = '';
+
+    public string $optionColor = '';
+
+    /** Option pending deletion: 'type' | 'pillar' | empty. */
+    public string $optionToDeleteKind = '';
+
+    public string $optionToDeleteSlug = '';
+
+    public string $optionToDeleteName = '';
 
     public function booted(): void
     {
@@ -179,15 +196,165 @@ class ContentCalendar extends Component
         $this->dispatch('content-toast', message: 'Akun ditambahkan', type: 'success');
     }
 
+    public function openOptionForm(string $kind): void
+    {
+        abort_unless(ContentCalendarAccess::canManageOptions(auth()->user()), 403);
+        abort_unless(in_array($kind, ['type', 'pillar'], true), 404);
+
+        $this->resetValidation();
+        $this->optionForm = $kind;
+        $this->optionName = '';
+        $this->optionColor = array_key_first(OptionColor::SWATCHES);
+
+        $this->dispatch('content-focus-option-name');
+    }
+
+    public function closeOptionForm(): void
+    {
+        $this->optionForm = '';
+        $this->optionName = '';
+        $this->optionColor = '';
+        $this->resetValidation();
+    }
+
+    public function saveOption(): void
+    {
+        abort_unless(ContentCalendarAccess::canManageOptions(auth()->user()), 403);
+        abort_unless(in_array($this->optionForm, ['type', 'pillar'], true), 404);
+
+        $this->validate([
+            'optionName' => ['required', 'string', 'max:80'],
+        ], $this->messages());
+
+        $name = trim($this->optionName);
+        // The colour comes only from the swatches; normalize defensively in
+        // case a client sends a tampered value instead of a palette hex.
+        $color = OptionColor::normalize($this->optionColor);
+
+        /** @var class-string<ContentType|ContentPillar> $model */
+        $model = $this->optionForm === 'type' ? ContentType::class : ContentPillar::class;
+
+        $duplicate = $model::query()
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->exists();
+
+        if ($duplicate) {
+            $this->addError('optionName', 'Nama sudah dipakai.');
+
+            return;
+        }
+
+        $slug = $this->uniqueSlugFor($model, $name, $this->optionForm === 'type' ? 'jenis' : 'pillar');
+
+        $model::create([
+            'slug' => $slug,
+            'name' => $name,
+            'color' => $color,
+            'sort_order' => (int) $model::query()->max('sort_order') + 1,
+        ]);
+
+        // Pick the new option straight away when the event form is open.
+        if ($this->optionForm === 'type' && ($this->formOpen || $this->detailOpen)) {
+            $this->content_type = $slug;
+        }
+
+        if ($this->optionForm === 'pillar' && ($this->formOpen || $this->detailOpen)) {
+            $this->content_pillar = $slug;
+        }
+
+        $label = $this->optionForm === 'type' ? 'Jenis konten' : 'Konten pillar';
+
+        $this->closeOptionForm();
+        $this->dispatch('content-toast', message: $label.' ditambahkan', type: 'success');
+    }
+
+    public function requestDeleteOption(string $kind, string $slug): void
+    {
+        abort_unless(ContentCalendarAccess::canManageOptions(auth()->user()), 403);
+        abort_unless(in_array($kind, ['type', 'pillar'], true), 404);
+
+        $model = $kind === 'type' ? ContentType::class : ContentPillar::class;
+        $option = $model::query()->where('slug', $slug)->firstOrFail();
+
+        $this->optionToDeleteKind = $kind;
+        $this->optionToDeleteSlug = $slug;
+        $this->optionToDeleteName = $option->name;
+
+        $this->dispatch('content-confirm-delete-option');
+    }
+
+    public function cancelDeleteOption(): void
+    {
+        $this->optionToDeleteKind = '';
+        $this->optionToDeleteSlug = '';
+        $this->optionToDeleteName = '';
+    }
+
+    public function deleteOption(): void
+    {
+        abort_unless(ContentCalendarAccess::canManageOptions(auth()->user()), 403);
+        abort_unless(in_array($this->optionToDeleteKind, ['type', 'pillar'], true), 404);
+
+        $kind = $this->optionToDeleteKind;
+        $slug = $this->optionToDeleteSlug;
+
+        $this->cancelDeleteOption();
+
+        /** @var class-string<ContentType|ContentPillar> $model */
+        $model = $kind === 'type' ? ContentType::class : ContentPillar::class;
+        $option = $model::query()->where('slug', $slug)->first();
+
+        if (! $option) {
+            return;
+        }
+
+        $column = $kind === 'type' ? 'content_type' : 'content_pillar';
+        $used = ContentEvent::query()->where($column, $slug)->count();
+
+        if ($used > 0) {
+            $this->dispatch('content-toast', message: 'Opsi masih digunakan '.$used.' event.', type: 'error');
+
+            return;
+        }
+
+        if ($model::query()->count() <= 1) {
+            $this->dispatch('content-toast', message: 'Opsi terakhir tidak bisa dihapus.', type: 'error');
+
+            return;
+        }
+
+        $option->delete();
+
+        if ($kind === 'type' && $this->content_type === $slug) {
+            $this->content_type = '';
+        }
+
+        if ($kind === 'pillar' && $this->content_pillar === $slug) {
+            $this->content_pillar = '';
+        }
+
+        $label = $kind === 'type' ? 'Jenis konten' : 'Konten pillar';
+
+        $this->dispatch('content-toast', message: $label.' dihapus', type: 'success');
+    }
+
     private function uniqueAccountSlug(string $name): string
     {
+        return $this->uniqueSlugFor(ContentAccount::class, $name, 'akun');
+    }
+
+    /**
+     * @param  class-string<ContentAccount|ContentType|ContentPillar>  $model
+     */
+    private function uniqueSlugFor(string $model, string $name, string $fallback): string
+    {
         $base = rtrim(Str::slug($name), '-');
-        $base = $base !== '' ? substr($base, 0, 40) : 'akun';
+        $base = $base !== '' ? substr($base, 0, 40) : $fallback;
 
         $slug = $base;
         $suffix = 2;
 
-        while (ContentAccount::query()->where('slug', $slug)->exists()) {
+        while ($model::query()->where('slug', $slug)->exists()) {
             $slug = $base.'-'.$suffix;
             $suffix++;
         }
@@ -230,7 +397,7 @@ class ContentCalendar extends Component
         }
 
         if ($this->formOpen) {
-            if (in_array($property, ['title', 'event_date', 'post_time', 'content_type', 'formStatus', 'caption', 'description', 'content_url'], true)) {
+            if (in_array($property, ['title', 'event_date', 'post_time', 'content_type', 'content_pillar', 'formStatus', 'caption', 'description', 'content_url'], true)) {
                 $this->formDirty = true;
             }
 
@@ -243,6 +410,7 @@ class ContentCalendar extends Component
                 'event_date' => 'event_date',
                 'post_time' => 'post_time',
                 'content_type' => 'content_type',
+                'content_pillar' => 'content_pillar',
                 'formStatus' => 'status',
                 'caption' => 'caption',
                 'description' => 'description',
@@ -333,6 +501,7 @@ class ContentCalendar extends Component
         $this->event_date = $date ?: now()->toDateString();
         $this->post_time = '';
         $this->content_type = '';
+        $this->content_pillar = '';
         $this->formStatus = 'process';
         $this->caption = '';
         $this->description = '';
@@ -362,6 +531,7 @@ class ContentCalendar extends Component
         $this->event_date = $event->event_date->toDateString();
         $this->post_time = $event->timeLabel() ?? '';
         $this->content_type = $event->content_type ?? '';
+        $this->content_pillar = $event->content_pillar ?? '';
         $this->formStatus = $event->status;
         $this->caption = $event->caption ?? '';
         $this->description = $event->description ?? '';
@@ -708,6 +878,7 @@ class ContentCalendar extends Component
             'event_date' => ['required', 'date'],
             'post_time' => ['nullable', 'date_format:H:i'],
             'content_type' => ['required', Rule::exists('content_types', 'slug')],
+            'content_pillar' => ['nullable', Rule::exists('content_pillars', 'slug')],
             'formStatus' => ['required', Rule::in(array_keys(StatusPalette::contentStatuses()))],
             'caption' => ['nullable', 'string', 'max:5000'],
             'description' => ['nullable', 'string', 'max:5000'],
@@ -726,6 +897,7 @@ class ContentCalendar extends Component
             'event_date' => $validated['event_date'],
             'post_time' => $validated['post_time'] ?: null,
             'content_type' => $validated['content_type'],
+            'content_pillar' => $validated['content_pillar'] ?: null,
             'status' => $validated['formStatus'],
             'caption' => $validated['caption'] ?: null,
             'description' => $validated['description'] ?: null,
@@ -827,6 +999,7 @@ class ContentCalendar extends Component
     public function render()
     {
         $contentTypes = $this->contentTypeOptions();
+        $contentPillars = $this->contentPillarOptions();
         $statusOptions = StatusPalette::contentStatuses();
 
         $comments = [];
@@ -873,13 +1046,13 @@ class ContentCalendar extends Component
             $sorted = $this->sortEvents($events);
 
             if ($this->view === 'minggu') {
-                $weekDays = $this->buildDays($sorted, $rangeStart, $rangeEnd, $contentTypes, false);
+                $weekDays = $this->buildDays($sorted, $rangeStart, $rangeEnd, $contentTypes, $contentPillars, false);
             } else {
-                $days = $this->buildDays($sorted, $rangeStart, $rangeEnd, $contentTypes, true);
+                $days = $this->buildDays($sorted, $rangeStart, $rangeEnd, $contentTypes, $contentPillars, true);
                 $monthWeeks = array_chunk(array_values($days), 7);
             }
 
-            $listGroups = $this->buildListGroups($sorted, $contentTypes);
+            $listGroups = $this->buildListGroups($sorted, $contentTypes, $contentPillars);
 
             if ($this->popoverDate && isset($days[$this->popoverDate])) {
                 $popoverItems = $days[$this->popoverDate]['items'];
@@ -895,6 +1068,7 @@ class ContentCalendar extends Component
             'accounts' => $accounts,
             'activeAccount' => $activeAccount,
             'contentTypes' => $contentTypes,
+            'contentPillars' => $contentPillars,
             'statusOptions' => $statusOptions,
             'monthWeeks' => $monthWeeks,
             'weekDays' => $weekDays,
@@ -904,21 +1078,48 @@ class ContentCalendar extends Component
             'comments' => $comments,
             'monthLabel' => $this->periodLabel(),
             'hasActiveFilters' => $this->hasActiveFilters(),
+            'canManageOptions' => ContentCalendarAccess::canManageOptions(auth()->user()),
         ]);
     }
 
     /**
-     * @return array<string, array{slug: string, name: string, fill: string, border: string, text: string}>
+     * @return array<string, array{slug: string, name: string, color: string, fill: string, border: string, text: string, fill_text: string}>
      */
     private function contentTypeOptions(): array
     {
         $options = [];
 
-        foreach (ContentType::ordered() as $index => $type) {
+        foreach (ContentType::ordered() as $type) {
             $options[$type->slug] = [
                 'slug' => $type->slug,
                 'name' => $type->name,
-            ] + ContentTypePalette::for($index);
+            ] + OptionColor::for($type->color);
+        }
+
+        return $options;
+    }
+
+    /**
+     * @return array<string, array{slug: string, name: string, color: string, fill: string, border: string, text: string, fill_text: string}>
+     */
+    private function contentPillarOptions(): array
+    {
+        try {
+            $pillars = ContentPillar::ordered();
+        } catch (Throwable $exception) {
+            // A stale database should not make the whole calendar unreachable.
+            report($exception);
+
+            return [];
+        }
+
+        $options = [];
+
+        foreach ($pillars as $pillar) {
+            $options[$pillar['slug']] = [
+                'slug' => $pillar['slug'],
+                'name' => $pillar['name'],
+            ] + OptionColor::for($pillar['color'] ?? null);
         }
 
         return $options;
@@ -942,9 +1143,10 @@ class ContentCalendar extends Component
     /**
      * @param  Collection<int, ContentEvent>  $events
      * @param  array<string, array{slug: string, name: string, fill: string, border: string, text: string}>  $contentTypes
+     * @param  array<string, array{slug: string, name: string, color: string}>  $contentPillars
      * @return array<string, array<string, mixed>>
      */
-    private function buildDays(Collection $events, Carbon $rangeStart, Carbon $rangeEnd, array $contentTypes, bool $markOtherMonth): array
+    private function buildDays(Collection $events, Carbon $rangeStart, Carbon $rangeEnd, array $contentTypes, array $contentPillars, bool $markOtherMonth): array
     {
         $anchor = $this->anchor();
         $today = Carbon::today()->toDateString();
@@ -976,7 +1178,7 @@ class ContentCalendar extends Component
                 continue;
             }
 
-            $days[$date]['items'][] = $this->eventItem($event, $contentTypes);
+            $days[$date]['items'][] = $this->eventItem($event, $contentTypes, $contentPillars);
         }
 
         return $days;
@@ -985,18 +1187,19 @@ class ContentCalendar extends Component
     /**
      * @param  Collection<int, ContentEvent>  $events
      * @param  array<string, array{slug: string, name: string, fill: string, border: string, text: string}>  $contentTypes
+     * @param  array<string, array{slug: string, name: string, color: string}>  $contentPillars
      * @return array<int, array{date: string, label: string, items: array<int, array<string, mixed>>}>
      */
-    private function buildListGroups(Collection $events, array $contentTypes): array
+    private function buildListGroups(Collection $events, array $contentTypes, array $contentPillars): array
     {
         return $events
             ->sortBy(fn (ContentEvent $event) => $event->event_date->toDateString())
             ->groupBy(fn (ContentEvent $event) => $event->event_date->toDateString())
-            ->map(function (Collection $group, string $date) use ($contentTypes) {
+            ->map(function (Collection $group, string $date) use ($contentTypes, $contentPillars) {
                 return [
                     'date' => $date,
                     'label' => Carbon::parse($date)->locale('id')->translatedFormat('l, j F Y'),
-                    'items' => $group->map(fn (ContentEvent $event) => $this->eventItem($event, $contentTypes))->values()->all(),
+                    'items' => $group->map(fn (ContentEvent $event) => $this->eventItem($event, $contentTypes, $contentPillars))->values()->all(),
                 ];
             })
             ->values()
@@ -1005,11 +1208,13 @@ class ContentCalendar extends Component
 
     /**
      * @param  array<string, array{slug: string, name: string, fill: string, border: string, text: string}>  $contentTypes
+     * @param  array<string, array{slug: string, name: string, color: string}>  $contentPillars
      * @return array<string, mixed>
      */
-    private function eventItem(ContentEvent $event, array $contentTypes): array
+    private function eventItem(ContentEvent $event, array $contentTypes, array $contentPillars): array
     {
         $type = $contentTypes[$event->content_type] ?? null;
+        $pillar = $contentPillars[$event->content_pillar] ?? null;
 
         return [
             'id' => $event->id,
@@ -1021,6 +1226,11 @@ class ContentCalendar extends Component
             'type_name' => $type['name'] ?? 'Tanpa jenis',
             'type_fill' => $type['fill'] ?? '#F1F5F9',
             'type_border' => $type['border'] ?? '#CBD5E1',
+            'type_text' => $type['text'] ?? '#172B36',
+            'pillar_slug' => $event->content_pillar,
+            'pillar_name' => $pillar['name'] ?? '',
+            'pillar_color' => $pillar['color'] ?? ContentPillar::fallback()['color'],
+            'pillar_text' => $pillar['text'] ?? '#FFFFFF',
             'status' => $event->status,
             'can_edit' => auth()->user()?->can('update', $event) ?? false,
         ];
@@ -1039,6 +1249,7 @@ class ContentCalendar extends Component
             'post_time.date_format' => 'Jam posting harus dalam format HH:MM.',
             'content_type.required' => 'Jenis konten wajib dipilih.',
             'content_type.exists' => 'Jenis konten tidak dikenal.',
+            'content_pillar.exists' => 'Konten pillar tidak dikenal.',
             'formStatus.required' => 'Status wajib dipilih.',
             'formStatus.in' => 'Status tidak valid.',
             'caption.max' => 'Caption maksimal 5000 karakter.',
@@ -1048,6 +1259,8 @@ class ContentCalendar extends Component
             'todos.*.text.max' => 'Setiap to-do maksimal 200 karakter.',
             'commentBody.required' => 'Komentar wajib diisi.',
             'commentBody.max' => 'Komentar maksimal 1000 karakter.',
+            'optionName.required' => 'Nama wajib diisi.',
+            'optionName.max' => 'Nama maksimal 80 karakter.',
         ];
     }
 
@@ -1058,6 +1271,7 @@ class ContentCalendar extends Component
             'event_date' => ['required', 'date'],
             'post_time' => ['nullable', 'date_format:H:i'],
             'content_type' => ['required', Rule::exists('content_types', 'slug')],
+            'content_pillar' => ['nullable', Rule::exists('content_pillars', 'slug')],
             'formStatus' => ['required', Rule::in(array_keys(StatusPalette::contentStatuses()))],
             'caption' => ['nullable', 'string', 'max:5000'],
             'description' => ['nullable', 'string', 'max:5000'],

@@ -11,6 +11,7 @@ class ContentType extends Model
     protected $fillable = [
         'slug',
         'name',
+        'color',
         'sort_order',
     ];
 
@@ -19,15 +20,14 @@ class ContentType extends Model
     ];
 
     /**
-     * Types in display order. The tag colours cycle through a fixed palette,
-     * so new rows can be added without touching code.
+     * Types in display order, with the colour stored on each row.
      */
     public static function ordered(): array
     {
         return static::query()
             ->orderBy('sort_order')
             ->orderBy('id')
-            ->get(['slug', 'name'])
+            ->get(['slug', 'name', 'color'])
             ->all();
     }
 }

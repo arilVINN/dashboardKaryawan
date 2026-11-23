@@ -15,7 +15,6 @@
             <div class="flex flex-col leading-tight whitespace-nowrap">
                 <div class="flex items-center gap-1.5">
                     <h1 class="text-sm font-bold text-[#2A4B6A] tracking-wide">PT SILINDO</h1>
-                    <span class="rounded border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-800">{{ auth()->user()?->isSuperAdmin() ? 'SUPERADMIN' : 'DIREKSI' }}</span>
                 </div>
                 <p class="text-[9px] font-medium text-[#1CA4BA] tracking-tight">{{ auth()->user()?->isSuperAdmin() ? 'PORTAL ADMINISTRATOR' : 'PORTAL EKSEKUTIF' }}</p>
             </div>

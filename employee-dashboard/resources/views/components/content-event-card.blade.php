@@ -17,6 +17,8 @@
         // Revisi uses a clearly grey card (not white) with dark text so it
         // stands apart from both the white Plan card and the coloured blocks.
         $cardStyle = 'background-color: #E2E8F0; border-color: #000000;';
+    } elseif ($status === 'plan') {
+        $cardStyle = 'background-color: #FFFFFF; border-color: #94A3B8;';
     } elseif ($palette) {
         $cardStyle = 'background-color: '.$palette['bg'].'; border-color: '.$palette['border'].';';
     } else {
@@ -42,8 +44,13 @@
     @endif
 
     <span class="mt-auto flex items-end justify-between gap-2 pt-1">
-        <span class="flex flex-col items-start gap-1 whitespace-nowrap">
-            <x-content-type-tag :name="$event['type_name']" :fill="$event['type_fill']" :border="$event['type_border']" quiet />
+        <span class="flex min-w-0 flex-col items-start gap-1">
+            <span class="flex flex-wrap items-center gap-1">
+                <x-content-type-tag :name="$event['type_name']" :fill="$event['type_fill']" :border="$event['type_border']" :text="$event['type_text']" quiet />
+                @if (! empty($event['pillar_name']))
+                    <x-content-pillar-pill :name="$event['pillar_name']" :color="$event['pillar_color']" :text="$event['pillar_text']" />
+                @endif
+            </span>
             <x-status-badge variant="content" dot solid :status="$event['status']" />
         </span>
 

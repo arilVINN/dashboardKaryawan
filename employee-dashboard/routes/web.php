@@ -12,7 +12,10 @@ use App\Http\Controllers\Hrd\HrdKaryawanController;
 use App\Http\Controllers\Hrd\HrdDivisiController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
+use App\Http\Controllers\Hrd\HrdJabatanController;
+use App\Http\Controllers\Hrd\HrdFileController;
 use App\Http\Controllers\Hrd\HrdDashboardController;
+use App\Http\Controllers\PasswordChangeController;
 use App\Http\Controllers\Direktur\DirekturDashboardController;
 use App\Http\Controllers\Staff\SuratIzinController;
 use App\Http\Controllers\BookingController;
@@ -37,6 +40,14 @@ Route::post('/login', [AuthController::class, 'login'])
     ->middleware('gateway.throttle:5,1') // sudah ada, tidak diubah
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Wajib ganti password saat login pertama / setelah atur ulang password.
+Route::middleware('auth')->group(function () {
+    Route::get('/ganti-password', [PasswordChangeController::class, 'show'])->name('password.change');
+    Route::post('/ganti-password', [PasswordChangeController::class, 'store'])
+        ->middleware('throttle:submit-form')
+        ->name('password.change.store');
+});
 
 // ─── Direktur / Direksi (executive monitoring) ───────────────────────────────
 Route::middleware(['auth', 'role:direktur,direksi', 'throttle:umum'])->prefix('direktur')->group(function () {
@@ -395,13 +406,11 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle
     Route::delete('/karyawan/{id}', [HrdStaffController::class, 'destroy'])->middleware(['throttle:submit-form', 'deny.superadmin']); // + throttle
 
-    Route::get('/lampiran/{id}/download', function ($id) {
-        $lampiran = \App\Models\LampiranKaryawan::findOrFail($id);
-        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($lampiran->path_file)) {
-            abort(404, 'File lampiran tidak ditemukan di storage.');
-        }
-        return \Illuminate\Support\Facades\Storage::disk('public')->download($lampiran->path_file, $lampiran->nama_file);
-    })->name('hrd.lampiran.download');
+    // Private storage: every file goes through an authorization check.
+    Route::get('/lampiran/{lampiran}/download', [HrdFileController::class, 'lampiran'])
+        ->name('hrd.lampiran.download');
+    Route::get('/karyawan/{karyawan}/foto', [HrdFileController::class, 'foto'])
+        ->name('hrd.karyawan.foto');
 
     // Pesan via web session (dipakai JS modal pesan HRD)
     Route::post('/pesan', [HrdPesanController::class, 'store'])->middleware('throttle:submit-form'); // + throttle
@@ -549,9 +558,21 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
         // Jurnal Umum — entri dibuat otomatis dari transaksi keuangan
         Route::get('/jurnal-umum', [JurnalUmumController::class, 'index'])
             ->name('kadiv.keuangan.jurnalUmum');
+        Route::get('/jurnal-umum/export', [JurnalUmumController::class, 'export'])
+            ->name('kadiv.keuangan.exportJurnalUmum');
     });
 
 // ── Semua Kadiv: Pengajuan Dana & Laporan Laba/Rugi ──────────────────────────
+// Jabatan management (HRD / director level). Existing roles are unchanged.
+Route::middleware(['auth', 'role:hrd,direksi', 'throttle:submit-form'])
+    ->prefix('hrd')
+    ->group(function () {
+        Route::post('/jabatan', [HrdJabatanController::class, 'store'])->name('hrd.jabatan.store');
+        Route::put('/jabatan/{jabatan}', [HrdJabatanController::class, 'update'])->name('hrd.jabatan.update');
+        Route::patch('/jabatan/{jabatan}/nonaktifkan', [HrdJabatanController::class, 'nonaktifkan'])
+            ->name('hrd.jabatan.nonaktifkan');
+    });
+
 Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])
     ->prefix('kadiv')
     ->group(function () {

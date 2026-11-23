@@ -2,6 +2,7 @@
     'name',
     'fill' => '#F1F5F9',
     'border' => '#CBD5E1',
+    'text' => '#172B36',
     'quiet' => false,
 ])
 
@@ -12,6 +13,6 @@
 @endphp
 
 <span {{ $attributes->merge(['class' => 'inline-flex h-[22px] w-fit items-center rounded-md border px-2 text-[11px] font-semibold']) }}
-    style="background-color: {{ $background }}; border-color: {{ $border }}; color: #172B36;">
+    style="background-color: {{ $background }}; border-color: {{ $border }}; color: {{ $text }};">
     {{ $name }}
 </span>
