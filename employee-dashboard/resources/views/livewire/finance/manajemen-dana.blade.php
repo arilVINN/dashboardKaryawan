@@ -65,7 +65,8 @@
         </template>
     </div>
 
-    <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+    <div class="relative overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+        <x-table-loading-overlay target="tab, setTab, status, divisiId, previous, next, resetFilters, previousPage, nextPage, gotoPage" />
         {{-- Tabs --}}
         <div class="flex items-end gap-1 border-b border-[#E2E8EC] px-2 sm:px-4" role="tablist">
             <button type="button" wire:click="setTab('permintaan')"

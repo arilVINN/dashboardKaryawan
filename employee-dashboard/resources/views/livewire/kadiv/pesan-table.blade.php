@@ -39,7 +39,8 @@
             @endif
         </div>
 
-        <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+        <div class="relative overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+            <x-table-loading-overlay target="search, filter, sortField, resetFilters, previousPage, nextPage, gotoPage" />
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[760px] table-fixed text-left text-sm text-[#475569]">
                     <thead class="bg-[#EAF4F8] text-[#334155] text-xs">

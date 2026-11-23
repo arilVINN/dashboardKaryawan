@@ -123,7 +123,8 @@
     </div>
 
     {{-- Tabs + table --}}
-    <div class="mt-4 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+    <div class="relative mt-4 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+        <x-table-loading-overlay target="tab, periode, divisiFilter, search, previousPage, nextPage, gotoPage, setTab" />
         <div class="flex border-b border-[#E2E8EC] bg-white">
             <button type="button" wire:click="$set('tab', 'masuk')"
                 class="-mb-px flex items-center gap-2 border-b-2 px-4 py-3 text-[14px] font-medium transition {{ $tab === 'masuk' ? 'border-[#146C94] text-[#146C94]' : 'border-transparent text-[#4B5563] hover:text-[#172B36]' }}">

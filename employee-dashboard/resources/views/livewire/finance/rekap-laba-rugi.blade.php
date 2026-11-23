@@ -226,7 +226,8 @@
     </div>
 
     {{-- Table card --}}
-    <div class="mt-5 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+    <div class="relative mt-5 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+        <x-table-loading-overlay target="previousMonth, nextMonth, openMonthPicker, selectMonth, setMinggu" />
         <div class="px-4 py-4 sm:px-5">
             <h2 class="text-[14px] font-semibold text-[#172B36]">Per divisi</h2>
             <p class="mt-0.5 text-[12px] text-[#4B5563]">{{ $periodeSubtitle }}</p>

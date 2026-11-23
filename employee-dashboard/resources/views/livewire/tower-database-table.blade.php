@@ -163,7 +163,8 @@
     </div>
 
     {{-- Tabel List Data --}}
-    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
+    <div class="relative bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
+        <x-table-loading-overlay target="search, filterDivisi, filterStatus, sortBy, resetFilters, previousPage, nextPage, gotoPage" />
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
                 <thead class="bg-[#EAF4F8] text-[#334155] text-xs">

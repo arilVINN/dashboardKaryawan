@@ -76,3 +76,60 @@ document.addEventListener('livewire:init', () => {
             .forEach((modal) => window.setModal(modal.id, false));
     });
 })();
+
+// Global Centered Page Loading Overlay for page transitions
+(function () {
+    let loaderOverlay = null;
+
+    function getLoaderOverlay() {
+        if (!loaderOverlay) {
+            loaderOverlay = document.createElement('div');
+            loaderOverlay.id = 'global-centered-loader';
+            loaderOverlay.style.cssText = 'position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background-color:rgba(15,23,42,0.25);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);transition:opacity 0.2s ease-out;';
+            loaderOverlay.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 28px;background:rgba(255,255,255,0.95);border-radius:16px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);border:1px solid rgba(226,232,240,0.8);">
+                    <svg style="width:36px;height:36px;animation:spin 1s linear infinite;color:#146C94;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle style="opacity:0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path style="opacity:0.75;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span style="font-size:13.5px;font-weight:600;color:#172B36;font-family:inherit;">Memuat halaman...</span>
+                </div>
+            `;
+            document.body.appendChild(loaderOverlay);
+        }
+        return loaderOverlay;
+    }
+
+    function showLoader() {
+        const overlay = getLoaderOverlay();
+        overlay.style.display = 'flex';
+        overlay.style.opacity = '1';
+    }
+
+    function hideLoader() {
+        const overlay = getLoaderOverlay();
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 200);
+    }
+
+    document.addEventListener('click', function (e) {
+        const link = e.target.closest('a');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.hasAttribute('download') || link.target === '_blank') return;
+        if (link.origin !== window.location.origin) return;
+        if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+        showLoader();
+    });
+
+    document.addEventListener('submit', function (e) {
+        if (!e.target.hasAttribute('wire:submit')) {
+            showLoader();
+        }
+    });
+
+    window.addEventListener('beforeunload', showLoader);
+    window.addEventListener('pageshow', hideLoader);
+})();
