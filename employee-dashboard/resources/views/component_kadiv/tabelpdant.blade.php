@@ -5,7 +5,7 @@
     </div>
 
     <section class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
-        <div class="grid h-8 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.7fr)_24px] items-center gap-3 bg-[#EAF4F8] px-4 text-xs font-medium text-[#334155]">
+        <div class="grid h-8 grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.7fr)_64px] items-center gap-3 bg-[#EAF4F8] px-4 text-xs font-medium text-[#334155]">
             <span>Nama tugas</span>
             <span>Status</span>
             <span>Tenggat</span>
@@ -18,9 +18,9 @@
     </section>
 </div>
 
-<script>
-    const KADIV_STATUS_PALETTE = @json(\App\Support\StatusPalette::all());
+@include('components.status-badge-js')
 
+<script>
     function kadivStatusKey(status) {
         const value = String(status || '').toLowerCase().trim();
 
@@ -34,24 +34,10 @@
     }
 
     function kadivStatusBadge(key, shortLabel = false) {
-        const palette = KADIV_STATUS_PALETTE[key];
+        const holder = document.createElement('span');
+        holder.innerHTML = window.statusBadgeHtml(key, { short: shortLabel });
 
-        if (!palette) {
-            const fallback = document.createElement('span');
-            fallback.className = 'inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-semibold text-slate-700';
-            fallback.textContent = key || '-';
-            return fallback;
-        }
-
-        const badge = document.createElement('span');
-        badge.className = 'inline-flex w-fit items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold';
-        badge.style.backgroundColor = palette.bg;
-        badge.style.borderColor = palette.border;
-        badge.style.color = palette.text;
-        badge.title = palette.label;
-        badge.textContent = shortLabel ? palette.short : palette.label;
-
-        return badge;
+        return holder.firstElementChild;
     }
 
     function makeKadivClickableRow(url) {

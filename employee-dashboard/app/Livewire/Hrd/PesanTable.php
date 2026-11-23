@@ -3,6 +3,7 @@
 namespace App\Livewire\Hrd;
 
 use App\Models\Pesan;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -27,6 +28,12 @@ class PesanTable extends Component
 
     #[Url]
     public string $arah = '';
+
+    #[On('pesan-dikirim')]
+    public function refreshList(): void
+    {
+        $this->resetPage();
+    }
 
     public function updatedSearch(): void
     {

@@ -40,6 +40,9 @@ class StoreKaryawanFoto
 
     public static function deleteLegacyPath(string $path): void
     {
+        // Older photos were written to the private disk; newer ones to the
+        // public disk. Clean up whichever copy exists.
         Storage::disk('public')->delete($path);
+        Storage::disk('private')->delete($path);
     }
 }

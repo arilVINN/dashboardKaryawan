@@ -5,6 +5,7 @@ namespace App\Livewire\Staff;
 use App\Models\User2;
 use App\Queries\StaffPesanQuery;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -41,6 +42,12 @@ class PesanTable extends Component
         }
 
         return $user;
+    }
+
+    #[On('pesan-dikirim')]
+    public function refreshList(): void
+    {
+        $this->resetPage();
     }
 
     public function updatedSearch(): void

@@ -24,7 +24,8 @@
                 <div id="prof-inisial" class="w-24 h-24 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-4xl font-bold shrink-0">
 U
                 </div>
-                <img id="prof-foto" alt="Foto profil" class="hidden w-24 h-24 rounded-full object-cover shrink-0">
+                <img id="prof-foto" alt="Foto profil" class="hidden w-24 h-24 rounded-full object-cover shrink-0"
+                     onerror="this.classList.add('hidden'); document.getElementById('prof-inisial').classList.remove('hidden');">
                 <div>
                     <h1 id="hdr-nama" class="text-2xl font-bold text-slate-900 leading-tight">Memuat...</h1>
                     <p id="hdr-email" class="text-sm text-slate-500 mt-1">-</p>

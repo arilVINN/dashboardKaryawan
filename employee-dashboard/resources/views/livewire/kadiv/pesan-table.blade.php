@@ -4,12 +4,6 @@
 
 <div>
     <div class="w-full">
-        @if (session('pesan_success'))
-            <div class="mb-4 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
-                {{ session('pesan_success') }}
-            </div>
-        @endif
-
         {{-- Compact filters --}}
         <div class="mb-4 flex flex-wrap items-center gap-3">
             <div class="relative min-w-0 flex-1">
@@ -159,106 +153,156 @@
     </div>
 
     {{-- MODAL KIRIM PESAN --}}
-    <div id="modalKirimPesan"
-        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(86,94,116,0.4)] backdrop-blur-sm transition-opacity duration-150 ease-in-out">
-        <form wire:submit="sendMessage" data-modal-panel
-            class="relative flex max-h-[90vh] w-full max-w-[460px] flex-col overflow-hidden rounded-xl bg-white shadow-[0_8px_16px_rgba(0,0,0,0.12)] scale-95 translate-y-2 transition-all duration-150 ease-in-out">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC] rounded-t-xl">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg bg-[#DCEEFE] text-[#2563EB] flex items-center justify-center">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
+    <div id="modalKirimPesan" class="hr-compose-root" aria-label="Kirim Pesan">
+        @if ($showCompose)
+            <div wire:click.self="requestClose" class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,40,55,.45)] p-4">
+                <div class="modal-panel-in relative w-[500px] max-w-[92vw] overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-2xl"
+                     role="dialog" aria-modal="true" aria-labelledby="kadivComposeTitle" data-compose-panel>
+                    <div class="flex items-center justify-between border-b border-[#E2E8EC] px-5 py-4">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#E3F1F7] text-[#146C94]">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                            </span>
+                            <h2 id="kadivComposeTitle" class="text-[16px] font-semibold text-[#172B36]">Kirim pesan</h2>
+                        </div>
+                        <button type="button" id="kadivComposeCloseBtn" wire:click="requestClose" aria-label="Tutup"
+                                class="flex h-8 w-8 items-center justify-center rounded-lg text-[#64748B] transition hover:bg-[#F1F5F9] hover:text-[#172B36] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                        </button>
                     </div>
-                    <h3 class="text-base font-bold text-slate-900">Kirim Pesan</h3>
-                </div>
-                <button type="button" data-modal-close="modalKirimPesan"
-                    class="text-[#565E74] hover:text-black text-2xl leading-none cursor-pointer">&times;</button>
-            </div>
 
-            <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-                <div>
-                    <label for="kadivPesanDivisi" class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">
-                        DIVISI
-                    </label>
-                    <select id="kadivPesanDivisi" wire:model.live="divisiId"
-                        class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] bg-white outline-none focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]">
-                        <option value="">Semua Divisi</option>
-                        @foreach ($divisis as $divisi)
-                            <option value="{{ $divisi->id_divisi }}">{{ $divisi->nama_divisi }}</option>
-                        @endforeach
-                    </select>
-                    @error('divisiId')
-                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="kadivPesanPenerima" class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">
-                        PENERIMA
-                    </label>
-                    <select id="kadivPesanPenerima" wire:model="recipientUserId"
-                        class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] bg-white outline-none focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]">
-                        <option value="">-- Pilih Penerima --</option>
-                        @foreach ($recipients as $recipient)
-                            <option value="{{ $recipient->id_user }}">
-                                {{ $recipient->karyawan?->nama ?? $recipient->username }}
-                                - {{ ucfirst($recipient->role?->nama_role ?? '') }} ({{ $recipient->karyawan?->divisi?->nama_divisi ?? 'Tanpa Divisi' }})
-                            </option>
-                        @endforeach
-                    </select>
-                    @if ($recipients->isEmpty())
-                        <p class="text-xs text-[#4B5563] mt-1">Belum ada penerima yang tersedia.</p>
+                    @if ($errorMessage !== '')
+                        <div class="mx-5 mt-4 rounded-lg border border-[#F5A3A3] bg-[#FDE0E0] px-3 py-2 text-[12px] leading-relaxed text-[#B91C1C]" role="alert">{{ $errorMessage }}</div>
                     @endif
-                    @error('recipientUserId')
-                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
 
-                <div>
-                    <label for="kadivPesanJudul" class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">
-                        TOPIK
-                    </label>
-                    <input id="kadivPesanJudul" type="text" wire:model="judul" maxlength="200"
-                        placeholder="Tulis topik pesan..."
-                        class="w-full h-10 rounded-lg border border-[#CBD5E1] px-3 text-sm text-[#283044] bg-white outline-none focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]">
-                    @error('judul')
-                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+                    <div class="max-h-[65vh] space-y-4 overflow-y-auto px-5 py-4">
+                        <div>
+                            <label for="kadivPesanDivisi" class="mb-1.5 block text-[13px] font-medium text-[#172B36]">Divisi</label>
+                            <select id="kadivPesanDivisi" wire:model.live="divisiId"
+                                    class="h-10 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] text-[#172B36] outline-none focus:border-[#146C94] focus:ring-2 focus:ring-[#146C94]">
+                                <option value="">Semua divisi</option>
+                                @foreach ($divisis as $divisi)
+                                    <option value="{{ $divisi->id_divisi }}">{{ $divisi->nama_divisi }}</option>
+                                @endforeach
+                            </select>
+                            @error('divisiId') <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p> @enderror
+                        </div>
 
-                <div>
-                    <label for="kadivPesanIsi" class="block text-xs font-bold tracking-wide text-[#565E74] mb-2">
-                        ISI PESAN
-                    </label>
-                    <textarea id="kadivPesanIsi" wire:model="isi" rows="4" maxlength="5000"
-                        placeholder="Tuliskan pesan..."
-                        class="w-full rounded-lg border border-[#CBD5E1] px-3 py-2 text-sm text-[#283044] bg-white outline-none focus:border-[#146C94] focus:ring-1 focus:ring-[#146C94]"></textarea>
-                    @error('isi')
-                        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                    @enderror
+                        <div class="relative">
+                            <label for="kadivRecipientSearch" class="mb-1.5 block text-[13px] font-medium text-[#172B36]">Penerima <span class="text-[#DC2626]">*</span></label>
+                            @if ($recipientUserId && $recipient)
+                                <div class="flex h-10 items-center gap-2.5 rounded-lg border border-[#D5DEE3] bg-white px-2.5">
+                                    @if ($recipient['foto'])
+                                        <img src="{{ $recipient['foto'] }}" alt="" class="h-7 w-7 shrink-0 rounded-full border border-[#E2E8EC] object-cover">
+                                    @else
+                                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#AFD3E2] text-[12px] font-semibold text-[#0B4A66]">{{ $recipient['initials'] }}</span>
+                                    @endif
+                                    <div class="min-w-0 flex-1">
+                                        <p class="truncate text-[13px] font-medium text-[#172B36]">{{ $recipient['nama'] }}</p>
+                                        <p class="truncate text-[12px] text-[#4B5563]">{{ $recipient['jabatan'] }} · {{ $recipient['divisi'] }}</p>
+                                    </div>
+                                    <button type="button" wire:click="clearRecipient" aria-label="Ganti penerima"
+                                            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#64748B] transition hover:bg-[#F1F5F9] hover:text-[#172B36] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
+                                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                                    </button>
+                                </div>
+                            @else
+                                <div class="relative">
+                                    <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path stroke-linecap="round" d="m20 20-3.5-3.5"></path></svg>
+                                    </span>
+                                    <input id="kadivRecipientSearch" type="text" autocomplete="off"
+                                           wire:model.live.debounce.250ms="recipientSearch" wire:focus="openList"
+                                           role="combobox" aria-expanded="{{ $listOpen ? 'true' : 'false' }}"
+                                           aria-controls="kadivRecipientList" aria-autocomplete="list"
+                                           placeholder="Cari nama, jabatan, atau divisi"
+                                           class="h-10 w-full rounded-lg border border-[#D5DEE3] bg-white pl-9 pr-3 text-[13px] text-[#172B36] outline-none placeholder:text-[#94A3B8] focus:border-[#146C94] focus:ring-2 focus:ring-[#146C94]">
+                                </div>
+
+                                @if ($listOpen)
+                                    <div id="kadivRecipientList" role="listbox"
+                                         class="absolute z-10 mt-1 max-h-[280px] w-full overflow-y-auto rounded-lg border border-[#E2E8EC] bg-white py-1 shadow-lg">
+                                        @forelse ($this->recipientResults as $index => $option)
+                                            <button type="button" role="option" id="kadivOption-{{ $index }}"
+                                                    wire:click="selectRecipient('{{ $option['id'] }}')"
+                                                    class="compose-option flex min-h-[44px] w-full items-center gap-2.5 px-3 text-left transition hover:bg-[#F5FAFC] focus:outline-none">
+                                                @if ($option['foto'])
+                                                    <img src="{{ $option['foto'] }}" alt="" class="h-7 w-7 shrink-0 rounded-full border border-[#E2E8EC] object-cover">
+                                                @else
+                                                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#AFD3E2] text-[12px] font-semibold text-[#0B4A66]">{{ $option['initials'] }}</span>
+                                                @endif
+                                                <span class="min-w-0">
+                                                    <span class="block truncate text-[13px] font-medium text-[#172B36]">{{ $option['nama'] }}</span>
+                                                    <span class="block truncate text-[12px] text-[#4B5563]">{{ $option['jabatan'] }} · {{ $option['divisi'] }}</span>
+                                                </span>
+                                            </button>
+                                        @empty
+                                            <p class="px-3 py-3 text-[12px] text-[#4B5563]">Penerima tidak ditemukan</p>
+                                        @endforelse
+                                        @if (count($this->recipientResults) >= 20)
+                                            <p class="border-t border-[#EEF2F5] px-3 py-2 text-[12px] text-[#4B5563]">Ketik untuk mempersempit hasil</p>
+                                        @endif
+                                    </div>
+                                @endif
+                            @endif
+                            @error('recipientUserId') <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="kadivPesanJudul" class="mb-1.5 block text-[13px] font-medium text-[#172B36]">Topik</label>
+                            <input id="kadivPesanJudul" type="text" wire:model="judul" maxlength="200" placeholder="Contoh: Koordinasi jadwal terbit"
+                                   class="h-10 w-full rounded-lg border border-[#D5DEE3] bg-white px-3 text-[13px] text-[#172B36] outline-none placeholder:text-[#94A3B8] focus:border-[#146C94] focus:ring-2 focus:ring-[#146C94]">
+                            @error('judul') <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="kadivPesanIsi" class="mb-1.5 block text-[13px] font-medium text-[#172B36]">Isi pesan <span class="text-[#DC2626]">*</span></label>
+                            <textarea id="kadivPesanIsi" rows="5" maxlength="5000" wire:model.live="isi" placeholder="Tulis pesan Anda..."
+                                      class="block w-full resize-none overflow-hidden rounded-lg border border-[#D5DEE3] bg-white px-3 py-2 text-[13px] leading-[22px] text-[#172B36] outline-none placeholder:text-[#94A3B8] focus:border-[#146C94] focus:ring-2 focus:ring-[#146C94]"></textarea>
+                            @error('isi') <p class="mt-1 text-[12px] text-[#B91C1C]">{{ $message }}</p> @enderror
+                            <div class="mt-1.5 flex items-center justify-between gap-3 text-[12px] text-[#4B5563]">
+                                <span>Ctrl + Enter untuk mengirim</span>
+                                <span class="tabular-nums {{ strlen($isi) >= 5000 ? 'text-[#B91C1C]' : '' }}">{{ strlen($isi) }} / 5000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 border-t border-[#E2E8EC] px-5 py-4">
+                        <button type="button" wire:click="requestClose" @if ($sending) disabled @endif
+                                class="inline-flex h-9 items-center rounded-lg border border-[#D5DEE3] bg-white px-4 text-[13px] font-medium text-[#172B36] transition hover:bg-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] disabled:cursor-not-allowed disabled:opacity-60">Batal</button>
+                        <button type="button" id="kadivComposeSendBtn" wire:click="sendMessage"
+                                @if (! $recipientUserId || trim($isi) === '' || $sending) disabled @endif
+                                class="inline-flex h-9 items-center gap-2 rounded-lg bg-[#146C94] px-4 text-[13px] font-medium text-white transition hover:bg-[#0F5678] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                            @if ($sending)
+                                <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                Mengirim...
+                            @else
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg>
+                                Kirim pesan
+                            @endif
+                        </button>
+                    </div>
+
                 </div>
+                    @if ($confirmDiscard)
+                        <div wire:click.self="keepDraft" class="modal-overlay-in fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(15,40,55,.45)] p-4">
+                            <div class="modal-panel-in relative z-10 w-full max-w-[320px] rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-xl" role="alertdialog" aria-modal="true" aria-labelledby="kadivDiscardTitle">
+                                <p id="kadivDiscardTitle" class="text-[14px] font-medium text-[#172B36]">Buang pesan ini?</p>
+                                <p class="mt-1 text-[12px] text-[#4B5563]">Perubahan yang belum dikirim akan hilang.</p>
+                                <div class="mt-4 flex justify-end gap-2">
+                                    <button type="button" id="kadivComposeDiscardCancel" wire:click="keepDraft" class="inline-flex h-9 items-center rounded-lg border border-[#D5DEE3] bg-white px-4 text-[13px] font-medium text-[#172B36] transition hover:bg-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">Batal</button>
+                                    <button type="button" wire:click="discardDraft" class="inline-flex h-9 items-center rounded-lg bg-[#B91C1C] px-4 text-[13px] font-medium text-white transition hover:bg-[#991B1B] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C]">Buang</button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
             </div>
-
-            <div class="px-6 py-4 border-t border-[#E2E8F0] flex items-center justify-end gap-2">
-                <button type="button" data-modal-close="modalKirimPesan"
-                    class="h-10 px-4 rounded-lg bg-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-300 transition">
-                    Batal
-                </button>
-                <button type="submit" wire:loading.attr="disabled"
-                    class="h-10 px-4 rounded-lg bg-[#0097B2] text-white text-sm font-medium hover:bg-[#008199] transition disabled:opacity-50">
-                    <span wire:loading.remove wire:target="sendMessage">Kirim</span>
-                    <span wire:loading wire:target="sendMessage">Mengirim...</span>
-                </button>
-            </div>
-        </form>
+        @endif
     </div>
-
 
     {{-- MODAL KIRIM SURAT IZIN --}}
     <div id="modalSuratIzin"
-        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(86,94,116,0.4)] backdrop-blur-sm transition-opacity duration-150 ease-in-out">
+        class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(15,40,55,.45)] transition-opacity duration-150 ease-in-out">
         <form wire:submit="kirimSuratIzin" data-modal-panel
             class="relative flex max-h-[90vh] w-full max-w-[420px] flex-col overflow-hidden rounded-xl bg-white shadow-[0_8px_16px_rgba(0,0,0,0.12)] scale-95 translate-y-2 transition-all duration-150 ease-in-out">
 
@@ -385,5 +429,90 @@
             fileInput?.addEventListener('change', () => {
                 fileLabel.textContent = fileInput.files?.[0]?.name || 'Pilih File (Bukti Surat)';
             });
+
+        if (! window.__kadivComposeBound) {
+            window.__kadivComposeBound = true;
+            window.__kadivActive = 0;
+
+            function kdOptions() {
+                const list = document.getElementById('kadivRecipientList');
+                return list ? Array.from(list.querySelectorAll('[role="option"]')) : [];
+            }
+            function kdSync() {
+                const input = document.getElementById('kadivRecipientSearch');
+                const options = kdOptions();
+                if (!input || !options.length) { if (input) input.removeAttribute('aria-activedescendant'); return; }
+                if (window.__kadivActive >= options.length) window.__kadivActive = 0;
+                options.forEach(function (o, i) { o.classList.toggle('is-active', i === window.__kadivActive); });
+                input.setAttribute('aria-activedescendant', options[window.__kadivActive].id);
+            }
+            function kdSize() {
+                const area = document.getElementById('kadivPesanIsi');
+                if (!area) return;
+                area.style.height = 'auto';
+                area.style.height = Math.min(area.scrollHeight, 228) + 'px';
+            }
+            function kdInit() {
+                window.__kadivActive = 0;
+                kdSync();
+                kdSize();
+                const cancel = document.getElementById('kadivComposeDiscardCancel');
+                if (cancel && !window.__kadivConfirmFocused) { window.__kadivConfirmFocused = true; cancel.focus(); }
+                else if (!cancel) { window.__kadivConfirmFocused = false; }
+            }
+            document.addEventListener('livewire:update', kdInit);
+            document.addEventListener('DOMContentLoaded', kdInit);
+            kdInit();
+
+            window.addEventListener('compose-message-closed', function () {
+                if (window.__kadivTrigger && typeof window.__kadivTrigger.focus === 'function') window.__kadivTrigger.focus();
+            });
+            window.addEventListener('compose-focus-cancel', function () { document.getElementById('kadivComposeDiscardCancel')?.focus(); });
+
+            document.addEventListener('click', function (event) {
+                const trigger = event.target.closest('[data-modal-open="modalKirimPesan"]');
+                if (trigger) window.__kadivTrigger = trigger;
+            });
+
+            document.addEventListener('keydown', function (event) {
+                const panel = document.querySelector('[data-compose-panel]');
+                if (!panel) return;
+
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    if (document.getElementById('kadivComposeDiscardCancel')) document.getElementById('kadivComposeDiscardCancel').click();
+                    else if (document.getElementById('kadivRecipientList')) Livewire.dispatch('compose-close-list');
+                    else document.getElementById('kadivComposeCloseBtn')?.click();
+                    return;
+                }
+                if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                    event.preventDefault();
+                    document.getElementById('kadivComposeSendBtn')?.click();
+                    return;
+                }
+                const input = document.getElementById('kadivRecipientSearch');
+                if (input && document.activeElement === input) {
+                    const options = kdOptions();
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        if (!options.length) return;
+                        const step = event.key === 'ArrowDown' ? 1 : -1;
+                        window.__kadivActive = (window.__kadivActive + step + options.length) % options.length;
+                        kdSync();
+                        options[window.__kadivActive].scrollIntoView({ block: 'nearest' });
+                        return;
+                    }
+                    if (event.key === 'Enter' && options.length) { event.preventDefault(); options[window.__kadivActive].click(); return; }
+                }
+                if (event.key === 'Tab') {
+                    const focusables = Array.from(panel.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter(function (el) { return el.offsetParent !== null; });
+                    if (!focusables.length) return;
+                    const first = focusables[0], last = focusables[focusables.length - 1];
+                    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+                }
+            });
+            document.addEventListener('input', function (event) { if (event.target && event.target.id === 'kadivPesanIsi') kdSize(); });
+        }
         </script>
     </div>

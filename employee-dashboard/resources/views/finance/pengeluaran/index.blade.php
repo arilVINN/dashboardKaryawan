@@ -214,8 +214,8 @@
     </div>
 
     {{-- MODAL CAIRKAN PERMINTAAN DANA --}}
-    <div id="modal-cairkan" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100">
+    <div id="modal-cairkan" class="modal-overlay-in fixed inset-0 z-50 hidden bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4">
+        <div class="modal-panel-in bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100">
             <div class="flex items-center justify-between pb-4 border-b border-slate-100">
                 <h3 class="text-base font-bold text-slate-800">Cairkan Permintaan Dana</h3>
                 <button type="button" onclick="closeModal('modal-cairkan')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
@@ -275,8 +275,8 @@
     </div>
 
     {{-- MODAL TAMBAH PENGELUARAN LANGSUNG --}}
-    <div id="modal-tambah-pengeluaran" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100">
+    <div id="modal-tambah-pengeluaran" class="modal-overlay-in fixed inset-0 z-50 hidden bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4">
+        <div class="modal-panel-in bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100">
             <div class="flex items-center justify-between pb-4 border-b border-slate-100">
                 <h3 class="text-base font-bold text-slate-800">Catat Kas Keluar Langsung</h3>
                 <button type="button" onclick="closeModal('modal-tambah-pengeluaran')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>

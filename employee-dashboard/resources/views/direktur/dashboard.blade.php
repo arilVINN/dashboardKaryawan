@@ -8,7 +8,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-slate-100 flex h-screen overflow-hidden text-slate-800">
+<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800">
 
     @include('component_direktur.sidebar')
 
@@ -16,7 +16,7 @@
 
         @include('component.topbar')
 
-        <main class="flex-1 overflow-y-auto bg-[#F4F7F9] p-4 sm:p-6 lg:p-8 space-y-6">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
 
             {{-- 1. Executive Welcome Banner --}}
             <div class="bg-gradient-to-r from-[#044564] via-[#0b5d84] to-[#19A7CE] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
@@ -44,7 +44,7 @@
             <div class="grid grid-cols-1 gap-4 min-[560px]:grid-cols-2 min-[900px]:grid-cols-4">
 
                 {{-- Card Keuangan --}}
-                <div class="flex min-h-[132px] flex-col justify-between rounded-xl border border-[#E2E8EC] bg-white p-3.5 shadow-sm">
+                <div class="flex min-h-[132px] flex-col justify-between rounded-xl border border-[#E2E8EC] bg-white p-3 shadow-sm">
                     <div class="flex items-start justify-between gap-3">
                         <p class="text-[13px] font-medium text-[#4B5563]">Saldo Kas Bersih</p>
                         <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#E3F1F7] text-[#146C94]">
@@ -67,7 +67,7 @@
                 </div>
 
                 {{-- Card SDM & Karyawan --}}
-                <div class="flex min-h-[132px] flex-col justify-between rounded-xl border border-[#E2E8EC] bg-white p-3.5 shadow-sm">
+                <div class="flex min-h-[132px] flex-col justify-between rounded-xl border border-[#E2E8EC] bg-white p-3 shadow-sm">
                     <div class="flex items-start justify-between gap-3">
                         <p class="text-[13px] font-medium text-[#4B5563]">Karyawan Aktif</p>
                         <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#E3F1F7] text-[#146C94]">
@@ -88,7 +88,7 @@
                 </div>
 
                 {{-- Card Tugas & Operasional --}}
-                <div class="flex min-h-[132px] flex-col justify-between rounded-xl border border-[#E2E8EC] bg-white p-3.5 shadow-sm">
+                <div class="flex min-h-[132px] flex-col justify-between rounded-xl border border-[#E2E8EC] bg-white p-3 shadow-sm">
                     <div class="flex items-start justify-between gap-3">
                         <p class="text-[13px] font-medium text-[#4B5563]">Operasional Tugas</p>
                         <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#E3F1F7] text-[#146C94]">
@@ -114,7 +114,7 @@
                 {{-- Card Approval Pending --}}
                 @php $totalApproval = $permintaanDanaPending + $suratIzinPending + $bookingPending; @endphp
                 <div @class([
-                    'flex min-h-[132px] flex-col justify-between rounded-xl border p-3.5 shadow-sm',
+                    'flex min-h-[132px] flex-col justify-between rounded-xl border p-3 shadow-sm',
                     'border-[#F5C85C] bg-[#FFFBEB]' => $totalApproval > 0,
                     'border-[#E2E8EC] bg-white' => $totalApproval === 0,
                 ])>
@@ -324,7 +324,7 @@
                             @else
                                 <div class="divide-y divide-[#EEF2F5]">
                                     @foreach ($notifikasiTerbaru as $notifikasi)
-                                        <div class="px-4 py-3 sm:px-5">
+                                        <div class="px-4 py-3 transition sm:px-5 hover:bg-[#F5FAFC]">
                                             <p class="text-[13px] font-medium text-[#172B36]">{{ $notifikasi->judul_notifikasi }}</p>
                                             <p class="mt-0.5 text-[12px] leading-[1.45] text-[#4B5563]">{{ $notifikasi->displayMessage() }}</p>
                                             <p class="mt-1 text-[11px] text-[#94A3B8]">

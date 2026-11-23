@@ -25,9 +25,11 @@
                 'inline' => true,
             ])
             @if (session('success'))
-                <div class="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                    {{ session('success') }}
-                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        window.appToast(@json(session('success')), 'success');
+                    });
+                </script>
             @endif
 
             <div class="mb-6 flex flex-wrap items-center justify-between gap-3">

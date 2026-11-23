@@ -22,9 +22,11 @@
             <h1 class="text-2xl font-bold text-slate-900 mb-6">Pesan</h1>
 
             @if (session('success'))
-                <div class="mb-4 px-4 py-2 rounded-lg bg-green-100 text-green-700 text-sm font-medium">
-                    {{ session('success') }}
-                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        window.appToast(@json(session('success')), 'success');
+                    });
+                </script>
             @endif
 
             <div class="space-y-4 bg-white p-5 rounded-3xl w-full drop-shadow-2xl">
@@ -245,7 +247,7 @@
             lampiranBalas.addEventListener('change', function() {
                 const file = this.files[0];
                 if (file && file.size > 200 * 1024 * 1024) {
-                    alert('Ukuran file maksimal 200 MB');
+                    window.appToast('Ukuran file maksimal 200 MB', 'error');
                     this.value = '';
                 }
             });
@@ -273,7 +275,7 @@
                 event.preventDefault();
                 const file = lampiranBalas ? lampiranBalas.files[0] : null;
                 if (file && file.size > 200 * 1024 * 1024) {
-                    alert('Ukuran file maksimal 200 MB');
+                    window.appToast('Ukuran file maksimal 200 MB', 'error');
                     return;
                 }
                 const payload = new FormData(this);
@@ -289,8 +291,9 @@
                     isFormDirty = false;
                     tutupForm();
                     await loadMessage();
+                    window.appToast('Balasan berhasil dikirim.', 'success');
                 } catch (error) {
-                    alert(error.message);
+                    window.appToast(error.message || 'Balasan gagal dikirim.', 'error');
                 }
             });
 

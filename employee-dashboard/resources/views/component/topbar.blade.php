@@ -182,6 +182,89 @@
 <!-- Toast container tersedia di semua halaman staff via topbar -->
 <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-3 pointer-events-none"></div>
 
+<script>
+    (function () {
+        function escapeAppToast(value) {
+            return String(value ?? '').replace(/[&<>"']/g, function (character) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[character];
+            });
+        }
+
+        window.appToast = function (message, type) {
+            const container = document.getElementById('toast-container');
+            if (!container || !message) return;
+
+            const isError = type === 'error';
+            const border = isError ? '#F5A3A3' : '#86D9AE';
+            const iconBg = isError ? '#FDE0E0' : '#D9F5E5';
+            const iconColor = isError ? '#DC2626' : '#059669';
+            const iconPath = isError ? 'M6 18 18 6M6 6l12 12' : 'm5 13 4 4L19 7';
+
+            const toast = document.createElement('div');
+            toast.className = 'pointer-events-auto flex w-80 max-w-[calc(100vw-2rem)] items-center gap-3 rounded-xl border bg-white px-4 py-3 shadow-lg opacity-0 -translate-y-2 transition-all duration-200';
+            toast.style.borderColor = border;
+            toast.setAttribute('role', isError ? 'alert' : 'status');
+            toast.innerHTML = `
+                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full" style="background-color: ${iconBg}; color: ${iconColor};">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="${iconPath}" /></svg>
+                </span>
+                <span class="min-w-0 flex-1 text-[13px] font-medium text-[#172B36]">${escapeAppToast(message)}</span>
+                <button type="button" class="shrink-0 text-[#94A3B8] transition hover:text-[#172B36] focus:outline-none" aria-label="Tutup notifikasi">&times;</button>
+            `;
+
+            const close = function () {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                toast.addEventListener('transitionend', function () { toast.remove(); }, { once: true });
+            };
+            toast.querySelector('button').addEventListener('click', close);
+
+            container.appendChild(toast);
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    toast.classList.remove('opacity-0', '-translate-y-2');
+                });
+            });
+            setTimeout(close, 4000);
+        };
+
+        // Show a toast after a full-page reload (result cannot survive in JS).
+        window.appToastPending = function (message, type) {
+            sessionStorage.setItem('appToastPending', JSON.stringify({ message: message, type: type }));
+            window.location.reload();
+        };
+
+        function flushPendingToast() {
+            const raw = sessionStorage.getItem('appToastPending');
+            if (!raw) return;
+            sessionStorage.removeItem('appToastPending');
+            try {
+                const payload = JSON.parse(raw);
+                window.appToast(payload.message, payload.type);
+            } catch (error) {
+                // Ignore malformed payloads.
+            }
+        }
+
+        function registerLivewireToast() {
+            if (!window.Livewire) return false;
+            window.Livewire.on('app-toast', function (payload) {
+                window.appToast(payload.message, payload.type);
+            });
+            return true;
+        }
+
+        if (!registerLivewireToast()) {
+            document.addEventListener('livewire:init', registerLivewireToast);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', flushPendingToast);
+        } else {
+            flushPendingToast();
+        }
+    })();
+</script>
+
 @php
     $bannerError = session('forbidden') ?? session('error') ?? session('warning');
 @endphp

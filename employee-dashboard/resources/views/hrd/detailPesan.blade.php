@@ -118,7 +118,7 @@
                         throw new Error(validationErrors || result.message || 'Balasan gagal dikirim.');
                     }
 
-                    window.location.reload();
+                    window.appToastPending('Balasan berhasil dikirim.', 'success');
                 } catch (exception) {
                     error.textContent = exception.message || 'Terjadi kesalahan saat mengirim balasan.';
                     error.classList.remove('hidden');

@@ -1,11 +1,6 @@
 @php
     $indicator = fn (string $col) => $sort === $col ? ($dir === 'asc' ? '▲' : '▼') : '↕';
     $cellPadding = 'px-6 py-4';
-    $typeClasses = [
-        'direktur' => 'bg-amber-100 text-amber-800 border-amber-200',
-        'manajemen' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
-        'divisi' => 'bg-cyan-50 text-cyan-800 border-cyan-200',
-    ];
 @endphp
 
 <div class="flex flex-col gap-3 w-full mt-2">
@@ -116,7 +111,7 @@
                             $staffCount = $showHierarchy ? $divisi->anggotaStaff()->count() : 0;
                             $level = (int) ($divisi->level ?? 3);
                             $indent = max(0, ($level - 1) * 18);
-                            $typeClass = $typeClasses[$divisi->tipe] ?? 'bg-slate-100 text-slate-700 border-slate-200';
+                            $typePalette = \App\Support\StatusPalette::divisionType($divisi->tipe);
                             $capacity = $divisi->isGrouping()
                                 ? 'Grup'
                                 : ($divisi->kapasitas === null ? 'Tanpa batas' : $memberCount.'/'.$divisi->kapasitas);
@@ -140,9 +135,7 @@
                                         <div class="min-w-0">
                                             <div class="flex flex-wrap items-center gap-2">
                                                 <span class="font-semibold text-slate-800">{{ $divisi->nama_divisi }}</span>
-                                                <span class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide {{ $typeClass }}">
-                                                    {{ $divisi->labelTipe() }}
-                                                </span>
+                                                <x-status-badge :status="$divisi->tipe" :label="$divisi->labelTipe()" :palette="$typePalette" dot />
                                             </div>
                                             <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                                                 @if ($divisi->parent)
@@ -181,15 +174,7 @@
                                 @endif
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap">
-                                @if (strtolower($divisi->status_aktif ?? '') === 'aktif')
-                                    <span class="px-2.5 py-1 border border-emerald-500 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">
-                                        {{ $divisi->status_aktif }}
-                                    </span>
-                                @else
-                                    <span class="px-2.5 py-1 border border-slate-400 bg-slate-100 text-slate-500 rounded-full text-xs font-bold">
-                                        {{ $divisi->status_aktif }}
-                                    </span>
-                                @endif
+                                <x-status-badge :status="$divisi->status_aktif" :label="$divisi->status_aktif" dot />
                             </td>
                             <td class="{{ $cellPadding }} whitespace-nowrap text-center text-sm">
                                 <a href="{{ url('/hrd/detailDivisi/' . $divisi->id_divisi) }}"

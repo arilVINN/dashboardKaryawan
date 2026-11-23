@@ -85,8 +85,8 @@
         </div>
 
         @if ($bisaKelolaJabatan)
-            <div id="dialogJabatanDivisi" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-[rgba(15,40,55,0.45)]">
-                <div class="w-full max-w-[400px] max-w-[92vw] rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="dialogJabatanDivisiTitle">
+            <div id="dialogJabatanDivisi" class="modal-overlay-in fixed inset-0 z-50 hidden items-center justify-center p-4 bg-[rgba(15,40,55,.45)]">
+                <div class="modal-panel-in w-full max-w-[400px] max-w-[92vw] rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="dialogJabatanDivisiTitle">
                     <h3 id="dialogJabatanDivisiTitle" class="text-[16px] font-semibold text-[#172B36]">Tambah jabatan baru</h3>
                     <form id="formJabatanDivisi" class="mt-4 space-y-3">
                         @csrf

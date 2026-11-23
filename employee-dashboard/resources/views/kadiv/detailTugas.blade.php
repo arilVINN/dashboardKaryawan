@@ -154,7 +154,7 @@
     </div>
 
     {{-- MODAL EDIT TUGAS --}}
-    <div id="modalEditTugas" class="hidden fixed inset-0 z-50 bg-[rgba(86,94,116,0.4)] flex items-center justify-center p-4">
+    <div id="modalEditTugas" class="hidden fixed inset-0 z-50 bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4">
         <form id="formEditTugas" class="bg-white rounded-xl w-full max-w-[420px] max-h-[90vh] flex flex-col shadow-[0_8px_16px_rgba(0,0,0,0.12)]">
             <div class="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC] rounded-t-xl">
                 <h3 class="text-lg font-semibold text-black">Edit Tugas</h3>
@@ -204,7 +204,7 @@
 
     {{-- MODAL KONFIRMASI ACC --}}
     <div id="modalKonfirmasiAcc"
-         class="hidden fixed inset-0 z-50 bg-[rgba(86,94,116,0.4)] flex items-center justify-center p-4">
+         class="hidden fixed inset-0 z-50 bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4">
 
         <div class="bg-white rounded-xl w-full max-w-[400px] p-6 shadow-[0_8px_16px_rgba(0,0,0,0.12)]">
 
@@ -236,7 +236,7 @@
 
     {{-- MODAL REVISI --}}
     <div id="modalRevisi"
-         class="hidden fixed inset-0 z-50 bg-[rgba(86,94,116,0.4)] flex items-center justify-center p-4">
+         class="hidden fixed inset-0 z-50 bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4">
         <form id="formRevisi"
               action="#"
               method="POST"
@@ -312,6 +312,8 @@
     </div>
 
     {{-- SCRIPT --}}
+    @include('components.status-badge-js')
+
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
             const token = sessionStorage.getItem('staff_token');
@@ -352,39 +354,16 @@
                 };
             };
 
-            const STATUS_PALETTE = @json(\App\Support\StatusPalette::all());
-
-            function normalizeStatus(status) {
-                const value = String(status || '').toLowerCase().trim();
-                if (!value) return null;
-
-                if (value.includes('tidak') && value.includes('aktif')) return 'tidak_aktif';
-                if (value === 'aktif') return 'aktif';
-                if (value === 'baru') return 'baru';
-                if (value === 'berjalan') return 'berjalan';
-                if (value.includes('menunggu')) return 'menunggu';
-                if (value.includes('sudah') || value.includes('disetujui') || value.includes('selesai')) return 'disetujui';
-                if (value.includes('terlambat') || value.includes('telat')) return 'terlambat';
-
-                return null;
-            }
-
             function renderStatusBadge(status) {
                 const badge = document.getElementById('detail-task-badge');
-                const key = normalizeStatus(status);
-                const palette = key ? STATUS_PALETTE[key] : null;
 
-                if (!palette) {
+                if (!window.statusBadgeKey(status)) {
                     badge.textContent = '';
                     badge.className = 'hidden';
                     return;
                 }
 
-                badge.textContent = palette.label;
-                badge.className = 'inline-flex w-fit items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold';
-                badge.style.backgroundColor = palette.bg;
-                badge.style.borderColor = palette.border;
-                badge.style.color = palette.text;
+                window.statusBadgeRender(badge, status);
             }
 
             const attachmentIconPaths = {

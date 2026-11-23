@@ -79,12 +79,7 @@
         <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-3">
                 <h1 class="text-[24px] font-bold leading-tight text-[#172B36]">{{ $permintaan->judul_pengajuan }}</h1>
-                <span class="inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium text-[#172B36]"
-                    style="background-color: {{ $status['bg'] }}; border-color: {{ $status['border'] }};">
-                    <span class="h-[7px] w-[7px] shrink-0 rounded-full"
-                        style="background-color: {{ $status['dot'] }};" aria-hidden="true"></span>
-                    {{ $status['label'] }}
-                </span>
+                <x-status-badge :status="$permintaan->status" :label="$status['label']" :palette="$status" dot />
             </div>
 
             {{-- Meta line --}}

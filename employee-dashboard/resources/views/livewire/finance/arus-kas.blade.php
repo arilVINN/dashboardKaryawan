@@ -457,8 +457,8 @@
     @endif
 
     {{-- MODAL TAMBAH PEMASUKAN --}}
-    <div id="modal-tambah-pemasukan" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-lg w-full p-6 shadow-xl border border-[#E2E8EC]">
+    <div id="modal-tambah-pemasukan" class="modal-overlay-in fixed inset-0 z-50 hidden bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4">
+        <div class="modal-panel-in bg-white rounded-xl max-w-lg w-full p-6 shadow-xl border border-[#E2E8EC]">
             <div class="flex items-center justify-between pb-4 border-b border-[#E2E8EC]">
                 <h3 class="text-[16px] font-semibold text-[#172B36]">Catat kas masuk baru</h3>
                 <button type="button" onclick="closeModal('modal-tambah-pemasukan')" class="text-[#4B5563] hover:text-[#4B5563] text-xl font-bold">&times;</button>
@@ -520,8 +520,8 @@
     </div>
 
     {{-- MODAL CAIRKAN DANA --}}
-    <div id="modal-cairkan" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-lg w-full p-6 shadow-xl border border-[#E2E8EC]">
+    <div id="modal-cairkan" class="modal-overlay-in fixed inset-0 z-50 hidden bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4">
+        <div class="modal-panel-in bg-white rounded-xl max-w-lg w-full p-6 shadow-xl border border-[#E2E8EC]">
             <div class="flex items-center justify-between pb-4 border-b border-[#E2E8EC]">
                 <h3 class="text-[16px] font-semibold text-[#172B36]">Cairkan permintaan dana</h3>
                 <button type="button" onclick="closeModal('modal-cairkan')" class="text-[#4B5563] hover:text-[#4B5563] text-xl font-bold">&times;</button>
@@ -569,8 +569,8 @@
     </div>
 
     {{-- MODAL TAMBAH PENGELUARAN LANGSUNG --}}
-    <div id="modal-tambah-pengeluaran" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-lg w-full p-6 shadow-xl border border-[#E2E8EC]">
+    <div id="modal-tambah-pengeluaran" class="modal-overlay-in fixed inset-0 z-50 hidden bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4">
+        <div class="modal-panel-in bg-white rounded-xl max-w-lg w-full p-6 shadow-xl border border-[#E2E8EC]">
             <div class="flex items-center justify-between pb-4 border-b border-[#E2E8EC]">
                 <h3 class="text-[16px] font-semibold text-[#172B36]">Catat kas keluar langsung</h3>
                 <button type="button" onclick="closeModal('modal-tambah-pengeluaran')" class="text-[#4B5563] hover:text-[#4B5563] text-xl font-bold">&times;</button>

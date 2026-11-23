@@ -118,13 +118,7 @@
                             </td>
 
                             <td class="{{ $cellPadding }} whitespace-nowrap">
-                                @if ($k->status_aktif === 'Tidak Aktif')
-                                    <span
-                                        class="px-2.5 py-1 border border-red-500 bg-red-100 text-red-700 rounded-full text-xs font-bold">Tidak Aktif</span>
-                                @else
-                                    <span
-                                        class="px-2.5 py-1 border border-emerald-500 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Aktif</span>
-                                @endif
+                                <x-status-badge :status="$k->status_aktif" :label="$k->status_aktif" />
                             </td>
 
                             <td class="{{ $cellPadding }} whitespace-nowrap text-center text-sm">
