@@ -143,13 +143,13 @@ class ComposeMessage extends Component
         $this->closeModal();
     }
 
-    public function cancelDiscard(): void
+    public function keepDraft(): void
     {
         $this->confirmDiscard = false;
         $this->dispatch('compose-focus-cancel');
     }
 
-    public function confirmDiscard(): void
+    public function discardDraft(): void
     {
         $this->confirmDiscard = false;
         $this->closeModal();

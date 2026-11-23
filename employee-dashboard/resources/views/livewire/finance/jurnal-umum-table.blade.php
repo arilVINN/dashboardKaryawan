@@ -264,9 +264,9 @@
 
     {{-- ── Panduan kode divisi (dialog) ───────────────────────────────── --}}
     @if ($showDivisionDialog)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(15, 40, 55, .45)"
+        <div class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(15,40,55,.45)]"
              wire:click.self="closeDivisionDialog">
-            <div class="w-full max-w-[400px] overflow-hidden rounded-xl bg-white shadow-xl"
+            <div class="modal-panel-in w-full max-w-[400px] overflow-hidden rounded-xl bg-white shadow-xl"
                  role="dialog" aria-modal="true" aria-label="Panduan kode divisi">
                 <div class="border-b border-[#E2E8EC] px-4 py-3">
                     <h2 class="text-[15px] font-semibold text-[#172B36]">Panduan kode divisi</h2>
@@ -303,9 +303,9 @@
 
     {{-- ── Manual entry modal ─────────────────────────────────────────── --}}
     @if ($showManualModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(15, 40, 55, .45)"
+        <div class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(15,40,55,.45)]"
              wire:click.self="closeManualModal">
-            <div class="flex max-h-[90vh] w-full max-w-[720px] flex-col overflow-hidden rounded-xl bg-white shadow-xl"
+            <div class="modal-panel-in flex max-h-[90vh] w-full max-w-[720px] flex-col overflow-hidden rounded-xl bg-white shadow-xl"
                  role="dialog" aria-modal="true" aria-label="Tambah jurnal">
                 <div class="flex items-center justify-between border-b border-[#E2E8EC] px-4 py-3">
                     <h2 class="text-[15px] font-semibold text-[#172B36]">Tambah jurnal</h2>
@@ -418,9 +418,9 @@
 
     {{-- ── Ubah baris jurnal ───────────────────────────────────────────── --}}
     @if ($editingLineId)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(15, 40, 55, .45)"
+        <div class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(15,40,55,.45)]"
              wire:click.self="closeLineEdit">
-            <div class="w-full max-w-[420px] rounded-xl bg-white shadow-xl" role="dialog" aria-modal="true" aria-label="Ubah baris jurnal">
+            <div class="modal-panel-in w-full max-w-[420px] rounded-xl bg-white shadow-xl" role="dialog" aria-modal="true" aria-label="Ubah baris jurnal">
                 <div class="border-b border-[#E2E8EC] px-4 py-3">
                     <h2 class="text-[15px] font-semibold text-[#172B36]">Ubah baris jurnal</h2>
                 </div>
@@ -469,8 +469,8 @@
 
     {{-- ── Hapus baris jurnal ──────────────────────────────────────────── --}}
     @if ($deletingLineId)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(15, 40, 55, .45)">
-            <div class="w-full max-w-[380px] rounded-xl bg-white p-4 shadow-xl" role="dialog" aria-modal="true" aria-label="Hapus baris jurnal">
+        <div class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(15,40,55,.45)]">
+            <div class="modal-panel-in w-full max-w-[380px] rounded-xl bg-white p-4 shadow-xl" role="dialog" aria-modal="true" aria-label="Hapus baris jurnal">
                 <h2 class="text-[15px] font-semibold text-[#172B36]">Hapus baris jurnal?</h2>
                 <p class="mt-2 text-[13px] text-[#4B5563]">Baris yang dihapus akan dicatat pada log audit. Total jurnal dapat menjadi tidak seimbang.</p>
                 <div class="mt-4 flex justify-end gap-2">

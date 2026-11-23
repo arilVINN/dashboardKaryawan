@@ -1,6 +1,6 @@
 <div id="modalSuratIzin"
      class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4
-            bg-[rgba(86,94,116,0.4)] backdrop-blur-sm
+            bg-[rgba(15,40,55,.45)]
             transition-opacity duration-150 ease-in-out">
 
     <form data-modal-panel

@@ -448,7 +448,7 @@
 
     {{-- Day popover --}}
     @if ($popoverDate)
-        <div class="fixed inset-0 z-[75] flex items-center justify-center bg-slate-900/40 p-4" @click.self="$wire.closePopover()">
+        <div class="fixed inset-0 z-[75] flex items-center justify-center bg-[rgba(15,40,55,.45)] p-4" @click.self="$wire.closePopover()">
             <div role="dialog" aria-modal="true" aria-labelledby="day-popover-title" tabindex="-1"
                 class="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-xl">
                 <div class="flex items-center justify-between gap-3 border-b border-[#E8EDF2] px-4 py-3">
@@ -517,7 +517,7 @@
         @endphp
 
         <div data-content-modal
-            class="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-[rgba(15,40,55,0.45)] p-4 sm:py-8"
+            class="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-[rgba(15,40,55,.45)] p-4 sm:py-8"
             @click.self="requestClose()"
             @input="if ($wire.get('formOpen')) dirty = true"
             @change="if ($wire.get('formOpen')) dirty = true"
@@ -992,7 +992,7 @@
     @if ($canDelete)
     {{-- Delete confirmation --}}
     <div x-show="confirmOpen" x-cloak
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4"
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(15,40,55,.45)] p-4"
         @click.self="closeDelete()">
         <div role="dialog" aria-modal="true" aria-labelledby="hapus-event-title"
             class="w-full max-w-md rounded-xl border border-[#E2E8EC] bg-white p-6 shadow-xl">
@@ -1016,7 +1016,7 @@
 
     {{-- Discard-changes confirmation --}}
     <div x-show="closeConfirm" x-cloak
-        class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/40 p-4"
+        class="fixed inset-0 z-[110] flex items-center justify-center bg-[rgba(15,40,55,.45)] p-4"
         @click.self="closeConfirm = false">
         <div role="alertdialog" aria-modal="true" aria-labelledby="discard-title"
             class="w-full max-w-sm rounded-xl border border-[#E2E8EC] bg-white p-6 shadow-xl">
@@ -1039,7 +1039,7 @@
     {{-- Add account --}}
     @if ($accountFormOpen)
         <div data-account-modal
-            class="fixed inset-0 flex items-center justify-center bg-slate-900/40 p-4"
+            class="fixed inset-0 flex items-center justify-center bg-[rgba(15,40,55,.45)] p-4"
             style="z-index: 90;"
             @click.self="$wire.closeAccountForm()">
             <div data-account-panel role="dialog" aria-modal="true" aria-labelledby="content-account-modal-title"
@@ -1083,7 +1083,7 @@
     @if ($optionForm !== '')
         @php $preview = \App\Support\OptionColor::for($optionColor); @endphp
         <div data-option-modal
-            class="fixed inset-0 flex items-center justify-center bg-slate-900/40 p-4"
+            class="fixed inset-0 flex items-center justify-center bg-[rgba(15,40,55,.45)] p-4"
             style="z-index: 95;"
             @click.self="$wire.closeOptionForm()">
             <div data-option-panel role="dialog" aria-modal="true" aria-labelledby="content-option-modal-title"
@@ -1147,7 +1147,7 @@
 
     {{-- Delete option confirmation --}}
     <div x-show="optionDeleteOpen" x-cloak
-        class="fixed inset-0 flex items-center justify-center bg-slate-900/40 p-4"
+        class="fixed inset-0 flex items-center justify-center bg-[rgba(15,40,55,.45)] p-4"
         style="z-index: 105;"
         @click.self="optionDeleteOpen = false; $wire.cancelDeleteOption()">
         <div role="dialog" aria-modal="true" aria-labelledby="hapus-opsi-title"

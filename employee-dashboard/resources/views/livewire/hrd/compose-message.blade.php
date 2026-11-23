@@ -1,9 +1,8 @@
 <div id="formKirimPesanHrd" class="hr-compose-root" aria-label="Kirim Pesan">
     @if ($showModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
-             style="background-color: rgba(15, 40, 55, .45);"
-             wire:click.self="requestClose">
-            <div class="relative w-[500px] max-w-[92vw] overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-2xl"
+        <div wire:click.self="requestClose"
+             class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,40,55,.45)] p-4">
+            <div class="modal-panel-in relative w-[500px] max-w-[92vw] overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-2xl"
                  role="dialog" aria-modal="true" aria-labelledby="composeTitle"
                  data-compose-panel>
 
@@ -173,19 +172,20 @@
                     </button>
                 </div>
 
+            </div>
                 {{-- Discard confirmation --}}
                 @if ($confirmDiscard)
-                    <div class="absolute inset-0 flex items-center justify-center bg-[rgba(15,40,55,.45)] p-4">
-                        <div class="w-full max-w-[320px] rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-xl"
+                    <div wire:click.self="keepDraft" class="modal-overlay-in fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(15,40,55,.45)] p-4">
+                        <div class="modal-panel-in relative z-10 w-full max-w-[320px] rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-xl"
                              role="alertdialog" aria-modal="true" aria-labelledby="composeDiscardTitle">
                             <p id="composeDiscardTitle" class="text-[14px] font-medium text-[#172B36]">Buang pesan ini?</p>
                             <p class="mt-1 text-[12px] text-[#4B5563]">Perubahan yang belum dikirim akan hilang.</p>
                             <div class="mt-4 flex justify-end gap-2">
-                                <button type="button" id="composeDiscardCancel" wire:click="cancelDiscard"
+                                <button type="button" id="composeDiscardCancel" wire:click="keepDraft"
                                         class="inline-flex h-9 items-center rounded-lg border border-[#D5DEE3] bg-white px-4 text-[13px] font-medium text-[#172B36] transition hover:bg-[#F8FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
                                     Batal
                                 </button>
-                                <button type="button" wire:click="confirmDiscard"
+                                <button type="button" wire:click="discardDraft"
                                         class="inline-flex h-9 items-center rounded-lg bg-[#B91C1C] px-4 text-[13px] font-medium text-white transition hover:bg-[#991B1B] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C]">
                                     Buang
                                 </button>
@@ -193,7 +193,6 @@
                         </div>
                     </div>
                 @endif
-            </div>
         </div>
     @endif
 

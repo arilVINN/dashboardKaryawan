@@ -154,7 +154,7 @@
     </div>
 
     {{-- MODAL EDIT TUGAS --}}
-    <div id="modalEditTugas" class="hidden fixed inset-0 z-50 bg-[rgba(86,94,116,0.4)] flex items-center justify-center p-4">
+    <div id="modalEditTugas" class="hidden fixed inset-0 z-50 bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4">
         <form id="formEditTugas" class="bg-white rounded-xl w-full max-w-[420px] max-h-[90vh] flex flex-col shadow-[0_8px_16px_rgba(0,0,0,0.12)]">
             <div class="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC] rounded-t-xl">
                 <h3 class="text-lg font-semibold text-black">Edit Tugas</h3>
@@ -204,7 +204,7 @@
 
     {{-- MODAL KONFIRMASI ACC --}}
     <div id="modalKonfirmasiAcc"
-         class="hidden fixed inset-0 z-50 bg-[rgba(86,94,116,0.4)] flex items-center justify-center p-4">
+         class="hidden fixed inset-0 z-50 bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4">
 
         <div class="bg-white rounded-xl w-full max-w-[400px] p-6 shadow-[0_8px_16px_rgba(0,0,0,0.12)]">
 
@@ -236,7 +236,7 @@
 
     {{-- MODAL REVISI --}}
     <div id="modalRevisi"
-         class="hidden fixed inset-0 z-50 bg-[rgba(86,94,116,0.4)] flex items-center justify-center p-4">
+         class="hidden fixed inset-0 z-50 bg-[rgba(15,40,55,.45)] flex items-center justify-center p-4">
         <form id="formRevisi"
               action="#"
               method="POST"

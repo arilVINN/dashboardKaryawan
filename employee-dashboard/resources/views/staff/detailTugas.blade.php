@@ -168,7 +168,7 @@
     {{-- Modal konfirmasi kirim tugas --}}
     <div id="modalKonfirmasiSubmit"
         class="opacity-0 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4
-               bg-[rgba(86,94,116,0.4)] backdrop-blur-sm transition-opacity duration-150 ease-in-out"
+               bg-[rgba(15,40,55,.45)] transition-opacity duration-150 ease-in-out"
         role="dialog" aria-modal="true" aria-labelledby="modalKonfirmasiSubmitTitle">
         <div data-modal-panel
             class="flex w-full max-w-[420px] flex-col overflow-hidden rounded-xl bg-white shadow-[0_8px_16px_rgba(0,0,0,0.12)]
