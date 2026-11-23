@@ -44,7 +44,14 @@
     <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         @include('component.topbar')
 
-        <main class="flex-1 overflow-y-auto">
+        <main class="flex-1 overflow-y-auto px-6 pb-8 pt-6 sm:px-8">
+            @include('component.breadcrumbs', [
+                'parentText' => 'Daftar Pesan',
+                'parentUrl' => url('/pesan'),
+                'currentPage' => $rootData['judul_pesan'] ?? 'Pesan',
+                'inline' => true,
+            ])
+
             <x-message-conversation
                 :topic="$rootData['judul_pesan'] ?? 'Pesan'"
                 :type-label="$typeLabel"

@@ -80,6 +80,31 @@ class MessageConversationUiTest extends TestCase
         $this->assertMatchesRegularExpression('/\d{2} Nov 2026, \d{2}:\d{2}/', $html);
     }
 
+    public function test_staff_detail_without_a_valid_message_returns_404(): void
+    {
+        // The app's global handler turns web 404s into a redirect with an error.
+        $this->actingAs($this->staff)->get('/pesan/detail')
+            ->assertRedirect()->assertSessionHas('error');
+        $this->actingAs($this->staff)->get('/pesan/detail/PSN-TIDAK-ADA')
+            ->assertRedirect()->assertSessionHas('error');
+    }
+
+    public function test_detail_pages_use_shared_breadcrumb_and_standard_spacing(): void
+    {
+        foreach (['staff', 'kadiv', 'hrd'] as $role) {
+            $html = (string) file_get_contents(resource_path('views/'.$role.'/detailPesan.blade.php'));
+
+            $this->assertStringContainsString("component.breadcrumbs", $html, $role);
+            $this->assertStringContainsString("'inline' => true", $html, $role);
+            $this->assertStringContainsString('px-6 pb-8 pt-6 sm:px-8', $html, $role);
+        }
+
+        $partial = (string) file_get_contents(resource_path('views/components/message-conversation.blade.php'));
+        $this->assertStringNotContainsString('data-breadcrumb-parent', $partial);
+        $this->assertStringContainsString('max-w-[760px]', $partial);
+        $this->assertStringNotContainsString('mx-auto', $partial);
+    }
+
     public function test_non_replyable_conversation_shows_single_line(): void
     {
         Pesan::whereKey('PSN-THREAD')->update(['tipe' => 'surat']);
