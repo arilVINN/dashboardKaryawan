@@ -136,29 +136,64 @@ class JurnalUmumTable extends Component
     }
 
     public function getActiveAccountsProperty(): Collection
-    {
-        return CoaAkun::aktif()->orderBy('kode')->get()
-            ->groupBy('kelompok')
-            ->sortBy(fn ($group, $key) => array_search($key, CoaAkun::KELOMPOK, true));
+{
+    $urutanKategori = [
+        '-',
+        'Aktiva',
+        'Aktiva Lancar',
+        'Aktiva Tetap',
+        'Pasiva',
+        'Hutang Lancar',
+        'Titipan',
+        'Modal',
+        'Pendapatan Usaha',
+        'Beban Pokok Jasa',
+        'Beban Operasional',
+        'Beban Penyusutan',
+        'Beban Pemasaran',
+        'Pendapatan Non Operasional',
+    ];
+
+    return CoaAkun::aktif()->orderBy('kode')->get()
+        ->groupBy('kelompok_detail')
+        ->sortBy(fn ($group, $key) => array_search($key, $urutanKategori, true));
+}
+
+   private function filteredAccounts(string $search): Collection
+{
+    $urutanKategori = [
+        '-',
+        'Aktiva',
+        'Aktiva Lancar',
+        'Aktiva Tetap',
+        'Pasiva',
+        'Hutang Lancar',
+        'Titipan',
+        'Modal',
+        'Pendapatan Usaha',
+        'Beban Pokok Jasa',
+        'Beban Operasional',
+        'Beban Penyusutan',
+        'Beban Pemasaran',
+        'Pendapatan Non Operasional',
+    ];
+
+    $query = CoaAkun::aktif()->orderBy('kode');
+    $search = trim($search);
+
+    if ($search !== '') {
+        $term = '%' . strtolower($search) . '%';
+
+        $query->where(function ($q) use ($term) {
+            $q->whereRaw('LOWER(kode) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(nama) LIKE ?', [$term]);
+        });
     }
 
-    private function filteredAccounts(string $search): Collection
-    {
-        $query = CoaAkun::aktif()->orderBy('kode');
-        $search = trim($search);
-
-        if ($search !== '') {
-            $term = '%' . strtolower($search) . '%';
-            $query->where(function ($q) use ($term) {
-                $q->whereRaw('LOWER(kode) LIKE ?', [$term])
-                    ->orWhereRaw('LOWER(nama) LIKE ?', [$term]);
-            });
-        }
-
-        return $query->get()
-            ->groupBy('kelompok')
-            ->sortBy(fn ($group, $key) => array_search($key, CoaAkun::KELOMPOK, true));
-    }
+    return $query->get()
+        ->groupBy('kelompok_detail')
+        ->sortBy(fn ($group, $key) => array_search($key, $urutanKategori, true));
+}
 
     // ── Panel / dialog toggles ────────────────────────────────────────────
 

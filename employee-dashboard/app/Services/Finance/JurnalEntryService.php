@@ -22,13 +22,13 @@ use InvalidArgumentException;
  */
 class JurnalEntryService
 {
-    public const KODE_KAS = '1101';
+    public const KODE_KAS = '1110';
 
-    public const KODE_PENDAPATAN = '4101';
+    public const KODE_PENDAPATAN = '4110';
 
-    public const KODE_PENDAPATAN_LAIN = '4102';
+    public const KODE_PENDAPATAN_LAIN = '7500';
 
-    public const KODE_BEBAN = '5102';
+    public const KODE_BEBAN = '7700';
 
     /**
      * Jurnal dari kas masuk: Debit Kas / Kredit Pendapatan.

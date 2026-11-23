@@ -12,6 +12,7 @@ class CoaAkun extends Model
         'kode',
         'nama',
         'kelompok',
+        'kelompok_detail',
         'aktif',
     ];
 

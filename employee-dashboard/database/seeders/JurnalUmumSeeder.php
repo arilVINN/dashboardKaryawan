@@ -16,21 +16,7 @@ class JurnalUmumSeeder extends Seeder
 {
     public function run(): void
     {
-        $akun = [
-            ['kode' => '1101', 'nama' => 'Kas', 'kelompok' => 'Aset'],
-            ['kode' => '1102', 'nama' => 'Bank', 'kelompok' => 'Aset'],
-            ['kode' => '2101', 'nama' => 'Utang Usaha', 'kelompok' => 'Kewajiban'],
-            ['kode' => '3101', 'nama' => 'Modal Pemilik', 'kelompok' => 'Ekuitas'],
-            ['kode' => '4101', 'nama' => 'Pendapatan Jasa', 'kelompok' => 'Pendapatan'],
-            ['kode' => '4102', 'nama' => 'Pendapatan Lain-lain', 'kelompok' => 'Pendapatan'],
-            ['kode' => '5101', 'nama' => 'Beban Gaji', 'kelompok' => 'Beban'],
-            ['kode' => '5102', 'nama' => 'Beban Operasional', 'kelompok' => 'Beban'],
-            ['kode' => '5103', 'nama' => 'Beban Perlengkapan', 'kelompok' => 'Beban'],
-        ];
-
-        foreach ($akun as $row) {
-            CoaAkun::firstOrCreate(['kode' => $row['kode']], $row + ['aktif' => true]);
-        }
+        $this->call(CoaSeeder::class);
 
         // Kode divisi di Jurnal Umum = sub-perusahaan, bukan departemen.
         $divisi = [
