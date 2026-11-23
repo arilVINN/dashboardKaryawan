@@ -54,6 +54,22 @@ Route::middleware('auth')->group(function () {
         ->name('password.change.store');
 });
 
+// Detail dan Like Konten Carousel (Dapat diakses seluruh role pengguna yang login)
+Route::middleware(['auth', 'throttle:umum'])->group(function () {
+    Route::get('/carousel/{id}', [\App\Http\Controllers\CarouselController::class, 'show'])->name('carousel.show');
+    Route::get('/detailKonten/{id}', [\App\Http\Controllers\CarouselController::class, 'show'])->name('carousel.detailKonten');
+    Route::post('/carousel/{id}/like', [\App\Http\Controllers\CarouselController::class, 'toggleLike'])->name('carousel.like');
+
+    // Struktur Organisasi CRUD & Tree API
+    Route::get('/struktur-organisasi/data', [\App\Http\Controllers\StrukturOrganisasiController::class, 'getTreeData'])->name('strukturOrganisasi.tree');
+    Route::get('/struktur-organisasi/{id}', [\App\Http\Controllers\StrukturOrganisasiController::class, 'show'])->name('strukturOrganisasi.show');
+    Route::post('/struktur-organisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'store'])->name('strukturOrganisasi.store');
+    Route::post('/struktur-organisasi/{id}', [\App\Http\Controllers\StrukturOrganisasiController::class, 'update'])->name('strukturOrganisasi.update');
+    Route::put('/struktur-organisasi/{id}', [\App\Http\Controllers\StrukturOrganisasiController::class, 'update'])->name('strukturOrganisasi.update.put');
+    Route::delete('/struktur-organisasi/{id}', [\App\Http\Controllers\StrukturOrganisasiController::class, 'destroy'])->name('strukturOrganisasi.destroy');
+    Route::post('/struktur-organisasi/{id}/reorder', [\App\Http\Controllers\StrukturOrganisasiController::class, 'reorder'])->name('strukturOrganisasi.reorder');
+});
+
 // ─── Direktur / Direksi (executive monitoring) ───────────────────────────────
 Route::middleware(['auth', 'role:direktur,direksi', 'throttle:umum'])->prefix('direktur')->group(function () {
     Route::get('/dashboard', [DirekturDashboardController::class, 'index'])->name('direktur.dashboard');
@@ -156,7 +172,7 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     })->name('staff.pusatData');
 
     // Struktur Organisasi (staff)
-    Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('staff.strukturOrganisasi');
+    Route::get('/strukturOrganisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('staff.strukturOrganisasi');
 });
 
 Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->group(function () {
@@ -284,7 +300,7 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     })->name('kadiv.pusatData');
 
     // Struktur Organisasi (kadiv)
-    Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('kadiv.strukturOrganisasi');
+    Route::get('/strukturOrganisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('kadiv.strukturOrganisasi');
 
     // Carousel Konten Kegiatan / Informasi
     Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])
@@ -335,7 +351,7 @@ Route::post('/profile', function (Request $request) {
 //route hrd
 Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
-    Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('hrd.strukturOrganisasi');
+    Route::get('/strukturOrganisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('hrd.strukturOrganisasi');
 
     // Kalender
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexHrd'])->name('hrd.kalender');
