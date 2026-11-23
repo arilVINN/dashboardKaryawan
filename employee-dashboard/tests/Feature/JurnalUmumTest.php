@@ -118,10 +118,14 @@ class JurnalUmumTest extends TestCase
 
             return $rows->count() === 2
                 && $rows[0][0] === '2026-11-12'
-                && $rows[0][1] === 'Saldo kas'
-                && $rows[0][4] === '1101'
+                && $rows[0][1] === 'Kas - Saldo kas'
+                && $rows[0][2] === '1101'
+                && $rows[0][3] === 'D01'
+                && $rows[0][4] === 1500000
+                && $rows[0][5] === 0
                 && $rows[1][0] === 'TOTAL'
-                && $rows[1][6] === 1500000;
+                && $rows[1][4] === 1500000
+                && $rows[1][5] === 0;
         });
     }
 
