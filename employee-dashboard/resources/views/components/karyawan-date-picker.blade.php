@@ -36,7 +36,11 @@
             <div class="mb-1 flex items-center justify-between px-1">
                 <button type="button" data-kf-prev aria-label="Bulan sebelumnya"
                         class="flex h-7 w-7 items-center justify-center rounded text-[#4B5563] hover:bg-[#F4F7F9]">‹</button>
-                <span data-kf-bulan class="text-[12px] font-semibold text-[#172B36]"></span>
+                <span class="flex items-center gap-1">
+                    <span data-kf-bulan class="text-[12px] font-semibold text-[#172B36]"></span>
+                    <select data-kf-tahun aria-label="Tahun"
+                            class="rounded border border-[#D5DEE3] bg-white px-1 py-0.5 text-[12px] text-[#172B36] outline-none focus:ring-2 focus:ring-[#146C94]"></select>
+                </span>
                 <button type="button" data-kf-next aria-label="Bulan berikutnya"
                         class="flex h-7 w-7 items-center justify-center rounded text-[#4B5563] hover:bg-[#F4F7F9]">›</button>
             </div>

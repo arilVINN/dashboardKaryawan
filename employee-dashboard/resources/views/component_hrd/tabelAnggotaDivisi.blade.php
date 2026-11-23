@@ -4,7 +4,7 @@
     $bisaTambahAnggota = $bisaTambahAnggota ?? true;
 @endphp
 
-<section class="flex flex-col gap-3 w-full mt-2 p-5">
+<section class="flex flex-col gap-3 w-full">
     <div class="flex justify-between items-center pr-4 sm:pr-6 lg:pr-8 gap-3">
         <h3 class="text-lg font-semibold text-slate-800">Anggota Divisi</h3>
         @if ($bisaTambahAnggota)

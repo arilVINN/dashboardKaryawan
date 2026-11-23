@@ -132,7 +132,7 @@ final class EmployeeWriteService
                 $targetDivisionId = $validated['divisi_id_divisi'] ?? $karyawan->divisi_id_divisi;
                 $divisi = Divisi::findOrFail($targetDivisionId);
 
-                if ($targetDivisionId !== $karyawan->divisi_id_divisi && ! $divisi->canAcceptMember($karyawan->id_karyawan)) {
+                if ($targetDivisionId !== $karyawan->divisi_id_divisi && $divisi->isGrouping()) {
                     throw ValidationException::withMessages([
                         'divisi_id_divisi' => [$this->divisionCapacityMessage($divisi)],
                     ]);

@@ -526,7 +526,9 @@
             picker._kfView = view;
             const year = view.getFullYear();
             const month = view.getMonth();
-            picker.querySelector('[data-kf-bulan]').textContent = BULAN[month] + ' ' + year;
+            picker.querySelector('[data-kf-bulan]').textContent = BULAN[month];
+            const tahunSelect = picker.querySelector('[data-kf-tahun]');
+            if (tahunSelect) tahunSelect.value = String(year);
 
             const first = new Date(year, month, 1);
             const offset = kfHariPertamaSenin(first);
@@ -601,6 +603,13 @@
                 if (date) {
                     display.value = kfFormat(date);
                     picker._kfView = new Date(date.getFullYear(), date.getMonth(), 1);
+                } else {
+                    // Always give an empty picker a view month, otherwise the
+                    // prev/next handlers cannot navigate to previous years.
+                    const start = picker.dataset.name === 'tanggalLahir'
+                        ? new Date(1990, 0, 1)
+                        : new Date();
+                    picker._kfView = new Date(start.getFullYear(), start.getMonth(), 1);
                 }
 
                 const bukaPicker = (e) => {
@@ -621,14 +630,32 @@
                     kfRenderCalendar(picker);
                     popover.classList.remove('hidden');
                 };
+                const tahunSelect = picker.querySelector('[data-kf-tahun]');
+                if (tahunSelect) {
+                    const tahunSekarang = new Date().getFullYear();
+                    for (let tahun = tahunSekarang + 5; tahun >= tahunSekarang - 100; tahun--) {
+                        const option = document.createElement('option');
+                        option.value = String(tahun);
+                        option.textContent = String(tahun);
+                        tahunSelect.appendChild(option);
+                    }
+                    tahunSelect.value = String(picker._kfView.getFullYear());
+                    tahunSelect.addEventListener('change', () => {
+                        picker._kfView = new Date(Number(tahunSelect.value), picker._kfView.getMonth(), 1);
+                        kfRenderCalendar(picker);
+                    });
+                }
+
                 picker.querySelector('[data-kf-toggle]').addEventListener('click', bukaPicker);
                 display.addEventListener('click', bukaPicker);
                 picker.querySelector('[data-kf-prev]').addEventListener('click', () => {
-                    picker._kfView = new Date(picker._kfView.getFullYear(), picker._kfView.getMonth() - 1, 1);
+                    const view = picker._kfView || new Date();
+                    picker._kfView = new Date(view.getFullYear(), view.getMonth() - 1, 1);
                     kfRenderCalendar(picker);
                 });
                 picker.querySelector('[data-kf-next]').addEventListener('click', () => {
-                    picker._kfView = new Date(picker._kfView.getFullYear(), picker._kfView.getMonth() + 1, 1);
+                    const view = picker._kfView || new Date();
+                    picker._kfView = new Date(view.getFullYear(), view.getMonth() + 1, 1);
                     kfRenderCalendar(picker);
                 });
             });

@@ -53,6 +53,8 @@ class HrdPesanController extends Controller
         $isParticipant = $pesan->pengirim_id_user === $user->id_user
             || $pesan->penerima_id_user === $user->id_user;
 
+        \App\Actions\MarkConversationAsRead::handle($user, $id_pesan);
+
         return view('hrd.detailPesan', [
             'pesan' => $pesan,
             'thread' => $thread,

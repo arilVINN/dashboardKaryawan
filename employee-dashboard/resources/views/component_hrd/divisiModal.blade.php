@@ -27,10 +27,6 @@
 
         <form id="formTambahDivisi" onsubmit="submitFormDivisi(event)" class="p-6">
             @csrf
-            @php
-                $modalDivisions = \App\Models\Divisi::query()->ordered()->get();
-            @endphp
-
             <!-- Input Kode Divisi -->
             <div class="mb-4">
                 <label class="block text-xs font-bold text-slate-500 mb-1">KODE DIVISI</label>
@@ -45,49 +41,6 @@
                 <input type="text" id="nama_divisi" name="nama_divisi"
                     class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-[#004A65] focus:border-[#004A65] outline-none text-sm placeholder-gray-400"
                     placeholder="Teknologi Informasi" required>
-            </div>
-
-            <!-- Tingkatan / Tipe Node -->
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-slate-500 mb-1">TINGKATAN</label>
-                <select id="tipe" name="tipe"
-                    class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-[#004A65] focus:border-[#004A65] outline-none text-sm">
-                    @foreach (\App\Models\Divisi::TIPE_OPTIONS as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- Induk Divisi -->
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-slate-500 mb-1">INDUK DIVISI</label>
-                <select id="parent_id" name="parent_id"
-                    class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-[#004A65] focus:border-[#004A65] outline-none text-sm">
-                    <option value="">Tanpa induk (puncak)</option>
-                    @foreach ($modalDivisions as $division)
-                        <option value="{{ $division->id_divisi }}">{{ $division->nama_divisi }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="mb-4 grid grid-cols-2 gap-3">
-                <!-- Kapasitas Anggota -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">KAPASITAS</label>
-                    <input type="number" id="kapasitas" name="kapasitas" min="0"
-                        class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-[#004A65] focus:border-[#004A65] outline-none text-sm"
-                        placeholder="Tanpa batas">
-                    <p class="mt-1 text-[10px] leading-snug text-slate-400">Kosong = tanpa batas, 1 = satu orang, 0 = grup tanpa anggota.</p>
-                </div>
-
-                <!-- Urutan Tampil -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">URUTAN</label>
-                    <input type="number" id="urutan" name="urutan" min="0"
-                        class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-[#004A65] focus:border-[#004A65] outline-none text-sm"
-                        placeholder="Otomatis">
-                    <p class="mt-1 text-[10px] leading-snug text-slate-400">Urutan tampil di daftar &amp; dropdown.</p>
-                </div>
             </div>
 
             <div class="flex justify-between items-center mt-2">
@@ -121,8 +74,6 @@
         judulModalDivisi.textContent = 'Tambah Divisi';
         labelSubmitDivisi.textContent = 'Tambah';
         formTambahDivisi.reset();
-        document.getElementById('tipe').value = 'divisi';
-        document.getElementById('parent_id').value = '';
         modalDivisi.classList.remove('opacity-0', 'pointer-events-none');
         modalBox.classList.remove('scale-95', 'translate-y-4');
         modalBox.classList.add('scale-100', 'translate-y-0');
@@ -134,10 +85,6 @@
         labelSubmitDivisi.textContent = 'Simpan';
         document.getElementById('kode_divisi').value = button.dataset.kode;
         document.getElementById('nama_divisi').value = button.dataset.nama;
-        document.getElementById('tipe').value = button.dataset.tipe || 'divisi';
-        document.getElementById('parent_id').value = button.dataset.parent || '';
-        document.getElementById('kapasitas').value = button.dataset.kapasitas || '';
-        document.getElementById('urutan').value = button.dataset.urutan || '';
         modalDivisi.classList.remove('opacity-0', 'pointer-events-none');
         modalBox.classList.remove('scale-95', 'translate-y-4');
         modalBox.classList.add('scale-100', 'translate-y-0');
@@ -161,15 +108,9 @@
         const csrfTokenInput = document.querySelector('input[name="_token"]');
         const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
 
-        const kapasitasValue = document.getElementById('kapasitas').value;
-        const urutanValue = document.getElementById('urutan').value;
         const formData = {
             kode_divisi: document.getElementById('kode_divisi').value,
             nama_divisi: document.getElementById('nama_divisi').value,
-            tipe: document.getElementById('tipe').value,
-            parent_id: document.getElementById('parent_id').value || null,
-            kapasitas: kapasitasValue === '' ? null : Number(kapasitasValue),
-            urutan: urutanValue === '' ? null : Number(urutanValue),
         };
         const isEdit = Boolean(divisiYangDiedit);
         const url = isEdit

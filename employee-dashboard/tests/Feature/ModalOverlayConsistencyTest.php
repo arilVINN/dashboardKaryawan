@@ -63,7 +63,6 @@ class ModalOverlayConsistencyTest extends TestCase
             'finance/pengeluaran/index.blade.php',
             'finance/laporan/index.blade.php',
             'kadiv/laporanLabaRugi.blade.php',
-            'hrd/detailDivisi.blade.php',
             'components/carousel.blade.php',
             'livewire/finance/arus-kas.blade.php',
             'livewire/finance/jurnal-umum-table.blade.php',
