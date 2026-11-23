@@ -27,6 +27,11 @@ class KLabaRugi extends Model
         'tanggal_selesai',
         'total_pendapatan',
         'total_pengeluaran',
+        'pendapatan_operasional',
+        'pendapatan_non_operasional',
+        'beban_operasional',
+        'beban_non_operasional',
+        'laba_operasional',
         'laba_bersih',
         'margin_persen',
         'bukti_laporan',
@@ -40,14 +45,19 @@ class KLabaRugi extends Model
     ];
 
     protected $casts = [
-        'total_pendapatan'  => 'float',
-        'total_pengeluaran' => 'float',
-        'laba_bersih'       => 'float',
-        'margin_persen'     => 'float',
-        'tanggal_mulai'     => 'date',
-        'tanggal_selesai'   => 'date',
-        'tanggal_kirim'     => 'date',
-        'minggu_ke'         => 'integer',
+        'total_pendapatan'            => 'float',
+        'total_pengeluaran'           => 'float',
+        'pendapatan_operasional'      => 'float',
+        'pendapatan_non_operasional'  => 'float',
+        'beban_operasional'           => 'float',
+        'beban_non_operasional'       => 'float',
+        'laba_operasional'            => 'float',
+        'laba_bersih'                 => 'float',
+        'margin_persen'               => 'float',
+        'tanggal_mulai'               => 'date',
+        'tanggal_selesai'             => 'date',
+        'tanggal_kirim'               => 'date',
+        'minggu_ke'                   => 'integer',
     ];
 
     // ─── Static Helpers ───────────────────────────────────────────────────────
@@ -109,10 +119,35 @@ class KLabaRugi extends Model
         return FormatAkuntansi::formatRupiah($this->total_pendapatan);
     }
 
+    public function getPendapatanOperasionalFormattedAttribute(): string
+    {
+        return FormatAkuntansi::formatRupiah($this->pendapatan_operasional);
+    }
+
+    public function getPendapatanNonOperasionalFormattedAttribute(): string
+    {
+        return FormatAkuntansi::formatRupiah($this->pendapatan_non_operasional);
+    }
+
     /** Pengeluaran diformat */
     public function getPengeluaranFormattedAttribute(): string
     {
         return FormatAkuntansi::formatRupiah($this->total_pengeluaran);
+    }
+
+    public function getBebanOperasionalFormattedAttribute(): string
+    {
+        return FormatAkuntansi::formatRupiah($this->beban_operasional);
+    }
+
+    public function getBebanNonOperasionalFormattedAttribute(): string
+    {
+        return FormatAkuntansi::formatRupiah($this->beban_non_operasional);
+    }
+
+    public function getLabaOperasionalFormattedAttribute(): string
+    {
+        return FormatAkuntansi::formatRupiah($this->laba_operasional);
     }
 
     /** Margin diformat dengan notasi akuntansi */

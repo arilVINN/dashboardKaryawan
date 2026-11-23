@@ -67,10 +67,6 @@ class JurnalUmumTable extends Component
         $this->periode = now()->format('Y-m');
         $this->manualTanggal = now()->toDateString();
         $this->resetLines();
-
-        // Tautan "Daftar akun (COA)" di sidebar membuka panel sekali saja;
-        // flag dihapus setelah dipakai agar URL/page berikutnya tetap bersih.
-        $this->showCoaPanel = (bool) session()->pull('open_coa_panel');
     }
 
     // ── Filters ───────────────────────────────────────────────────────────

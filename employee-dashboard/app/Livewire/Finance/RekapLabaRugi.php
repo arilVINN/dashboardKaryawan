@@ -84,8 +84,29 @@ class RekapLabaRugi extends Component
         $rekapDivisi = $query->map(function ($divisi) {
             $laporan = $divisi->laporanLabaRugi;
 
-            $divisi->total_pendapatan_rekap = $laporan->sum('total_pendapatan');
-            $divisi->total_pengeluaran_rekap = $laporan->sum('total_pengeluaran');
+            $totalPendapatan = (float) $laporan->sum('total_pendapatan');
+            $totalPengeluaran = (float) $laporan->sum('total_pengeluaran');
+
+            // Hitung breakdown aktivitas bisnis (dengan fallback jika data lama belum ada breakdown)
+            $pendOp = (float) $laporan->sum('pendapatan_operasional');
+            $pendNonOp = (float) $laporan->sum('pendapatan_non_operasional');
+            if ($pendOp == 0 && $pendNonOp == 0 && $totalPendapatan > 0) {
+                $pendOp = $totalPendapatan;
+            }
+
+            $bebanOp = (float) $laporan->sum('beban_operasional');
+            $bebanNonOp = (float) $laporan->sum('beban_non_operasional');
+            if ($bebanOp == 0 && $bebanNonOp == 0 && $totalPengeluaran > 0) {
+                $bebanOp = $totalPengeluaran;
+            }
+
+            $divisi->total_pendapatan_rekap = $totalPendapatan;
+            $divisi->total_pengeluaran_rekap = $totalPengeluaran;
+            $divisi->pendapatan_operasional_rekap = $pendOp;
+            $divisi->pendapatan_non_operasional_rekap = $pendNonOp;
+            $divisi->beban_operasional_rekap = $bebanOp;
+            $divisi->beban_non_operasional_rekap = $bebanNonOp;
+            $divisi->laba_operasional_rekap = $pendOp - $bebanOp;
             $divisi->laba_bersih_rekap = $laporan->sum('laba_bersih');
             $divisi->laporan_list = $laporan;
 
@@ -95,23 +116,39 @@ class RekapLabaRugi extends Component
         $grandPendapatan = 0;
         $grandPengeluaran = 0;
         $grandLaba = 0;
+        $grandPendapatanOperasional = 0;
+        $grandPendapatanNonOperasional = 0;
+        $grandBebanOperasional = 0;
+        $grandBebanNonOperasional = 0;
+        $grandLabaOperasional = 0;
 
         foreach ($rekapDivisi as $row) {
             $grandPendapatan += (float) ($row->total_pendapatan_rekap ?? 0);
             $grandPengeluaran += (float) ($row->total_pengeluaran_rekap ?? 0);
             $grandLaba += (float) ($row->laba_bersih_rekap ?? 0);
+
+            $grandPendapatanOperasional += (float) ($row->pendapatan_operasional_rekap ?? 0);
+            $grandPendapatanNonOperasional += (float) ($row->pendapatan_non_operasional_rekap ?? 0);
+            $grandBebanOperasional += (float) ($row->beban_operasional_rekap ?? 0);
+            $grandBebanNonOperasional += (float) ($row->beban_non_operasional_rekap ?? 0);
+            $grandLabaOperasional += (float) ($row->laba_operasional_rekap ?? 0);
         }
 
         $grandMargin = FormatAkuntansi::hitungMargin($grandPendapatan, $grandPengeluaran);
 
         return view('livewire.finance.rekap-laba-rugi', [
-            'periodeLabel' => $this->periodeLabel(),
-            'periodeSubtitle' => $this->periodeSubtitle(),
-            'grandPendapatan' => (float) $grandPendapatan,
-            'grandPengeluaran' => (float) $grandPengeluaran,
-            'grandLaba' => (float) $grandLaba,
-            'grandMargin' => $grandMargin,
-            'rekapDivisi' => $rekapDivisi,
+            'periodeLabel'                   => $this->periodeLabel(),
+            'periodeSubtitle'                => $this->periodeSubtitle(),
+            'grandPendapatan'                => (float) $grandPendapatan,
+            'grandPengeluaran'               => (float) $grandPengeluaran,
+            'grandLaba'                      => (float) $grandLaba,
+            'grandMargin'                    => $grandMargin,
+            'grandPendapatanOperasional'     => (float) $grandPendapatanOperasional,
+            'grandPendapatanNonOperasional'  => (float) $grandPendapatanNonOperasional,
+            'grandBebanOperasional'          => (float) $grandBebanOperasional,
+            'grandBebanNonOperasional'       => (float) $grandBebanNonOperasional,
+            'grandLabaOperasional'           => (float) $grandLabaOperasional,
+            'rekapDivisi'                    => $rekapDivisi,
         ]);
     }
 
