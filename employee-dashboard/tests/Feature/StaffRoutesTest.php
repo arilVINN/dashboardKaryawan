@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\Pesan;
 use App\Models\Role;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -57,6 +58,16 @@ class StaffRoutesTest extends TestCase
             'password' => Hash::make('pass123'),
             'role_id_role' => 'ROLE-HRD',
             'karyawan_id_karyawan' => 'KRY-H',
+        ]);
+
+        Pesan::create([
+            'id_pesan' => 'P-1',
+            'judul_pesan' => 'Pesan uji',
+            'deskripsi' => 'Isi pesan uji.',
+            'tipe' => 'pesan',
+            'tanggal_pesan' => '2026-11-20',
+            'pengirim_id_user' => $this->hrd->id_user,
+            'penerima_id_user' => $this->staff->id_user,
         ]);
     }
 

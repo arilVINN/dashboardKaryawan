@@ -35,11 +35,19 @@
         }
 
         function formatDate(value) {
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
             const date = value ? new Date(value) : new Date();
             if (Number.isNaN(date.getTime())) return '';
-            const two = (n) => String(n).padStart(2, '0');
-            return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}, ${two(date.getHours())}:${two(date.getMinutes())}`;
+
+            const parts = Object.fromEntries(
+                new Intl.DateTimeFormat('en-GB', {
+                    timeZone: 'Asia/Jakarta', day: 'numeric', month: 'numeric', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+                }).formatToParts(date).filter((part) => part.type !== 'literal')
+                    .map((part) => [part.type, part.value])
+            );
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+            return `${parts.day} ${months[Number(parts.month) - 1]} ${parts.year}, ${parts.hour}:${parts.minute}`;
         }
 
         function appendReply(payload) {

@@ -38,6 +38,7 @@ use App\Http\Controllers\ProfilePhotoController;
 // Fallback for legacy profile photos stored on the private disk. The public
 // disk symlink serves these URLs first; only missing files reach this route.
 Route::get('/storage/foto-profil/{filename}', [ProfilePhotoController::class, 'show'])
+    ->middleware('auth')
     ->where('filename', '[A-Za-z0-9_.-]+');
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -123,17 +124,20 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     })->name('pesan');
 
     Route::get('/pesan/detail/{id?}', function ($id = null) {
-        $user = auth()->user();
-        $token = $user ? $user->createToken('web_token')->plainTextToken : null;
-        $data = null;
-
-        if ($id && $user) {
-            $response = app(\App\Http\Controllers\Staff\PesanController::class)->show(request(), $id);
-            if ($response->getStatusCode() === 200) {
-                $data = json_decode($response->getContent(), true)['data'] ?? null;
-                \App\Actions\MarkConversationAsRead::handle($user, $id);
-            }
+        if (! $id) {
+            abort(404);
         }
+
+        $user = auth()->user();
+        $response = app(\App\Http\Controllers\Staff\PesanController::class)->show(request(), $id);
+
+        if ($response->getStatusCode() !== 200) {
+            abort(404);
+        }
+
+        $data = json_decode($response->getContent(), true)['data'] ?? null;
+        \App\Actions\MarkConversationAsRead::handle($user, $id);
+        $token = $user->createToken('web_token')->plainTextToken;
 
         return view('staff.detailPesan', ['id' => $id, 'token' => $token, 'data' => $data]);
     })->name('pesan.detail');

@@ -633,7 +633,7 @@
                 const tahunSelect = picker.querySelector('[data-kf-tahun]');
                 if (tahunSelect) {
                     const tahunSekarang = new Date().getFullYear();
-                    for (let tahun = tahunSekarang + 5; tahun >= tahunSekarang - 100; tahun--) {
+                    for (let tahun = tahunSekarang + 5; tahun >= tahunSekarang - 120; tahun--) {
                         const option = document.createElement('option');
                         option.value = String(tahun);
                         option.textContent = String(tahun);

@@ -14,7 +14,7 @@
     'currentFoto' => null,
 ])
 
-<div class="mx-auto w-full max-w-[760px] px-6 pb-8 pt-6"
+<div class="w-full max-w-[760px]"
      data-message-conversation
      data-endpoint="{{ $replyEndpoint }}"
      data-message-id="{{ $messageId }}"
@@ -25,22 +25,8 @@
      data-current-name="{{ $currentName ?? '' }}"
      data-current-foto="{{ $currentFoto ?? '' }}">
 
-    {{-- Breadcrumb --}}
-    <nav class="flex items-center gap-2 text-[13px] text-[#4B5563]" aria-label="Breadcrumb"
-         data-breadcrumb-parent="Daftar Pesan">
-        <a href="{{ $listUrl }}"
-           class="inline-flex items-center gap-1.5 rounded text-[#146C94] outline-none transition hover:underline focus-visible:ring-2 focus-visible:ring-[#146C94]">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-            </svg>
-            Daftar Pesan
-        </a>
-        <span aria-hidden="true">›</span>
-        <span class="font-medium text-[#172B36]" data-breadcrumb-current="{{ $topic }}">{{ $topic }}</span>
-    </nav>
-
     {{-- Header --}}
-    <header class="mt-6">
+    <header>
         <h1 class="text-[23px] font-semibold leading-snug text-[#172B36]">
             {{ $topic }}
             <span class="ml-1 inline-flex h-[22px] items-center rounded-md border border-[#E2E8F0] bg-[#F1F5F9] px-2 align-middle text-[11px] font-normal text-[#475569]">
