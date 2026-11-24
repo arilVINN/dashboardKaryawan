@@ -38,6 +38,7 @@
         top: 0,
         left: 0,
         width: 0,
+        maxHeight: 260,
         search: '{{ addslashes($initialLabel) }}',
         selectedVal: '{{ (string) $value }}',
         selectedLabel: '{{ addslashes($initialLabel) }}',
@@ -123,14 +124,27 @@
             if (!trigger) return;
             const rect = trigger.getBoundingClientRect();
             const gap = 4;
+             const padding = 8;
             const height = 260;
-            const below = window.innerHeight - rect.bottom - gap;
-            const above = rect.top - gap;
-            this.width = Math.max(rect.width, 240);
-            this.left = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - this.width - 8));
-            this.top = (below >= height || below >= above)
-                ? rect.bottom + gap
-                : Math.max(8, rect.top - height - gap);
+            const below = window.innerHeight - rect.bottom - gap - padding;
+            const above = rect.top - gap - padding;
+            this.width = Math.min(
+                rect.width,
+                window.innerWidth - (padding * 2)
+            );
+            this.left = Math.min(
+                Math.max(padding, rect.left),
+                window.innerWidth - this.width - padding
+            );
+
+            const openBelow = below >= 180 || below >= above;
+            this.maxHeight = Math.max(
+                40,
+                Math.min(height, openBelow ? below : above)
+            );
+            this.top = openBelow
+            ? rect.bottom + gap
+            : Math.max(padding, rect.top - this.maxHeight - gap);
         }
      }"
      @click.outside="close()"
@@ -178,8 +192,10 @@
     </div>
 
     {{-- Dropdown Menu (SS 3) --}}
+    <template x-teleport="body">
     <div x-ref="list" x-show="open" x-cloak
-         :style="`top: ${top}px; left: ${left}px; width: ${width}px; max-height: 260px;`"
+        @click.stop
+         :style="`top: ${top}px; left: ${left}px; width: ${width}px; max-height: ${maxHeight}px;`"
          class="fixed z-[9999] overflow-y-auto rounded-lg border border-[#E2E8EC] bg-white py-1 shadow-2xl text-[12px]">
 
         {{-- Default empty option --}}
@@ -226,4 +242,5 @@
             </div>
         </template>
     </div>
+    </template>
 </div>
