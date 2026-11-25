@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil {{ ucfirst($profileRole) }} - PT Silindo</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-
 <body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800">
     @if ($profileRole === 'kadiv')
         @include('component_kadiv.sidebar')
@@ -16,255 +14,272 @@
     @else
         @include('component.sidebar')
     @endif
-
-    <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
+    
+    <div class="flex-1 flex flex-col h-screen min-w-0 overflow-hidden"> 
         @include('component.topbar')
-
-        <main class="flex-1 overflow-y-auto px-6 pb-8 pt-6 sm:px-8">
-            @include('component.breadcrumbs', [
-                'parentText' => 'Dashboard',
-                'parentUrl' => $profileRole === 'staff' ? url('/') : url('/'.$profileRole.'/dashboard'),
-                'currentPage' => 'Profil Saya',
-                'inline' => true,
-            ])
-
-            <div class="mb-6">
-                <h1 class="text-xl font-semibold text-[#172B36]">Profil Saya</h1>
-                <p class="mt-1 text-[12px] text-[#4B5563]">Perbarui data pribadi dan keamanan akun Anda.</p>
-            </div>
-
-            <div id="profile-endpoints" class="hidden"
-                 data-profile="{{ '/api/'.$profileRole.'/profile' }}"
-                 data-foto="{{ '/api/'.$profileRole.'/profile/foto' }}"
-                 data-password="{{ '/api/'.$profileRole.'/profile/password' }}"></div>
-
-            {{-- Informasi pribadi --}}
-            <div id="view-info" class="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-                <div class="mb-5 flex items-center justify-between border-b border-slate-100 pb-3">
-                    <h2 class="text-lg font-semibold text-[#172B36]">Informasi Pribadi</h2>
-                    <button type="button" id="btn-edit-info" aria-label="Ubah informasi pribadi"
-                            class="cursor-pointer rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-50 hover:text-slate-700">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                    </button>
+        
+        <main class="flex-1 overflow-y-auto p-8 lg:p-12">
+            @include('component.breadcrumbs', ['parentText' => 'Dashboard', 'parentUrl' => $profileRole === 'staff' ? url('/') : url('/'.$profileRole.'/dashboard'), 'currentPage' => 'Profil Saya', 'inline' => true])
+            <div class="flex items-center gap-6 mb-10">
+                <div id="prof-inisial" class="w-24 h-24 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-4xl font-bold shrink-0">
+U
                 </div>
-
-                <div class="flex flex-wrap items-center gap-6">
-                    <div id="prof-inisial"
-                         class="flex h-32 w-32 shrink-0 items-center justify-center rounded-full bg-slate-300 text-4xl font-bold text-slate-600">U</div>
-                    <img id="prof-foto" alt="Foto profil" class="hidden h-32 w-32 shrink-0 rounded-full object-cover"
-                         onerror="this.classList.add('hidden'); document.getElementById('prof-inisial').classList.remove('hidden');">
-                    <div class="min-w-0 flex-1">
-                        <h3 id="hdr-nama" class="text-2xl font-bold leading-tight text-slate-900">Memuat...</h3>
-                        <p id="hdr-email" class="mt-1 text-sm text-slate-500">-</p>
-                        <p id="hdr-telp" class="mt-0.5 text-sm text-slate-500">-</p>
-                    </div>
-                </div>
-
-                <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                        <p class="mb-0.5 text-xs text-slate-400">Alamat</p>
-                        <p id="prof-alamat" class="text-sm font-semibold text-slate-900">-</p>
-                    </div>
-                    <div>
-                        <p class="mb-0.5 text-xs text-slate-400">No. Rekening</p>
-                        <p id="prof-rekening" class="text-sm font-semibold text-slate-900">-</p>
-                    </div>
+                <img id="prof-foto" alt="Foto profil" class="hidden w-24 h-24 rounded-full object-cover shrink-0"
+                     onerror="this.classList.add('hidden'); document.getElementById('prof-inisial').classList.remove('hidden');">
+                <div>
+                    <h1 id="hdr-nama" class="text-2xl font-bold text-slate-900 leading-tight">Memuat...</h1>
+                    <p id="hdr-email" class="text-sm text-slate-500 mt-1">-</p>
+                    <p id="hdr-telp" class="text-sm text-slate-500 mt-0.5">-</p>
                 </div>
             </div>
 
-            {{-- Informasi pribadi — mode edit --}}
-            <div id="edit-info" class="mt-6 hidden rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-                <h2 class="mb-4 border-b border-slate-100 pb-3 text-lg font-semibold text-[#172B36]">Informasi Pribadi</h2>
-                <form id="form-edit-profil" class="space-y-4">
-                    <div>
-                        <label for="input-nama" class="mb-1 block text-xs text-slate-500">Nama</label>
-                        <input type="text" id="input-nama" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#146C94]">
-                    </div>
-                    <div>
-                        <label for="input-email" class="mb-1 block text-xs text-slate-500">Email</label>
-                        <input type="email" id="input-email" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#146C94]">
-                    </div>
-                    <div>
-                        <label for="input-telepon" class="mb-1 block text-xs text-slate-500">Nomor Telepon</label>
-                        <input type="text" id="input-telepon" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#146C94]">
-                    </div>
-                    <div>
-                        <label for="input-rekening" class="mb-1 block text-xs text-slate-500">No. Rekening</label>
-                        <input type="text" id="input-rekening" placeholder="Contoh: BCA 1234567890"
-                               class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#146C94]">
-                    </div>
-                    <div>
-                        <label for="input-alamat" class="mb-1 block text-xs text-slate-500">Alamat</label>
-                        <textarea id="input-alamat" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#146C94]"></textarea>
-                    </div>
-                    <div>
-                        <label for="input-foto" class="mb-1 block text-xs text-slate-500">Foto Profil (JPG/PNG/WebP, maks. 2 MB)</label>
-                        <input type="file" id="input-foto" accept="image/jpeg,image/png,image/webp"
-                               class="w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border file:border-slate-300 file:bg-slate-50 file:px-3 file:py-2 file:text-sm hover:file:bg-slate-100">
-                    </div>
-                    <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" id="btn-cancel-edit"
-                                class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">Batal</button>
-                        <button type="submit"
-                                class="rounded-lg bg-[#146C94] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0F5678]">Simpan</button>
-                    </div>
-                </form>
-            </div>
-
-            {{-- Detail karyawan --}}
-            <div class="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-                <h2 class="mb-5 border-b border-slate-100 pb-3 text-lg font-semibold text-[#172B36]">Detail Karyawan</h2>
-
-                <h3 class="text-[12px] font-semibold uppercase tracking-wide text-[#475569]">Informasi Kepegawaian</h3>
-                <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div><p class="mb-0.5 text-xs text-slate-400">ID Karyawan</p><p id="prof-id" class="text-sm font-semibold text-slate-900">-</p></div>
-                    <div><p class="mb-0.5 text-xs text-slate-400">Role Akun</p><p id="prof-role" class="text-sm font-semibold text-slate-900">-</p></div>
-                    <div><p class="mb-0.5 text-xs text-slate-400">Jabatan</p><p id="prof-jabatan" class="text-sm font-semibold text-slate-900">-</p></div>
-                    <div><p class="mb-0.5 text-xs text-slate-400">Divisi</p><p id="prof-divisi" class="text-sm font-semibold text-slate-900">-</p></div>
-                    <div><p class="mb-0.5 text-xs text-slate-400">Status Karyawan</p><p id="prof-status-karyawan" class="text-sm font-semibold text-slate-900">-</p></div>
-                    <div><p class="mb-0.5 text-xs text-slate-400">Status Keaktifan</p><p id="prof-status-aktif" class="text-sm font-semibold text-slate-900">-</p></div>
-                </div>
-
-                <h3 class="mt-6 text-[12px] font-semibold uppercase tracking-wide text-[#475569]">Informasi Pekerjaan</h3>
-                <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div><p class="mb-0.5 text-xs text-slate-400">Job Level</p><p id="prof-job-level" class="text-sm font-semibold text-slate-900">-</p></div>
-                    <div><p class="mb-0.5 text-xs text-slate-400">Pendidikan Terakhir</p><p id="prof-pendidikan" class="text-sm font-semibold text-slate-900">-</p></div>
-                    <div><p class="mb-0.5 text-xs text-slate-400">Tanggal Masuk</p><p id="prof-rekrut" class="text-sm font-semibold text-slate-900">-</p></div>
-                    <div><p class="mb-0.5 text-xs text-slate-400">Tanggal Akhir Kontrak</p><p id="prof-akhir-kontrak" class="text-sm font-semibold text-slate-900">-</p></div>
-                    <div><p class="mb-0.5 text-xs text-slate-400">Akun Dibuat</p><p id="prof-dibuat" class="text-sm font-semibold text-slate-900">-</p></div>
-                </div>
-
-                <h3 class="mt-6 text-[12px] font-semibold uppercase tracking-wide text-[#475569]">Informasi Personal</h3>
-                <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div><p class="mb-0.5 text-xs text-slate-400">Jenis Kelamin</p><p id="prof-gender" class="text-sm font-semibold text-slate-900">-</p></div>
-                    <div><p class="mb-0.5 text-xs text-slate-400">Tanggal Lahir</p><p id="prof-tgl-lahir" class="text-sm font-semibold text-slate-900">-</p></div>
-                </div>
-            </div>
-
-            {{-- Keamanan akun --}}
-            <div class="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-                <h2 class="mb-5 border-b border-slate-100 pb-3 text-lg font-semibold text-[#172B36]">Keamanan Akun</h2>
-                <form id="form-password" class="space-y-4">
-                    <div>
-                        <label for="current_password" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#475569]">Password Saat Ini</label>
-                        <div class="relative">
-                            <input type="password" id="current_password" required placeholder="Masukkan password saat ini"
-                                   data-toggle-password="current_password"
-                                   class="w-full rounded-lg border border-slate-300 px-3 py-2 pr-10 text-sm outline-none focus:ring-2 focus:ring-[#146C94]">
-                            <button type="button" class="toggle-password absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-400 hover:text-[#146C94]"
-                                    aria-label="Tampilkan password saat ini">👁</button>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
-                            <label for="new_password" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#475569]">Password Baru</label>
-                            <div class="relative">
-                                <input type="password" id="new_password" required placeholder="Minimal 6 karakter"
-                                       data-toggle-password="new_password"
-                                       class="w-full rounded-lg border border-slate-300 px-3 py-2 pr-10 text-sm outline-none focus:ring-2 focus:ring-[#146C94]">
-                                <button type="button" class="toggle-password absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-400 hover:text-[#146C94]"
-                                        aria-label="Tampilkan password baru">👁</button>
+            <!-- Grid Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                
+                <!-- KIRI -->
+                <div class="space-y-6">
+                    <!-- Detail Karyawan -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                        <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">Detail Karyawan</h2>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">ID Karyawan</p>
+                                <p id="prof-id" class="text-sm font-semibold text-slate-900">-</p>
                             </div>
-                        </div>
-                        <div>
-                            <label for="confirm_password" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#475569]">Ulangi Password Baru</label>
-                            <div class="relative">
-                                <input type="password" id="confirm_password" required placeholder="Ulangi password baru"
-                                       data-toggle-password="confirm_password"
-                                       class="w-full rounded-lg border border-slate-300 px-3 py-2 pr-10 text-sm outline-none focus:ring-2 focus:ring-[#146C94]">
-                                <button type="button" class="toggle-password absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-400 hover:text-[#146C94]"
-                                        aria-label="Tampilkan konfirmasi password">👁</button>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Role Akun</p>
+                                <p id="prof-role" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Jabatan</p>
+                                <p id="prof-jabatan" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Job Level</p>
+                                <p id="prof-job-level" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Divisi</p>
+                                <p id="prof-divisi" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Pendidikan Terakhir</p>
+                                <p id="prof-pendidikan" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Jenis Kelamin</p>
+                                <p id="prof-gender" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Tanggal Lahir</p>
+                                <p id="prof-tgl-lahir" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Tanggal Masuk</p>
+                                <p id="prof-rekrut" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Status Karyawan</p>
+                                <p id="prof-status-karyawan" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Status Keaktifan</p>
+                                <p id="prof-status-aktif" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Tanggal Akhir Kontrak</p>
+                                <p id="prof-akhir-kontrak" class="text-sm font-semibold text-slate-900">-</p>
                             </div>
                         </div>
                     </div>
-                    <p class="text-[12px] text-[#4B5563]">Minimal 6 karakter.</p>
-                    <p id="password-error" class="hidden text-[12px] text-[#B91C1C]" role="alert"></p>
-                    <div class="pt-2">
-                        <button type="submit" class="rounded-lg bg-[#146C94] px-5 py-2 text-sm font-semibold text-white hover:bg-[#0F5678]">Perbarui Password</button>
+
+                    <!-- Informasi Akun -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                        <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">Informasi Akun</h2>
+                        <div>
+                            <p class="text-xs text-slate-400 mb-0.5">Tanggal Dibuat</p>
+                            <p id="prof-dibuat" class="text-sm font-semibold text-slate-900">-</p>
+                        </div>
                     </div>
-                </form>
+                </div>
+
+                <!-- KANAN -->
+                <div class="space-y-6">
+                    <div id="view-info" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                            <h2 class="text-lg font-bold text-slate-900">Informasi Pribadi</h2>
+                            <button id="btn-edit-info" class="text-slate-400 hover:text-slate-700 transition cursor-pointer">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Nama</p>
+                                <p id="prof-nama" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Email</p>
+                                <p id="prof-email" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Alamat</p>
+                                <p id="prof-alamat" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-0.5">Nomor Telepon</p>
+                                <p id="prof-telepon" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                            <div class="col-span-2">
+                                <p class="text-xs text-slate-400 mb-0.5">No. Rekening</p>
+                                <p id="prof-rekening" class="text-sm font-semibold text-slate-900">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informasi Pribadi (Mode Edit) -->
+                    <div id="edit-info" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative">
+                        <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">Informasi Pribadi</h2>
+                        <form id="form-edit-profil" class="space-y-4">
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Nama</label>
+                                <input type="text" id="input-nama" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Email</label>
+                                <input type="email" id="input-email" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Nomor Telepon</label>
+                                <input type="text" id="input-telepon" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">No. Rekening</label>
+                                <input type="text" id="input-rekening" placeholder="Contoh: BCA 1234567890" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Alamat</label>
+                                <textarea id="input-alamat" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Foto Profil (JPG/PNG/WebP, maks. 2 MB)</label>
+                                <input type="file" id="input-foto" accept="image/jpeg,image/png,image/webp" class="w-full text-sm text-slate-600 file:mr-3 file:px-3 file:py-2 file:border file:border-slate-300 file:rounded-lg file:text-sm file:bg-slate-50 hover:file:bg-slate-100">
+                            </div>
+                            <div class="flex justify-end gap-2 pt-2">
+                                <button type="button" id="btn-cancel-edit" class="px-4 py-2 border border-slate-300 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50">Batal</button>
+                                <button type="submit" class="px-4 py-2 bg-[#044564] text-white text-sm font-semibold rounded-lg hover:bg-[#03344b]">Simpan</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Keamanan Akun (Ganti Password) -->
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                        <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">Keamanan Akun</h2>
+                        <form id="form-password" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Password Saat Ini</label>
+                                <input type="password" id="current_password" required placeholder="********" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Password Baru</label>
+                                    <input type="password" id="new_password" required placeholder="********" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">Ulangi Password Baru</label>
+                                    <input type="password" id="confirm_password" required placeholder="********" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                                </div>
+                            </div>
+                            <div class="pt-2">
+                                <button type="submit" class="px-5 py-2 bg-[#044564] text-white text-sm font-semibold rounded-lg hover:bg-[#03344b]">Perbarui Password</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tombol Keluar (Opsional, tambahan jika mau di paling bawah) -->
+                    <div class="pt-2 text-right">
+                        <button id="btn-logout" class="px-5 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700">Logout</button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async function () {
+        document.addEventListener('DOMContentLoaded', async function() {
             const token = sessionStorage.getItem('staff_token');
-            const endpoints = document.getElementById('profile-endpoints').dataset;
-            const endpoint = endpoints.profile;
-            const fotoEndpoint = endpoints.foto;
-            const passwordEndpoint = endpoints.password;
+            if (!token) { window.location.href = '/login'; return; }
 
-            function headers(json) {
-                const h = { 'Accept': 'application/json' };
-                if (token) h['Authorization'] = 'Bearer ' + token;
-                if (json) h['Content-Type'] = 'application/json';
-                return h;
-            }
-
-            function teks(id, nilai) {
-                const el = document.getElementById(id);
-                if (el) el.textContent = nilai && nilai !== '-' ? nilai : '-';
-            }
-
-            function isi(id, nilai) {
-                const el = document.getElementById(id);
-                if (el) el.value = nilai && nilai !== '-' ? nilai : '';
-            }
-
+            // 1. Fetch Profile Data
             async function loadProfile() {
                 try {
-                    const response = await fetch(endpoint, { headers: headers(false) });
-                    const json = await response.json();
-                    if (!response.ok || !json.data) return;
-
-                    const p = json.data;
-                    teks('hdr-nama', p.nama);
-                    teks('hdr-email', p.email);
-                    teks('hdr-telp', p.no_telepon);
-                    const inisial = document.getElementById('prof-inisial');
-                    inisial.textContent = p.nama && p.nama !== '-' ? p.nama.charAt(0).toUpperCase() : 'U';
-
-                    const foto = document.getElementById('prof-foto');
-                    if (p.foto_url) {
-                        foto.src = p.foto_url;
-                        foto.classList.remove('hidden');
-                        inisial.classList.add('hidden');
-                    } else {
-                        foto.classList.add('hidden');
-                        inisial.classList.remove('hidden');
-                    }
-
-                    ['id', 'role', 'jabatan', 'divisi', 'status-karyawan', 'status-aktif',
-                        'job-level', 'pendidikan', 'rekrut', 'akhir-kontrak', 'dibuat',
-                        'gender', 'tgl-lahir', 'alamat', 'rekening'].forEach((k) => {
-                        const field = {
-                            id: 'id_karyawan', role: 'tingkatan', dibuat: 'tanggal_dibuat',
-                            'status-karyawan': 'status_karyawan', 'status-aktif': 'status_aktif',
-                            'job-level': 'job_level', 'tgl-lahir': 'tanggal_lahir',
-                            rekrut: 'tanggal_masuk_label', 'akhir-kontrak': 'tanggal_akhir_kontrak',
-                            gender: 'jenis_kelamin', rekening: 'no_rekening', alamat: 'alamat',
-                            jabatan: 'jabatan', divisi: 'divisi', pendidikan: 'pendidikan',
-                        }[k];
-                        teks('prof-' + k, p[field]);
+                    const response = await fetch(@json('/api/'.$profileRole.'/profile', JSON_UNESCAPED_SLASHES), {
+                        headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
                     });
+                    const json = await response.json();
+                    if (response.ok && json.data) {
+                        const p = json.data;
+                        
+                        // Header
+                        document.getElementById('hdr-nama').textContent = p.nama;
+                        document.getElementById('hdr-email').textContent = p.email;
+                        document.getElementById('hdr-telp').textContent = p.no_telepon;
+                        document.getElementById('prof-inisial').textContent = p.nama && p.nama !== '-' ? p.nama.charAt(0).toUpperCase() : 'U';
 
-                    isi('input-nama', p.nama);
-                    isi('input-email', p.email);
-                    isi('input-telepon', p.no_telepon);
-                    isi('input-rekening', p.no_rekening);
-                    isi('input-alamat', p.alamat);
+                        const fotoImg = document.getElementById('prof-foto');
+                        const inisial = document.getElementById('prof-inisial');
+                        if (p.foto_url) {
+                            fotoImg.src = p.foto_url;
+                            fotoImg.classList.remove('hidden');
+                            inisial.classList.add('hidden');
+                        } else {
+                            fotoImg.classList.add('hidden');
+                            inisial.classList.remove('hidden');
+                        }
+
+                        // Kiri (Detail Karyawan Lengkap)
+                        document.getElementById('prof-id').textContent = p.id_karyawan || '-';
+                        document.getElementById('prof-role').textContent = p.tingkatan || '-';
+                        document.getElementById('prof-jabatan').textContent = p.jabatan || '-';
+                        document.getElementById('prof-job-level').textContent = p.job_level || '-';
+                        document.getElementById('prof-divisi').textContent = p.divisi || '-';
+                        document.getElementById('prof-pendidikan').textContent = p.pendidikan || '-';
+                        document.getElementById('prof-gender').textContent = p.jenis_kelamin || '-';
+                        document.getElementById('prof-tgl-lahir').textContent = p.tanggal_lahir || '-';
+                        document.getElementById('prof-rekrut').textContent = p.tanggal_masuk_label || '-';
+                        document.getElementById('prof-status-karyawan').textContent = p.status_karyawan || '-';
+                        document.getElementById('prof-status-aktif').textContent = p.status_aktif || '-';
+                        document.getElementById('prof-akhir-kontrak').textContent = p.tanggal_akhir_kontrak || '-';
+
+                        // Informasi Akun
+                        document.getElementById('prof-dibuat').textContent = p.tanggal_dibuat || '-';
+
+                        // Informasi Pribadi
+                        document.getElementById('prof-nama').textContent = p.nama || '-';
+                        document.getElementById('prof-email').textContent = p.email || '-';
+                        document.getElementById('prof-alamat').textContent = p.alamat || '-';
+                        document.getElementById('prof-telepon').textContent = p.no_telepon || '-';
+                        document.getElementById('prof-rekening').textContent = p.no_rekening || '-';
+
+                        // Form Edit 
+                        document.getElementById('input-nama').value = p.nama && p.nama !== '-' ? p.nama : '';
+                        document.getElementById('input-email').value = p.email && p.email !== '-' ? p.email : '';
+                        document.getElementById('input-telepon').value = p.no_telepon && p.no_telepon !== '-' ? p.no_telepon : '';
+                        document.getElementById('input-rekening').value = p.no_rekening && p.no_rekening !== '-' ? p.no_rekening : '';
+                        document.getElementById('input-alamat').value = p.alamat && p.alamat !== '-' ? p.alamat : '';
+                    }
                 } catch (e) {
-                    console.error('Gagal memuat profil:', e);
+                    console.error(e);
                 }
             }
-
+            
             await loadProfile();
 
+            // 2. Edit Profile Toggle
             const viewInfo = document.getElementById('view-info');
             const editInfo = document.getElementById('edit-info');
+            
             document.getElementById('btn-edit-info').addEventListener('click', () => {
                 viewInfo.classList.add('hidden');
                 editInfo.classList.remove('hidden');
@@ -274,106 +289,130 @@
                 viewInfo.classList.remove('hidden');
             });
 
-            document.getElementById('form-edit-profil').addEventListener('submit', async function (e) {
+            // 3. Submit Update Profile
+            document.getElementById('form-edit-profil').addEventListener('submit', async function(e) {
                 e.preventDefault();
-                let profilTersimpan = false;
+                let profileSaved = false;
                 try {
-                    const res = await fetch(endpoint, {
+                    const res = await fetch(@json('/api/'.$profileRole.'/profile', JSON_UNESCAPED_SLASHES), {
                         method: 'PUT',
-                        headers: headers(true),
+                        headers: {
+                            'Authorization': 'Bearer ' + token,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
                         body: JSON.stringify({
-                            nama: document.getElementById('input-nama').value.trim(),
-                            email: document.getElementById('input-email').value.trim(),
-                            no_telepon: document.getElementById('input-telepon').value.trim(),
-                            no_rekening: document.getElementById('input-rekening').value.trim() || null,
-                            alamat: document.getElementById('input-alamat').value.trim(),
-                        }),
+                            nama: document.getElementById('input-nama').value || '-',
+                            email: document.getElementById('input-email').value || '-',
+                            no_telepon: document.getElementById('input-telepon').value || '-',
+                            no_rekening: document.getElementById('input-rekening').value || null,
+                            alamat: document.getElementById('input-alamat').value || '-',
+                        })
                     });
                     const data = await res.json();
-                    if (!res.ok) {
-                        alert(data.message || 'Gagal memperbarui profil.');
-                        return;
-                    }
-                    profilTersimpan = true;
-
-                    const fotoInput = document.getElementById('input-foto');
-                    if (fotoInput.files.length > 0) {
-                        const fotoData = new FormData();
-                        fotoData.append('foto', fotoInput.files[0]);
-                        const fotoRes = await fetch(fotoEndpoint, {
-                            method: 'POST',
-                            headers: headers(false),
-                            body: fotoData,
-                        });
-                        if (!fotoRes.ok) {
-                            alert('Data profil tersimpan, tetapi foto gagal diunggah.');
+                    if (res.ok) {
+                        profileSaved = true;
+                        const fotoInput = document.getElementById('input-foto');
+                        if (fotoInput.files.length > 0) {
+                            const fotoData = new FormData();
+                            fotoData.append('foto', fotoInput.files[0]);
+                            const fotoRes = await fetch(@json('/api/'.$profileRole.'/profile/foto', JSON_UNESCAPED_SLASHES), {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': 'Bearer ' + token,
+                                    'Accept': 'application/json'
+                                },
+                                body: fotoData
+                            });
+                            if (!fotoRes.ok) {
+                                let fotoErr = {};
+                                try {
+                                    fotoErr = await fotoRes.json();
+                                } catch (error) {
+                                    console.error('Respons gagal dibaca saat mengunggah foto:', error);
+                                }
+                                const fotoMessage = (fotoErr.data && fotoErr.data.foto
+                                    ? fotoErr.data.foto.join('\n')
+                                    : fotoErr.message) || 'Gagal mengunggah foto.';
+                                alert('Data profil tersimpan, tetapi foto gagal diunggah.\n' + fotoMessage);
+                                fotoInput.value = '';
+                                editInfo.classList.add('hidden');
+                                viewInfo.classList.remove('hidden');
+                                loadProfile();
+                                return;
+                            }
+                            fotoInput.value = '';
                         }
-                        fotoInput.value = '';
+                        alert('Profil berhasil diperbarui!');
+                        editInfo.classList.add('hidden');
+                        viewInfo.classList.remove('hidden');
+                        loadProfile();
+                    } else {
+                        alert(data.message || 'Gagal memperbarui profil.');
                     }
-
-                    alert('Profil berhasil diperbarui!');
-                    editInfo.classList.add('hidden');
-                    viewInfo.classList.remove('hidden');
-                    await loadProfile();
                 } catch (err) {
-                    alert(profilTersimpan
-                        ? 'Data profil tersimpan, tetapi unggah foto gagal.'
+                    alert(profileSaved
+                        ? 'Data profil tersimpan, tetapi proses upload foto gagal. Silakan coba unggah foto kembali.'
                         : 'Kesalahan jaringan.');
+                    if (profileSaved) {
+                        editInfo.classList.add('hidden');
+                        viewInfo.classList.remove('hidden');
+                        loadProfile();
+                    }
                 }
             });
 
-            // Show/hide password controls
-            document.querySelectorAll('[data-toggle-password]').forEach((input) => {
-                input.parentElement.querySelector('.toggle-password').addEventListener('click', function () {
-                    input.type = input.type === 'password' ? 'text' : 'password';
-                    this.setAttribute('aria-label', input.type === 'password' ? 'Tampilkan password' : 'Sembunyikan password');
-                });
-            });
-
-            document.getElementById('form-password').addEventListener('submit', async function (e) {
+            // 4. Update Password
+            document.getElementById('form-password').addEventListener('submit', async function(e) {
                 e.preventDefault();
-                const error = document.getElementById('password-error');
-                error.classList.add('hidden');
-                error.textContent = '';
+                const current = document.getElementById('current_password').value;
+                const newPass = document.getElementById('new_password').value;
+                const confirm = document.getElementById('confirm_password').value;
 
-                const baru = document.getElementById('new_password').value;
-                const konfirmasi = document.getElementById('confirm_password').value;
-                if (baru !== konfirmasi) {
-                    error.textContent = 'Konfirmasi password tidak cocok.';
-                    error.classList.remove('hidden');
-                    return;
-                }
-                if (baru.length < 6) {
-                    error.textContent = 'Password minimal 6 karakter.';
-                    error.classList.remove('hidden');
-                    return;
+                if (newPass !== confirm) {
+                    return alert('Password baru tidak cocok dengan ulangi password.');
                 }
 
                 try {
-                    const res = await fetch(passwordEndpoint, {
+                    const res = await fetch(@json('/api/'.$profileRole.'/profile/password', JSON_UNESCAPED_SLASHES), {
                         method: 'PUT',
-                        headers: headers(true),
+                        headers: {
+                            'Authorization': 'Bearer ' + token,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
                         body: JSON.stringify({
-                            current_password: document.getElementById('current_password').value,
-                            new_password: baru,
-                            confirm_password: konfirmasi,
-                        }),
+                            current_password: current,
+                            new_password: newPass
+                        })
                     });
                     const data = await res.json();
-                    if (!res.ok) {
-                        error.textContent = data.message || 'Gagal memperbarui password.';
-                        error.classList.remove('hidden');
-                        return;
+                    if (res.ok) {
+                        alert('Password berhasil diperbarui!');
+                        document.getElementById('form-password').reset();
+                    } else {
+                        alert(data.message || 'Gagal memperbarui password.');
                     }
-                    alert(data.message || 'Password berhasil diperbarui.');
-                    this.reset();
                 } catch (err) {
-                    error.textContent = 'Kesalahan jaringan.';
-                    error.classList.remove('hidden');
+                    alert('Kesalahan jaringan.');
                 }
             });
+
+
+
+            // 5. Logout
+            const btnLogout = document.getElementById('btn-logout');
+            if (btnLogout) {
+                btnLogout.addEventListener('click', async function() {
+                    if(!confirm("Apakah Anda yakin ingin logout?")) return;
+                    try {
+                        await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
+                    } catch(e) {}
+                    sessionStorage.removeItem('staff_token');
+                    window.location.href = '/login';
+                });
+            }
         });
     </script>
 </body>
-
 </html>
