@@ -5,13 +5,11 @@ namespace App\Livewire\Hrd;
 use App\Models\AuditLog;
 use App\Models\Divisi;
 use App\Models\Jabatan;
+use App\Support\EmployeeAccess;
 use App\Models\Karyawan;
-use App\Models\Role;
 use App\Models\User2;
 use App\Services\EmployeeValidation;
 use App\Services\EmployeeWriteService;
-use App\Support\EmployeeAccess;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -70,12 +68,6 @@ class KaryawanForm extends Component
     public array $lampiran = [];
     public array $hapusLampiran = [];
     public array $lampiranLama = [];
-
-    // Dialog jabatan baru
-    public bool $showJabatanDialog = false;
-    public string $jabatanBaruNama = '';
-    public ?string $roleId = null;
-    public ?int $jabatanDuplikatId = null;
 
     // Dialog atur ulang password
     public bool $showResetDialog = false;
@@ -146,7 +138,6 @@ class KaryawanForm extends Component
     public function tutup(): void
     {
         $this->show = false;
-        $this->showJabatanDialog = false;
         $this->showResetDialog = false;
         $this->resetErrorBag();
         $this->dispatch('karyawan-modal-closed');
@@ -160,8 +151,6 @@ class KaryawanForm extends Component
             $this->jabatanResetNote = 'Jabatan direset karena divisi berubah.';
         }
 
-        $this->jabatanDuplikatId = null;
-        $this->jabatanBaruNama = '';
         $this->validateOnly('divisiId');
     }
 
@@ -197,94 +186,6 @@ class KaryawanForm extends Component
         $this->showPassword = true;
         $this->generatedPassword = $this->password;
         $this->validateOnly('password');
-    }
-
-    public function buatJabatanDialog(): void
-    {
-        $this->authorizeJabatan();
-        $this->jabatanBaruNama = '';
-        $this->jabatanDuplikatId = null;
-        $this->roleId = Role::whereRaw('LOWER(nama_role) = ?', ['staff'])->value('id_role');
-        $this->showJabatanDialog = true;
-        $this->resetErrorBag('jabatanBaruNama');
-        $this->resetErrorBag('roleId');
-    }
-
-    public function tutupJabatanDialog(): void
-    {
-        $this->showJabatanDialog = false;
-    }
-
-    public function simpanJabatanBaru(): void
-    {
-        $this->authorizeJabatan();
-
-        $this->validateOnly('jabatanBaruNama', [
-            'jabatanBaruNama' => ['required', 'string', 'max:80'],
-        ], [
-            'jabatanBaruNama.required' => 'Nama jabatan wajib diisi.',
-            'jabatanBaruNama.max' => 'Nama jabatan maksimal 80 karakter.',
-        ]);
-
-        $role = $this->roleId ? Role::find($this->roleId) : null;
-        if (! $role || ! in_array(strtolower((string) $role->nama_role), Jabatan::roleOptions(), true)) {
-            $this->addError('roleId', 'Role akun wajib dipilih.');
-
-            return;
-        }
-
-        if ($this->divisiId === '') {
-            $this->addError('jabatanBaruNama', 'Pilih divisi terlebih dahulu.');
-
-            return;
-        }
-
-        $nama = Jabatan::normaliseNama($this->jabatanBaruNama);
-
-        $existing = Jabatan::where('division_id', $this->divisiId)
-            ->whereRaw('LOWER(TRIM(nama)) = ?', [mb_strtolower($nama)])
-            ->first();
-
-        if ($existing) {
-            $this->jabatanDuplikatId = $existing->id;
-            $this->addError('jabatanBaruNama', 'Jabatan ini sudah ada di divisi ini');
-
-            return;
-        }
-
-        $jabatan = Jabatan::create([
-            'division_id' => $this->divisiId,
-            'nama' => $nama,
-            'role_id_role' => $this->roleId,
-            'aktif' => true,
-        ]);
-
-        AuditLog::catat(auth()->user()?->id_user, 'tambah_jabatan', 'jabatan', (string) $jabatan->id, [
-            'division_id' => $this->divisiId,
-            'nama' => $nama,
-            'role' => strtolower((string) Role::find($this->roleId)?->nama_role),
-        ]);
-
-        $this->jabatanId = $jabatan->id;
-        $this->jabatanNama = $jabatan->nama;
-        $this->jabatanResetNote = '';
-        $this->showJabatanDialog = false;
-        $this->jabatanDuplikatId = null;
-        $this->resetErrorBag('jabatanBaruNama');
-    }
-
-    public function pilihJabatanDuplikat(): void
-    {
-        if (! $this->jabatanDuplikatId) {
-            return;
-        }
-
-        $jabatan = Jabatan::findOrFail($this->jabatanDuplikatId);
-        $this->jabatanId = $jabatan->id;
-        $this->jabatanNama = $jabatan->nama;
-        $this->showJabatanDialog = false;
-        $this->jabatanDuplikatId = null;
-        $this->resetErrorBag('jabatanBaruNama');
     }
 
     public function konfirmasiResetPassword(): void
@@ -413,12 +314,6 @@ class KaryawanForm extends Component
     }
 
     #[Computed]
-    public function canManageJabatan(): bool
-    {
-        return EmployeeAccess::canWrite(auth()->user());
-    }
-
-    #[Computed]
     public function canChangeUsername(): bool
     {
         return EmployeeAccess::canWrite(auth()->user());
@@ -428,19 +323,6 @@ class KaryawanForm extends Component
     public function selectedDivisiNama(): string
     {
         return (string) (Divisi::find($this->divisiId)?->nama_divisi ?? '');
-    }
-
-    #[Computed]
-    public function roleOptions()
-    {
-        return Role::query()
-            ->whereInRaw('LOWER(nama_role)', Jabatan::roleOptions())
-            ->orderBy('nama_role')
-            ->get()
-            ->map(fn (Role $role) => [
-                'id' => (string) $role->id_role,
-                'label' => ucfirst((string) $role->nama_role),
-            ]);
     }
 
     #[Computed]
@@ -568,10 +450,6 @@ class KaryawanForm extends Component
         $this->hapusLampiran = [];
         $this->lampiranLama = [];
         $this->lampiranOpen = false;
-        $this->showJabatanDialog = false;
-        $this->jabatanBaruNama = '';
-        $this->roleId = null;
-        $this->jabatanDuplikatId = null;
         $this->showResetDialog = false;
     }
 
@@ -601,9 +479,5 @@ class KaryawanForm extends Component
         }
     }
 
-    private function authorizeJabatan(): void
-    {
-        $this->authorizeWrite();
-        Gate::authorize('create', Jabatan::class);
-    }
+
 }

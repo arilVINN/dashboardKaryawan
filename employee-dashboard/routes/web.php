@@ -13,6 +13,7 @@ use App\Http\Controllers\Hrd\HrdDivisiController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
 use App\Http\Controllers\Hrd\HrdJabatanController;
+use App\Http\Controllers\Hrd\HrdPeranController;
 use App\Http\Controllers\Hrd\HrdFileController;
 use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Http\Controllers\PasswordChangeController;
@@ -425,6 +426,9 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
     Route::get('/detailDivisi/{id}', [HrdDivisiController::class, 'detailPage'])->name('hrd.detailDivisi');
 
     Route::get('/detailKaryawan/{id}', [HrdKaryawanController::class, 'detailPage'])->name('hrd.detailKaryawan');
+    Route::put('/detailKaryawan/{id}/peran', [HrdPeranController::class, 'update'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.karyawan.peran');
     Route::patch('/detailKaryawan/{id}/keluar', [HrdKaryawanController::class, 'tandaiKeluar'])
         ->middleware(['throttle:submit-form', 'deny.superadmin'])
         ->name('hrd.karyawan.keluar');
@@ -624,6 +628,9 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
 Route::middleware(['auth', 'role:hrd', 'throttle:submit-form', 'deny.superadmin'])
     ->prefix('hrd')
     ->group(function () {
+        Route::get('/jabatan', [HrdJabatanController::class, 'index'])
+            ->middleware('throttle:pencarian')
+            ->name('hrd.jabatan.index');
         Route::post('/jabatan', [HrdJabatanController::class, 'store'])->name('hrd.jabatan.store');
         Route::put('/jabatan/{jabatan}', [HrdJabatanController::class, 'update'])->name('hrd.jabatan.update');
         Route::patch('/jabatan/{jabatan}/nonaktifkan', [HrdJabatanController::class, 'nonaktifkan'])

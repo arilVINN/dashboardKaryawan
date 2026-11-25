@@ -39,7 +39,7 @@ class StaffTable extends Component
             return null;
         }
 
-        if (strtolower($user->role?->nama_role ?? '') !== 'kadiv'
+        if (! $user instanceof \App\Models\User2 || ! $user->hasRole('kadiv')
             || ! $user->karyawan?->divisi_id_divisi) {
             abort(403);
         }
