@@ -69,6 +69,11 @@ class HrdKaryawanController extends Controller
             'aktif' => false,
         ]);
 
+        // A departing employee must lose API access immediately as well.
+        if ($karyawan->user) {
+            AccountSecurity::invalidate($karyawan->user);
+        }
+
         // 3. Catat audit log saat karyawan ditandai keluar (dinonaktifkan)
         AuditLog::catat(
             $authUser?->id_user,

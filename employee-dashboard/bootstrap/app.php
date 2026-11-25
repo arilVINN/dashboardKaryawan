@@ -34,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'gateway.throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'gateway.format'  => \App\Http\Middleware\ApiResponseFormatter::class,
             'akun.aman'       => \App\Http\Middleware\EnsureAccountSecurity::class,
+            'akun.aman.api'   => \App\Http\Middleware\EnsureTokenAccountSecurity::class,
         ]);
 
         // Runs on every session-authenticated request. No-op for users without
