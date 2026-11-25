@@ -98,7 +98,7 @@ class LabaRugiController extends Controller
 
         // Upload file bukti laporan
         $data['bukti_laporan'] = $request->file('bukti_laporan')
-            ->store('keuangan/laporan', 'public');
+            ->store('keuangan/laporan', 'private');
 
         // Hitung pengelompokan aktivitas bisnis: Operasional & Non-Operasional
         $pendOp = (float) ($data['pendapatan_operasional'] ?? 0);

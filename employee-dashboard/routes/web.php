@@ -34,12 +34,21 @@ use App\Http\Controllers\Finance\PengeluaranController;
 use App\Http\Controllers\Finance\LabaRugiController;
 use App\Http\Controllers\Finance\JurnalUmumController;
 use App\Http\Controllers\ProfilePhotoController;
+use App\Http\Controllers\SecureFileController;
 
 // Fallback for legacy profile photos stored on the private disk. The public
 // disk symlink serves these URLs first; only missing files reach this route.
 Route::get('/storage/foto-profil/{filename}', [ProfilePhotoController::class, 'show'])
     ->middleware('auth')
     ->where('filename', '[A-Za-z0-9_.-]+');
+
+// Sensitive uploads (finance proofs, messages, tasks, leave letters, journals,
+// tower documents) live on the private disk. /files/<path> re-checks access to
+// the owning record before streaming, so files are never publicly reachable.
+Route::get('/files/{path}', [SecureFileController::class, 'show'])
+    ->middleware(['auth', 'throttle:umum'])
+    ->where('path', '(?:keuangan|pesan-lampiran|lampiran_pesan|tugas_pendukung|submissions|revisi|surat_izin|daily-journals|tower_files)/.+')
+    ->name('files.secure');
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])

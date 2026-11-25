@@ -27,7 +27,7 @@ class SuratIzinController extends Controller
             'judul_surat'     => 'required|string|max:100',
             'tanggal_mulai'   => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-            'file'            => 'nullable|file|max:20480',
+            'file'            => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip',
             'keterangan'      => 'nullable|string|max:1000',
         ]);
 
@@ -48,7 +48,7 @@ class SuratIzinController extends Controller
             'tanggal_selesai'      => $data['tanggal_selesai'],
             'keterangan'           => $data['keterangan'] ?? null,
             'file'                 => $request->hasFile('file')
-                ? $request->file('file')->store('surat_izin', 'public') : null,
+                ? $request->file('file')->store('surat_izin', 'private') : null,
             'status'               => 'Pending',
         ]);
 

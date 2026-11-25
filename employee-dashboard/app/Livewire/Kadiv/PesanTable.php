@@ -336,7 +336,7 @@ class PesanTable extends Component
             'judulSurat' => 'required|string|max:100',
             'tanggalMulai' => 'required|date',
             'tanggalSelesai' => 'required|date|after_or_equal:tanggalMulai',
-            'fileSurat' => 'nullable|file|max:20480',
+            'fileSurat' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip',
             'keteranganSurat' => 'nullable|string|max:1000',
         ]);
 
@@ -350,7 +350,7 @@ class PesanTable extends Component
                 'tanggal_mulai' => $this->tanggalMulai,
                 'tanggal_selesai' => $this->tanggalSelesai,
                 'keterangan' => $this->keteranganSurat,
-                'file' => $this->fileSurat ? $this->fileSurat->store('surat_izin', 'public') : null,
+                'file' => $this->fileSurat ? $this->fileSurat->store('surat_izin', 'private') : null,
                 'status' => 'Pending',
             ]);
 

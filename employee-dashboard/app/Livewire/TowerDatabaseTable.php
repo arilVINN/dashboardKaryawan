@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Divisi;
 use App\Models\TowerDatabase;
+use App\Support\FileStorage;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -258,9 +259,9 @@ class TowerDatabaseTable extends Component
 
             if ($this->formJenis === 'file') {
                 if (!$this->editingId) {
-                    $rules['formFile'] = 'required|file|max:51200'; // max 50 MB
+                    $rules['formFile'] = 'required|file|max:51200|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip'; // max 50 MB
                 } else {
-                    $rules['formFile'] = 'nullable|file|max:51200';
+                    $rules['formFile'] = 'nullable|file|max:51200|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip';
                 }
             } elseif ($this->formJenis === 'nomor') {
                 $rules['formNilaiKontak'] = 'required|string|max:100';
@@ -312,10 +313,10 @@ class TowerDatabaseTable extends Component
 
                 if ($this->formJenis === 'file') {
                     if ($this->formFile) {
-                        if ($item->file_path && Storage::disk('public')->exists($item->file_path)) {
-                            Storage::disk('public')->delete($item->file_path);
+                        if ($item->file_path) {
+                            FileStorage::delete($item->file_path);
                         }
-                        $storedPath = $this->formFile->store('tower_files', 'public');
+                        $storedPath = $this->formFile->store('tower_files', 'private');
                         $item->file_path = $storedPath;
                         $item->file_name = $this->formFile->getClientOriginalName();
                         $item->file_ext  = strtolower($this->formFile->getClientOriginalExtension());
@@ -347,7 +348,7 @@ class TowerDatabaseTable extends Component
                 ];
 
                 if ($this->formJenis === 'file' && $this->formFile) {
-                    $storedPath = $this->formFile->store('tower_files', 'public');
+                    $storedPath = $this->formFile->store('tower_files', 'private');
                     $data['file_path'] = $storedPath;
                     $data['file_name'] = $this->formFile->getClientOriginalName();
                     $data['file_ext']  = strtolower($this->formFile->getClientOriginalExtension());
@@ -387,8 +388,8 @@ class TowerDatabaseTable extends Component
             return;
         }
 
-        if ($item->file_path && Storage::disk('public')->exists($item->file_path)) {
-            Storage::disk('public')->delete($item->file_path);
+        if ($item->file_path) {
+            FileStorage::delete($item->file_path);
         }
         $item->delete();
 
@@ -403,12 +404,13 @@ class TowerDatabaseTable extends Component
             return null;
         }
 
-        if (!$item->file_path || !Storage::disk('public')->exists($item->file_path)) {
+        $disk = FileStorage::diskFor($item->file_path);
+        if (! $item->file_path || $disk === null) {
             session()->flash('tower_error', 'File fisik tidak ditemukan pada server.');
             return null;
         }
 
-        return Storage::disk('public')->download($item->file_path, $item->file_name ?: 'dokumen');
+        return Storage::disk($disk)->download($item->file_path, $item->file_name ?: 'dokumen');
     }
 
     private function formatBytes(int $bytes, int $precision = 1): string

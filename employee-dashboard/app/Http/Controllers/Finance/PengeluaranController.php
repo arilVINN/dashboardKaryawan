@@ -69,7 +69,7 @@ class PengeluaranController extends Controller
 
         if ($request->hasFile('bukti_pencairan')) {
             $data['bukti_pencairan'] = $request->file('bukti_pencairan')
-                ->store('keuangan/pengeluaran', 'public');
+                ->store('keuangan/pengeluaran', 'private');
         }
 
         $count = KPengeluaran::count();

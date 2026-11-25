@@ -195,7 +195,7 @@ class KadivApiTest extends TestCase
             ->getJson('/api/hrd/pesan/PSN-TO-HRD')
             ->assertOk()
             ->assertJsonCount(2, 'data.balasan')
-            ->assertJsonFragment(['file' => Storage::disk('public')->url(Pesan::where('balasan_dari_id_pesan', 'PSN-TO-HRD')->first()->file_lampiran)]);
+            ->assertJsonFragment(['file' => \App\Support\FileStorage::url(Pesan::where('balasan_dari_id_pesan', 'PSN-TO-HRD')->first()->file_lampiran)]);
 
         Pesan::create([
             'id_pesan' => 'PSN-LETTER-HRD',

@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use App\Support\FileStorage;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -120,7 +121,7 @@ class HrdPesanController extends Controller
 
         $filePath = null;
         if ($request->hasFile('file_lampiran')) {
-            $filePath = $request->file('file_lampiran')->store('lampiran_pesan', 'public');
+            $filePath = $request->file('file_lampiran')->store('lampiran_pesan', 'private');
         }
 
         $pesan = Pesan::create([
@@ -184,7 +185,7 @@ class HrdPesanController extends Controller
                 'lampiran' => [
                     'link' => $message->link_lampiran,
                     'file' => $message->file_lampiran
-                        ? Storage::disk('public')->url($message->file_lampiran)
+                        ? FileStorage::url($message->file_lampiran)
                         : null,
                 ],
                 'tugas' => $message->tugas ? [
@@ -203,7 +204,7 @@ class HrdPesanController extends Controller
                     'lampiran' => [
                         'link' => $reply->link_lampiran,
                         'file' => $reply->file_lampiran
-                            ? Storage::disk('public')->url($reply->file_lampiran)
+                            ? FileStorage::url($reply->file_lampiran)
                             : null,
                     ],
                     'created_at' => $reply->created_at?->toISOString(),
@@ -247,7 +248,7 @@ class HrdPesanController extends Controller
         }
 
         $storedPath = $request->hasFile('file_lampiran')
-            ? $request->file('file_lampiran')->store('pesan-lampiran', 'public')
+            ? $request->file('file_lampiran')->store('pesan-lampiran', 'private')
             : null;
 
         try {
@@ -266,7 +267,7 @@ class HrdPesanController extends Controller
             ]);
         } catch (\Throwable $exception) {
             if ($storedPath) {
-                Storage::disk('public')->delete($storedPath);
+                FileStorage::delete($storedPath);
             }
 
             throw $exception;
@@ -282,7 +283,7 @@ class HrdPesanController extends Controller
                 'tipe' => $reply->tipe,
                 'judul_pesan' => $reply->judul_pesan,
                 'deskripsi' => $reply->deskripsi,
-                'file_lampiran' => $storedPath ? Storage::disk('public')->url($storedPath) : null,
+                'file_lampiran' => $storedPath ? FileStorage::url($storedPath) : null,
                 'pengirim_id_user' => $reply->pengirim_id_user,
                 'penerima_id_user' => $reply->penerima_id_user,
             ],

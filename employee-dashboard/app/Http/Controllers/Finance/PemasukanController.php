@@ -66,7 +66,7 @@ class PemasukanController extends Controller
 
         if ($request->hasFile('bukti_dokumen')) {
             $data['bukti_dokumen'] = $request->file('bukti_dokumen')
-                ->store('keuangan/pemasukan', 'public');
+                ->store('keuangan/pemasukan', 'private');
         }
 
         $count = KPemasukan::count();
