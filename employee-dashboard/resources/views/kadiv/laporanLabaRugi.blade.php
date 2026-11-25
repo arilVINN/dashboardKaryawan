@@ -201,14 +201,14 @@
                                             data-status="{{ $item->status_verifikasi }}"
                                             data-note="{{ $item->catatan_verifikasi }}"
                                             data-catatan-kadiv="{{ $item->catatan }}"
-                                            data-file="{{ $item->bukti_laporan ? asset('storage/'.$item->bukti_laporan) : '' }}"
+                                            data-file="{{ $item->bukti_laporan ? \App\Support\FileStorage::url($item->bukti_laporan) : '' }}"
                                             class="inline-flex h-8 items-center rounded-lg border border-[#D5DEE3] bg-white px-2.5 text-[12px] font-medium text-[#172B36] transition hover:bg-[#F5FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
                                             {{ $item->catatan_verifikasi ? 'Lihat catatan' : 'Detail rincian' }}
                                         </button>
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-3 text-center">
                                         @if ($item->bukti_laporan)
-                                            <a href="{{ asset('storage/'.$item->bukti_laporan) }}" target="_blank"
+                                            <a href="{{ \App\Support\FileStorage::url($item->bukti_laporan) }}" target="_blank"
                                                 rel="noopener noreferrer"
                                                 class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#D5DEE3] bg-white px-2.5 text-[12px] font-medium text-[#172B36] transition hover:bg-[#F5FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
                                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"

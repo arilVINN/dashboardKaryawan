@@ -123,7 +123,8 @@
     </div>
 
     {{-- Tabs + table --}}
-    <div class="mt-4 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+    <div class="relative mt-4 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+        <x-table-loading-overlay target="tab, periode, divisiFilter, search, previousPage, nextPage, gotoPage, setTab" />
         <div class="flex border-b border-[#E2E8EC] bg-white">
             <button type="button" wire:click="$set('tab', 'masuk')"
                 class="-mb-px flex items-center gap-2 border-b-2 px-4 py-3 text-[14px] font-medium transition {{ $tab === 'masuk' ? 'border-[#146C94] text-[#146C94]' : 'border-transparent text-[#4B5563] hover:text-[#172B36]' }}">
@@ -183,7 +184,7 @@
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     @if ($item->bukti_dokumen)
-                                        <a href="{{ asset('storage/'.$item->bukti_dokumen) }}" target="_blank"
+                                        <a href="{{ \App\Support\FileStorage::url($item->bukti_dokumen) }}" target="_blank"
                                             rel="noopener noreferrer" onclick="event.stopPropagation()"
                                             aria-label="Lihat bukti"
                                             class="inline-flex items-center justify-center rounded p-1 text-[#146C94] transition hover:text-[#0F5A7C]">
@@ -313,7 +314,7 @@
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     @if ($out->bukti_pencairan)
-                                        <a href="{{ asset('storage/'.$out->bukti_pencairan) }}" target="_blank"
+                                        <a href="{{ \App\Support\FileStorage::url($out->bukti_pencairan) }}" target="_blank"
                                             rel="noopener noreferrer" onclick="event.stopPropagation()"
                                             aria-label="Lihat bukti"
                                             class="inline-flex items-center justify-center rounded p-1 text-[#146C94] transition hover:text-[#0F5A7C]">
@@ -435,7 +436,7 @@
                         <dt class="text-[#4B5563]">Bukti</dt>
                         <dd class="text-right">
                             @if ($transactionDetail['bukti'])
-                                <a href="{{ asset('storage/'.$transactionDetail['bukti']) }}" target="_blank"
+                                <a href="{{ \App\Support\FileStorage::url($transactionDetail['bukti']) }}" target="_blank"
                                     rel="noopener noreferrer" aria-label="Lihat bukti"
                                     class="inline-flex items-center gap-1.5 font-medium text-[#146C94] hover:underline">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"

@@ -117,7 +117,8 @@
     </div>
 
     {{-- Alokasi table --}}
-    <div class="mt-5 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+    <div class="relative mt-5 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+        <x-table-loading-overlay target="periode, previousMonth, nextMonth, openMonthPicker, selectMonth, save, delete" />
         <div class="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
             <h2 class="text-[14px] font-semibold text-[#172B36]">Alokasi per divisi</h2>
             <div class="flex items-baseline gap-2">

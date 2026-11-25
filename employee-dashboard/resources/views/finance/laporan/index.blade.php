@@ -154,7 +154,7 @@
                                     <td class="whitespace-nowrap px-4 py-3 text-center">
                                         <div class="inline-flex items-center gap-2">
                                             @if ($lap->bukti_laporan)
-                                                <a href="{{ asset('storage/'.$lap->bukti_laporan) }}" target="_blank"
+                                                <a href="{{ \App\Support\FileStorage::url($lap->bukti_laporan) }}" target="_blank"
                                                     rel="noopener noreferrer"
                                                     class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#D5DEE3] bg-white px-2.5 text-[12px] font-medium text-[#172B36] transition hover:bg-[#F5FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
                                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"

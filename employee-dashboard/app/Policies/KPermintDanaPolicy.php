@@ -18,11 +18,19 @@ class KPermintDanaPolicy
     }
 
     /**
-     * Hanya Kadiv Finance yang boleh memutuskan, dan tidak untuk pengajuannya
-     * sendiri. Status "menunggu" dicek ulang di dalam transaksi action.
+     * Hanya Kadiv Finance (atau superadmin) yang boleh memutuskan, dan tidak
+     * untuk pengajuannya sendiri. Direktur/Direksi bersifat read-only sehingga
+     * tidak boleh menyetujui/menolak. Status "menunggu" dicek ulang di dalam
+     * transaksi action.
      */
     private function canDecide(User2 $user, KPermintDana $permintaan): bool
     {
+        $role = strtolower(trim((string) $user->role?->nama_role));
+
+        if (in_array($role, ['direktur', 'direksi'], true)) {
+            return false;
+        }
+
         return $user->isKadivFinance()
             && $permintaan->user_id_user !== $user->id_user;
     }

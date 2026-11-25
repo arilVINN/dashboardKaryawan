@@ -27,7 +27,8 @@
         @endif
     </div>
 
-    <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div class="relative overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+        <x-table-loading-overlay target="search, jabatan, sortBy, resetFilters, previousPage, nextPage, gotoPage" />
         <table class="w-full min-w-[860px] text-left text-sm text-slate-600">
             <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
                 <tr>

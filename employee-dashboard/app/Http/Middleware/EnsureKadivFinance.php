@@ -11,7 +11,8 @@ use Illuminate\Http\Request;
  *
  * Kriteria akses: role = 'kadiv' DAN divisi adalah unit Finance & Accounting.
  * Rute ini hanya boleh diakses oleh Kadiv Finance, bukan Kadiv divisi lain.
- * Direktur/Direksi memiliki akses penuh sebagai super-admin.
+ * Direktur/Direksi memiliki akses baca (monitoring); aksi tulis/approve
+ * diblokir oleh middleware `deny.superadmin` dan policy keuangan.
  */
 class EnsureKadivFinance
 {

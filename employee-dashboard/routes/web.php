@@ -34,6 +34,7 @@ use App\Http\Controllers\Finance\PengeluaranController;
 use App\Http\Controllers\Finance\LabaRugiController;
 use App\Http\Controllers\Finance\JurnalUmumController;
 use App\Http\Controllers\ProfilePhotoController;
+use App\Http\Controllers\SecureFileController;
 
 // Fallback for legacy profile photos stored on the private disk. The public
 // disk symlink serves these URLs first; only missing files reach this route.
@@ -41,9 +42,17 @@ Route::get('/storage/foto-profil/{filename}', [ProfilePhotoController::class, 's
     ->middleware('auth')
     ->where('filename', '[A-Za-z0-9_.-]+');
 
+// Sensitive uploads (finance proofs, messages, tasks, leave letters, journals,
+// tower documents) live on the private disk. /files/<path> re-checks access to
+// the owning record before streaming, so files are never publicly reachable.
+Route::get('/files/{path}', [SecureFileController::class, 'show'])
+    ->middleware(['auth', 'throttle:umum'])
+    ->where('path', '(?:keuangan|pesan-lampiran|lampiran_pesan|tugas_pendukung|submissions|revisi|surat_izin|daily-journals|tower_files)/.+')
+    ->name('files.secure');
+
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
-    ->middleware('gateway.throttle:5,1') // sudah ada, tidak diubah
+    ->middleware('throttle:login')
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -53,6 +62,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/ganti-password', [PasswordChangeController::class, 'store'])
         ->middleware('throttle:submit-form')
         ->name('password.change.store');
+});
+
+// Detail dan Like Konten Carousel (Dapat diakses seluruh role pengguna yang login)
+Route::middleware(['auth', 'throttle:umum'])->group(function () {
+    Route::get('/carousel/{id}', [\App\Http\Controllers\CarouselController::class, 'show'])->name('carousel.show');
+    Route::get('/detailKonten/{id}', [\App\Http\Controllers\CarouselController::class, 'show'])->name('carousel.detailKonten');
+    Route::post('/carousel/{id}/like', [\App\Http\Controllers\CarouselController::class, 'toggleLike'])->name('carousel.like');
+
+    // Struktur Organisasi CRUD & Tree API
+    Route::get('/struktur-organisasi/data', [\App\Http\Controllers\StrukturOrganisasiController::class, 'getTreeData'])->name('strukturOrganisasi.tree');
+    Route::get('/struktur-organisasi/{id}', [\App\Http\Controllers\StrukturOrganisasiController::class, 'show'])->name('strukturOrganisasi.show');
+    Route::post('/struktur-organisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'store'])->name('strukturOrganisasi.store');
+    Route::post('/struktur-organisasi/{id}', [\App\Http\Controllers\StrukturOrganisasiController::class, 'update'])->name('strukturOrganisasi.update');
+    Route::put('/struktur-organisasi/{id}', [\App\Http\Controllers\StrukturOrganisasiController::class, 'update'])->name('strukturOrganisasi.update.put');
+    Route::delete('/struktur-organisasi/{id}', [\App\Http\Controllers\StrukturOrganisasiController::class, 'destroy'])->name('strukturOrganisasi.destroy');
+    Route::post('/struktur-organisasi/{id}/reorder', [\App\Http\Controllers\StrukturOrganisasiController::class, 'reorder'])->name('strukturOrganisasi.reorder');
 });
 
 // ─── Direktur / Direksi (executive monitoring) ───────────────────────────────
@@ -170,7 +195,7 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
     })->name('staff.pusatData');
 
     // Struktur Organisasi (staff)
-    Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('staff.strukturOrganisasi');
+    Route::get('/strukturOrganisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('staff.strukturOrganisasi');
 });
 
 Route::prefix('staff')->middleware([EnsureStaffRole::class, 'throttle:umum'])->group(function () {
@@ -307,7 +332,7 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     })->name('kadiv.pusatData');
 
     // Struktur Organisasi (kadiv)
-    Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('kadiv.strukturOrganisasi');
+    Route::get('/strukturOrganisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('kadiv.strukturOrganisasi');
 
     // Carousel Konten Kegiatan / Informasi
     Route::post('/carousel', [\App\Http\Controllers\CarouselController::class, 'store'])
@@ -358,7 +383,7 @@ Route::post('/profile', function (Request $request) {
 //route hrd
 Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(function () {
     Route::get('/dashboard', [HrdDashboardController::class, 'index'])->name('hrd.dashboard');
-    Route::view('/strukturOrganisasi', 'hrd.strukturOrganisasi')->name('hrd.strukturOrganisasi');
+    Route::get('/strukturOrganisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'index'])->name('hrd.strukturOrganisasi');
 
     // Kalender
     Route::get('/kalender', [\App\Http\Controllers\Staff\KalenderController::class, 'indexHrd'])->name('hrd.kalender');
@@ -398,7 +423,7 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
 
     Route::get('/detailKaryawan/{id}', [HrdKaryawanController::class, 'detailPage'])->name('hrd.detailKaryawan');
     Route::patch('/detailKaryawan/{id}/keluar', [HrdKaryawanController::class, 'tandaiKeluar'])
-        ->middleware('throttle:submit-form')
+        ->middleware(['throttle:submit-form', 'deny.superadmin'])
         ->name('hrd.karyawan.keluar');
 
     Route::get('/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage'])
@@ -562,10 +587,10 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
         Route::get('/permintaan', [PermintaanDanaController::class, 'index'])->name('kadiv.keuangan.permintaan');
         Route::get('/permintaan/{id}', [PermintaanDanaController::class, 'show'])->name('kadiv.keuangan.permintaan.show');
         Route::post('/permintaan/{id}/approve', [PermintaanDanaController::class, 'approve'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.keuangan.permintaan.approve');
         Route::post('/permintaan/{id}/reject', [PermintaanDanaController::class, 'reject'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.keuangan.permintaan.reject');
 
         // Pengeluaran / Pencairan
@@ -580,7 +605,7 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
         // Verifikasi Laporan Laba/Rugi (Finance)
         Route::get('/laporan', [LabaRugiController::class, 'daftarLaporan'])->name('kadiv.keuangan.laporan');
         Route::post('/laporan/{id}/verifikasi', [LabaRugiController::class, 'verifikasi'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.keuangan.laporan.verifikasi');
 
         // Jurnal Umum — entri dibuat otomatis dari transaksi keuangan
@@ -591,8 +616,9 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
     });
 
 // ── Semua Kadiv: Pengajuan Dana & Laporan Laba/Rugi ──────────────────────────
-// Jabatan management (HRD / director level). Existing roles are unchanged.
-Route::middleware(['auth', 'role:hrd,direksi', 'throttle:submit-form'])
+// Jabatan management (HRD / superadmin only). Director-level roles are
+// read-only monitors, so `deny.superadmin` blocks direktur/direksi writes.
+Route::middleware(['auth', 'role:hrd', 'throttle:submit-form', 'deny.superadmin'])
     ->prefix('hrd')
     ->group(function () {
         Route::post('/jabatan', [HrdJabatanController::class, 'store'])->name('hrd.jabatan.store');

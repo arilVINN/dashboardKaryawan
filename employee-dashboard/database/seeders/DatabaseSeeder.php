@@ -239,6 +239,8 @@ class DatabaseSeeder extends Seeder
             ContentPillarSeeder::class,
             ContentAccountSeeder::class,
             JurnalUmumSeeder::class,
+            StrukturOrganisasiSeeder::class,
+            CoaSeeder::class,
         ]);
 
         // 5. Pesan Broadcast dari testadmin ke semua akun

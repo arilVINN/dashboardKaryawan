@@ -43,13 +43,25 @@ class JurnalUmumExport implements FromCollection, WithHeadings, WithStyles, Shou
 
         foreach ($query->orderByDesc('entry_date')->orderByDesc('id')->get() as $entry) {
             foreach ($entry->lines->sortByDesc(fn (JurnalLine $line) => $line->debit > 0) as $line) {
+                $namaAkun = trim((string) ($line->account?->nama ?? ''));
+                $kodeAkun = trim((string) ($line->account?->kode ?? ''));
+                $ketLine = trim((string) ($line->keterangan ?? ''));
+
+                if ($namaAkun !== '' && $ketLine !== '' && strcasecmp($namaAkun, $ketLine) !== 0) {
+                    $keterangan = "{$namaAkun} - {$ketLine}";
+                } elseif ($namaAkun !== '') {
+                    $keterangan = $namaAkun;
+                } else {
+                    $keterangan = $ketLine !== '' ? $ketLine : '-';
+                }
+
+                $referensi = $kodeAkun !== '' ? $kodeAkun : ($entry->ref_code ?? '-');
+
                 $rows->push([
                     $entry->entry_date->format('Y-m-d'),
-                    $line->keterangan,
-                    $entry->ref_code ?? '',
+                    $keterangan,
+                    $referensi,
                     $entry->divisi?->kode ?? '-',
-                    $line->account?->kode ?? '',
-                    $line->account?->nama ?? '',
                     (int) $line->debit,
                     (int) $line->credit,
                 ]);
@@ -59,7 +71,7 @@ class JurnalUmumExport implements FromCollection, WithHeadings, WithStyles, Shou
             }
         }
 
-        $rows->push(['TOTAL', '', '', '', '', '', $totalDebit, $totalCredit]);
+        $rows->push(['TOTAL', '', '', '', $totalDebit, $totalCredit]);
 
         return $rows;
     }
@@ -71,8 +83,6 @@ class JurnalUmumExport implements FromCollection, WithHeadings, WithStyles, Shou
             'Keterangan',
             'Referensi',
             'Kode Divisi',
-            'Kode Akun',
-            'Nama Akun',
             'Debit (Rp)',
             'Kredit (Rp)',
         ];
@@ -83,8 +93,8 @@ class JurnalUmumExport implements FromCollection, WithHeadings, WithStyles, Shou
         $accountingFormat = '#,##0;(#,##0);"-"';
 
         return [
-            'G' => $accountingFormat,
-            'H' => $accountingFormat,
+            'E' => $accountingFormat,
+            'F' => $accountingFormat,
         ];
     }
 
@@ -93,7 +103,10 @@ class JurnalUmumExport implements FromCollection, WithHeadings, WithStyles, Shou
         $lastRow = $sheet->getHighestRow();
         $totalRow = $lastRow;
 
-        $sheet->getStyle('A1:H1')->applyFromArray([
+        $filterEndRow = max(1, $totalRow - 1);
+        $sheet->setAutoFilter("A1:F{$filterEndRow}");
+
+        $sheet->getStyle('A1:F1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -109,13 +122,13 @@ class JurnalUmumExport implements FromCollection, WithHeadings, WithStyles, Shou
         ]);
 
         if ($totalRow > 2) {
-            $sheet->getStyle('G2:H' . ($totalRow - 1))
+            $sheet->getStyle('E2:F' . ($totalRow - 1))
                 ->getAlignment()
                 ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         }
 
-        $sheet->mergeCells("A{$totalRow}:F{$totalRow}");
-        $sheet->getStyle("A{$totalRow}:H{$totalRow}")->applyFromArray([
+        $sheet->mergeCells("A{$totalRow}:D{$totalRow}");
+        $sheet->getStyle("A{$totalRow}:F{$totalRow}")->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -129,7 +142,7 @@ class JurnalUmumExport implements FromCollection, WithHeadings, WithStyles, Shou
                 'vertical' => Alignment::VERTICAL_CENTER,
             ],
         ]);
-        $sheet->getStyle("G{$totalRow}:H{$totalRow}")
+        $sheet->getStyle("E{$totalRow}:F{$totalRow}")
             ->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 

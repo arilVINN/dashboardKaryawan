@@ -179,7 +179,7 @@
                                     </td>
                                     <td class="py-4 px-4 text-center">
                                         @if ($out->bukti_pencairan)
-                                            <a href="{{ asset('storage/' . $out->bukti_pencairan) }}" target="_blank"
+                                            <a href="{{ \App\Support\FileStorage::url($out->bukti_pencairan) }}" target="_blank"
                                                 class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1">
                                                 <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

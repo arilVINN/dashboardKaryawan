@@ -73,7 +73,8 @@
             </button>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
+        <div class="relative bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
+            <x-table-loading-overlay target="search, status, staff, sortBy, resetFilters, previousPage, nextPage, gotoPage" />
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm text-slate-600">
                     <thead class="bg-[#EAF4F8] text-[#334155] text-xs">
@@ -250,8 +251,12 @@
                         <button type="button" data-modal-close="modalTugasBaru"
                             class="h-9 px-4 bg-[#E8E7E9] rounded-lg text-sm text-[#333335] hover:bg-[#D9D9D9] transition">Batal</button>
                         <button type="submit"
-                            class="h-9 px-4 bg-[#146C94] rounded-lg text-sm text-white font-bold hover:bg-[#0f5878] transition"
+                            class="inline-flex items-center gap-1.5 h-9 px-4 bg-[#146C94] rounded-lg text-sm text-white font-bold hover:bg-[#0f5878] transition disabled:opacity-50 disabled:cursor-not-allowed"
                             wire:loading.attr="disabled">
+                            <svg wire:loading wire:target="createTask" class="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
                             <span wire:loading.remove wire:target="createTask">Kirim Tugas</span>
                             <span wire:loading wire:target="createTask">Mengirim...</span>
                         </button>

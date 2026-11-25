@@ -116,7 +116,9 @@
     @endif
 
     {{-- ── Journal card ───────────────────────────────────────────────── --}}
-    <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white">
+    <div class="relative overflow-hidden rounded-xl border border-[#E2E8EC] bg-white">
+        <x-table-loading-overlay target="gotoPage, nextPage, previousPage, nextMonth, previousMonth, selectMonth, divisiFilter, resetFilters" />
+
         <div class="max-h-[62vh] overflow-auto rounded-t-xl">
             <table class="w-full min-w-[980px] border-collapse text-[13px]">
                 <thead class="sticky top-0 z-10 bg-[#EAF4F8] text-[12px] font-medium text-[#334155]">
@@ -415,7 +417,11 @@
                     <button type="button" wire:click="closeManualModal"
                         class="h-9 rounded-lg border border-[#D5DEE3] bg-white px-4 text-[13px] font-medium text-[#334155] hover:border-[#146C94]">Batal</button>
                     <button type="button" wire:click="saveManual" wire:loading.attr="disabled"
-                        class="inline-flex h-9 items-center justify-center rounded-lg bg-[#146C94] px-4 text-[13px] font-medium text-white transition hover:bg-[#105A7A] disabled:cursor-not-allowed disabled:opacity-50">
+                        class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#146C94] px-4 text-[13px] font-medium text-white transition hover:bg-[#105A7A] disabled:cursor-not-allowed disabled:opacity-50">
+                        <svg wire:loading wire:target="saveManual" class="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
                         <span wire:loading.remove wire:target="saveManual">Simpan</span>
                         <span wire:loading wire:target="saveManual">Menyimpan...</span>
                     </button>
@@ -468,8 +474,15 @@
                 <div class="flex justify-end gap-2 border-t border-[#E2E8EC] px-4 py-3">
                     <button type="button" wire:click="closeLineEdit"
                         class="h-9 rounded-lg border border-[#D5DEE3] bg-white px-4 text-[13px] font-medium text-[#334155]">Batal</button>
-                    <button type="button" wire:click="saveLine"
-                        class="h-9 rounded-lg bg-[#146C94] px-4 text-[13px] font-medium text-white hover:bg-[#105A7A]">Simpan</button>
+                    <button type="button" wire:click="saveLine" wire:loading.attr="disabled"
+                        class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#146C94] px-4 text-[13px] font-medium text-white transition hover:bg-[#105A7A] disabled:cursor-not-allowed disabled:opacity-50">
+                        <svg wire:loading wire:target="saveLine" class="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span wire:loading.remove wire:target="saveLine">Simpan</span>
+                        <span wire:loading wire:target="saveLine">Menyimpan...</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -484,8 +497,15 @@
                 <div class="mt-4 flex justify-end gap-2">
                     <button type="button" wire:click="cancelDeleteLine"
                         class="h-9 rounded-lg border border-[#D5DEE3] bg-white px-4 text-[13px] font-medium text-[#334155]">Batal</button>
-                    <button type="button" wire:click="deleteLine"
-                        class="h-9 rounded-lg bg-[#B91C1C] px-4 text-[13px] font-medium text-white hover:bg-[#991B1B]">Hapus</button>
+                    <button type="button" wire:click="deleteLine" wire:loading.attr="disabled"
+                        class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#B91C1C] px-4 text-[13px] font-medium text-white transition hover:bg-[#991B1B] disabled:cursor-not-allowed disabled:opacity-50">
+                        <svg wire:loading wire:target="deleteLine" class="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span wire:loading.remove wire:target="deleteLine">Hapus</span>
+                        <span wire:loading wire:target="deleteLine">Menghapus...</span>
+                    </button>
                 </div>
             </div>
         </div>

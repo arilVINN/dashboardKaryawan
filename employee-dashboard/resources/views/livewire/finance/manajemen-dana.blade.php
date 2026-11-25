@@ -65,7 +65,8 @@
         </template>
     </div>
 
-    <div class="overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+    <div class="relative overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+        <x-table-loading-overlay target="tab, setTab, status, divisiId, previous, next, resetFilters, previousPage, nextPage, gotoPage" />
         {{-- Tabs --}}
         <div class="flex items-end gap-1 border-b border-[#E2E8EC] px-2 sm:px-4" role="tablist">
             <button type="button" wire:click="setTab('permintaan')"
@@ -406,7 +407,7 @@
                     <x-status-badge :status="$reportDetail['status']" :label="$reportDetail['status_meta']['label']"
                         :palette="$reportDetail['status_meta']" />
                     @if ($reportDetail['bukti'])
-                        <a href="{{ asset('storage/'.$reportDetail['bukti']) }}" target="_blank"
+                        <a href="{{ \App\Support\FileStorage::url($reportDetail['bukti']) }}" target="_blank"
                             rel="noopener noreferrer"
                             class="inline-flex h-8 items-center rounded-lg border border-[#D5DEE3] bg-white px-3 text-[12px] font-medium text-[#172B36] transition hover:bg-[#F5FAFC]">
                             Lihat bukti

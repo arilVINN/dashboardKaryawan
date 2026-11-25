@@ -403,7 +403,7 @@
                 const value = filePath.trim();
                 let targetUrl;
                 try {
-                    targetUrl = new URL(href || (/^https?:\/\//i.test(value) ? value : '/storage/' + value.replace(/^\/+/, '')), window.location.origin);
+                    targetUrl = new URL(href || (/^https?:\/\//i.test(value) ? value : '/files/' + value.replace(/^\/+/, '')), window.location.origin);
                 } catch {
                     return false;
                 }
@@ -628,7 +628,7 @@
                         taskFileName,
                         'Lampiran tugas',
                         taskFileName && taskFileName !== '-'
-                            ? '/storage/' + taskFileName.replace(/^\/+/, '')
+                            ? '/files/' + taskFileName.replace(/^\/+/, '')
                             : null,
                         task.file_pendukung_size,
                         task.file_pendukung_name
@@ -650,7 +650,7 @@
                         submissionFileName,
                         'File hasil',
                         submissionFileName && submissionFileName !== '-'
-                            ? '/storage/' + submissionFileName.replace(/^\/+/, '')
+                            ? '/files/' + submissionFileName.replace(/^\/+/, '')
                             : null,
                         submission?.file_hasil_size,
                         submission?.file_hasil_name
@@ -710,7 +710,7 @@
                                     revisionAttachment,
                                     revisionFile,
                                     'Lampiran revisi',
-                                    '/storage/' + revisionFile.replace(/^\/+/, ''),
+                                    '/files/' + revisionFile.replace(/^\/+/, ''),
                                     revision.file_revisi_size,
                                     revision.file_revisi_name
                                 );

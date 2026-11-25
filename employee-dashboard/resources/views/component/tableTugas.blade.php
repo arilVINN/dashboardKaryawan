@@ -411,11 +411,14 @@
                 if (staffTugasIsCompact) {
                     const deadline = formatStaffDeadline(t.deadline);
                     const deadlineHint = staffDeadlineHint(t.deadline, !!t.is_terlambat);
+                    // The dashboard card injects task titles via innerHTML, so
+                    // escape them exactly like the full table does.
+                    const judul = staffEscapeHtml(t.judul_tugas);
 
                     return `
                         <tr class="h-11 cursor-pointer hover:bg-[#F5FAFC] focus:bg-[#F5FAFC] focus:outline-none" data-href="/tugas/detail/${encodeURIComponent(t.id_tugas)}" tabindex="0" role="link">
                             <td class="px-4 py-2">
-                                <span class="block truncate text-[13px] font-medium text-[#172B36]" title="${t.judul_tugas}">${t.judul_tugas}</span>
+                                <span class="block truncate text-[13px] font-medium text-[#172B36]" title="${judul}">${judul}</span>
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap">
                                 ${staffStatusBadgeHtml(effectiveStatus, true)}

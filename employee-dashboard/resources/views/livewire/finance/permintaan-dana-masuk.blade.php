@@ -115,7 +115,8 @@
     </div>
 
     {{-- Table --}}
-    <div class="mt-5 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+    <div class="relative mt-5 overflow-hidden rounded-xl border border-[#E2E8EC] bg-white shadow-sm">
+        <x-table-loading-overlay target="statusFilter, divisiFilter, previousPage, nextPage, gotoPage, resetFilters" />
         @if ($permintaan->isEmpty())
             <div class="flex flex-col items-center justify-center px-6 py-12 text-center">
                 <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-[#E3F1F7] text-[#146C94]">

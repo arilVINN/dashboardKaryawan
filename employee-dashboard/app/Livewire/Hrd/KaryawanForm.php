@@ -393,13 +393,13 @@ class KaryawanForm extends Component
     #[Computed]
     public function canManageJabatan(): bool
     {
-        return EmployeeAccess::canManage(auth()->user());
+        return EmployeeAccess::canWrite(auth()->user());
     }
 
     #[Computed]
     public function canChangeUsername(): bool
     {
-        return $this->mode === 'create' || EmployeeAccess::canManage(auth()->user());
+        return EmployeeAccess::canWrite(auth()->user());
     }
 
     #[Computed]
@@ -555,7 +555,10 @@ class KaryawanForm extends Component
 
     private function authorizeWrite(): void
     {
-        if (! EmployeeAccess::canManage(auth()->user())) {
+        // Direktur/Direksi are read-only monitors, so they may view the form
+        // but must never persist employee changes (including via Livewire,
+        // which bypasses the page-route middleware).
+        if (! EmployeeAccess::canWrite(auth()->user())) {
             abort(403);
         }
     }
