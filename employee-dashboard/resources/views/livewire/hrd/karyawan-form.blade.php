@@ -244,12 +244,7 @@
                                 <div>
                                     <label class="{{ $label }}" for="kf-jobdesk">Keterangan jobdesk <span class="text-[#4B5563]">(opsional)</span></label>
                                     <input id="kf-jobdesk" type="text" wire:model.blur="jobdesk" maxlength="50"
-                                           list="kf-jobdesk-pilihan" placeholder="Contoh: Editorial" class="{{ $field }}">
-                                    <datalist id="kf-jobdesk-pilihan">
-                                        @foreach (\App\Models\Karyawan::jobdeskOptions() as $opsi)
-                                            <option value="{{ $opsi }}"></option>
-                                        @endforeach
-                                    </datalist>
+                                           class="{{ $field }}">
                                     <p class="{{ $hint }}">Keterangan pekerjaan staff; tidak memengaruhi hak akses.</p>
                                     @error('jobdesk') <p data-error class="{{ $errorText }}">{{ $message }}</p> @enderror
                                 </div>
