@@ -115,7 +115,7 @@
                             </td>
 
                             <td class="{{ $cellPadding }} text-slate-500 whitespace-nowrap">
-                                {{ $k->jabatan }}
+                                {{ $k->jabatanLabel() }}
                             </td>
 
                             <td class="{{ $cellPadding }} whitespace-nowrap">
@@ -147,7 +147,7 @@
                                             data-email="{{ $k->email }}"
                                             data-alamat="{{ $k->alamat }}"
                                             data-telepon="{{ $k->no_telepon }}"
-                                            data-jabatan="{{ $k->jabatan }}"
+                                            data-jabatan="{{ $k->jabatanRef?->nama ?? $k->jabatan }}"
                                             data-status="{{ $k->status_aktif }}"
                                             data-tanggal-keluar="{{ $k->tanggal_keluar ? \Carbon\Carbon::parse($k->tanggal_keluar)->format('Y-m-d') : '' }}"
                                             data-divisi="{{ $k->divisi_id_divisi }}"

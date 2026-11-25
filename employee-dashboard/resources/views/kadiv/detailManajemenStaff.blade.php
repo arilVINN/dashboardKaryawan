@@ -36,6 +36,44 @@
                     </div>
                 </div>
 
+                <div class="mt-6 bg-white rounded-xl border border-[#E2E8EC] shadow-sm p-6">
+                    <h2 class="text-base font-bold text-[#0F172A] border-b border-slate-100 pb-3 mb-4">Informasi Staff</h2>
+                    <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <dt class="text-xs text-slate-400 mb-0.5">Divisi</dt>
+                            <dd id="detail-staff-divisi" class="font-medium text-slate-900">-</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-slate-400 mb-0.5">Job Level</dt>
+                            <dd id="detail-staff-job-level" class="font-medium text-slate-900">-</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-slate-400 mb-0.5">Pendidikan Terakhir</dt>
+                            <dd id="detail-staff-pendidikan" class="font-medium text-slate-900">-</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-slate-400 mb-0.5">Tanggal Masuk</dt>
+                            <dd id="detail-staff-tanggal-masuk" class="font-medium text-slate-900">-</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-slate-400 mb-0.5">Email</dt>
+                            <dd id="detail-staff-email" class="font-medium text-slate-900 break-all">-</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-slate-400 mb-0.5">No. Telepon</dt>
+                            <dd id="detail-staff-telepon" class="font-medium text-slate-900">-</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-slate-400 mb-0.5">No. Rekening</dt>
+                            <dd id="detail-staff-rekening" class="font-medium text-slate-900">-</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs text-slate-400 mb-0.5">Alamat</dt>
+                            <dd id="detail-staff-alamat" class="font-medium text-slate-900">-</dd>
+                        </div>
+                    </dl>
+                </div>
+
                 <h2 class="mt-8 text-xl font-bold text-[#0F172A]">Tugas <span id="detail-staff-task-name">-</span></h2>
 
                 <div class="mt-4 bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
@@ -81,8 +119,28 @@
             const crumb = document.querySelector('[data-breadcrumb-current]');
             if (crumb) crumb.textContent = staff.nama || 'Detail Staff';
             document.getElementById('detail-staff-task-name').textContent = staff.nama || '-';
-            document.getElementById('detail-staff-role').textContent = staff.jabatan || staff.user?.role?.nama_role || '-';
+            const jabatanLabel = staff.jabatan_ref?.nama
+                ? (staff.jabatan_ref.aktif === false ? `${staff.jabatan_ref.nama} (nonaktif)` : staff.jabatan_ref.nama)
+                : (staff.jabatan || staff.user?.role?.nama_role || '-');
+            document.getElementById('detail-staff-role').textContent = jabatanLabel;
             document.getElementById('detail-staff-status').textContent = staff.user?.last_login_at ? 'Aktif' : 'Belum pernah login';
+
+            const valOrDash = (val) => (val !== null && val !== undefined && String(val).trim() !== '') ? String(val).trim() : '-';
+            const tglMasukRaw = staff.tanggal_masuk || staff.tanggal_rekrut;
+            const tglMasukLabel = tglMasukRaw
+                ? new Date(String(tglMasukRaw).replace(' ', 'T')).toLocaleDateString('id-ID', { dateStyle: 'medium' })
+                : '-';
+            const pendidikanRaw = valOrDash(staff.pendidikan);
+            const pendidikanLabel = ['SMK', 'SMA/SMK'].includes(pendidikanRaw.toUpperCase()) ? 'SMK' : pendidikanRaw;
+
+            document.getElementById('detail-staff-divisi').textContent = valOrDash(staff.divisi?.nama_divisi);
+            document.getElementById('detail-staff-job-level').textContent = valOrDash(staff.job_level);
+            document.getElementById('detail-staff-pendidikan').textContent = pendidikanLabel;
+            document.getElementById('detail-staff-tanggal-masuk').textContent = tglMasukLabel;
+            document.getElementById('detail-staff-email').textContent = valOrDash(staff.email);
+            document.getElementById('detail-staff-telepon').textContent = valOrDash(staff.no_telepon);
+            document.getElementById('detail-staff-rekening').textContent = valOrDash(staff.no_rekening);
+            document.getElementById('detail-staff-alamat').textContent = valOrDash(staff.alamat);
 
             const rows = document.getElementById('detail-staff-tasks');
             rows.replaceChildren();

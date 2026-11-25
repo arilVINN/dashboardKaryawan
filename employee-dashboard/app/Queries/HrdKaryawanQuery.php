@@ -20,7 +20,7 @@ class HrdKaryawanQuery
     {
         $dir = ($filters['dir'] ?? null) === 'desc' ? 'desc' : 'asc';
 
-        $query = Karyawan::with(['divisi', 'user.role'])
+        $query = Karyawan::with(['divisi', 'jabatanRef', 'user.role'])
             ->withCount('tugas');
 
         $divisi = $filters['divisi'] ?? null;
@@ -30,7 +30,10 @@ class HrdKaryawanQuery
 
         $jabatan = $filters['jabatan'] ?? null;
         if ($this->hasFilter($jabatan)) {
-            $query->where('jabatan', $jabatan);
+            $query->where(function (Builder $q) use ($jabatan): void {
+                $q->where('jabatan', $jabatan)
+                    ->orWhereHas('jabatanRef', fn (Builder $jq) => $jq->where('nama', $jabatan));
+            });
         }
 
         $q = $filters['q'] ?? null;

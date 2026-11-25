@@ -386,10 +386,15 @@ final class EmployeeWriteService
             'alamat', 'divisi_id_divisi', 'pendidikan', 'job_level', 'jobdesk', 'status_aktif',
         ];
 
+        $nullableKeys = ['no_rekening', 'no_telepon', 'email', 'alamat', 'pendidikan', 'job_level'];
         $fields = [];
         foreach ($keys as $key) {
             if (array_key_exists($key, $payload)) {
-                $fields[$key] = $payload[$key];
+                $value = $payload[$key];
+                if (in_array($key, $nullableKeys, true) && is_string($value) && trim($value) === '') {
+                    $value = null;
+                }
+                $fields[$key] = $value;
             }
         }
 

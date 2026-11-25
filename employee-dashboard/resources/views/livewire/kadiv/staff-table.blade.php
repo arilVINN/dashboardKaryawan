@@ -65,7 +65,7 @@
                             ->map(fn ($part) => mb_substr($part, 0, 1))
                             ->take(2)
                             ->implode('');
-                        $jabatan = trim((string) $person->jabatan);
+                        $jabatan = $person->jabatanLabel();
                         $detailUrl = url('/kadiv/manajemenStaff/' . $person->id_karyawan);
                     @endphp
                     <tr wire:key="staff-{{ $person->id_karyawan }}"

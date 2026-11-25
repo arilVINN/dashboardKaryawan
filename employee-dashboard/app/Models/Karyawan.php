@@ -133,7 +133,10 @@ class Karyawan extends Model
 
     public function jabatanLabel(): string
     {
-        return $this->jabatanRef?->label() ?? ($this->jabatan ?? '-');
+        $label = $this->jabatanRef?->label() ?? $this->jabatan;
+        $label = trim((string) $label);
+
+        return $label !== '' ? $label : '-';
     }
 
     public static function pendidikanOptions(): array

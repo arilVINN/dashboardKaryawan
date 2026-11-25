@@ -72,6 +72,9 @@ Route::middleware(['auth', 'throttle:umum'])->group(function () {
 
     // Struktur Organisasi CRUD & Tree API
     Route::get('/struktur-organisasi/data', [\App\Http\Controllers\StrukturOrganisasiController::class, 'getTreeData'])->name('strukturOrganisasi.tree');
+    Route::post('/struktur-organisasi/divisi-layout', [\App\Http\Controllers\StrukturOrganisasiController::class, 'updateDivisiLayout'])->name('strukturOrganisasi.divisiLayout');
+    Route::post('/struktur-organisasi/karyawan/{id}', [\App\Http\Controllers\StrukturOrganisasiController::class, 'updateKaryawan'])->name('strukturOrganisasi.updateKaryawan');
+    Route::put('/struktur-organisasi/karyawan/{id}', [\App\Http\Controllers\StrukturOrganisasiController::class, 'updateKaryawan'])->name('strukturOrganisasi.updateKaryawan.put');
     Route::get('/struktur-organisasi/{id}', [\App\Http\Controllers\StrukturOrganisasiController::class, 'show'])->name('strukturOrganisasi.show');
     Route::post('/struktur-organisasi', [\App\Http\Controllers\StrukturOrganisasiController::class, 'store'])->name('strukturOrganisasi.store');
     Route::post('/struktur-organisasi/{id}', [\App\Http\Controllers\StrukturOrganisasiController::class, 'update'])->name('strukturOrganisasi.update');

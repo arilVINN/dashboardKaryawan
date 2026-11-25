@@ -47,13 +47,13 @@
 
         /* Card Khusus Magang & Probation (Garis Putus-Putus) */
         .org-card.is-dashed {
-            border: 2px dashed #170bf5 !important;
+            border: 2px dashed #f59e0b !important;
             background: #fffdf7 !important;
             box-shadow: 0 4px 14px rgba(245, 158, 11, 0.08);
         }
 
         .org-card.is-dashed:hover {
-            border-color: #170bf5 !important;
+            border-color: #d97706 !important;
             box-shadow: 0 8px 24px rgba(217, 119, 6, 0.2) !important;
         }
 
@@ -76,17 +76,13 @@
         .v-line {
             width: 1.5px;
             background: #475569;
+            flex-shrink: 0;
         }
 
         .v-line.is-dashed {
             background: transparent !important;
-            border-left: 2px dashed #170bf5 !important;
+            border-left: 2px dashed #f59e0b !important;
             width: 2px;
-        }
-
-        .h-line {
-            height: 1.5px;
-            background: #475569;
         }
 
         /* Division Header Badge */
@@ -96,7 +92,7 @@
             box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
             border: 1.5px solid #cbd5e1;
             border-top: 3px solid #02527a;
-            padding: 8px 6px;
+            padding: 8px 10px;
             text-align: center;
             font-weight: 700;
             font-size: 11px;
@@ -117,9 +113,119 @@
             box-shadow: 0 6px 16px rgba(2, 132, 199, 0.12);
         }
 
+        /* ============================================================== */
+        /* AUTOMATIC CSS TREE CONNECTORS (100% Presisi tanpa Hardcode px) */
+        /* ============================================================== */
+        .org-tree-row {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+            width: max-content;
+            margin: 0 auto;
+        }
+
+        .org-tree-col {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 8px 0 8px;
+            width: 184px;
+            flex-shrink: 0;
+        }
+
+        /* Garis vertikal turun ke header kolom */
+        .org-tree-col::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1.5px;
+            height: 20px;
+            background: #475569;
+        }
+
+        /* Garis horizontal antar kolom */
+        .org-tree-col::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1.5px;
+            background: #475569;
+        }
+
+        .org-tree-col:first-child::before {
+            left: 50%;
+        }
+
+        .org-tree-col:last-child::before {
+            right: 50%;
+            left: 0;
+        }
+
+        .org-tree-col:only-child::before {
+            display: none;
+        }
+
+        /* Sayap Kiri (di bawah Direktur Utama -> nyambung ke garis tengah kolom 280px) */
+        .wing-left {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            padding-right: 16px;
+            position: relative;
+        }
+
+        .wing-left .org-tree-col {
+            width: 168px;
+            padding: 20px 6px 0 6px;
+        }
+
+        .wing-left .org-tree-col:last-child::before {
+            left: 0;
+            right: -156px;
+            display: block;
+        }
+
+        .wing-left .org-tree-col:only-child::before {
+            left: 50%;
+            right: -156px;
+            display: block;
+        }
+
+        /* Sayap Kanan (di bawah Direktur Operasional -> nyambung ke garis tengah kolom 280px) */
+        .wing-right {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .wing-right .org-tree-col {
+            width: 176px;
+            padding: 20px 6px 0 6px;
+        }
+
+        .wing-right .org-tree-col:first-child::before {
+            left: -156px;
+            right: 0;
+            display: block;
+        }
+
+        .wing-right .org-tree-col:only-child::before {
+            left: -156px;
+            right: 50%;
+            display: block;
+        }
+
         /* Search highlighting */
         .org-card.highlight-search {
-            border-color: #170bf5 !important;
+            border-color: #f59e0b !important;
             box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3), 0 8px 24px rgba(245, 158, 11, 0.2) !important;
             transform: scale(1.02);
         }
@@ -165,21 +271,40 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
                                 </svg>
                             </span>
-                            <h1 class="text-xl md:text-2xl font-bold text-[#172B36]">Struktur Organisasi PT Silindo</h1>
+                            <div>
+                                <h1 class="text-xl md:text-2xl font-bold text-[#172B36]">Struktur Organisasi PT Silindo</h1>
+                                <p class="text-xs md:text-sm text-slate-500 mt-0.5">
+                                    Terintegrasi otomatis dengan data <span class="font-semibold text-slate-700">Divisi</span> &amp; <span class="font-semibold text-slate-700">Karyawan</span>.
+                                </p>
+                            </div>
                         </div>
-                        <p class="text-xs md:text-sm text-slate-500 mt-1">
-                            Bagan hierarki struktural PT Sinergi Ilmiah Indonesia.
-                        </p>
                     </div>
 
                     @if ($canManage)
-                        <div class="flex items-center gap-2 shrink-0">
-                            <button type="button" onclick="openAddNodeModal()"
-                                class="px-4 py-2.5 bg-[#0284c7] hover:bg-sky-700 text-white text-xs md:text-sm font-semibold rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer active:scale-95">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        <div class="flex flex-wrap items-center gap-2 shrink-0">
+                            @if ($role === 'hrd')
+                                <a href="{{ route('hrd.manajemenDivisi') }}"
+                                    class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                                    </svg>
+                                    <span>Kelola Divisi</span>
+                                </a>
+                                <a href="{{ route('hrd.daftarKaryawan') }}"
+                                    class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                                    </svg>
+                                    <span>Kelola Karyawan</span>
+                                </a>
+                            @endif
+
+                            <button type="button" onclick="openLayoutModal()"
+                                class="px-4 py-2 bg-[#0284c7] hover:bg-sky-700 text-white text-xs md:text-sm font-semibold rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
                                 </svg>
-                                <span>Tambah Karyawan / Posisi</span>
+                                <span>Atur Posisi Divisi</span>
                             </button>
                         </div>
                     @endif
@@ -227,15 +352,15 @@
                         {{-- Zoom Buttons --}}
                         <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
                             <button type="button" onclick="zoomIn()" title="Perbesar (+)"
-                                class="p-1 rounded-lg hover:bg-white text-slate-600 hover:text-slate-900 transition">
+                                class="p-1 rounded-lg hover:bg-white text-slate-600 hover:text-slate-900 transition cursor-pointer">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6" /></svg>
                             </button>
                             <button type="button" onclick="zoomReset()" title="Reset Zoom (100%)"
-                                class="px-2 py-0.5 text-[11px] font-bold text-slate-600 hover:text-slate-900 rounded-lg hover:bg-white transition" id="zoomLevelText">
+                                class="px-2 py-0.5 text-[11px] font-bold text-slate-600 hover:text-slate-900 rounded-lg hover:bg-white transition cursor-pointer" id="zoomLevelText">
                                 100%
                             </button>
                             <button type="button" onclick="zoomOut()" title="Perkecil (-)"
-                                class="p-1 rounded-lg hover:bg-white text-slate-600 hover:text-slate-900 transition">
+                                class="p-1 rounded-lg hover:bg-white text-slate-600 hover:text-slate-900 transition cursor-pointer">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6" /></svg>
                             </button>
                         </div>
@@ -245,8 +370,8 @@
 
             {{-- Kanvas Bagan Struktur Organisasi --}}
             <section aria-label="Bagan struktur organisasi" class="flex-1 overflow-auto bg-slate-100/70 border border-slate-200 rounded-2xl relative p-6">
-                <div class="canvas-drag-wrapper min-w-[1250px] pb-16" id="canvasWrapper">
-                    <div style="width: 1200px; margin: 0 auto; position: relative;" id="orgChartCanvas">
+                <div class="canvas-drag-wrapper min-w-max pb-16 mx-auto" id="canvasWrapper">
+                    <div class="flex flex-col items-center mx-auto" id="orgChartCanvas">
 
                         {{-- ============================================================ --}}
                         {{-- LEVEL 1: PENGAWAS PERUSAHAAN                                 --}}
@@ -295,9 +420,7 @@
                                     @endif
                                 </div>
                             </div>
-
-                            {{-- Garis L1 -> L2 --}}
-                            <div class="v-line mx-auto {{ $dirUtama?->garis_putus ? 'is-dashed' : '' }}" style="height: 24px;"></div>
+                            <div class="v-line mx-auto {{ !empty($dirUtama->garis_putus) ? 'is-dashed' : '' }}" style="height: 24px;"></div>
                         @endif
 
                         {{-- ============================================================ --}}
@@ -346,10 +469,12 @@
                                     @endif
                                 </div>
                             </div>
+                            <div class="v-line mx-auto" style="height: 28px;"></div>
                         @endif
 
                         {{-- ============================================================ --}}
-                        {{-- KANVAS KONEKTOR UTAMA & DIREKTUR OPERASIONAL                 --}}
+                        {{-- LEVEL 3: SAYAP KIRI (Di bawah Dirut) | TENGAH 280px (Dir Ops) | SAYAP KANAN (Di bawah Dir Ops) --}}
+                        {{-- Garis bercabang otomatis mengikuti jumlah divisi di masing-masing sayap --}}
                         {{-- ============================================================ --}}
                         <div style="position: relative; width: 1200px; height: 250px;">
                             {{-- Main vertical line continues from director down to department branch --}}
@@ -396,209 +521,112 @@
                                                     <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                                 </button>
                                             </div>
-                                        @endif
+                                        @endforeach
                                     </div>
-                                </div>
-                            @endif
-
-                            {{-- Director branches: Legal, PA, Writer --}}
-                            <div class="h-line" style="position: absolute; left: 100px; width: 500px; top: 24px;"></div>
-                            <div class="v-line" style="position: absolute; left: 100px; top: 24px; height: 192px;"></div>
-                            <div class="v-line" style="position: absolute; left: 260px; top: 24px; height: 192px;"></div>
-                            <div class="v-line" style="position: absolute; left: 420px; top: 24px; height: 192px;"></div>
-
-                            {{-- Operations branches: Finance & Accounting and HR & GA --}}
-                            <div class="h-line" style="position: absolute; left: 600px; width: 440px; top: 130px;"></div>
-                            <div class="v-line" style="position: absolute; left: 820px; top: 130px; height: 86px;"></div>
-                            <div class="v-line" style="position: absolute; left: 1040px; top: 130px; height: 86px;"></div>
-                        </div>
-
-                        {{-- ============================================================ --}}
-                        {{-- LEVEL PENDUKUNG: LEGAL, PA, WRITER, FINANCE, & HR (Sejajar)  --}}
-                        {{-- ============================================================ --}}
-                        <div id="supportLevel" style="position: relative; width: 1200px; min-height: 190px; margin-top: -34px;">
-                            <div class="v-line" style="position: absolute; left: 600px; top: 0; height: 100%;"></div>
-
-                            {{-- 1. LEGAL --}}
-                            <div class="flex flex-col items-center" style="position: absolute; left: 25px; top: 0; width: 150px;">
-                                <div class="org-division-header group" style="min-height: 42px; padding: 6px;">
-                                    <span>Legal</span>
-                                    @if ($canManage)
-                                        <button type="button" onclick="openAddNodeModalWithDivision('Legal & Compliance')" title="Tambah staf ke Legal"
-                                            class="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-sky-600 hover:bg-sky-50 rounded transition">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                                        </button>
-                                    @endif
-                                </div>
-                                <div class="v-line" style="height: 12px;"></div>
-                                <div class="flex flex-col items-center w-full">
-                                    @foreach ($legalMembers as $index => $member)
-                                        @if ($index > 0)
-                                            <div class="v-line {{ $member->garis_putus ? 'is-dashed' : '' }}" style="height: 10px;"></div>
-                                        @endif
-                                        @include('hrd.partials.org_card_item', ['member' => $member, 'canManage' => $canManage])
-                                    @endforeach
-                                </div>
+                                @endif
                             </div>
 
-                            {{-- 2. PERSONAL ASSISTANT --}}
-                            <div class="flex flex-col items-center" style="position: absolute; left: 185px; top: 0; width: 150px;">
-                                <div class="org-division-header group" style="min-height: 42px; padding: 6px;">
-                                    <span>Personal Asst.</span>
-                                    @if ($canManage)
-                                        <button type="button" onclick="openAddNodeModalWithDivision('Direksi')" title="Tambah staf ke Personal Assistant"
-                                            class="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-sky-600 hover:bg-sky-50 rounded transition">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                                        </button>
-                                    @endif
-                                </div>
-                                <div class="v-line" style="height: 12px;"></div>
-                                <div class="flex flex-col items-center w-full">
-                                    @foreach ($paMembers as $index => $member)
-                                        @if ($index > 0)
-                                            <div class="v-line {{ $member->garis_putus ? 'is-dashed' : '' }}" style="height: 10px;"></div>
-                                        @endif
-                                        @include('hrd.partials.org_card_item', ['member' => $member, 'canManage' => $canManage])
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            {{-- 3. WRITER --}}
-                            <div class="flex flex-col items-center" style="position: absolute; left: 345px; top: 0; width: 150px;">
-                                <div class="org-division-header group" style="min-height: 42px; padding: 6px;">
-                                    <span>Writer</span>
-                                    @if ($canManage)
-                                        <button type="button" onclick="openAddNodeModalWithDivision('Writer')" title="Tambah staf ke Writer"
-                                            class="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-sky-600 hover:bg-sky-50 rounded transition">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                                        </button>
-                                    @endif
-                                </div>
-                                <div class="v-line" style="height: 12px;"></div>
-                                <div class="flex flex-col items-center w-full">
-                                    @foreach ($writerMembers as $index => $member)
-                                        @if ($index > 0)
-                                            <div class="v-line {{ $member->garis_putus ? 'is-dashed' : '' }}" style="height: 10px;"></div>
-                                        @endif
-                                        @include('hrd.partials.org_card_item', ['member' => $member, 'canManage' => $canManage])
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            {{-- 4. FINANCE & ACCOUNTING --}}
-                            <div class="flex flex-col items-center" style="position: absolute; left: 735px; top: 0; width: 170px;">
-                                <div class="org-division-header group" style="min-height: 42px; padding: 6px;">
-                                    <span>Finance</span>
-                                    @if ($canManage)
-                                        <button type="button" onclick="openAddNodeModalWithDivision('Finance & Accounting')" title="Tambah staf ke Finance"
-                                            class="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-sky-600 hover:bg-sky-50 rounded transition">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                                        </button>
-                                    @endif
-                                </div>
-                                <div class="v-line" style="height: 12px;"></div>
-                                <div class="flex flex-col items-center w-full">
-                                    @foreach ($financeMembers as $index => $member)
-                                        @if ($index > 0)
-                                            <div class="v-line {{ $member->garis_putus ? 'is-dashed' : '' }}" style="height: 10px;"></div>
-                                        @endif
-                                        @include('hrd.partials.org_card_item', ['member' => $member, 'canManage' => $canManage])
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            {{-- 5. HR & GA --}}
-                            <div class="flex flex-col items-center" style="position: absolute; left: 955px; top: 0; width: 170px;">
-                                <div class="org-division-header group" style="min-height: 42px; padding: 6px;">
-                                    <span>HR & GA</span>
-                                    @if ($canManage)
-                                        <button type="button" onclick="openAddNodeModalWithDivision('HR & GA')" title="Tambah staf ke HR & GA"
-                                            class="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-sky-600 hover:bg-sky-50 rounded transition">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                                        </button>
-                                    @endif
-                                </div>
-                                <div class="v-line" style="height: 12px;"></div>
-                                <div class="flex flex-col items-center w-full">
-                                    @foreach ($hrMembers as $index => $member)
-                                        @if ($index > 0)
-                                            <div class="v-line {{ $member->garis_putus ? 'is-dashed' : '' }}" style="height: 10px;"></div>
-                                        @endif
-                                        @include('hrd.partials.org_card_item', ['member' => $member, 'canManage' => $canManage])
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- ============================================================ --}}
-                        {{-- GARIS T LEVEL 4: DEPARTEMEN OPERASIONAL (Otomatis & Presisi) --}}
-                        {{-- ============================================================ --}}
-                        @php
-                            $deptCount = count($deptGroups);
-                            $colW = 180;
-                            $gap = 16;
-                            $totalDeptWidth = ($deptCount * $colW) + (($deptCount - 1) * $gap);
-                            $canvasWidth = max(1200, $totalDeptWidth);
-                            $deptOffsetLeft = max(0, ($canvasWidth - $totalDeptWidth) / 2);
-
-                            $deptCenters = [];
-                            for ($i = 0; $i < $deptCount; $i++) {
-                                $deptCenters[] = round($deptOffsetLeft + ($i * ($colW + $gap)) + ($colW / 2));
-                            }
-                            $hLeft = $deptCenters[0] ?? 110;
-                            $hWidth = (end($deptCenters) ?? 1090) - $hLeft;
-                        @endphp
-                        <div style="position: relative; width: {{ $canvasWidth }}px; height: 32px; margin-top: 15px;">
-                            {{-- Garis horizontal yang menghubungkan seluruh departemen --}}
-                            <div class="h-line" style="position: absolute; left: {{ $hLeft }}px; width: {{ $hWidth }}px; top: 0;"></div>
-                            {{-- Garis vertikal turun tepat ke atas masing-masing header departemen --}}
-                            @foreach ($deptCenters as $colX)
-                                <div class="v-line" style="position: absolute; left: {{ $colX }}px; top: 0; height: 32px;"></div>
-                            @endforeach
-                        </div>
-
-                        {{-- ============================================================ --}}
-                        {{-- LEVEL 4: KOTAK DEPARTEMEN DENGAN JUDUL DIVISI DI ATASNYA    --}}
-                        {{-- (Setiap divisi otomatis memiliki header di atas dan staf di bawahnya) --}}
-                        {{-- ============================================================ --}}
-                        <div id="deptGrid" style="display: grid; grid-template-columns: repeat({{ $deptCount }}, 180px); justify-content: center; gap: 16px; width: {{ $canvasWidth }}px;">
-                            @foreach ($deptGroups as $deptName => $members)
-                                <div class="flex flex-col items-center w-full dept-column" data-dept="{{ $deptName }}">
-                                    {{-- HEADER DIVISI --}}
-                                    <div class="org-division-header group">
-                                        <span>{{ $deptName }}</span>
-                                        @if ($canManage)
-                                            <button type="button" onclick="openAddNodeModalWithDivision('{{ addslashes($deptName) }}')" title="Tambah staf ke divisi {{ $deptName }}"
-                                                class="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-sky-600 hover:bg-sky-50 rounded transition">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                                            </button>
-                                        @endif
+                            {{-- KOLOM TENGAH (280px): GARIS VERTIKAL + KARTU DIREKTUR OPERASIONAL --}}
+                            <div class="relative flex flex-col items-center" style="min-height: 220px;">
+                                <div class="v-line" style="position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 1;"></div>
+                                @if ($dirOps)
+                                    <div class="relative z-10 mx-auto" style="margin-top: 44px;">
+                                        @include('hrd.partials.org_exec_card', ['node' => $dirOps, 'canManage' => $canManage, 'width' => '260px'])
                                     </div>
+                                @endif
+                            </div>
 
-                                    <div class="v-line" style="height: 12px;"></div>
+                            {{-- SAYAP KANAN: Divisi di bawah Direktur Operasional --}}
+                            <div class="flex justify-start items-start" style="padding-top: {{ $dirOps ? '132px' : '24px' }};">
+                                @if ($diropsDivisions->isNotEmpty())
+                                    <div class="wing-right">
+                                        @foreach ($diropsDivisions as $divBox)
+                                            <div class="org-tree-col dept-column" data-dept="{{ $divBox->nama_divisi }}">
+                                                <div class="org-division-header group">
+                                                    <span class="truncate">{{ $divBox->nama_divisi }}</span>
+                                                    @if ($canManage)
+                                                        <button type="button"
+                                                            onclick="openLayoutModalFor('{{ $divBox->id_divisi }}', '{{ $divBox->posisi_bagan }}', {{ $divBox->urutan }})"
+                                                            title="Atur Posisi Divisi {{ $divBox->nama_divisi }}"
+                                                            class="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-sky-600 hover:bg-sky-50 rounded transition cursor-pointer">
+                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
+                                                        </button>
+                                                    @endif
+                                                </div>
 
-                                    {{-- STAF-STAF DI BAWAH DIVISI TERSEBUT --}}
-                                    <div class="flex flex-col items-center w-full">
-                                        @forelse ($members as $index => $member)
-                                            @if ($index > 0)
-                                                <div class="v-line {{ $member->garis_putus ? 'is-dashed' : '' }}" style="height: 10px;"></div>
-                                            @endif
-                                            @include('hrd.partials.org_card_item', ['member' => $member, 'canManage' => $canManage])
-                                        @empty
-                                            <div class="p-3 text-center border border-dashed border-slate-200 rounded-xl bg-white/60 w-full">
-                                                <p class="text-[10px] text-slate-400">Belum ada anggota</p>
-                                                @if ($canManage)
-                                                    <button type="button" onclick="openAddNodeModalWithDivision('{{ addslashes($deptName) }}')"
-                                                        class="mt-1 text-[10px] font-bold text-sky-600 hover:underline">
-                                                        + Tambah Staf
-                                                    </button>
+                                                @if ($divBox->members->isNotEmpty())
+                                                    <div class="v-line {{ $divBox->members->first()?->garis_putus ? 'is-dashed' : '' }}" style="height: 12px;"></div>
+                                                    <div class="flex flex-col items-center w-full">
+                                                        @foreach ($divBox->members as $index => $member)
+                                                            @if ($index > 0)
+                                                                <div class="v-line {{ $member->garis_putus ? 'is-dashed' : '' }}" style="height: 10px;"></div>
+                                                            @endif
+                                                            @include('hrd.partials.org_card_item', ['member' => $member, 'canManage' => $canManage])
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <div class="v-line" style="height: 12px;"></div>
+                                                    <div class="w-full p-2.5 text-center border border-dashed border-slate-300 rounded-xl bg-white/70">
+                                                        <p class="text-[10px] text-slate-400">Belum ada anggota</p>
+                                                    </div>
                                                 @endif
                                             </div>
-                                        @endforelse
+                                        @endforeach
                                     </div>
-                                </div>
-                            @endforeach
+                                @endif
+                            </div>
+
                         </div>
+
+                        {{-- ============================================================ --}}
+                        {{-- LEVEL 4: DEPARTEMEN OPERASIONAL (Garis Otomatis CSS Tree)    --}}
+                        {{-- ============================================================ --}}
+                        @if ($operasionalDivisions->isNotEmpty())
+                            <div class="v-line mx-auto" style="height: 28px;"></div>
+
+                            <div class="org-tree-row" id="deptGrid">
+                                @foreach ($operasionalDivisions as $divBox)
+                                    <div class="org-tree-col dept-column" data-dept="{{ $divBox->nama_divisi }}">
+                                        {{-- HEADER DIVISI --}}
+                                        <div class="org-division-header group">
+                                            <span class="truncate">{{ $divBox->nama_divisi }}</span>
+                                            @if ($canManage)
+                                                <button type="button"
+                                                    onclick="openLayoutModalFor('{{ $divBox->id_divisi }}', '{{ $divBox->posisi_bagan }}', {{ $divBox->urutan }})"
+                                                    title="Atur Posisi Divisi {{ $divBox->nama_divisi }}"
+                                                    class="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-sky-600 hover:bg-sky-50 rounded transition cursor-pointer">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
+                                                </button>
+                                            @endif
+                                        </div>
+
+                                        {{-- STAF-STAF DI BAWAH DIVISI TERSEBUT (Otomatis dari Karyawan) --}}
+                                        @if ($divBox->members->isNotEmpty())
+                                            <div class="v-line {{ $divBox->members->first()?->garis_putus ? 'is-dashed' : '' }}" style="height: 12px;"></div>
+                                            <div class="flex flex-col items-center w-full">
+                                                @foreach ($divBox->members as $index => $member)
+                                                    @if ($index > 0)
+                                                        <div class="v-line {{ $member->garis_putus ? 'is-dashed' : '' }}" style="height: 10px;"></div>
+                                                    @endif
+                                                    @include('hrd.partials.org_card_item', ['member' => $member, 'canManage' => $canManage])
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <div class="v-line" style="height: 12px;"></div>
+                                            <div class="p-3 text-center border border-dashed border-slate-300 rounded-xl bg-white/70 w-full">
+                                                <p class="text-[10px] text-slate-400">Belum ada karyawan</p>
+                                                @if ($canManage && $role === 'hrd')
+                                                    <a href="{{ route('hrd.daftarKaryawan') }}"
+                                                        class="mt-1 inline-block text-[10px] font-bold text-sky-600 hover:underline">
+                                                        + Kelola Karyawan
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
 
                     </div>
                 </div>
@@ -607,10 +635,10 @@
     </div>
 
     {{-- ============================================================== --}}
-    {{-- MODAL DETAIL PROFIL KARYAWAN (TAMPILAN ASLI SEPERTI AWAL)       --}}
+    {{-- MODAL DETAIL PROFIL KARYAWAN                                   --}}
     {{-- ============================================================== --}}
     <div id="employee-profile-modal"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-[rgba(15,40,55,.45)] p-4"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm"
         role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="employee-profile-title">
 
         <div class="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl">
@@ -661,7 +689,7 @@
                         <dd id="employee-profile-phone" class="break-words text-right font-bold text-slate-900"></dd>
                     </div>
                     <div class="grid grid-cols-[minmax(100px,0.8fr)_minmax(0,1.2fr)] items-center gap-4 py-2.5">
-                        <dt class="text-slate-500">Keterangan / Tugas</dt>
+                        <dt class="text-slate-500">Keterangan</dt>
                         <dd id="employee-profile-desc" class="break-words text-right text-xs text-slate-700"></dd>
                     </div>
                 </dl>
@@ -671,189 +699,92 @@
 
     @if ($canManage)
         {{-- ============================================================== --}}
-        {{-- MODAL TAMBAH ANGGOTA / KARYAWAN (SEDERHANA & CEPAT)             --}}
+        {{-- MODAL ATUR POSISI DIVISI DI BAGAN (MUDAH & INSTAN)             --}}
         {{-- ============================================================== --}}
-        <div id="modalAddNode" class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,40,55,.45)] hidden p-4">
+        <div id="modalLayoutDivisi" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden p-4">
             <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                    <div class="flex items-center gap-2">
-                        <span class="p-1.5 bg-sky-100 text-sky-700 rounded-lg">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    <div class="flex items-center gap-2.5">
+                        <span class="p-2 bg-sky-100 text-sky-700 rounded-xl">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
                             </svg>
                         </span>
                         <div>
-                            <h3 class="text-base font-bold text-slate-800">Tambah Anggota / Posisi Baru</h3>
-                            <p class="text-[11px] text-slate-400">Pilih divisi, anggota otomatis berada di bawah header divisinya.</p>
+                            <h3 class="text-base font-bold text-slate-800">Atur Posisi Divisi di Bagan</h3>
+                            <p class="text-[11px] text-slate-400">Tentukan divisi berada di bawah Direktur Utama, Dir. Operasional, atau Baris Operasional.</p>
                         </div>
                     </div>
-                    <button type="button" onclick="closeModal('modalAddNode')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer">
+                    <button type="button" onclick="closeModal('modalLayoutDivisi')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                <form id="formAddNode" onsubmit="submitAddNode(event)" enctype="multipart/form-data" class="p-6 space-y-4 overflow-y-auto flex-1">
+                <form id="formLayoutDivisi" onsubmit="submitDivisiLayout(event)" class="p-6 space-y-4 overflow-y-auto flex-1">
                     @csrf
-
-                    {{-- Quick Fill dari Karyawan Terdaftar (Opsional) --}}
-                    @if ($daftarKaryawan->isNotEmpty())
-                        <div class="p-3 bg-sky-50/70 border border-sky-200 rounded-xl">
-                            <label class="block text-xs font-bold text-sky-900 mb-1">
-                                Ambil Data Karyawan Terdaftar (Opsional)
-                            </label>
-                            <select id="add_select_karyawan" onchange="onSelectKaryawan('add', this)"
-                                class="w-full rounded-xl border border-sky-300 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
-                                <option value="">-- Ketik / Pilih data karyawan untuk isi otomatis --</option>
-                                @foreach ($daftarKaryawan as $k)
-                                    <option value="{{ $k->id_karyawan }}"
-                                        data-nama="{{ $k->nama }}"
-                                        data-jabatan="{{ $k->jabatan }}"
-                                        data-divisi="{{ $k->divisi?->nama_divisi }}"
-                                        data-email="{{ $k->email }}"
-                                        data-foto="{{ $k->foto }}">
-                                        {{ $k->nama }} - {{ $k->jabatan ?? 'Karyawan' }} ({{ $k->divisi?->nama_divisi ?? 'Tanpa Divisi' }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            <input type="hidden" name="id_karyawan" id="add_id_karyawan">
-                        </div>
-                    @endif
-
-                    {{-- Nama Lengkap --}}
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
-                            Nama Lengkap <span class="text-rose-500">*</span>
+                            Pilih Divisi <span class="text-rose-500">*</span>
                         </label>
-                        <input type="text" name="nama" id="add_nama" required placeholder="Contoh: Budi Santoso, S.Kom."
-                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-                    </div>
-
-                    {{-- Jabatan --}}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
-                            Jabatan / Posisi <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" name="jabatan" id="add_jabatan" required placeholder="Contoh: Staff Keuangan / Desain Grafis"
-                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-                    </div>
-
-                    {{-- Divisi (Tinggal dipanggil, otomatis diatasnya header divisi) --}}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
-                            Divisi / Departemen <span class="text-rose-500">*</span>
-                        </label>
-                        <select id="add_divisi_select" onchange="handleDivisiSelectChange('add', this.value)"
-                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
-                            @foreach ($daftarDivisi as $d)
-                                <option value="{{ $d }}">{{ $d }}</option>
-                            @endforeach
-                            <option value="__NEW__">+ Ketik Divisi Baru Lainnya...</option>
-                        </select>
-                        <input type="text" name="divisi" id="add_divisi" value="{{ $daftarDivisi->first() ?? 'IT' }}"
-                            class="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 hidden"
-                            placeholder="Ketik nama divisi baru...">
-                        <p class="text-[11px] text-slate-400 mt-1">
-                            * Anggota otomatis tampil di bagan di bawah header divisi yang dipilih.
-                        </p>
-                    </div>
-
-                    {{-- Status Kerja & Garis Putus-Putus (Magang / Probation) --}}
-                    <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2">
-                        <label class="block text-xs font-bold text-blue-900 uppercase">
-                            Status Kerja & Hubungan Struktural
-                        </label>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 cursor-pointer">
-                                <input type="radio" name="status_kerja" value="tetap" checked onchange="handleStatusChange('add', this.value)" class="text-blue-600">
-                                <span>Tetap</span>
-                            </label>
-                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 cursor-pointer">
-                                <input type="radio" name="status_kerja" value="probation" onchange="handleStatusChange('add', this.value)" class="text-blue-600">
-                                <span class="text-purple-700 font-semibold">Probation</span>
-                            </label>
-                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 cursor-pointer">
-                                <input type="radio" name="status_kerja" value="magang" onchange="handleStatusChange('add', this.value)" class="text-blue-600">
-                                <span class="text-amber-700 font-semibold">Magang</span>
-                            </label>
-                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 cursor-pointer">
-                                <input type="radio" name="status_kerja" value="kontrak" onchange="handleStatusChange('add', this.value)" class="text-blue-600">
-                                <span>Kontrak</span>
-                            </label>
-                        </div>
-
-                        <label class="flex items-center gap-2 pt-1 cursor-pointer">
-                            <input type="checkbox" name="garis_putus" id="add_garis_putus" value="1" class="rounded text-blue-600 focus:ring-blue-500">
-                            <span class="text-xs font-bold text-blue-900">
-                                Gunakan garis / border putus-putus (┄┄)
-                            </span>
-                        </label>
-                        <p class="text-[11px] text-blue-700">
-                            * Magang & Probation otomatis menggunakan border dan garis putus-putus pada bagan.
-                        </p>
-                    </div>
-
-                    {{-- Dia Dibawah Siapa (Atasan Langsung) --}}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
-                            Dia Dibawah Siapa? (Atasan Langsung)
-                            <span class="ml-1 text-[11px] font-normal text-slate-400 normal-case">(Opsional - otomatis ke atasan divisi)</span>
-                        </label>
-                        <select name="parent_id" id="add_parent_id"
-                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
-                            <option value="">-- [ Otomatis Sesuai Divisi / Direktur Operasional ] --</option>
-                            @foreach ($allNodes as $n)
-                                <option value="{{ $n->id }}">{{ $n->nama }} - {{ $n->jabatan }} ({{ $n->divisi }})</option>
+                        <select name="id_divisi" id="layout_id_divisi" onchange="onLayoutDivisiChange(this)" required
+                            class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
+                            @foreach ($daftarDivisiObj as $d)
+                                <option value="{{ $d->id_divisi }}"
+                                    data-posisi="{{ $d->posisi_bagan ?: 'operasional' }}"
+                                    data-urutan="{{ $d->urutan }}">
+                                    {{ $d->nama_divisi }} ({{ $d->kode_divisi }})
+                                </option>
                             @endforeach
                         </select>
                     </div>
 
-                    {{-- Urutan Tampil --}}
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
-                            Urutan Tampil (Sort Order)
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">
+                            Ditaruh Di Bawah Siapa? <span class="text-rose-500">*</span>
                         </label>
-                        <input type="number" name="urutan" id="add_urutan" min="1" value="1"
+                        <div class="space-y-2.5">
+                            <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-sky-400 hover:bg-sky-50/40 cursor-pointer transition">
+                                <input type="radio" name="posisi_bagan" id="posisi_dirut_pendukung" value="dirut_pendukung" class="mt-0.5 text-sky-600 focus:ring-sky-500">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">Di Bawah Direktur Utama (Baris 3 Kiri)</p>
+                                    <p class="text-[11px] text-slate-500">Muncul otomatis dengan garis cabang di sebelah Legal, Personal Asst, atau Writer.</p>
+                                </div>
+                            </label>
+
+                            <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-sky-400 hover:bg-sky-50/40 cursor-pointer transition">
+                                <input type="radio" name="posisi_bagan" id="posisi_dirops_pendukung" value="dirops_pendukung" class="mt-0.5 text-sky-600 focus:ring-sky-500">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">Di Bawah Direktur Operasional (Baris 3 Kanan)</p>
+                                    <p class="text-[11px] text-slate-500">Muncul otomatis dengan garis cabang di sebelah Finance &amp; Accounting dan HR.</p>
+                                </div>
+                            </label>
+
+                            <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-sky-400 hover:bg-sky-50/40 cursor-pointer transition">
+                                <input type="radio" name="posisi_bagan" id="posisi_operasional" value="operasional" class="mt-0.5 text-sky-600 focus:ring-sky-500">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">Departemen Operasional (Baris 4 Bawah)</p>
+                                    <p class="text-[11px] text-slate-500">Tampil sejajar pada jajaran divisi operasional utama dengan garis otomatis di atasnya.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Urutan Tampil (Kiri ke Kanan)</label>
+                        <input type="number" name="urutan" id="layout_urutan" min="1" value="1"
                             class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-                    </div>
-
-                    {{-- Email & No Telepon --}}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email (Opsional)</label>
-                            <input type="email" name="email" id="add_email" placeholder="nama@silindo.co.id"
-                                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">No. Telepon (Opsional)</label>
-                            <input type="text" name="no_telepon" id="add_no_telepon" placeholder="08xxxxxxxxxx"
-                                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-                        </div>
-                    </div>
-
-                    {{-- Foto Profil --}}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Foto Profil (Opsional · Maks. 3 MB)</label>
-                        <input type="file" name="foto" accept="image/jpeg,image/png,image/webp"
-                            class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer">
-                    </div>
-
-                    {{-- Keterangan / Tugas --}}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keterangan / Tanggung Jawab Singkat</label>
-                        <textarea name="keterangan" rows="2" placeholder="Tanggung jawab dan uraian tugas pokok posisi ini..."
-                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
                     </div>
 
                     <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
-                        <button type="button" onclick="closeModal('modalAddNode')"
+                        <button type="button" onclick="closeModal('modalLayoutDivisi')"
                             class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition cursor-pointer">
                             Batal
                         </button>
-                        <button type="submit" id="btnSubmitAdd"
+                        <button type="submit" id="btnSubmitLayout"
                             class="px-5 py-2 bg-[#0284c7] hover:bg-sky-700 text-white text-xs font-semibold rounded-xl transition shadow cursor-pointer">
-                            Simpan Karyawan
+                            Simpan Posisi
                         </button>
                     </div>
                 </form>
@@ -861,18 +792,21 @@
         </div>
 
         {{-- ============================================================== --}}
-        {{-- MODAL EDIT ANGGOTA / KARYAWAN                                  --}}
+        {{-- MODAL EDIT KARYAWAN / POSISI (SINKRON KE KARYAWANS)            --}}
         {{-- ============================================================== --}}
-        <div id="modalEditNode" class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,40,55,.45)] hidden p-4">
+        <div id="modalEditNode" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden p-4">
             <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                     <div class="flex items-center gap-2">
-                        <span class="p-1.5 bg-blue-100 text-blue-700 rounded-lg">
+                        <span class="p-1.5 bg-sky-100 text-sky-700 rounded-lg">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
                             </svg>
                         </span>
-                        <h3 class="text-base font-bold text-slate-800">Edit Data Anggota Organisasi</h3>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800">Edit Data &amp; Posisi Anggota</h3>
+                            <p class="text-[11px] text-slate-400" id="editSyncHint">Perubahan langsung tersinkron ke data Karyawan.</p>
+                        </div>
                     </div>
                     <button type="button" onclick="closeModal('modalEditNode')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -883,7 +817,8 @@
 
                 <form id="formEditNode" onsubmit="submitEditNode(event)" enctype="multipart/form-data" class="p-6 space-y-4 overflow-y-auto flex-1">
                     @csrf
-                    <input type="hidden" name="node_id" id="edit_node_id">
+                    <input type="hidden" id="edit_node_id">
+                    <input type="hidden" id="edit_source_type" value="karyawan">
 
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
@@ -901,71 +836,59 @@
                             class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
                     </div>
 
-                    <div>
+                    {{-- Divisi (Untuk Karyawan pilih id_divisi; Untuk node struktur fallback isi teks) --}}
+                    <div id="editDivisiKaryawanWrap">
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
-                            Divisi / Departemen <span class="text-rose-500">*</span>
+                            Divisi <span class="text-rose-500">*</span>
                         </label>
-                        <select id="edit_divisi_select" onchange="handleDivisiSelectChange('edit', this.value)"
+                        <select name="divisi_id_divisi" id="edit_divisi_id"
                             class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
-                            @foreach ($daftarDivisi as $d)
-                                <option value="{{ $d }}">{{ $d }}</option>
+                            @foreach ($daftarDivisiObj as $d)
+                                <option value="{{ $d->id_divisi }}">{{ $d->nama_divisi }}</option>
                             @endforeach
-                            <option value="__NEW__">+ Ketik Divisi Baru...</option>
                         </select>
-                        <input type="text" name="divisi" id="edit_divisi"
-                            class="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 hidden">
                     </div>
 
-                    {{-- Status Kerja & Garis Putus --}}
-                    <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2">
-                        <label class="block text-xs font-bold text-white uppercase">
-                            Status Kerja
-                        </label>
+                    <div id="editDivisiStrukturWrap" class="hidden">
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Divisi</label>
+                        <input type="text" name="divisi" id="edit_divisi_text"
+                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+
+                    {{-- Status Kerja (Magang & Probation otomatis garis putus-putus) --}}
+                    <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2">
+                        <label class="block text-xs font-bold text-amber-900 uppercase">Status Kepegawaian</label>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 cursor-pointer">
-                                <input type="radio" name="status_kerja" id="edit_status_tetap" value="tetap" onchange="handleStatusChange('edit', this.value)" class="text-amber-600">
+                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-amber-200 cursor-pointer">
+                                <input type="radio" name="status_karyawan" id="edit_status_tetap" value="tetap" class="text-amber-600">
                                 <span>Tetap</span>
                             </label>
-                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 cursor-pointer">
-                                <input type="radio" name="status_kerja" id="edit_status_probation" value="probation" onchange="handleStatusChange('edit', this.value)" class="text-amber-600">
-                                <span class="text-purple-700 font-semibold">Probation</span>
-                            </label>
-                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 cursor-pointer">
-                                <input type="radio" name="status_kerja" id="edit_status_magang" value="magang" onchange="handleStatusChange('edit', this.value)" class="text-amber-600">
-                                <span class="text-amber-700 font-semibold">Magang</span>
-                            </label>
-                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 cursor-pointer">
-                                <input type="radio" name="status_kerja" id="edit_status_kontrak" value="kontrak" onchange="handleStatusChange('edit', this.value)" class="text-amber-600">
+                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-amber-200 cursor-pointer">
+                                <input type="radio" name="status_karyawan" id="edit_status_kontrak" value="kontrak" class="text-amber-600">
                                 <span>Kontrak</span>
                             </label>
+                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-amber-200 cursor-pointer">
+                                <input type="radio" name="status_karyawan" id="edit_status_probation" value="probation" class="text-amber-600">
+                                <span class="text-purple-700 font-semibold">Probation</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-amber-200 cursor-pointer">
+                                <input type="radio" name="status_karyawan" id="edit_status_magang" value="magang" class="text-amber-600">
+                                <span class="text-amber-700 font-semibold">Magang</span>
+                            </label>
                         </div>
-
-                        <label class="flex items-center gap-2 pt-1 cursor-pointer">
-                            <input type="checkbox" name="garis_putus" id="edit_garis_putus" value="1" class="rounded text-amber-600 focus:ring-amber-500">
-                            <span class="text-xs font-bold text-blue-900">
-                                Gunakan garis / border putus-putus (┄┄)
-                            </span>
-                        </label>
+                        <p class="text-[11px] text-amber-700">* Magang &amp; Probation otomatis tampil dengan garis &amp; border putus-putus (┄┄).</p>
                     </div>
 
-                    {{-- Pindah Atasan --}}
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">
-                            Dia Dibawah Siapa? (Atasan Langsung)
-                        </label>
-                        <select name="parent_id" id="edit_parent_id"
+                    {{-- Atasan Langsung --}}
+                    <div id="editAtasanWrap">
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Atasan Langsung</label>
+                        <select name="atasan_id" id="edit_atasan_id"
                             class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white">
-                            <option value="">-- [ Tanpa Atasan / Pimpinan Tertinggi ] --</option>
-                            @foreach ($allNodes as $n)
-                                <option value="{{ $n->id }}">{{ $n->nama }} - {{ $n->jabatan }} ({{ $n->divisi }})</option>
+                            <option value="">-- Tidak Ada / Pimpinan Utama --</option>
+                            @foreach ($daftarKaryawan as $k)
+                                <option value="{{ $k->id_karyawan }}">{{ $k->nama }} ({{ $k->jabatanLabel() }} - {{ $k->divisi?->nama_divisi ?? '-' }})</option>
                             @endforeach
                         </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Urutan Tampil (Sort Order)</label>
-                        <input type="number" name="urutan" id="edit_urutan" min="1"
-                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -982,15 +905,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Ganti Foto Profil</label>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Ganti Foto (Opsional · Maks. 3 MB)</label>
                         <input type="file" name="foto" accept="image/jpeg,image/png,image/webp"
                             class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keterangan / Tanggung Jawab</label>
-                        <textarea name="keterangan" id="edit_keterangan" rows="2"
-                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
                     </div>
 
                     <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
@@ -999,7 +916,7 @@
                             Batal
                         </button>
                         <button type="submit" id="btnSubmitEdit"
-                            class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition shadow cursor-pointer">
+                            class="px-5 py-2 bg-[#0284c7] hover:bg-sky-700 text-white text-xs font-semibold rounded-xl transition shadow cursor-pointer">
                             Simpan Perubahan
                         </button>
                     </div>
@@ -1012,7 +929,6 @@
         const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         let currentZoom = 1;
 
-        // Modal Helpers
         function openModal(modalId) {
             const m = document.getElementById(modalId);
             if (!m) return;
@@ -1028,7 +944,7 @@
         }
 
         // =========================================================================
-        // DETAIL PROFIL KARYAWAN (POPUP ASLI)
+        // PROFIL ANGGOTA
         // =========================================================================
         function openProfileModal(card) {
             let employee;
@@ -1046,10 +962,10 @@
             document.getElementById('employee-profile-name').textContent = employee.nama || '-';
             document.getElementById('employee-profile-position').textContent = employee.jabatan || '-';
             document.getElementById('employee-profile-division').textContent = employee.divisi || '-';
-            
+
             const statusBadge = (employee.status_kerja || 'tetap').toUpperCase();
             document.getElementById('employee-profile-status').textContent = statusBadge + (employee.garis_putus ? ' (Garis Putus-Putus)' : '');
-            
+
             document.getElementById('employee-profile-email').textContent = employee.email || '-';
             document.getElementById('employee-profile-phone').textContent = employee.no_telepon || '-';
             document.getElementById('employee-profile-desc').textContent = employee.keterangan || '-';
@@ -1084,10 +1000,8 @@
             document.body.classList.remove('overflow-hidden');
         }
 
-        // Binding click untuk tutup modal via backdrop & keyboard
         document.addEventListener('DOMContentLoaded', function() {
-            // Close modal jika klik di area backdrop hitam luar
-            ['employee-profile-modal', 'modalAddNode', 'modalEditNode'].forEach((modalId) => {
+            ['employee-profile-modal', 'modalLayoutDivisi', 'modalEditNode'].forEach((modalId) => {
                 const modalEl = document.getElementById(modalId);
                 if (modalEl) {
                     modalEl.addEventListener('click', (e) => {
@@ -1102,119 +1016,59 @@
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     closeProfileModal();
-                    closeModal('modalAddNode');
+                    closeModal('modalLayoutDivisi');
                     closeModal('modalEditNode');
                 }
             });
         });
 
         // =========================================================================
-        // MODAL ADD KARYAWAN & DIVISI AUTOFILL
+        // MODAL ATUR POSISI DIVISI DI BAGAN
         // =========================================================================
-        function openAddNodeModal() {
+        function openLayoutModal() {
             closeProfileModal();
             closeModal('modalEditNode');
-
-            const form = document.getElementById('formAddNode');
-            if (form) form.reset();
-            const selectDiv = document.getElementById('add_divisi_select');
-            const inputDiv = document.getElementById('add_divisi');
-            if (selectDiv && inputDiv) {
-                inputDiv.value = selectDiv.value;
-                inputDiv.classList.add('hidden');
-            }
-            const garisCheck = document.getElementById('add_garis_putus');
-            if (garisCheck) garisCheck.checked = false;
-
-            openModal('modalAddNode');
+            const select = document.getElementById('layout_id_divisi');
+            if (select) onLayoutDivisiChange(select);
+            openModal('modalLayoutDivisi');
         }
 
-        function openAddNodeModalWithDivision(divName) {
-            openAddNodeModal();
-            const selectDiv = document.getElementById('add_divisi_select');
-            const inputDiv = document.getElementById('add_divisi');
-            if (selectDiv && inputDiv) {
-                let found = false;
-                for (let i = 0; i < selectDiv.options.length; i++) {
-                    if (selectDiv.options[i].value.toLowerCase() === divName.toLowerCase()) {
-                        selectDiv.selectedIndex = i;
-                        inputDiv.value = selectDiv.options[i].value;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    selectDiv.value = '__NEW__';
-                    inputDiv.classList.remove('hidden');
-                    inputDiv.value = divName;
-                }
+        function openLayoutModalFor(idDivisi, posisiBagan, urutan) {
+            closeProfileModal();
+            closeModal('modalEditNode');
+            const select = document.getElementById('layout_id_divisi');
+            if (select) {
+                select.value = idDivisi;
             }
+            const radio = document.getElementById('posisi_' + (posisiBagan || 'operasional'));
+            if (radio) radio.checked = true;
+            const urutanEl = document.getElementById('layout_urutan');
+            if (urutanEl) urutanEl.value = urutan || 1;
+            openModal('modalLayoutDivisi');
         }
 
-        function handleDivisiSelectChange(formType, val) {
-            const input = document.getElementById(formType + '_divisi');
-            if (val === '__NEW__') {
-                input.classList.remove('hidden');
-                input.value = '';
-                input.focus();
-            } else {
-                input.classList.add('hidden');
-                input.value = val;
-            }
-        }
-
-        function onSelectKaryawan(formType, selectEl) {
+        function onLayoutDivisiChange(selectEl) {
             const opt = selectEl.options[selectEl.selectedIndex];
-            if (!opt || !opt.value) return;
-
-            document.getElementById(formType + '_id_karyawan').value = opt.value;
-            if (opt.dataset.nama) document.getElementById(formType + '_nama').value = opt.dataset.nama;
-            if (opt.dataset.jabatan) document.getElementById(formType + '_jabatan').value = opt.dataset.jabatan;
-            if (opt.dataset.email) document.getElementById(formType + '_email').value = opt.dataset.email;
-
-            if (opt.dataset.divisi) {
-                const selectDiv = document.getElementById(formType + '_divisi_select');
-                const inputDiv = document.getElementById(formType + '_divisi');
-                let found = false;
-                for (let i = 0; i < selectDiv.options.length; i++) {
-                    if (selectDiv.options[i].value.toLowerCase() === opt.dataset.divisi.toLowerCase()) {
-                        selectDiv.selectedIndex = i;
-                        inputDiv.value = selectDiv.options[i].value;
-                        inputDiv.classList.add('hidden');
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    selectDiv.value = '__NEW__';
-                    inputDiv.classList.remove('hidden');
-                    inputDiv.value = opt.dataset.divisi;
-                }
-            }
+            if (!opt) return;
+            const posisi = opt.dataset.posisi || 'operasional';
+            const urutan = opt.dataset.urutan || 1;
+            const radio = document.getElementById('posisi_' + posisi);
+            if (radio) radio.checked = true;
+            const urutanEl = document.getElementById('layout_urutan');
+            if (urutanEl) urutanEl.value = urutan;
         }
 
-        function handleStatusChange(formType, status) {
-            const checkbox = document.getElementById(formType + '_garis_putus');
-            if (checkbox) {
-                if (status === 'magang' || status === 'probation') {
-                    checkbox.checked = true;
-                } else {
-                    checkbox.checked = false;
-                }
-            }
-        }
-
-        async function submitAddNode(e) {
+        async function submitDivisiLayout(e) {
             e.preventDefault();
-            const btn = document.getElementById('btnSubmitAdd');
+            const btn = document.getElementById('btnSubmitLayout');
             btn.disabled = true;
             btn.textContent = 'Menyimpan...';
 
-            const form = document.getElementById('formAddNode');
+            const form = document.getElementById('formLayoutDivisi');
             const formData = new FormData(form);
 
             try {
-                const res = await fetch('{{ route("strukturOrganisasi.store") }}', {
+                const res = await fetch('{{ route("strukturOrganisasi.divisiLayout") }}', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': CSRF_TOKEN,
@@ -1222,96 +1076,82 @@
                     },
                     body: formData
                 });
-
                 const data = await res.json();
                 if (res.ok && data.success) {
                     window.location.reload();
                 } else {
-                    alert('Gagal menyimpan: ' + (data.message || 'Terjadi kesalahan'));
+                    alert('Gagal menyimpan posisi: ' + (data.message || 'Terjadi kesalahan'));
                     btn.disabled = false;
-                    btn.textContent = 'Simpan Karyawan';
+                    btn.textContent = 'Simpan Posisi';
                 }
             } catch (err) {
                 console.error(err);
                 alert('Terjadi kesalahan jaringan.');
                 btn.disabled = false;
-                btn.textContent = 'Simpan Karyawan';
+                btn.textContent = 'Simpan Posisi';
             }
         }
 
         // =========================================================================
-        // MODAL EDIT KARYAWAN (TIDAK AKAN CRASH / BENTROK)
+        // MODAL EDIT ANGGOTA / KARYAWAN
         // =========================================================================
-        function openEditNodeModal(e, id) {
+        function openEditNodeModal(e, nodeKey) {
             if (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 if (e.stopImmediatePropagation) e.stopImmediatePropagation();
             }
 
-            // Tutup modal lain jika ada
             closeProfileModal();
-            closeModal('modalAddNode');
+            closeModal('modalLayoutDivisi');
 
-            // Temukan kartu elemen langsung via ID atau event target
-            const card = document.getElementById('org-card-' + id)
-                || (e && e.target ? e.target.closest('.org-card') : null)
-                || document.querySelector(`[data-id="${id}"]`);
+            const card = document.getElementById('org-card-' + nodeKey)
+                || (e && e.target ? e.target.closest('.org-card') : null);
+            if (!card) return;
 
-            if (!card) {
-                console.error('Kartu anggota dengan ID ' + id + ' tidak ditemukan.');
-                return;
-            }
-
-            let employee;
+            let emp;
             try {
-                employee = JSON.parse(card.dataset.employee);
+                emp = JSON.parse(card.dataset.employee);
             } catch (err) {
-                console.error('Gagal membaca data JSON kartu:', err);
+                console.error('Gagal membaca data kartu:', err);
                 return;
             }
 
-            document.getElementById('edit_node_id').value = employee.id;
-            document.getElementById('edit_nama').value = employee.nama || '';
-            document.getElementById('edit_jabatan').value = employee.jabatan || '';
-            document.getElementById('edit_urutan').value = employee.urutan || 1;
-            document.getElementById('edit_email').value = (employee.email && employee.email !== '-') ? employee.email : '';
-            document.getElementById('edit_no_telepon').value = (employee.no_telepon && employee.no_telepon !== '-') ? employee.no_telepon : '';
-            document.getElementById('edit_keterangan').value = (employee.keterangan && employee.keterangan !== '-') ? employee.keterangan : '';
+            const sourceType = emp.source_type || 'karyawan';
+            document.getElementById('edit_node_id').value = emp.id;
+            document.getElementById('edit_source_type').value = sourceType;
+            document.getElementById('edit_nama').value = emp.nama || '';
+            document.getElementById('edit_jabatan').value = emp.jabatan || '';
+            document.getElementById('edit_email').value = (emp.email && emp.email !== '-') ? emp.email : '';
+            document.getElementById('edit_no_telepon').value = (emp.no_telepon && emp.no_telepon !== '-') ? emp.no_telepon : '';
 
-            // Status kerja radio
-            const status = employee.status_kerja || 'tetap';
+            const status = emp.status_kerja || 'tetap';
             const radio = document.getElementById('edit_status_' + status);
             if (radio) radio.checked = true;
 
-            // Garis putus
-            const garisCheck = document.getElementById('edit_garis_putus');
-            if (garisCheck) garisCheck.checked = Boolean(employee.garis_putus);
+            const divKarWrap = document.getElementById('editDivisiKaryawanWrap');
+            const divStrWrap = document.getElementById('editDivisiStrukturWrap');
+            const atasanWrap = document.getElementById('editAtasanWrap');
+            const syncHint = document.getElementById('editSyncHint');
 
-            // Divisi
-            const selectDiv = document.getElementById('edit_divisi_select');
-            const inputDiv = document.getElementById('edit_divisi');
-            if (selectDiv && inputDiv) {
-                let found = false;
-                for (let i = 0; i < selectDiv.options.length; i++) {
-                    if (selectDiv.options[i].value.toLowerCase() === (employee.divisi || '').toLowerCase()) {
-                        selectDiv.selectedIndex = i;
-                        inputDiv.value = selectDiv.options[i].value;
-                        inputDiv.classList.add('hidden');
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    selectDiv.value = '__NEW__';
-                    inputDiv.classList.remove('hidden');
-                    inputDiv.value = employee.divisi || '';
-                }
+            if (sourceType === 'karyawan') {
+                divKarWrap.classList.remove('hidden');
+                divStrWrap.classList.add('hidden');
+                atasanWrap.classList.remove('hidden');
+                syncHint.textContent = 'Perubahan langsung tersinkron ke data Karyawan.';
+
+                const divSelect = document.getElementById('edit_divisi_id');
+                if (divSelect && emp.divisi_id) divSelect.value = emp.divisi_id;
+
+                const atasanSelect = document.getElementById('edit_atasan_id');
+                if (atasanSelect) atasanSelect.value = emp.atasan_id || '';
+            } else {
+                divKarWrap.classList.add('hidden');
+                divStrWrap.classList.remove('hidden');
+                atasanWrap.classList.add('hidden');
+                syncHint.textContent = 'Edit posisi pimpinan pada bagan struktur.';
+                document.getElementById('edit_divisi_text').value = emp.divisi || '';
             }
-
-            // Atasan langsung
-            const parentSelect = document.getElementById('edit_parent_id');
-            if (parentSelect) parentSelect.value = employee.parent_id || '';
 
             openModal('modalEditNode');
         }
@@ -1324,10 +1164,20 @@
 
             const form = document.getElementById('formEditNode');
             const id = document.getElementById('edit_node_id').value;
+            const sourceType = document.getElementById('edit_source_type').value;
             const formData = new FormData(form);
 
+            const url = sourceType === 'karyawan'
+                ? `/struktur-organisasi/karyawan/${id}`
+                : `/struktur-organisasi/${id}`;
+
+            if (sourceType !== 'karyawan') {
+                const statusVal = form.querySelector('input[name="status_karyawan"]:checked')?.value || 'tetap';
+                formData.append('status_kerja', statusVal);
+            }
+
             try {
-                const res = await fetch(`/struktur-organisasi/${id}`, {
+                const res = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': CSRF_TOKEN,
@@ -1361,29 +1211,20 @@
             const cards = document.querySelectorAll('[data-employee]');
 
             if (!term) {
-                cards.forEach(c => {
-                    c.classList.remove('highlight-search', 'dimmed');
-                });
+                cards.forEach(c => c.classList.remove('highlight-search', 'dimmed'));
                 return;
             }
 
             cards.forEach(c => {
                 let emp;
-                try {
-                    emp = JSON.parse(c.dataset.employee);
-                } catch (e) { return; }
+                try { emp = JSON.parse(c.dataset.employee); } catch (e) { return; }
 
                 const match = (emp.nama && emp.nama.toLowerCase().includes(term))
                     || (emp.jabatan && emp.jabatan.toLowerCase().includes(term))
                     || (emp.divisi && emp.divisi.toLowerCase().includes(term));
 
-                if (match) {
-                    c.classList.add('highlight-search');
-                    c.classList.remove('dimmed');
-                } else {
-                    c.classList.remove('highlight-search');
-                    c.classList.add('dimmed');
-                }
+                c.classList.toggle('highlight-search', Boolean(match));
+                c.classList.toggle('dimmed', !match);
             });
         }
 
@@ -1398,18 +1239,11 @@
 
             cards.forEach(c => {
                 let emp;
-                try {
-                    emp = JSON.parse(c.dataset.employee);
-                } catch (e) { return; }
+                try { emp = JSON.parse(c.dataset.employee); } catch (e) { return; }
 
                 const match = emp.divisi && emp.divisi.toLowerCase() === filter;
-                if (match) {
-                    c.classList.remove('dimmed');
-                    c.classList.add('highlight-search');
-                } else {
-                    c.classList.remove('highlight-search');
-                    c.classList.add('dimmed');
-                }
+                c.classList.toggle('highlight-search', Boolean(match));
+                c.classList.toggle('dimmed', !match);
             });
         }
 
