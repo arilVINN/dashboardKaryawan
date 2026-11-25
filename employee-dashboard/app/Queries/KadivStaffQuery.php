@@ -22,7 +22,7 @@ class KadivStaffQuery
 
         $query = Karyawan::query()
             ->whereHas('user.role', fn ($q) => $q->whereRaw('LOWER(nama_role) = ?', ['staff']))
-            ->with(['divisi', 'user:id_user,karyawan_id_karyawan,last_login_at'])
+            ->with(['divisi', 'jabatanRef', 'user:id_user,karyawan_id_karyawan,last_login_at'])
             ->withCount('tugas');
 
         if (!empty($this->divisiId)) {

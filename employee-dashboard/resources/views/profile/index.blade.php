@@ -222,9 +222,9 @@ U
                         const p = json.data;
                         
                         // Header
-                        document.getElementById('hdr-nama').textContent = p.nama;
-                        document.getElementById('hdr-email').textContent = p.email;
-                        document.getElementById('hdr-telp').textContent = p.no_telepon;
+                        document.getElementById('hdr-nama').textContent = p.nama || '-';
+                        document.getElementById('hdr-email').textContent = p.email || '-';
+                        document.getElementById('hdr-telp').textContent = p.no_telepon || '-';
                         document.getElementById('prof-inisial').textContent = p.nama && p.nama !== '-' ? p.nama.charAt(0).toUpperCase() : 'U';
 
                         const fotoImg = document.getElementById('prof-foto');
@@ -302,11 +302,11 @@ U
                             'Accept': 'application/json'
                         },
                         body: JSON.stringify({
-                            nama: document.getElementById('input-nama').value || '-',
-                            email: document.getElementById('input-email').value || '-',
-                            no_telepon: document.getElementById('input-telepon').value || '-',
-                            no_rekening: document.getElementById('input-rekening').value || null,
-                            alamat: document.getElementById('input-alamat').value || '-',
+                            nama: document.getElementById('input-nama').value.trim(),
+                            email: document.getElementById('input-email').value.trim(),
+                            no_telepon: document.getElementById('input-telepon').value.trim(),
+                            no_rekening: document.getElementById('input-rekening').value.trim() || null,
+                            alamat: document.getElementById('input-alamat').value.trim(),
                         })
                     });
                     const data = await res.json();

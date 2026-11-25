@@ -36,7 +36,7 @@
                     </div>
                     <div class="min-w-0">
                         <h1 class="text-2xl font-bold text-slate-900 truncate">{{ $karyawan->nama }}</h1>
-                        <p class="text-sm text-slate-500">{{ $karyawan->jabatan }} · {{ $karyawan->id_karyawan }}</p>
+                        <p class="text-sm text-slate-500">{{ $karyawan->jabatanLabel() }} · {{ $karyawan->id_karyawan }}</p>
                         <div class="mt-2 flex flex-wrap gap-2">
                             <span class="px-2.5 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs font-bold">
                                 {{ $karyawan->divisi->nama_divisi ?? 'Tanpa divisi' }}
@@ -78,7 +78,7 @@
                             data-rekening="{{ $karyawan->no_rekening }}"
                             data-akhir-kontrak="{{ $karyawan->tanggal_akhir_kontrak ? \Carbon\Carbon::parse($karyawan->tanggal_akhir_kontrak)->format('Y-m-d') : '' }}"
                             data-email="{{ $karyawan->email }}" data-alamat="{{ $karyawan->alamat }}"
-                            data-telepon="{{ $karyawan->no_telepon }}" data-jabatan="{{ $karyawan->jabatan }}"
+                            data-telepon="{{ $karyawan->no_telepon }}" data-jabatan="{{ $karyawan->jabatanRef?->nama ?? $karyawan->jabatan }}"
                             data-status="{{ $karyawan->status_aktif }}"
                             data-tanggal-keluar="{{ $karyawan->tanggal_keluar ? \Carbon\Carbon::parse($karyawan->tanggal_keluar)->format('Y-m-d') : '' }}"
                             data-divisi="{{ $karyawan->divisi_id_divisi }}" data-pendidikan="{{ $karyawan->pendidikan }}"
@@ -143,7 +143,9 @@
                                     ? 'SMK'
                                     : $karyawan->pendidikan,
                                 'Job Level' => $karyawan->job_level,
-                                'Status Karyawan' => $karyawan->tanggal_akhir_kontrak ? 'Kontrak' : 'Tetap',
+                                'Status Karyawan' => $karyawan->tanggal_akhir_kontrak
+                                    ? 'Kontrak'
+                                    : (filled($karyawan->status_karyawan) ? ucfirst((string) $karyawan->status_karyawan) : 'Tetap'),
                                 'Tanggal Masuk' =>
                                     $karyawan->tanggal_masuk ?? $karyawan->tanggal_rekrut
                                         ? \Carbon\Carbon::parse(
@@ -158,7 +160,7 @@
                         @foreach ($info as $label => $nilai)
                             <div class="flex justify-between gap-4 border-b border-slate-100 pb-2">
                                 <dt class="text-slate-500">{{ $label }}</dt>
-                                <dd class="text-slate-900 font-medium text-right">{{ $nilai ?: '-' }}</dd>
+                                <dd class="text-slate-900 font-medium text-right">{{ filled(trim((string) $nilai)) ? $nilai : '-' }}</dd>
                             </div>
                         @endforeach
                     </dl>

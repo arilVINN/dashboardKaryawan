@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 class StrukturOrganisasiController extends Controller
 {
     /**
-     * Tampilkan halaman Bagan Struktur Organisasi dengan tata letak asli PT Silindo.
+     * Tampilkan halaman Bagan Struktur Organisasi yang terintegrasi penuh dengan Divisi & Karyawan.
      */
     public function index(Request $request)
     {
@@ -36,88 +36,103 @@ class StrukturOrganisasiController extends Controller
             default => route('hrd.dashboard'),
         };
 
-        // Ambil semua node terurut
-        $allNodes = StrukturOrganisasi::with(['karyawan', 'parent'])
+        // 1. Ambil seluruh divisi aktif dan karyawan aktif dari master database
+        $allDivisi = Divisi::aktif()
             ->orderBy('urutan', 'asc')
-            ->orderBy('id', 'asc')
+            ->orderBy('nama_divisi', 'asc')
             ->get();
 
-        // 1. Pimpinan Utama
-        $pengawas = $allNodes->first(fn($n) => str_contains(strtolower($n->jabatan), 'pengawas'))
-            ?? $allNodes->where('level', 1)->first()
-            ?? $allNodes->first();
-
-        $dirUtama = $allNodes->first(fn($n) => str_contains(strtolower($n->jabatan), 'direktur utama'))
-            ?? $allNodes->where('level', 2)->first();
-
-        $dirOps = $allNodes->first(fn($n) => str_contains(strtolower($n->jabatan), 'direktur operasional'));
-
-        $execIds = array_filter([$pengawas?->id, $dirUtama?->id, $dirOps?->id]);
-
-        // 2. Jajaran Pendukung (Support Level: Legal, PA, Writer, Finance, HR & GA)
-        $legalMembers = $allNodes->filter(fn($n) => in_array($n->divisi, ['Legal & Compliance', 'Legal']) && !in_array($n->id, $execIds))->values();
-        $paMembers = $allNodes->filter(fn($n) => (str_contains(strtolower($n->jabatan), 'personal assistant') || str_contains(strtolower($n->jabatan), 'asisten pribadi')) && !in_array($n->id, $execIds))->values();
-        $writerMembers = $allNodes->filter(fn($n) => ($n->divisi === 'Writer' || str_contains(strtolower($n->jabatan), 'writer')) && !in_array($n->id, $execIds))->values();
-        $financeMembers = $allNodes->filter(fn($n) => in_array($n->divisi, ['Finance', 'Finance & Accounting', 'Keuangan']) && !in_array($n->id, $execIds))->values();
-        $hrMembers = $allNodes->filter(fn($n) => in_array($n->divisi, ['HR & GA', 'HR', 'Human Resources']) && !in_array($n->id, $execIds))->values();
-
-        $supportIds = array_merge(
-            $legalMembers->pluck('id')->all(),
-            $paMembers->pluck('id')->all(),
-            $writerMembers->pluck('id')->all(),
-            $financeMembers->pluck('id')->all(),
-            $hrMembers->pluck('id')->all()
-        );
-
-        // 3. Departemen Operasional (Level 4: 6 Kolom Standar + Divisi Kustom Lainnya)
-        $standardDeptNames = [
-            'Kelas Kerjasama',
-            'Publikasi Buku',
-            'Publikasi Jurnal',
-            'Academic Event',
-            'Kreatif Digital',
-            'IT',
-        ];
-
-        $assignedIds = array_merge($execIds, $supportIds);
-        $otherMembers = $allNodes->filter(fn($n) => !in_array($n->id, $assignedIds));
-
-        $allDeptNames = collect($standardDeptNames)
-            ->merge($otherMembers->pluck('divisi')->filter())
-            ->unique()
-            ->values();
-
-        $deptGroups = [];
-        foreach ($allDeptNames as $deptName) {
-            $members = $allNodes->filter(function ($n) use ($deptName, $assignedIds) {
-                return !in_array($n->id, $assignedIds)
-                    && strcasecmp((string)$n->divisi, $deptName) === 0;
-            })->values();
-
-            $deptGroups[$deptName] = $members;
-        }
-
-        // Daftar divisi untuk dropdown form dan filter
-        $daftarDivisi = Divisi::select('nama_divisi')
-            ->orderBy('nama_divisi')
-            ->pluck('nama_divisi')
-            ->merge($allNodes->pluck('divisi')->filter())
-            ->merge($standardDeptNames)
-            ->merge(['Legal & Compliance', 'Writer', 'Finance & Accounting', 'HR & GA'])
-            ->unique()
-            ->filter()
-            ->sort()
-            ->values();
-
-        // Daftar karyawan aktif untuk autofill
-        $daftarKaryawan = Karyawan::select('id_karyawan', 'nama', 'jabatan', 'divisi_id_divisi', 'email', 'foto')
-            ->with('divisi:id_divisi,nama_divisi')
+        $allKaryawan = Karyawan::with(['divisi', 'jabatanRef', 'user.role', 'atasan'])
+            ->whereNull('tanggal_keluar')
             ->where(function ($q) {
                 $q->where('status_aktif', 'Aktif')->orWhereNull('status_aktif');
             })
-            ->whereNull('tanggal_keluar')
-            ->orderBy('nama')
+            ->orderBy('nama', 'asc')
             ->get();
+
+        // Fallback node pimpinan non-karyawan (jika Pengawas / Dir Ops belum terdaftar di tabel karyawans)
+        $strukturNodes = StrukturOrganisasi::orderBy('level', 'asc')
+            ->orderBy('urutan', 'asc')
+            ->get();
+
+        // 2. Tentukan Pimpinan Utama (Pengawas, Direktur Utama, Direktur Operasional)
+        $pengawasKaryawan = $allKaryawan->first(fn(Karyawan $k) => str_contains(strtolower((string)$k->jabatan), 'pengawas'));
+        $pengawasStruktur = $strukturNodes->first(fn($n) => str_contains(strtolower((string)$n->jabatan), 'pengawas'));
+        $pengawas = $pengawasKaryawan
+            ? $this->formatKaryawanNode($pengawasKaryawan)
+            : ($pengawasStruktur ? $this->formatStrukturNode($pengawasStruktur) : null);
+
+        $dirUtamaKaryawan = $allKaryawan->first(fn(Karyawan $k) => $k->isDirekturUtama() || $k->divisi?->isDirekturUtama());
+        $dirUtamaStruktur = $strukturNodes->first(fn($n) => str_contains(strtolower((string)$n->jabatan), 'direktur utama'));
+        $dirUtama = $dirUtamaKaryawan
+            ? $this->formatKaryawanNode($dirUtamaKaryawan)
+            : ($dirUtamaStruktur ? $this->formatStrukturNode($dirUtamaStruktur) : null);
+
+        $dirOpsKaryawan = $allKaryawan->first(fn(Karyawan $k) => str_contains(strtolower((string)$k->jabatan), 'direktur operasional'));
+        $dirOpsStruktur = $strukturNodes->first(fn($n) => str_contains(strtolower((string)$n->jabatan), 'direktur operasional'));
+        $dirOps = $dirOpsKaryawan
+            ? $this->formatKaryawanNode($dirOpsKaryawan)
+            : ($dirOpsStruktur ? $this->formatStrukturNode($dirOpsStruktur) : null);
+
+        $execKaryawanIds = array_filter([
+            $pengawasKaryawan?->id_karyawan,
+            $dirUtamaKaryawan?->id_karyawan,
+            $dirOpsKaryawan?->id_karyawan,
+        ]);
+
+        // 3. Kelompokkan Divisi Aktif (tipe = divisi) & isi anggotanya dari tabel karyawans
+        $unitDivisions = $allDivisi->where('tipe', Divisi::TIPE_DIVISI)->values();
+
+        $dirutDivisions = collect();
+        $diropsDivisions = collect();
+        $operasionalDivisions = collect();
+
+        foreach ($unitDivisions as $divisi) {
+            $members = $allKaryawan
+                ->filter(function (Karyawan $k) use ($divisi, $execKaryawanIds) {
+                    if (in_array($k->id_karyawan, $execKaryawanIds, true)) {
+                        return false;
+                    }
+                    // Abaikan akun sistem Superadmin agar tidak mengotori bagan
+                    if (strtolower((string)$k->job_level) === 'superadmin' || strtolower((string)$k->jabatan) === 'superadmin') {
+                        return false;
+                    }
+                    return $k->divisi_id_divisi === $divisi->id_divisi;
+                })
+                ->sortBy(function (Karyawan $k) {
+                    $jab = strtolower((string)$k->jabatanLabel());
+                    $isHead = $k->isKadiv()
+                        || str_contains($jab, 'kepala')
+                        || str_contains($jab, 'koord')
+                        || str_contains($jab, 'manager');
+                    return ($isHead ? '0_' : '1_') . strtolower($k->nama);
+                })
+                ->map(fn(Karyawan $k) => $this->formatKaryawanNode($k, $divisi))
+                ->values();
+
+            $divBox = (object) [
+                'id_divisi'    => $divisi->id_divisi,
+                'kode_divisi'  => $divisi->kode_divisi,
+                'nama_divisi'  => $divisi->nama_divisi,
+                'posisi_bagan' => $divisi->posisi_bagan ?: Divisi::POSISI_OPERASIONAL,
+                'urutan'       => (int) $divisi->urutan,
+                'members'      => $members,
+            ];
+
+            if ($divBox->posisi_bagan === Divisi::POSISI_DIRUT_PENDUKUNG) {
+                $dirutDivisions->push($divBox);
+            } elseif ($divBox->posisi_bagan === Divisi::POSISI_DIROPS_PENDUKUNG) {
+                $diropsDivisions->push($divBox);
+            } else {
+                $operasionalDivisions->push($divBox);
+            }
+        }
+
+        $daftarDivisiObj = $unitDivisions;
+        $daftarDivisi = $unitDivisions->pluck('nama_divisi')->values();
+        $daftarKaryawan = $allKaryawan->filter(
+            fn(Karyawan $k) => strtolower((string)$k->job_level) !== 'superadmin'
+        )->values();
 
         return view('hrd.strukturOrganisasi', compact(
             'role',
@@ -127,16 +142,193 @@ class StrukturOrganisasiController extends Controller
             'pengawas',
             'dirUtama',
             'dirOps',
-            'legalMembers',
-            'paMembers',
-            'writerMembers',
-            'financeMembers',
-            'hrMembers',
-            'deptGroups',
+            'dirutDivisions',
+            'diropsDivisions',
+            'operasionalDivisions',
+            'daftarDivisiObj',
             'daftarDivisi',
-            'daftarKaryawan',
-            'allNodes'
+            'daftarKaryawan'
         ));
+    }
+
+    /**
+     * Format data Karyawan menjadi objek seragam untuk kartu bagan.
+     */
+    protected function formatKaryawanNode(Karyawan $k, ?Divisi $divisi = null): object
+    {
+        $divModel = $divisi ?? $k->divisi;
+        $statusRaw = strtolower(trim((string) ($k->status_karyawan ?? 'tetap')));
+        $jobLevelRaw = strtolower(trim((string) ($k->job_level ?? '')));
+
+        $statusKerja = match (true) {
+            str_contains($statusRaw, 'magang') || $jobLevelRaw === 'magang' => 'magang',
+            str_contains($statusRaw, 'probation') || str_contains($statusRaw, 'percobaan') => 'probation',
+            str_contains($statusRaw, 'kontrak') => 'kontrak',
+            default => 'tetap',
+        };
+
+        $jabatan = $k->jabatanLabel();
+        $jabLower = strtolower($jabatan);
+        $isKadiv = $k->isKadiv()
+            || str_contains($jabLower, 'kepala')
+            || str_contains($jabLower, 'koord')
+            || str_contains($jabLower, 'manager');
+
+        return (object) [
+            'id'           => $k->id_karyawan,
+            'node_key'     => 'kar_' . $k->id_karyawan,
+            'source_type'  => 'karyawan',
+            'id_karyawan'  => $k->id_karyawan,
+            'nama'         => $k->nama,
+            'jabatan'      => $jabatan,
+            'divisi_id'    => $divModel?->id_divisi ?? $k->divisi_id_divisi,
+            'divisi'       => $divModel?->nama_divisi ?? '-',
+            'status_kerja' => $statusKerja,
+            'garis_putus'  => in_array($statusKerja, ['magang', 'probation'], true),
+            'is_kadiv'     => $isKadiv,
+            'email'        => filled(trim((string) $k->email)) ? $k->email : '-',
+            'no_telepon'   => filled(trim((string) $k->no_telepon)) ? $k->no_telepon : '-',
+            'keterangan'   => $k->atasan ? 'Atasan: ' . $k->atasan->nama : ($divModel?->nama_divisi ?? '-'),
+            'foto'         => $k->foto ? asset('storage/' . $k->foto) : '',
+            'atasan_id'    => $k->atasan_id,
+        ];
+    }
+
+    /**
+     * Format node fallback dari tabel struktur_organisasis (misal Pengawas / Dir. Operasional).
+     */
+    protected function formatStrukturNode(StrukturOrganisasi $n): object
+    {
+        $statusKerja = strtolower((string) ($n->status_kerja ?? 'tetap'));
+        $fotoUrl = $n->foto
+            ? asset('storage/' . $n->foto)
+            : ($n->karyawan?->foto ? asset('storage/' . $n->karyawan->foto) : '');
+
+        return (object) [
+            'id'           => $n->id,
+            'node_key'     => 'str_' . $n->id,
+            'source_type'  => 'struktur',
+            'id_karyawan'  => $n->id_karyawan,
+            'nama'         => $n->nama,
+            'jabatan'      => $n->jabatan,
+            'divisi_id'    => null,
+            'divisi'       => $n->divisi ?? '-',
+            'status_kerja' => $statusKerja,
+            'garis_putus'  => (bool) ($n->garis_putus || in_array($statusKerja, ['magang', 'probation'], true)),
+            'is_kadiv'     => false,
+            'email'        => $n->email ?? '-',
+            'no_telepon'   => $n->no_telepon ?? '-',
+            'keterangan'   => $n->keterangan ?? '-',
+            'foto'         => $fotoUrl,
+            'atasan_id'    => $n->parent_id,
+        ];
+    }
+
+    /**
+     * Atur posisi divisi di bagan (di bawah Dirut, di bawah Dir Ops, atau Operasional) & urutannya.
+     */
+    public function updateDivisiLayout(Request $request): JsonResponse
+    {
+        $this->authorizeManagement();
+
+        $validated = $request->validate([
+            'id_divisi'    => 'required|string|exists:divisis,id_divisi',
+            'posisi_bagan' => 'required|string|in:dirut_pendukung,dirops_pendukung,operasional',
+            'urutan'       => 'nullable|integer|min:1|max:999',
+        ]);
+
+        $divisi = Divisi::where('id_divisi', $validated['id_divisi'])->firstOrFail();
+        $divisi->posisi_bagan = $validated['posisi_bagan'];
+
+        if (! empty($validated['urutan'])) {
+            $divisi->urutan = (int) $validated['urutan'];
+        }
+
+        // Sinkronkan parent_id agar tetap konsisten dengan hierarki Divisi
+        if ($validated['posisi_bagan'] === Divisi::POSISI_DIRUT_PENDUKUNG) {
+            $dirutId = Divisi::where('tipe', Divisi::TIPE_DIREKTUR)->value('id_divisi');
+            if ($dirutId) {
+                $divisi->parent_id = $dirutId;
+            }
+        } else {
+            $mgtId = Divisi::where('tipe', Divisi::TIPE_MANAJEMEN)->value('id_divisi');
+            if ($mgtId) {
+                $divisi->parent_id = $mgtId;
+            }
+        }
+
+        $divisi->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Posisi divisi '{$divisi->nama_divisi}' berhasil diperbarui.",
+            'data'    => $divisi,
+        ]);
+    }
+
+    /**
+     * Perbarui data karyawan langsung ke tabel karyawans dari halaman Struktur Organisasi.
+     */
+    public function updateKaryawan(Request $request, string $id): JsonResponse
+    {
+        $this->authorizeManagement();
+
+        $karyawan = Karyawan::findOrFail($id);
+
+        $validated = $request->validate([
+            'nama'             => 'required|string|max:255',
+            'jabatan'          => 'required|string|max:255',
+            'divisi_id_divisi' => 'required|string|exists:divisis,id_divisi',
+            'status_karyawan'  => 'nullable|string|in:tetap,kontrak,probation,magang',
+            'atasan_id'        => 'nullable|string|exists:karyawans,id_karyawan',
+            'email'            => 'nullable|email|max:255',
+            'no_telepon'       => 'nullable|string|max:50',
+            'foto'             => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
+        ]);
+
+        if (! empty($validated['atasan_id']) && $validated['atasan_id'] === $karyawan->id_karyawan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Karyawan tidak dapat menjadi atasan bagi dirinya sendiri.',
+            ], 422);
+        }
+
+        if ($request->hasFile('foto')) {
+            if ($karyawan->foto) {
+                Storage::disk('public')->delete($karyawan->foto);
+            }
+            $karyawan->foto = $request->file('foto')->store('karyawan', 'public');
+        }
+
+        $statusKerja = $validated['status_karyawan'] ?? $karyawan->status_karyawan ?? 'tetap';
+        $jabatanNama = \App\Models\Jabatan::normaliseNama($validated['jabatan']);
+        $jabatanModel = \App\Models\Jabatan::firstOrCreate(
+            ['division_id' => $validated['divisi_id_divisi'], 'nama' => $jabatanNama],
+            ['aktif' => true],
+        );
+
+        $karyawan->nama             = $validated['nama'];
+        $karyawan->jabatan          = $jabatanModel->nama;
+        $karyawan->jabatan_id       = $jabatanModel->id;
+        $karyawan->divisi_id_divisi = $validated['divisi_id_divisi'];
+        $karyawan->status_karyawan  = $statusKerja;
+        $karyawan->atasan_id        = $validated['atasan_id'] ?: null;
+        $karyawan->email            = $validated['email'] ?? $karyawan->email;
+        $karyawan->no_telepon       = $validated['no_telepon'] ?? $karyawan->no_telepon;
+
+        if ($statusKerja === 'magang') {
+            $karyawan->job_level = 'Magang';
+        } elseif (strtolower((string) $karyawan->job_level) === 'magang') {
+            $karyawan->job_level = 'Staff';
+        }
+
+        $karyawan->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Data '{$karyawan->nama}' berhasil diperbarui dan disinkronkan.",
+            'data'    => $karyawan,
+        ]);
     }
 
     /**

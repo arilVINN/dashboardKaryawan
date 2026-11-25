@@ -108,8 +108,15 @@ class KaryawanForm extends Component
             $this->noRekening = (string) ($karyawan->no_rekening ?? '');
             $this->fotoLama = $karyawan->foto;
             $this->divisiId = (string) $karyawan->divisi_id_divisi;
-            $this->jabatanId = $karyawan->jabatan_id;
-            $this->jabatanNama = (string) ($karyawan->jabatan ?? '');
+            $jabatanId = $karyawan->jabatan_id;
+            if (! $jabatanId && filled($karyawan->jabatan) && $this->divisiId !== '') {
+                $jabatanId = Jabatan::query()
+                    ->where('division_id', $this->divisiId)
+                    ->whereRaw('LOWER(TRIM(nama)) = ?', [mb_strtolower(trim((string) $karyawan->jabatan))])
+                    ->value('id');
+            }
+            $this->jabatanId = $jabatanId ? (int) $jabatanId : null;
+            $this->jabatanNama = (string) ($karyawan->jabatanRef?->nama ?? $karyawan->jabatan ?? '');
             $this->tanggalMasuk = ($karyawan->tanggal_masuk ?? $karyawan->tanggal_rekrut)?->toDateString();
             $this->tanggalAkhirKontrak = $karyawan->tanggal_akhir_kontrak?->toDateString();
             $this->pendidikan = (string) ($karyawan->pendidikan ?? '');
@@ -427,10 +434,10 @@ class KaryawanForm extends Component
             'tanggal_lahir' => $this->tanggalLahir ?: null,
             'tanggal_masuk' => $this->tanggalMasuk ?: null,
             'tanggal_akhir_kontrak' => $this->tanggalAkhirKontrak ?: null,
-            'no_rekening' => trim($this->noRekening),
-            'no_telepon' => trim($this->noTelepon),
+            'no_rekening' => trim($this->noRekening) ?: null,
+            'no_telepon' => trim($this->noTelepon) ?: null,
             'email' => trim($this->email) ?: null,
-            'alamat' => trim($this->alamat),
+            'alamat' => trim($this->alamat) ?: null,
             'divisi_id_divisi' => $this->divisiId,
             'jabatan_id' => $this->jabatanId,
             'jabatan' => $this->jabatanNama,

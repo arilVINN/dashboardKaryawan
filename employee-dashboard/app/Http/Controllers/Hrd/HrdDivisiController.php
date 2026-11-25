@@ -13,7 +13,7 @@ class HrdDivisiController extends Controller
 {
     public function detailPage($id)
     {
-        $divisi = Divisi::with('karyawans.user.role')
+        $divisi = Divisi::with(['karyawans.user.role', 'karyawans.jabatanRef'])
             ->where('id_divisi', $id)
             ->firstOrFail();
 

@@ -31,6 +31,16 @@ class Divisi extends Model
         self::TIPE_DIVISI => 'Divisi',
     ];
 
+    public const POSISI_DIRUT_PENDUKUNG = 'dirut_pendukung';
+    public const POSISI_DIROPS_PENDUKUNG = 'dirops_pendukung';
+    public const POSISI_OPERASIONAL = 'operasional';
+
+    public const POSISI_BAGAN_OPTIONS = [
+        self::POSISI_DIRUT_PENDUKUNG => 'Di Bawah Direktur Utama (Sejajar Legal / PA / Writer)',
+        self::POSISI_DIROPS_PENDUKUNG => 'Di Bawah Direktur Operasional (Sejajar Finance / HR)',
+        self::POSISI_OPERASIONAL => 'Departemen Operasional (Baris Bawah)',
+    ];
+
     /**
      * Stable codes for the units that business logic needs to recognise.
      * Everything else should be driven by `tipe` and `kapasitas`, not names.
@@ -50,6 +60,7 @@ class Divisi extends Model
         'level',
         'kapasitas',
         'urutan',
+        'posisi_bagan',
         'status_aktif',
     ];
 

@@ -18,7 +18,7 @@ class KadivStaffController extends Controller
         $isDirektur = $userKadiv->isDirektur();
         $divisiId = $request->query('divisi_id') ?? ($isDirektur ? null : $userKadiv->karyawan?->divisi_id_divisi);
 
-        $query = Karyawan::with('user.role')
+        $query = Karyawan::with(['user.role', 'divisi', 'jabatanRef'])
             ->whereHas('user.role', fn ($query) => $query->whereRaw('LOWER(nama_role) = ?', ['staff']));
 
         if ($divisiId) {
@@ -41,7 +41,7 @@ class KadivStaffController extends Controller
     {
         $userKadiv = $request->user();
 
-        $query = Karyawan::with(['user.role', 'tugas' => function($query) {
+        $query = Karyawan::with(['user.role', 'divisi', 'jabatanRef', 'tugas' => function($query) {
             $query->orderBy('tanggal_dibuat', 'desc');
         }])
         ->where('id_karyawan', $id)

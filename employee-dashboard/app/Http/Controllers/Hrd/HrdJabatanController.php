@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Divisi;
 use App\Models\Jabatan;
+use App\Models\Karyawan;
 use App\Support\EmployeeAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -61,6 +62,7 @@ class HrdJabatanController extends Controller
         $this->assertUnique($jabatan->division_id, $nama, $jabatan->id);
 
         $jabatan->update(['nama' => $nama]);
+        Karyawan::where('jabatan_id', $jabatan->id)->update(['jabatan' => $nama]);
 
         AuditLog::catat($request->user()->id_user, 'ubah_nama_jabatan', 'jabatan', (string) $jabatan->id, [
             'division_id' => $jabatan->division_id,
