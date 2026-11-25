@@ -14,12 +14,13 @@ use App\Http\Controllers\Staff\StaffTugasController;
 use Illuminate\Support\Facades\Route;
 
 // Public – login (no token required, throttled against brute-force)
-Route::middleware('gateway.throttle:5,1')->post('/login', [AuthController::class, 'login']);
+Route::middleware('throttle:login')->post('/login', [AuthController::class, 'login']);
 
 // Protected – token auth + throttling for every authenticated endpoint
 Route::middleware([
     'gateway.throttle:60,1',   // 60 req/min per user/IP
     'auth:sanctum',            // Sanctum guard
+    'akun.aman.api',           // token status / forced-password checks
 ])->group(function () {
     // Logout (needs token)
     Route::post('/logout', [AuthController::class, 'logout']);

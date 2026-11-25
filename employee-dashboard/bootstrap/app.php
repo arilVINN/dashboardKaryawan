@@ -12,7 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->trustProxies(at: '*');
+        // Trust only explicitly configured proxies. Trusting "*" lets a client
+        // spoof X-Forwarded-For, which resets IP-keyed login throttling.
+        $trustedProxies = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('TRUSTED_PROXIES', '127.0.0.1,::1'))
+        )));
+
+        $middleware->trustProxies(at: $trustedProxies);
 
         $middleware->validateCsrfTokens(except: [
             'login',

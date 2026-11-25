@@ -43,7 +43,7 @@ Route::get('/storage/foto-profil/{filename}', [ProfilePhotoController::class, 's
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
-    ->middleware('gateway.throttle:5,1') // sudah ada, tidak diubah
+    ->middleware('throttle:login')
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
