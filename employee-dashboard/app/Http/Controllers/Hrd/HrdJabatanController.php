@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Divisi;
 use App\Models\Jabatan;
+use App\Models\Role;
 use App\Support\EmployeeAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class HrdJabatanController extends Controller
@@ -20,10 +22,12 @@ class HrdJabatanController extends Controller
         $validated = $request->validate([
             'division_id' => ['required', 'string', 'exists:divisis,id_divisi'],
             'nama' => ['required', 'string', 'max:80'],
+            'role_id_role' => ['required', 'string', Rule::in($this->allowedRoleIds())],
         ], [
             'division_id.required' => 'Divisi wajib dipilih.',
             'nama.required' => 'Nama jabatan wajib diisi.',
             'nama.max' => 'Nama jabatan maksimal 80 karakter.',
+            'role_id_role.required' => 'Role akun wajib dipilih.',
         ]);
 
         $nama = Jabatan::normaliseNama($validated['nama']);
@@ -32,12 +36,14 @@ class HrdJabatanController extends Controller
         $jabatan = Jabatan::create([
             'division_id' => $validated['division_id'],
             'nama' => $nama,
+            'role_id_role' => $validated['role_id_role'],
             'aktif' => true,
         ]);
 
         AuditLog::catat($request->user()->id_user, 'tambah_jabatan', 'jabatan', (string) $jabatan->id, [
             'division_id' => $validated['division_id'],
             'nama' => $nama,
+            'role' => strtolower((string) Role::find($validated['role_id_role'])?->nama_role),
         ]);
 
         return response()->json([
@@ -52,22 +58,25 @@ class HrdJabatanController extends Controller
 
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:80'],
+            'role_id_role' => ['required', 'string', Rule::in($this->allowedRoleIds())],
         ], [
             'nama.required' => 'Nama jabatan wajib diisi.',
             'nama.max' => 'Nama jabatan maksimal 80 karakter.',
+            'role_id_role.required' => 'Role akun wajib dipilih.',
         ]);
 
         $nama = Jabatan::normaliseNama($validated['nama']);
         $this->assertUnique($jabatan->division_id, $nama, $jabatan->id);
 
-        $jabatan->update(['nama' => $nama]);
+        $jabatan->update(['nama' => $nama, 'role_id_role' => $validated['role_id_role']]);
 
         AuditLog::catat($request->user()->id_user, 'ubah_nama_jabatan', 'jabatan', (string) $jabatan->id, [
             'division_id' => $jabatan->division_id,
+            'role' => strtolower((string) Role::find($validated['role_id_role'])?->nama_role),
         ]);
 
         return response()->json([
-            'message' => 'Nama jabatan berhasil diubah',
+            'message' => 'Jabatan berhasil diubah',
             'data' => $jabatan->fresh(),
         ]);
     }
@@ -86,6 +95,18 @@ class HrdJabatanController extends Controller
             'message' => 'Jabatan berhasil dinonaktifkan',
             'data' => $jabatan->fresh(),
         ]);
+    }
+
+    private function allowedRoleIds(): array
+    {
+        return Role::all()
+            ->filter(fn (Role $role) => in_array(
+                strtolower((string) $role->nama_role),
+                Jabatan::roleOptions(),
+                true,
+            ))
+            ->pluck('id_role')
+            ->all();
     }
 
     private function assertUnique(string $divisionId, string $nama, ?int $ignoreId = null): void

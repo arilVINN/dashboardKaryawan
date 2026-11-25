@@ -53,6 +53,7 @@ final class EmployeeValidation
             'jabatan_id' => array_merge(self::required($create), ['integer', 'exists:jabatan,id']),
             'pendidikan' => array_merge(self::nullable($create), [Rule::in(Karyawan::pendidikanOptions())]),
             'job_level' => array_merge(self::nullable($create), [Rule::in(Karyawan::jobLevelOptions())]),
+            'jobdesk' => array_merge(self::nullable($create), ['string', 'max:50']),
             'status_aktif' => array_merge(
                 $strict ? self::required($create) : self::nullable($create),
                 [Rule::in(Karyawan::STATUS_OPTIONS)],
@@ -183,6 +184,7 @@ final class EmployeeValidation
             'status_aktif.required' => 'Status wajib dipilih.',
             'pendidikan.in' => 'Pendidikan harus salah satu dari pilihan yang tersedia.',
             'job_level.in' => 'Job level harus salah satu dari pilihan yang tersedia.',
+            'jobdesk.max' => 'Keterangan jobdesk maksimal 50 karakter.',
             'username.required' => 'Username wajib diisi.',
             'username.max' => 'Username maksimal 50 karakter.',
             'username.regex' => 'Username hanya boleh huruf, angka, titik, garis bawah, dan tanda hubung.',
@@ -210,6 +212,7 @@ final class EmployeeValidation
             'jabatan_id' => 'jabatan',
             'pendidikan' => 'pendidikan terakhir',
             'job_level' => 'job level',
+            'jobdesk' => 'keterangan jobdesk',
             'status_aktif' => 'status',
             'foto' => 'foto profil',
         ];
