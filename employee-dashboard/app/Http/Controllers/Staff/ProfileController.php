@@ -34,6 +34,7 @@ class ProfileController extends Controller
                 'email' => $karyawan?->email ?? '-',
                 'alamat' => $karyawan?->alamat ?? '-',
                 'jabatan' => $karyawan?->jabatan ?? '-',
+                'jobdesk' => $karyawan?->jobdesk ?: '-',
                 'job_level' => $jobLevel !== '' ? $jobLevel : '-',
                 'pendidikan' => $pendidikan !== '' ? $pendidikan : '-',
                 'status_karyawan' => $karyawan ? ($tglAkhirKontrak ? 'Kontrak' : 'Tetap') : '-',
