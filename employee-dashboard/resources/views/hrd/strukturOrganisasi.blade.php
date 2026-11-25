@@ -256,7 +256,7 @@
                                 <div class="org-card group {{ $pengawas->garis_putus ? 'is-dashed' : '' }}" style="width: 290px;"
                                     id="org-card-{{ $pengawas->id }}"
                                     data-id="{{ $pengawas->id }}"
-                                    data-employee='{!! json_encode([
+                                    data-employee='{{ e(json_encode([
                                         "id"           => $pengawas->id,
                                         "nama"         => $pengawas->nama,
                                         "jabatan"      => $pengawas->jabatan,
@@ -269,7 +269,7 @@
                                         "foto"         => $pengawas->foto ? asset("storage/" . $pengawas->foto) : ($pengawas->karyawan?->foto ? asset("storage/" . $pengawas->karyawan->foto) : ""),
                                         "parent_id"    => $pengawas->parent_id,
                                         "urutan"       => $pengawas->urutan,
-                                    ]) !!}'
+                                    ])) }}'
                                     onclick="openProfileModal(this)">
                                     
                                     {{-- Photo / Avatar --}}
@@ -308,7 +308,7 @@
                                 <div class="org-card group {{ $dirUtama->garis_putus ? 'is-dashed' : '' }}" style="width: 310px;"
                                     id="org-card-{{ $dirUtama->id }}"
                                     data-id="{{ $dirUtama->id }}"
-                                    data-employee='{!! json_encode([
+                                    data-employee='{{ e(json_encode([
                                         "id"           => $dirUtama->id,
                                         "nama"         => $dirUtama->nama,
                                         "jabatan"      => $dirUtama->jabatan,
@@ -321,7 +321,7 @@
                                         "foto"         => $dirUtama->foto ? asset("storage/" . $dirUtama->foto) : ($dirUtama->karyawan?->foto ? asset("storage/" . $dirUtama->karyawan->foto) : ""),
                                         "parent_id"    => $dirUtama->parent_id,
                                         "urutan"       => $dirUtama->urutan,
-                                    ]) !!}'
+                                    ])) }}'
                                     onclick="openProfileModal(this)">
                                     
                                     @if ($dirUtama->foto || $dirUtama->karyawan?->foto)
@@ -361,7 +361,7 @@
                                     <div class="org-card group {{ $dirOps->garis_putus ? 'is-dashed' : '' }}"
                                         id="org-card-{{ $dirOps->id }}"
                                         data-id="{{ $dirOps->id }}"
-                                        data-employee='{!! json_encode([
+                                        data-employee='{{ e(json_encode([
                                             "id"           => $dirOps->id,
                                             "nama"         => $dirOps->nama,
                                             "jabatan"      => $dirOps->jabatan,
@@ -374,7 +374,7 @@
                                             "foto"         => $dirOps->foto ? asset("storage/" . $dirOps->foto) : ($dirOps->karyawan?->foto ? asset("storage/" . $dirOps->karyawan->foto) : ""),
                                             "parent_id"    => $dirOps->parent_id,
                                             "urutan"       => $dirOps->urutan,
-                                        ]) !!}'
+                                        ])) }}'
                                         onclick="openProfileModal(this)">
                                         
                                         @if ($dirOps->foto || $dirOps->karyawan?->foto)

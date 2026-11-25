@@ -9,6 +9,7 @@ use App\Models\Karyawan;
 use App\Models\Notifikasi;
 use App\Queries\KadivTugasQuery;
 use App\Support\FileMetadata;
+use App\Support\FileStorage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -42,7 +43,9 @@ class KadivTaskController extends Controller
     {
         $user = $request->user();
         $query = Tugas::with([
-            'karyawan',
+            // Only expose the fields a Kadiv needs; never the full employee
+            // record (bank account, address, birth date, etc.).
+            'karyawan:id_karyawan,nama,jabatan,divisi_id_divisi,foto,status_aktif',
             'submitTugas' => fn ($query) => $query->latest('created_at'),
         ])->whereKey($id);
 
@@ -106,7 +109,7 @@ class KadivTaskController extends Controller
         $fileName = null;
         if ($request->hasFile('file_pendukung')) {
             $uploadedFile = $request->file('file_pendukung');
-            $filePath = $uploadedFile->store('tugas_pendukung', 'public');
+            $filePath = $uploadedFile->store('tugas_pendukung', 'private');
             $fileName = $uploadedFile->getClientOriginalName();
         }
 
@@ -140,7 +143,7 @@ class KadivTaskController extends Controller
         $userKadiv = $request->user();
         $divisiId = $userKadiv->karyawan->divisi_id_divisi;
 
-        $tugas = Tugas::with('karyawan')->where('id_tugas', $id)->first();
+        $tugas = Tugas::with('karyawan:id_karyawan,divisi_id_divisi')->where('id_tugas', $id)->first();
 
         if (!$tugas || (! $userKadiv->isDirektur() && $tugas->karyawan?->divisi_id_divisi !== $divisiId)) {
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar wewenang'], 404);
@@ -174,7 +177,7 @@ class KadivTaskController extends Controller
         $fileName = $tugas->file_pendukung_name;
         if ($request->hasFile('file_pendukung')) {
             $uploadedFile = $request->file('file_pendukung');
-            $filePath = $uploadedFile->store('tugas_pendukung', 'public');
+            $filePath = $uploadedFile->store('tugas_pendukung', 'private');
             $fileName = $uploadedFile->getClientOriginalName();
         }
 
@@ -206,7 +209,7 @@ class KadivTaskController extends Controller
         $userKadiv = $request->user();
         $divisiId = $userKadiv->karyawan->divisi_id_divisi;
 
-        $tugas = Tugas::with('karyawan')->where('id_tugas', $id)->first();
+        $tugas = Tugas::with('karyawan:id_karyawan,divisi_id_divisi')->where('id_tugas', $id)->first();
 
         if (!$tugas || (! $userKadiv->isDirektur() && $tugas->karyawan?->divisi_id_divisi !== $divisiId)) {
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar wewenang'], 404);
@@ -273,7 +276,7 @@ class KadivTaskController extends Controller
         $fileName = null;
         if ($request->hasFile('file_revisi')) {
             $uploadedFile = $request->file('file_revisi');
-            $filePath = $uploadedFile->store('revisi', 'public');
+            $filePath = $uploadedFile->store('revisi', 'private');
             $fileName = $uploadedFile->getClientOriginalName();
         }
 
@@ -327,7 +330,7 @@ class KadivTaskController extends Controller
             });
         } catch (\Throwable $exception) {
             if ($filePath) {
-                Storage::disk('public')->delete($filePath);
+                FileStorage::delete($filePath);
             }
 
             throw $exception;

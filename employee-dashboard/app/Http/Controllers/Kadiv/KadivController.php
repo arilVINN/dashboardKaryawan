@@ -23,7 +23,7 @@ class KadivController extends Controller
         $data = $request->validate([
             'judul_surat' => 'required|string|max:100',
             'tanggal_izin' => 'required|date',
-            'file' => 'nullable|file|max:20480',
+            'file' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip',
             'keterangan' => 'nullable|string|max:1000',
         ]);
 
@@ -41,7 +41,7 @@ class KadivController extends Controller
             'tanggal_izin' => $data['tanggal_izin'],
             'keterangan' => $data['keterangan'] ?? null,
             'file' => $request->hasFile('file')
-                ? $request->file('file')->store('surat_izin', 'public') : null,
+                ? $request->file('file')->store('surat_izin', 'private') : null,
         ]);
 
         return back()->with('success', 'Surat izin berhasil dikirim');

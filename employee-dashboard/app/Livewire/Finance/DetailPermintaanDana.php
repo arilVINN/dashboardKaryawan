@@ -7,6 +7,7 @@ use App\Helpers\FormatAkuntansi;
 use App\Models\KeuanganAldiv;
 use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
+use App\Support\FileStorage;
 use App\Support\StatusPalette;
 use App\Services\Finance\PermintaanDanaService;
 use Carbon\Carbon;
@@ -230,15 +231,15 @@ class DetailPermintaanDana extends Component
 
         $lampiranList = collect();
 
-        if (filled($permintaan->lampiran_proposal) && Storage::disk('public')->exists($permintaan->lampiran_proposal)) {
+        if (filled($permintaan->lampiran_proposal) && FileStorage::exists($permintaan->lampiran_proposal)) {
             $path = $permintaan->lampiran_proposal;
-            $size = Storage::disk('public')->size($path);
+            $size = FileStorage::size($path);
 
             $lampiranList->push([
                 'name' => basename($path),
                 'type' => strtoupper(pathinfo($path, PATHINFO_EXTENSION)),
                 'size' => $this->formatFileSize($size),
-                'url' => asset('storage/'.$path),
+                'url' => \App\Support\FileStorage::url($path),
             ]);
         }
 

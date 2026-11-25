@@ -211,7 +211,7 @@ class PermintaanDanaController extends Controller
 
         if ($request->hasFile('lampiran_proposal')) {
             $data['lampiran_proposal'] = $request->file('lampiran_proposal')
-                ->store('keuangan/proposal', 'public');
+                ->store('keuangan/proposal', 'private');
         }
 
         $user  = Auth::user();

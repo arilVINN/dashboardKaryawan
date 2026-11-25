@@ -178,7 +178,7 @@ class TugasTable extends Component
         }
 
         try {
-            $filePath = $this->attachment ? $this->attachment->store('tugas_pendukung', 'public') : null;
+            $filePath = $this->attachment ? $this->attachment->store('tugas_pendukung', 'private') : null;
             $deadline = \Illuminate\Support\Carbon::parse($this->tenggat)->format('Y-m-d H:i:s');
 
             foreach ($recipients as $karyawanId) {

@@ -120,7 +120,7 @@
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-3 text-center">
                                         @if ($item->lampiran_proposal)
-                                            <a href="{{ asset('storage/'.$item->lampiran_proposal) }}" target="_blank"
+                                            <a href="{{ \App\Support\FileStorage::url($item->lampiran_proposal) }}" target="_blank"
                                                 rel="noopener noreferrer"
                                                 class="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#D5DEE3] bg-white px-2.5 text-[12px] font-medium text-[#172B36] transition hover:bg-[#F5FAFC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#146C94]">
                                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8"

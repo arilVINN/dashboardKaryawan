@@ -61,7 +61,7 @@
                                     <td class="px-6 py-4">{{ $surat->keterangan ?: '-' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if ($surat->file)
-                                            <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($surat->file) }}"
+                                            <a href="{{ \App\Support\FileStorage::url($surat->file) }}"
                                                 target="_blank" rel="noopener"
                                                 class="text-[#0097B2] hover:underline font-medium">Lihat file</a>
                                         @else

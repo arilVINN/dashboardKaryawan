@@ -9,6 +9,7 @@ use App\Models\Karyawan;
 use App\Models\LampiranKaryawan;
 use App\Models\Role;
 use App\Models\User2;
+use App\Support\AccountSecurity;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -171,6 +172,12 @@ final class EmployeeWriteService
 
                 if ($changes) {
                     $karyawan->update($changes);
+
+                    // Deactivating an employee must also cut off every API
+                    // token, not just the web session.
+                    if (($changes['status_aktif'] ?? null) === 'Tidak Aktif' && $karyawan->user) {
+                        AccountSecurity::invalidate($karyawan->user);
+                    }
                 }
 
                 $oldFoto = $karyawan->foto;
@@ -270,12 +277,11 @@ final class EmployeeWriteService
             $user->update([
                 'password' => Hash::make($plain),
                 'must_change_password' => true,
-                'session_version' => (string) Str::uuid(),
             ]);
 
-            // Belt and braces: drop any database sessions already tied to this
-            // user so the reset takes effect immediately.
-            DB::table('sessions')->where('user_id', $user->id_user)->delete();
+            // Rotate the session version and revoke all Sanctum tokens so a
+            // previously issued bearer token cannot keep using the old password.
+            AccountSecurity::invalidate($user);
 
             AuditLog::catat(
                 $actor->id_user,
@@ -294,8 +300,9 @@ final class EmployeeWriteService
         $user->update([
             'password' => Hash::make($newPassword),
             'must_change_password' => false,
-            'session_version' => (string) Str::uuid(),
         ]);
+
+        AccountSecurity::invalidate($user);
     }
 
     /**

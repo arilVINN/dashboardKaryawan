@@ -12,7 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->trustProxies(at: '*');
+        // Trust only explicitly configured proxies. Trusting "*" lets a client
+        // spoof X-Forwarded-For, which resets IP-keyed login throttling.
+        $trustedProxies = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('TRUSTED_PROXIES', '127.0.0.1,::1'))
+        )));
+
+        $middleware->trustProxies(at: $trustedProxies);
 
         $middleware->validateCsrfTokens(except: [
             'login',
@@ -27,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'gateway.throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'gateway.format'  => \App\Http\Middleware\ApiResponseFormatter::class,
             'akun.aman'       => \App\Http\Middleware\EnsureAccountSecurity::class,
+            'akun.aman.api'   => \App\Http\Middleware\EnsureTokenAccountSecurity::class,
         ]);
 
         // Runs on every session-authenticated request. No-op for users without

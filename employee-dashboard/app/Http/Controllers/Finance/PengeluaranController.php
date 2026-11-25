@@ -69,7 +69,7 @@ class PengeluaranController extends Controller
 
         if ($request->hasFile('bukti_pencairan')) {
             $data['bukti_pencairan'] = $request->file('bukti_pencairan')
-                ->store('keuangan/pengeluaran', 'public');
+                ->store('keuangan/pengeluaran', 'private');
         }
 
         $count = KPengeluaran::count();
@@ -95,6 +95,9 @@ class PengeluaranController extends Controller
     {
         $permintaan = KPermintDana::with('divisi')->findOrFail($idKpd);
 
+        // The authoritative status check happens inside the transaction with
+        // a row lock; see below. This early check only gives a fast response
+        // for the common case and is intentionally not trusted.
         if (! $permintaan->isDisetujui()) {
             return back()->with('error', 'Hanya pengajuan berstatus Disetujui yang dapat dicairkan.');
         }
@@ -109,25 +112,47 @@ class PengeluaranController extends Controller
         $buktiBayar = null;
         if ($request->hasFile('bukti_pencairan')) {
             $buktiBayar = $request->file('bukti_pencairan')
-                ->store('keuangan/pencairan', 'public');
+                ->store('keuangan/pencairan', 'private');
         }
 
         $pengeluaran = null;
+        $stale = false;
 
-        DB::transaction(function () use ($permintaan, $data, $buktiBayar, &$pengeluaran) {
-            $count = KPengeluaran::count();
+        DB::transaction(function () use ($idKpd, $data, $buktiBayar, &$permintaan, &$pengeluaran, &$stale) {
+            // Lock the request row and re-check status *inside* the transaction
+            // so two concurrent disbursements cannot both pass the check.
+            /** @var KPermintDana $locked */
+            $locked = KPermintDana::query()
+                ->whereKey($idKpd)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-            // Buat record pengeluaran
+            if (! $locked->isDisetujui()) {
+                $stale = true;
+
+                return;
+            }
+
+            // Lock the whole pengeluaran table while allocating the next
+            // sequence, so concurrent cash-outs cannot reuse the same ID.
+            $max = 0;
+            foreach (KPengeluaran::query()->lockForUpdate()->pluck('id_kpengeluaran') as $id) {
+                if (preg_match('/^KO(\d+)$/', (string) $id, $matches) === 1) {
+                    $max = max($max, (int) $matches[1]);
+                }
+            }
+            $sequence = $max + 1;
+
             $pengeluaran = KPengeluaran::create([
-                'id_kpengeluaran'  => 'KO' . str_pad($count + 1, 6, '0', STR_PAD_LEFT),
-                'kode_pengeluaran' => 'OUT' . now()->format('ym') . str_pad($count + 1, 4, '0', STR_PAD_LEFT),
-                'kpd_id_kpd'       => $permintaan->id_kpd,
-                'nominal'          => $permintaan->nominal_diajukan,
+                'id_kpengeluaran'  => 'KO' . str_pad((string) $sequence, 6, '0', STR_PAD_LEFT),
+                'kode_pengeluaran' => 'OUT' . now()->format('ym') . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT),
+                'kpd_id_kpd'       => $locked->id_kpd,
+                'nominal'          => $locked->nominal_diajukan,
                 'tanggal_cair'     => $data['tanggal_cair'],
                 'metode_pembayaran' => $data['metode_pembayaran'],
                 'bukti_pencairan'  => $buktiBayar,
-                'keterangan'       => $data['keterangan'] ?? $permintaan->judul_pengajuan,
-                'divisi_id_divisi' => $permintaan->divisi_id_divisi,
+                'keterangan'       => $data['keterangan'] ?? $locked->judul_pengajuan,
+                'divisi_id_divisi' => $locked->divisi_id_divisi,
                 'user_id_user'     => Auth::id(),
             ]);
 
@@ -135,10 +160,17 @@ class PengeluaranController extends Controller
             app(JurnalEntryService::class)->createFromPengeluaran($pengeluaran);
 
             // Update status permintaan
-            $permintaan->update(['status' => KPermintDana::STATUS_DICAIRKAN]);
+            $locked->update(['status' => KPermintDana::STATUS_DICAIRKAN]);
 
+            $permintaan = $locked;
             $this->notifyPemohonPencairan($permintaan);
         });
+
+        if ($stale) {
+            \App\Support\FileStorage::delete($buktiBayar);
+
+            return back()->with('error', 'Pengajuan ini sudah diproses atau tidak lagi berstatus Disetujui.');
+        }
 
         // Audit log pencairan: user dan waktu direkam otomatis oleh AuditLog,
         // detail menyimpan nilai lama (status disetujui) dan nilai baru.

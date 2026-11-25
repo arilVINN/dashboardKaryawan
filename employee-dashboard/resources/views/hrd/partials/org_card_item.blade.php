@@ -1,7 +1,7 @@
 <div class="org-card group w-full {{ $member->garis_putus ? 'is-dashed' : '' }}" style="padding: 8px;"
     id="org-card-{{ $member->id }}"
     data-id="{{ $member->id }}"
-    data-employee='{!! json_encode([
+    data-employee='{{ e(json_encode([
         "id"           => $member->id,
         "nama"         => $member->nama,
         "jabatan"      => $member->jabatan,
@@ -14,7 +14,7 @@
         "foto"         => $member->foto ? asset("storage/" . $member->foto) : ($member->karyawan?->foto ? asset("storage/" . $member->karyawan->foto) : ""),
         "parent_id"    => $member->parent_id,
         "urutan"       => $member->urutan,
-    ]) !!}'
+    ])) }}'
     onclick="openProfileModal(this)">
 
     @if ($member->foto || $member->karyawan?->foto)

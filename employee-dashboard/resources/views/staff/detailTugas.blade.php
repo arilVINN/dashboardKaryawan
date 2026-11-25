@@ -322,7 +322,7 @@
             const title = displayName || role || 'Lampiran';
             const sizeLabel = options.size ? formatSize(options.size) : '';
             const meta = [ext, sizeLabel].filter(Boolean).join(' · ');
-            const url = options.url || ('/storage/' + String(filePath).replace(/^\/+/, ''));
+            const url = options.url || ('/files/' + String(filePath).replace(/^\/+/, ''));
 
             return renderAttachmentRow({
                 href: url,
