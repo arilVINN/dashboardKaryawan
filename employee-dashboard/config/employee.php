@@ -21,6 +21,18 @@ return [
     'job_level' => ['Magang', 'Junior', 'Senior', 'Manager'],
 
     /*
+     * Descriptive keterangan for staff work. These are labels only — never
+     * used for authorization. Free text is allowed via the form's datalist.
+     */
+    'jobdesk' => ['Editorial', 'Layouter', 'Desain', 'Fotografi', 'IT', 'Administrasi'],
+
+    /*
+     * Roles a jabatan may grant. Superadmin is intentionally excluded.
+     */
+    'jabatan_role' => ['staff', 'kadiv', 'hrd', 'direktur'],
+
+
+    /*
      * Jabatan titles that predate the jabatan table. Kept for legacy imports
      * and API clients that still post a plain `jabatan` string.
      */

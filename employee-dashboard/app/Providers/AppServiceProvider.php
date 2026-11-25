@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 use Illuminate\Auth\Events\Login;
 
 use Illuminate\Support\Facades\URL;
@@ -50,6 +51,18 @@ class AppServiceProvider extends ServiceProvider
                 // No session available (e.g. token login); safe to ignore.
             }
         });
+        // Login: the per-IP limit alone can be bypassed by rotating
+        // X-Forwarded-For, so also cap attempts per username.
+        RateLimiter::for('login', function (Request $request) {
+            $input = $request->input('username');
+            $username = is_string($input) ? Str::lower(trim($input)) : '';
+
+            return [
+                Limit::perMinute(5)->by('login:pair:'.$username.'|'.$request->ip()),
+                Limit::perMinute(20)->by('login:user:'.$username),
+            ];
+        });
+
         // Submit form: tambah/revisi tugas, balas pesan, update profil, CRUD divisi/staff HRD
         RateLimiter::for('submit-form', function (Request $request) {
             return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());

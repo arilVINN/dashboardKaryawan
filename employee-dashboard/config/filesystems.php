@@ -33,6 +33,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
+            // Kept enabled so Livewire can sign temporary preview URLs.
+            // Sensitive permanent files are served by SecureFileController
+            // under the separate /files prefix.
             'serve' => true,
             'throw' => false,
             'report' => false,

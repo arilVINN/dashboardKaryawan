@@ -4,6 +4,7 @@ namespace App\Presenters;
 
 use App\Models\Pesan;
 use App\Models\User2;
+use App\Support\FileStorage;
 use Illuminate\Support\Facades\Storage;
 
 class MessagePresenter
@@ -31,7 +32,7 @@ class MessagePresenter
             'lampiran' => [
                 'link' => $message->link_lampiran,
                 'file' => $message->file_lampiran
-                    ? Storage::disk('public')->url($message->file_lampiran)
+                    ? FileStorage::url($message->file_lampiran)
                     : null,
             ],
             'tugas' => $message->tugas ? [

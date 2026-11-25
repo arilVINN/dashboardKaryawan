@@ -9,6 +9,7 @@ use App\Models\Tugas;
 use App\Models\User2;
 use App\Queries\StaffTugasQuery;
 use App\Support\FileMetadata;
+use App\Support\FileStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -133,7 +134,7 @@ class StaffTugasController extends Controller
         $fileOriginalName = null;
         if ($request->hasFile('file_hasil')) {
             $uploadedFile = $request->file('file_hasil');
-            $filePath = $uploadedFile->store('submissions', 'public');
+            $filePath = $uploadedFile->store('submissions', 'private');
 
             if (! $filePath) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
@@ -170,7 +171,7 @@ class StaffTugasController extends Controller
             });
         } catch (Throwable $exception) {
             if ($filePath !== '-') {
-                Storage::disk('public')->delete($filePath);
+                FileStorage::delete($filePath);
             }
 
             throw $exception;

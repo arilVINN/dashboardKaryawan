@@ -18,7 +18,7 @@ class KadivController extends Controller
         ]);
 
         if ($request->hasFile('lampiran')) {
-            $data['lampiran'] = $request->file('lampiran')->store('tugas', 'public');
+            $data['lampiran'] = $request->file('lampiran')->store('tugas', 'private');
         }
 
         // Tugas::create($data);
@@ -64,7 +64,7 @@ class KadivController extends Controller
         session(['balasan_pesan' => $balasan]);
 
         if ($request->hasFile('lampiran')) {
-            $request->file('lampiran')->store('pesan', 'public');
+            $request->file('lampiran')->store('pesan', 'private');
         }
 
         return redirect()->route('kadiv.detailPesan', $id)->with('success', 'Balasan terkirim');

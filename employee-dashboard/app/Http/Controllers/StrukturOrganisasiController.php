@@ -20,7 +20,9 @@ class StrukturOrganisasiController extends Controller
     {
         $user = Auth::user();
         $role = strtolower($user?->role?->nama_role ?? 'staff');
-        $canManage = in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true);
+        // Read-only monitors (direktur/direksi) may view the chart but the
+        // edit controls stay hidden for them.
+        $canManage = in_array($role, ['hrd', 'superadmin'], true);
 
         $sidebar = match ($role) {
             'kadiv' => 'component_kadiv.sidebar',
@@ -664,7 +666,10 @@ class StrukturOrganisasiController extends Controller
     protected function authorizeManagement(): void
     {
         $role = strtolower(Auth::user()?->role?->nama_role ?? '');
-        if (!in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true)) {
+
+        // Direktur/Direksi are read-only monitors, so they cannot manage the
+        // organization chart even though they can view it.
+        if (!in_array($role, ['hrd', 'superadmin'], true)) {
             abort(403, 'Anda tidak memiliki hak akses untuk mengelola Struktur Organisasi.');
         }
     }

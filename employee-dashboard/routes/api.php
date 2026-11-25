@@ -14,12 +14,13 @@ use App\Http\Controllers\Staff\StaffTugasController;
 use Illuminate\Support\Facades\Route;
 
 // Public – login (no token required, throttled against brute-force)
-Route::middleware('gateway.throttle:5,1')->post('/login', [AuthController::class, 'login']);
+Route::middleware('throttle:login')->post('/login', [AuthController::class, 'login']);
 
 // Protected – token auth + throttling for every authenticated endpoint
 Route::middleware([
     'gateway.throttle:60,1',   // 60 req/min per user/IP
     'auth:sanctum',            // Sanctum guard
+    'akun.aman.api',           // token status / forced-password checks
 ])->group(function () {
     // Logout (needs token)
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -48,8 +49,13 @@ Route::middleware([
         Route::get('/notifikasi', [\App\Http\Controllers\Staff\NotifikasiController::class, 'index']);
         Route::get('/tugas', [StaffTugasController::class, 'index']);
         Route::get('/tugas/{id}', [StaffTugasController::class, 'show']);
-        Route::patch('/tugas/{id}/toggle-checklist', [StaffTugasController::class, 'toggleChecklist']);
-        Route::post('/tugas/{id}/submit', [StaffTugasController::class, 'submit']);
+
+        // Director-level roles are read-only: they cannot mutate task state.
+        Route::middleware('deny.superadmin')->group(function (): void {
+            Route::patch('/tugas/{id}/toggle-checklist', [StaffTugasController::class, 'toggleChecklist']);
+            Route::post('/tugas/{id}/submit', [StaffTugasController::class, 'submit']);
+        });
+
         Route::get('/pesan', [PesanController::class, 'index']);
         Route::get('/pesan/{id_pesan}', [PesanController::class, 'show']);
         Route::post('/pesan/{id_pesan}/balas', [PesanController::class, 'balas']);
@@ -66,15 +72,19 @@ Route::middleware([
         Route::get('/staff', [KadivStaffController::class, 'index']);
         Route::get('/staff/{id}', [KadivStaffController::class, 'show']);
 
-        // Manajemen Tugas
+        // Manajemen Tugas (read / monitoring)
         Route::get('/tugas', [KadivTaskController::class, 'index']);
         Route::get('/tugas/{id}', [KadivTaskController::class, 'show']);
-        Route::post('/tugas', [KadivTaskController::class, 'store']);
-        Route::post('/tugas/{id}', [KadivTaskController::class, 'update']); // Some clients use POST for PUT when uploading files
-        Route::put('/tugas/{id}', [KadivTaskController::class, 'update']);
-        Route::delete('/tugas/{id}', [KadivTaskController::class, 'destroy']);
-        Route::post('/tugas/{id}/review', [KadivTaskController::class, 'review']);
         Route::get('/kalender-events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsKadiv']);
+
+        // Director-level roles are read-only: they cannot mutate tugas.
+        Route::middleware('deny.superadmin')->group(function (): void {
+            Route::post('/tugas', [KadivTaskController::class, 'store']);
+            Route::post('/tugas/{id}', [KadivTaskController::class, 'update']); // Some clients use POST for PUT when uploading files
+            Route::put('/tugas/{id}', [KadivTaskController::class, 'update']);
+            Route::delete('/tugas/{id}', [KadivTaskController::class, 'destroy']);
+            Route::post('/tugas/{id}/review', [KadivTaskController::class, 'review']);
+        });
     });
 
     // HRD‑only routes
@@ -90,24 +100,29 @@ Route::middleware([
         Route::get('/pesan/{id_pesan}', [HrdPesanController::class, 'show']);
         Route::post('/pesan/{id_pesan}/balas', [HrdPesanController::class, 'balas']);
 
-        // Manajemen Divisi
+        // Manajemen Divisi (read / monitoring)
         Route::get('/divisi', [HrdDivisiController::class, 'index']);
-        Route::post('/divisi', [HrdDivisiController::class, 'store']);
         Route::get('/divisi/{id}', [HrdDivisiController::class, 'show']);
-        Route::put('/divisi/{id}', [HrdDivisiController::class, 'update']);
-        Route::patch('/divisi/{id}', [HrdDivisiController::class, 'update']);
-        Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy']);
 
         // Kalender
         Route::get('/kalender-events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsHrd']);
 
-        // Manajemen Staff
+        // Manajemen Staff (read / monitoring)
         Route::get('/staff', [HrdStaffController::class, 'index']);
-        Route::post('/staff', [HrdStaffController::class, 'store']);
         Route::get('/staff/{id}', [HrdStaffController::class, 'show']);
-        Route::put('/staff/{id}', [HrdStaffController::class, 'update']);
-        Route::patch('/staff/{id}', [HrdStaffController::class, 'update']);
-        Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
+
+        // Director-level roles are read-only: they cannot mutate master data.
+        Route::middleware('deny.superadmin')->group(function (): void {
+            Route::post('/divisi', [HrdDivisiController::class, 'store']);
+            Route::put('/divisi/{id}', [HrdDivisiController::class, 'update']);
+            Route::patch('/divisi/{id}', [HrdDivisiController::class, 'update']);
+            Route::delete('/divisi/{id}', [HrdDivisiController::class, 'destroy']);
+
+            Route::post('/staff', [HrdStaffController::class, 'store']);
+            Route::put('/staff/{id}', [HrdStaffController::class, 'update']);
+            Route::patch('/staff/{id}', [HrdStaffController::class, 'update']);
+            Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy']);
+        });
     });
     
 });

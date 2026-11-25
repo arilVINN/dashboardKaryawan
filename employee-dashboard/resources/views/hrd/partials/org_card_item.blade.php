@@ -6,8 +6,7 @@
     id="org-card-{{ $cardId }}"
     data-node-key="{{ $cardId }}"
     data-id="{{ $member->id }}"
-    data-source-type="{{ $member->source_type ?? 'karyawan' }}"
-    data-employee='{!! json_encode([
+    data-employee='{{ e(json_encode([
         "id"           => $member->id,
         "node_key"     => $cardId,
         "source_type"  => $member->source_type ?? "karyawan",
@@ -20,9 +19,10 @@
         "email"        => $member->email ?? "-",
         "no_telepon"   => $member->no_telepon ?? "-",
         "keterangan"   => $member->keterangan ?? "-",
-        "foto"         => $fotoUrl,
-        "atasan_id"    => $member->atasan_id ?? "",
-    ], JSON_HEX_APOS | JSON_HEX_QUOT) !!}'
+        "foto"         => $member->foto ? asset("storage/" . $member->foto) : ($member->karyawan?->foto ? asset("storage/" . $member->karyawan->foto) : ""),
+        "parent_id"    => $member->parent_id,
+        "urutan"       => $member->urutan,
+    ])) }}'
     onclick="openProfileModal(this)">
 
     @if ($fotoUrl)

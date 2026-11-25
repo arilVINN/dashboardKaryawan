@@ -407,7 +407,7 @@
                     <x-status-badge :status="$reportDetail['status']" :label="$reportDetail['status_meta']['label']"
                         :palette="$reportDetail['status_meta']" />
                     @if ($reportDetail['bukti'])
-                        <a href="{{ asset('storage/'.$reportDetail['bukti']) }}" target="_blank"
+                        <a href="{{ \App\Support\FileStorage::url($reportDetail['bukti']) }}" target="_blank"
                             rel="noopener noreferrer"
                             class="inline-flex h-8 items-center rounded-lg border border-[#D5DEE3] bg-white px-3 text-[12px] font-medium text-[#172B36] transition hover:bg-[#F5FAFC]">
                             Lihat bukti

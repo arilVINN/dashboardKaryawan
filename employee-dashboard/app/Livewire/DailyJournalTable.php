@@ -9,6 +9,7 @@ use App\Models\Karyawan;
 use App\Models\User2;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use App\Support\FileStorage;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -57,7 +58,7 @@ class DailyJournalTable extends Component
             'prioritas' => 'required|in:rendah,sedang,tinggi',
             'status' => 'required|in:pending,on_progress,selesai,revisi,disetujui',
             'catatan' => 'nullable|string|max:2000',
-            'fileBukti' => 'nullable|file|max:20480',
+            'fileBukti' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip',
             'linkBukti' => 'nullable|string|max:2000',
         ];
     }
@@ -261,7 +262,7 @@ class DailyJournalTable extends Component
         $fileName = $this->existingFileNamaAsli;
 
         if ($this->fileBukti) {
-            $filePath = $this->fileBukti->store('daily-journals', 'public');
+            $filePath = $this->fileBukti->store('daily-journals', 'private');
             $fileName = $this->fileBukti->getClientOriginalName();
         }
 
@@ -286,7 +287,7 @@ class DailyJournalTable extends Component
             }
 
             if ($journal->file_bukti && $journal->file_bukti !== $filePath) {
-                Storage::disk('public')->delete($journal->file_bukti);
+                FileStorage::delete($journal->file_bukti);
             }
 
             $journal->update([
@@ -384,7 +385,7 @@ class DailyJournalTable extends Component
         }
 
         if ($journal->file_bukti) {
-            Storage::disk('public')->delete($journal->file_bukti);
+            FileStorage::delete($journal->file_bukti);
         }
         $journal->delete();
         $this->feedbackMessage = 'To Do berhasil dihapus.';
