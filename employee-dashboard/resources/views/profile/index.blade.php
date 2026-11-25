@@ -33,6 +33,11 @@
                 <p class="mt-1 text-[12px] text-[#4B5563]">Perbarui data pribadi dan keamanan akun Anda.</p>
             </div>
 
+            <div id="profile-endpoints" class="hidden"
+                 data-profile="{{ '/api/'.$profileRole.'/profile' }}"
+                 data-foto="{{ '/api/'.$profileRole.'/profile/foto' }}"
+                 data-password="{{ '/api/'.$profileRole.'/profile/password' }}"></div>
+
             {{-- Informasi pribadi --}}
             <div id="view-info" class="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
                 <div class="mb-5 flex items-center justify-between border-b border-slate-100 pb-3">
@@ -187,7 +192,10 @@
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
             const token = sessionStorage.getItem('staff_token');
-            const endpoint = @json('/api/'.$profileRole.'/profile', JSON_UNESCAPED_SLASHES);
+            const endpoints = document.getElementById('profile-endpoints').dataset;
+            const endpoint = endpoints.profile;
+            const fotoEndpoint = endpoints.foto;
+            const passwordEndpoint = endpoints.password;
 
             function headers(json) {
                 const h = { 'Accept': 'application/json' };
@@ -292,7 +300,7 @@
                     if (fotoInput.files.length > 0) {
                         const fotoData = new FormData();
                         fotoData.append('foto', fotoInput.files[0]);
-                        const fotoRes = await fetch(endpoint + '/foto', {
+                        const fotoRes = await fetch(fotoEndpoint, {
                             method: 'POST',
                             headers: headers(false),
                             body: fotoData,
@@ -342,7 +350,7 @@
                 }
 
                 try {
-                    const res = await fetch(endpoint + '/password', {
+                    const res = await fetch(passwordEndpoint, {
                         method: 'PUT',
                         headers: headers(true),
                         body: JSON.stringify({
