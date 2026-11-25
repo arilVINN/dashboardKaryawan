@@ -242,6 +242,19 @@
                                 </div>
 
                                 <div>
+                                    <label class="{{ $label }}" for="kf-jobdesk">Keterangan jobdesk <span class="text-[#4B5563]">(opsional)</span></label>
+                                    <input id="kf-jobdesk" type="text" wire:model.blur="jobdesk" maxlength="50"
+                                           list="kf-jobdesk-pilihan" placeholder="Contoh: Editorial" class="{{ $field }}">
+                                    <datalist id="kf-jobdesk-pilihan">
+                                        @foreach (\App\Models\Karyawan::jobdeskOptions() as $opsi)
+                                            <option value="{{ $opsi }}"></option>
+                                        @endforeach
+                                    </datalist>
+                                    <p class="{{ $hint }}">Keterangan pekerjaan staff; tidak memengaruhi hak akses.</p>
+                                    @error('jobdesk') <p data-error class="{{ $errorText }}">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div>
                                     <label class="{{ $label }}" for="kf-status">Status</label>
                                     <select id="kf-status" wire:model.live="statusAktif" class="{{ $field }}">
                                         @foreach (\App\Models\Karyawan::STATUS_OPTIONS as $option)
@@ -448,6 +461,18 @@
                                     <input id="kf-jabatan-baru" type="text" wire:model.blur="jabatanBaruNama" maxlength="80"
                                            placeholder="Contoh: Staff administrasi" class="{{ $field }}">
                                     @error('jabatanBaruNama') <p data-error class="{{ $errorText }}">{{ $message }}</p> @enderror
+                                </div>
+                                <div>
+                                    <label class="{{ $label }}" for="kf-role-jabatan">Role akun <span class="text-[#DC2626]">*</span></label>
+                                    <select id="kf-role-jabatan" wire:model.live="roleId" class="{{ $field }}">
+                                        @foreach ($this->roleOptions as $opsi)
+                                            <option value="{{ $opsi['id'] }}">{{ $opsi['label'] }}</option>
+                                        @endforeach
+                                    </select>
+                                    <p class="{{ $hint }}">Role mengikuti jabatan, bukan nama atau job level.</p>
+                                    @error('roleId') <p data-error class="{{ $errorText }}">{{ $message }}</p> @enderror
+                                </div>
+                                <div>
                                     @if ($jabatanDuplikatId)
                                         <div class="mt-1 flex items-center justify-between gap-2">
                                             <p data-error class="text-[12px] text-[#B91C1C]">Jabatan ini sudah ada di divisi ini</p>

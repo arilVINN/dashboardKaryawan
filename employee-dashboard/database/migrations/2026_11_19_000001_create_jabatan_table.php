@@ -27,7 +27,12 @@ return new class extends Migration
                 ->onDelete('cascade');
         });
 
-        DB::statement('CREATE UNIQUE INDEX jabatan_division_nama_unique ON jabatan (division_id, lower(trim(nama)))');
+        // PostgreSQL supports expression indexes; SQLite does not. On SQLite
+        // the application-level duplicate check (normaliseNama + lower/trim)
+        // enforces the same rule.
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::statement('CREATE UNIQUE INDEX jabatan_division_nama_unique ON jabatan (division_id, lower(trim(nama)))');
+        }
     }
 
     public function down(): void
