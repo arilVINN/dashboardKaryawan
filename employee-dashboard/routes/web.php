@@ -414,7 +414,7 @@ Route::middleware(['auth', 'role:hrd', 'throttle:umum'])->prefix('hrd')->group(f
 
     Route::get('/detailKaryawan/{id}', [HrdKaryawanController::class, 'detailPage'])->name('hrd.detailKaryawan');
     Route::patch('/detailKaryawan/{id}/keluar', [HrdKaryawanController::class, 'tandaiKeluar'])
-        ->middleware('throttle:submit-form')
+        ->middleware(['throttle:submit-form', 'deny.superadmin'])
         ->name('hrd.karyawan.keluar');
 
     Route::get('/daftarKaryawan', [HrdKaryawanController::class, 'karyawanPage'])
@@ -578,10 +578,10 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
         Route::get('/permintaan', [PermintaanDanaController::class, 'index'])->name('kadiv.keuangan.permintaan');
         Route::get('/permintaan/{id}', [PermintaanDanaController::class, 'show'])->name('kadiv.keuangan.permintaan.show');
         Route::post('/permintaan/{id}/approve', [PermintaanDanaController::class, 'approve'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.keuangan.permintaan.approve');
         Route::post('/permintaan/{id}/reject', [PermintaanDanaController::class, 'reject'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.keuangan.permintaan.reject');
 
         // Pengeluaran / Pencairan
@@ -596,7 +596,7 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
         // Verifikasi Laporan Laba/Rugi (Finance)
         Route::get('/laporan', [LabaRugiController::class, 'daftarLaporan'])->name('kadiv.keuangan.laporan');
         Route::post('/laporan/{id}/verifikasi', [LabaRugiController::class, 'verifikasi'])
-            ->middleware('throttle:submit-form')
+            ->middleware(['throttle:submit-form', 'deny.superadmin'])
             ->name('kadiv.keuangan.laporan.verifikasi');
 
         // Jurnal Umum — entri dibuat otomatis dari transaksi keuangan
@@ -607,8 +607,9 @@ Route::middleware(['auth', 'role:kadiv', 'kadiv.finance', 'throttle:umum'])
     });
 
 // ── Semua Kadiv: Pengajuan Dana & Laporan Laba/Rugi ──────────────────────────
-// Jabatan management (HRD / director level). Existing roles are unchanged.
-Route::middleware(['auth', 'role:hrd,direksi', 'throttle:submit-form'])
+// Jabatan management (HRD / superadmin only). Director-level roles are
+// read-only monitors, so `deny.superadmin` blocks direktur/direksi writes.
+Route::middleware(['auth', 'role:hrd', 'throttle:submit-form', 'deny.superadmin'])
     ->prefix('hrd')
     ->group(function () {
         Route::post('/jabatan', [HrdJabatanController::class, 'store'])->name('hrd.jabatan.store');

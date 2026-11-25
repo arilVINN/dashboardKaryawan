@@ -132,7 +132,8 @@ class User2 extends Authenticatable
     /**
      * Cek apakah user ini adalah Kepala Divisi Finance & Accounting.
      * Criteria: role = 'kadiv' AND the employee's division is Finance.
-     * Direktur/Direksi inherits full finance access.
+     * Direktur/Direksi inherits finance *read* access (for monitoring), but
+     * the finance policies block them from approving/rejecting/verifying.
      */
     public function isKadivFinance(): bool
     {

@@ -124,7 +124,9 @@ class TowerDatabaseTable extends Component
 
     public function canManage(): bool
     {
-        return in_array($this->currentUserRole(), ['hrd', 'kadiv', 'admin', 'direktur', 'direksi', 'superadmin'], true);
+        // Direktur/Direksi are read-only monitors: they can read every item
+        // (see canAccessItem) but may not create/update/delete them.
+        return in_array($this->currentUserRole(), ['hrd', 'kadiv', 'admin', 'superadmin'], true);
     }
 
     public function canAccessItem(TowerDatabase $item): bool

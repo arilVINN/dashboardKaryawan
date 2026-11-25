@@ -15,23 +15,23 @@ class JabatanPolicy
 
     public function create(User2 $user): bool
     {
-        return EmployeeAccess::canManage($user);
+        return EmployeeAccess::canWrite($user);
     }
 
     public function update(User2 $user, Jabatan $jabatan): bool
     {
-        return EmployeeAccess::canManage($user);
+        return EmployeeAccess::canWrite($user);
     }
 
     public function deactivate(User2 $user, Jabatan $jabatan): bool
     {
-        return EmployeeAccess::canManage($user);
+        return EmployeeAccess::canWrite($user);
     }
 
     public function delete(User2 $user, Jabatan $jabatan): bool
     {
         // A jabatan with employees may only be deactivated, never deleted.
-        return EmployeeAccess::canManage($user)
+        return EmployeeAccess::canWrite($user)
             && $jabatan->karyawans()->doesntExist();
     }
 }

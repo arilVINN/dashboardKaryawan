@@ -8,7 +8,9 @@ use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Tugas;
 use App\Services\HrdProtectionService;
+use App\Support\AccountSecurity;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class HrdKaryawanController extends Controller
 {
@@ -46,6 +48,10 @@ class HrdKaryawanController extends Controller
         $tanggalKeluar = $validated['tanggal_keluar'] ?? now()->toDateString();
 
         $karyawan = Karyawan::with('user.role')->where('id_karyawan', $id)->firstOrFail();
+
+        // Defence in depth: the route already blocks read-only directors, but
+        // the policy keeps this safe if the route middleware changes later.
+        Gate::authorize('deactivate', $karyawan);
 
         // 1 & 2. Proteksi penonaktifan akun HRD terakhir & penonaktifan akun diri sendiri
         $authUser = $request->user() ?: auth()->user();

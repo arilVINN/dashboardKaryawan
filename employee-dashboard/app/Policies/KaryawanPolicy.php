@@ -20,22 +20,22 @@ class KaryawanPolicy
 
     public function create(User2 $user): bool
     {
-        return EmployeeAccess::canManage($user);
+        return EmployeeAccess::canWrite($user);
     }
 
     public function update(User2 $user, Karyawan $karyawan): bool
     {
-        return EmployeeAccess::canManage($user);
+        return EmployeeAccess::canWrite($user);
     }
 
     public function deactivate(User2 $user, Karyawan $karyawan): bool
     {
-        return EmployeeAccess::canManage($user);
+        return EmployeeAccess::canWrite($user);
     }
 
     public function delete(User2 $user, Karyawan $karyawan): bool
     {
-        return EmployeeAccess::canManage($user);
+        return EmployeeAccess::canWrite($user);
     }
 
     /**
