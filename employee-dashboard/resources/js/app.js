@@ -125,6 +125,10 @@ document.addEventListener('livewire:init', () => {
     });
 
     document.addEventListener('submit', function (e) {
+        // AJAX forms (login, profile update, password change) call
+        // preventDefault() before the event bubbles to this listener. No page
+        // navigation follows, so the loader would stay visible forever.
+        if (e.defaultPrevented) return;
         if (!e.target.hasAttribute('wire:submit')) {
             showLoader();
         }

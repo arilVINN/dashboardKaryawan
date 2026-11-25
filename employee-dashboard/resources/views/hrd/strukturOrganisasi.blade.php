@@ -521,7 +521,7 @@
                                                     <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                                 </button>
                                             </div>
-                                        @endforeach
+                                        @endif
                                     </div>
                                 @endif
                             </div>
@@ -638,7 +638,7 @@
     {{-- MODAL DETAIL PROFIL KARYAWAN                                   --}}
     {{-- ============================================================== --}}
     <div id="employee-profile-modal"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm"
+        class="modal-overlay-in fixed inset-0 z-50 hidden items-center justify-center bg-[rgba(15,40,55,.45)] p-4"
         role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="employee-profile-title">
 
         <div class="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl">
@@ -701,7 +701,7 @@
         {{-- ============================================================== --}}
         {{-- MODAL ATUR POSISI DIVISI DI BAGAN (MUDAH & INSTAN)             --}}
         {{-- ============================================================== --}}
-        <div id="modalLayoutDivisi" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden p-4">
+        <div id="modalLayoutDivisi" class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,40,55,.45)] hidden p-4">
             <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                     <div class="flex items-center gap-2.5">
@@ -794,7 +794,7 @@
         {{-- ============================================================== --}}
         {{-- MODAL EDIT KARYAWAN / POSISI (SINKRON KE KARYAWANS)            --}}
         {{-- ============================================================== --}}
-        <div id="modalEditNode" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden p-4">
+        <div id="modalEditNode" class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,40,55,.45)] hidden p-4">
             <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                     <div class="flex items-center gap-2">

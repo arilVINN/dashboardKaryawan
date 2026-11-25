@@ -36,6 +36,7 @@ class ProfileController extends Controller
                 'email' => $textOrDash($karyawan?->email),
                 'alamat' => $textOrDash($karyawan?->alamat),
                 'jabatan' => $jabatan,
+                'jobdesk' => $karyawan?->jobdesk ?: '-',
                 'job_level' => $jobLevel !== '' ? $jobLevel : '-',
                 'pendidikan' => $pendidikan !== '' ? $pendidikan : '-',
                 'status_karyawan' => $karyawan
