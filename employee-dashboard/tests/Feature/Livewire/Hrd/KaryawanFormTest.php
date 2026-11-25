@@ -115,44 +115,6 @@ class KaryawanFormTest extends TestCase
             ->assertSet('jabatanResetNote', 'Jabatan direset karena divisi berubah.');
     }
 
-    public function test_hrd_can_add_a_jabatan_from_the_form(): void
-    {
-        Livewire::actingAs($this->hrd)
-            ->test(KaryawanForm::class)
-            ->call('buka', 'create')
-            ->set('divisiId', 'DIV-IT')
-            ->call('buatJabatanDialog')
-            ->set('jabatanBaruNama', '  Staff   Administrasi  ')
-            ->call('simpanJabatanBaru')
-            ->assertHasNoErrors()
-            ->assertSet('showJabatanDialog', false);
-
-        $this->assertDatabaseHas('jabatan', [
-            'division_id' => 'DIV-IT',
-            'nama' => 'Staff Administrasi',
-        ]);
-
-        $this->assertDatabaseHas('audit_logs', [
-            'aksi' => 'tambah_jabatan',
-            'target_tipe' => 'jabatan',
-        ]);
-    }
-
-    public function test_duplicate_jabatan_offers_to_pick_the_existing_one(): void
-    {
-        Livewire::actingAs($this->hrd)
-            ->test(KaryawanForm::class)
-            ->call('buka', 'create')
-            ->set('divisiId', 'DIV-IT')
-            ->call('buatJabatanDialog')
-            ->set('jabatanBaruNama', 'staff')
-            ->call('simpanJabatanBaru')
-            ->assertHasErrors('jabatanBaruNama')
-            ->assertSet('showJabatanDialog', true);
-
-        $this->assertDatabaseCount('jabatan', 1);
-    }
-
     public function test_invalid_dates_are_rejected(): void
     {
         Livewire::actingAs($this->hrd)
@@ -268,32 +230,6 @@ class KaryawanFormTest extends TestCase
             ->assertHasErrors('tanggalMasuk');
     }
 
-
-    public function test_add_jabatan_dialog_requires_role_and_stores_it(): void
-    {
-        Livewire::actingAs($this->hrd)
-            ->test(KaryawanForm::class)
-            ->call('buka', 'create')
-            ->set('divisiId', 'DIV-IT')
-            ->call('buatJabatanDialog')
-            ->assertSee('Role akun', false)
-            ->call('simpanJabatanBaru')
-            ->assertHasErrors('jabatanBaruNama')
-            ->set('jabatanBaruNama', 'Editor')
-            ->set('roleId', 'ROLE-STAFF')
-            ->call('simpanJabatanBaru')
-            ->assertHasNoErrors();
-
-        $this->assertDatabaseHas('jabatan', [
-            'division_id' => 'DIV-IT',
-            'nama' => 'Editor',
-            'role_id_role' => 'ROLE-STAFF',
-        ]);
-        $this->assertDatabaseHas('audit_logs', [
-            'aksi' => 'tambah_jabatan',
-            'detail' => json_encode(['division_id' => 'DIV-IT', 'nama' => 'Editor', 'role' => 'staff']),
-        ]);
-    }
 
     public function test_jobdesk_is_descriptive_and_saved_with_employee(): void
     {

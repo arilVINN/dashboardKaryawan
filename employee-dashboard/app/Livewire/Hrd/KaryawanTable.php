@@ -48,7 +48,7 @@ class KaryawanTable extends Component
         $user = auth()->user();
 
         if (! $user instanceof User2
-            || (strtolower($user->role?->nama_role ?? '') !== 'hrd' && ! $user->isDirektur())) {
+            || (! $user instanceof \App\Models\User2 || ! $user->hasRole('hrd') && ! $user->isDirektur())) {
             abort(403);
         }
 

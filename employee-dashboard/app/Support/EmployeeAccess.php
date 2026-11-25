@@ -32,9 +32,7 @@ final class EmployeeAccess
             return false;
         }
 
-        $role = strtolower(trim((string) $user->role?->nama_role));
-
-        return in_array($role, self::MANAGE_ROLES, true) || $user->isDirektur();
+        return (bool) array_intersect($user->daftarRole(), self::MANAGE_ROLES);
     }
 
     public static function canWrite(?User2 $user): bool
@@ -43,8 +41,6 @@ final class EmployeeAccess
             return false;
         }
 
-        $role = strtolower(trim((string) $user->role?->nama_role));
-
-        return in_array($role, self::WRITE_ROLES, true);
+        return (bool) array_intersect($user->daftarRole(), self::WRITE_ROLES);
     }
 }
