@@ -13,6 +13,7 @@ class Jabatan extends Model
     protected $fillable = [
         'division_id',
         'nama',
+        'role_id_role',
         'aktif',
     ];
 
@@ -23,6 +24,19 @@ class Jabatan extends Model
     public function divisi(): BelongsTo
     {
         return $this->belongsTo(Divisi::class, 'division_id', 'id_divisi');
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id_role', 'id_role');
+    }
+
+    /**
+     * Roles a jabatan may grant (superadmin is CLI-managed only).
+     */
+    public static function roleOptions(): array
+    {
+        return config('employee.jabatan_role', ['staff', 'kadiv', 'hrd', 'direktur']);
     }
 
     public function karyawans(): HasMany

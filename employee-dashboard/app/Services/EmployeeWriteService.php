@@ -72,6 +72,7 @@ final class EmployeeWriteService
                     'divisi_id_divisi' => $divisi->id_divisi,
                     'pendidikan' => $validated['pendidikan'] ?? null,
                     'job_level' => $validated['job_level'] ?? null,
+                    'jobdesk' => $validated['jobdesk'] ?? null,
                     'status_karyawan' => $tanggalAkhir ? 'Kontrak' : 'Tetap',
                 ]);
 
@@ -205,11 +206,12 @@ final class EmployeeWriteService
                         $accountChanges['username'] = trim((string) $validated['username']);
                         $changedKeys[] = 'username';
                     }
-                    // An explicit role_id_role from legacy clients is honoured
-                    // unless a jabatan in the same request implies a role.
-                    $roleId = isset($validated['role_id_role'])
-                        ? (string) $validated['role_id_role']
-                        : ($jabatan ? $this->defaultRoleId($jabatan, $divisi, null) : null);
+                    // The jabatan mapping is authoritative. An explicit
+                    // role_id_role is only honoured for legacy API clients that
+                    // do not send a jabatan with the request.
+                    $roleId = $jabatan
+                        ? $this->defaultRoleId($jabatan, $divisi, null)
+                        : (isset($validated['role_id_role']) ? (string) $validated['role_id_role'] : null);
 
                     if ($roleId) {
                         $this->assertRoleAllowed($roleId);
@@ -381,7 +383,7 @@ final class EmployeeWriteService
         $keys = [
             'nama', 'jenis_kelamin', 'tanggal_lahir', 'tanggal_masuk',
             'tanggal_akhir_kontrak', 'no_rekening', 'no_telepon', 'email',
-            'alamat', 'divisi_id_divisi', 'pendidikan', 'job_level', 'status_aktif',
+            'alamat', 'divisi_id_divisi', 'pendidikan', 'job_level', 'jobdesk', 'status_aktif',
         ];
 
         $fields = [];
@@ -408,14 +410,22 @@ final class EmployeeWriteService
 
     private function defaultRoleId(Jabatan $jabatan, Divisi $divisi, ?string $requestedRoleId): string
     {
-        $roleName = $this->roleNameForJabatan($jabatan->nama);
+        // Roles live on the jabatan record, so renaming a jabatan can never
+        // change someone's permissions. The name-based fallback only covers
+        // legacy rows created before the role column was backfilled.
+        $roleId = $jabatan->role_id_role;
 
-        if (! $roleName && strtoupper((string) $divisi->kode_divisi) === Divisi::KODE_HR) {
-            $roleName = 'hrd';
+        if (! $roleId) {
+            $roleName = $this->roleNameForJabatan($jabatan->nama);
+
+            if (! $roleName && strtoupper((string) $divisi->kode_divisi) === Divisi::KODE_HR) {
+                $roleName = 'hrd';
+            }
+            $roleName ??= 'staff';
+
+            $roleId = Role::whereRaw('LOWER(nama_role) = ?', [$roleName])->value('id_role');
         }
-        $roleName ??= 'staff';
 
-        $roleId = Role::whereRaw('LOWER(nama_role) = ?', [$roleName])->value('id_role');
         if (! $roleId && $requestedRoleId) {
             $roleId = $requestedRoleId;
         }
