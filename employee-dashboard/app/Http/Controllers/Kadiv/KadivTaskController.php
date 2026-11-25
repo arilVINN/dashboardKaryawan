@@ -42,7 +42,9 @@ class KadivTaskController extends Controller
     {
         $user = $request->user();
         $query = Tugas::with([
-            'karyawan',
+            // Only expose the fields a Kadiv needs; never the full employee
+            // record (bank account, address, birth date, etc.).
+            'karyawan:id_karyawan,nama,jabatan,divisi_id_divisi,foto,status_aktif',
             'submitTugas' => fn ($query) => $query->latest('created_at'),
         ])->whereKey($id);
 
