@@ -515,9 +515,9 @@ Route::middleware(['auth', 'role:hrd,direksi', 'throttle:umum'])->prefix('hrd')-
         ->middleware('throttle:submit-form');
 });
 
-// Surat Izin (Staff)
+// Surat Izin (Staff & Kadiv)
 Route::post('/surat-izin', [SuratIzinController::class, 'store'])
-    ->middleware(['auth', 'role:staff', 'throttle:submit-form'])
+    ->middleware(['auth', 'role:staff,kadiv', 'throttle:submit-form'])
     ->name('staff.suratIzin.store');
 
 // Surat Izin (HRD)

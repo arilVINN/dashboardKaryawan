@@ -147,11 +147,41 @@ class PesanTableTest extends TestCase
         $this->assertSame(6, strlen(SuratIzin::query()->value('id_surat')));
     }
 
+    public function test_staff_can_submit_the_new_perizinan_form(): void
+    {
+        $response = $this->actingAs($this->staff)->post(route('staff.suratIzin.store'), [
+            'tanggal_pengajuan' => now()->toDateString(),
+            'keperluan' => 'Dinas',
+            'jenis_pengajuan' => 'Kunjungan Klien atau Lapangan',
+            'tanggal_mulai' => '2026-11-27',
+            'tanggal_selesai' => '2026-11-28',
+            'keterangan' => 'Kunjungan klien baru',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success', 'Surat izin berhasil dikirim.');
+
+        $this->assertDatabaseHas('surat_izin', [
+            'karyawan_id_karyawan' => $this->staff->karyawan_id_karyawan,
+            'keperluan' => 'Dinas',
+            'kategori_pengajuan' => 'Dinas Luar',
+            'jenis_izin' => 'Kunjungan Klien atau Lapangan',
+            'judul_surat' => 'Pengajuan Dinas Luar - Kunjungan Klien atau Lapangan',
+            'tanggal_mulai' => '2026-11-27 00:00:00',
+            'tanggal_selesai' => '2026-11-28 00:00:00',
+        ]);
+    }
+
     public function test_surat_izin_modal_is_rendered_once_on_staff_pesan_page(): void
     {
         $response = $this->actingAs($this->staff)->get('/pesan');
 
-        $response->assertOk()->assertSee('name="judul_surat"', false);
+        $response->assertOk()
+            ->assertSee('name="tanggal_pengajuan"', false)
+            ->assertSee('name="keperluan"', false)
+            ->assertSee('name="jenis_pengajuan"', false)
+            ->assertSee('Tidak Masuk')
+            ->assertSee('Ajukan Perizinan');
         $this->assertSame(1, substr_count($response->getContent(), 'id="modalSuratIzin"'));
     }
 

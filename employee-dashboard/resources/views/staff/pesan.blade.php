@@ -50,7 +50,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M9 12h6m-6 4h6M9 8h1m5 12H7a2 2 0 01-2-2V6a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z" />
                         </svg>
-                        Kirim Surat Izin
+                        Ajukan Perizinan
                     </button>
 
                     <button type="button" data-modal-open="modalBooking"

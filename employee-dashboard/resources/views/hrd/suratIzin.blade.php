@@ -51,12 +51,26 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="font-semibold text-slate-800">{{ $surat->judul_surat }}</div>
-                                        <div class="text-xs text-[#19A7CE] font-medium">{{ $surat->jenis_izin ?? 'Izin / Cuti' }}</div>
+                                        <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs">
+                                            <span class="font-medium text-[#19A7CE]">{{ $surat->kategori_pengajuan ?? 'Izin / Cuti' }}</span>
+                                            <span class="text-slate-300">·</span>
+                                            <span class="text-slate-500">{{ $surat->jenis_izin ?? '-' }}</span>
+                                            @if ($surat->keperluan)
+                                                <span class="rounded-full border border-[#E2E8EC] bg-[#F8FAFC] px-1.5 py-0.5 text-[10px] font-medium text-[#4B5563]">
+                                                    {{ $surat->keperluan }}
+                                                </span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 text-center whitespace-nowrap text-xs">
                                         {{ $surat->tanggal_mulai ? \Carbon\Carbon::parse($surat->tanggal_mulai)->format('d M Y') : '-' }}
                                         <span class="text-slate-400 mx-1">s/d</span>
                                         {{ $surat->tanggal_selesai ? \Carbon\Carbon::parse($surat->tanggal_selesai)->format('d M Y') : '-' }}
+                                        @if ($surat->tanggal_pengajuan)
+                                            <div class="mt-1 text-[10px] text-slate-400">
+                                                Diajukan {{ \Carbon\Carbon::parse($surat->tanggal_pengajuan)->format('d M Y') }}
+                                            </div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4">{{ $surat->keterangan ?: '-' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">

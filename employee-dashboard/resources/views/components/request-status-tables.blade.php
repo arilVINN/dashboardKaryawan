@@ -20,7 +20,14 @@
                         <tr>
                             <td class="px-5 py-4">
                                 <div class="font-medium text-slate-800">{{ $surat->judul_surat }}</div>
-                                <div class="text-xs text-slate-500">{{ $surat->jenis_izin ?? 'Izin / Cuti' }}</div>
+                                <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+                                    <span>{{ $surat->kategori_pengajuan ?? 'Izin / Cuti' }} · {{ $surat->jenis_izin ?? '-' }}</span>
+                                    @if ($surat->keperluan)
+                                        <span class="rounded-full border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
+                                            {{ $surat->keperluan }}
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="whitespace-nowrap px-5 py-4 text-xs">
                                 {{ $surat->tanggal_mulai?->format('d M Y') ?? $surat->tanggal_izin?->format('d M Y') ?? '-' }}
@@ -33,7 +40,7 @@
                                 <x-status-badge :status="$surat->status" :label="$surat->status" />
                             </td>
                             <td class="whitespace-nowrap px-5 py-4 text-xs">
-                                {{ $surat->created_at?->format('d M Y') ?? '-' }}
+                                {{ ($surat->tanggal_pengajuan ?? $surat->created_at)?->format('d M Y') ?? '-' }}
                             </td>
                         </tr>
                     @empty

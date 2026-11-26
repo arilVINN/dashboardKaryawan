@@ -2,27 +2,22 @@
 
 namespace App\Livewire\Kadiv;
 
-use App\Actions\NotifyHrdUsers;
 use App\Events\PesanDikirim;
 use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Pesan;
-use App\Models\SuratIzin;
 use App\Models\User2;
 use App\Presenters\MessagePresenter;
 use App\Queries\KadivMessageQuery;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class PesanTable extends Component
 {
-    use WithFileUploads;
     use WithPagination;
 
     #[Url]
@@ -62,19 +57,6 @@ class PesanTable extends Component
     public ?array $recipient = null;
 
     public string $errorMessage = '';
-
-    // Properti untuk form Kirim Surat Izin (Diperbarui)
-    public string $jenisIzin = '';
-
-    public string $judulSurat = '';
-
-    public string $tanggalMulai = '';
-
-    public string $tanggalSelesai = '';
-
-    public $fileSurat = null;
-
-    public string $keteranganSurat = '';
 
     public function mount(): void
     {
@@ -348,65 +330,12 @@ class PesanTable extends Component
         }
     }
 
-    public function kirimSuratIzin(): void
-    {
-        $kadiv = $this->kadiv();
-
-        // Validasi input disesuaikan dengan form baru
-        $this->validate([
-            'jenisIzin' => 'required|string',
-            'judulSurat' => 'required|string|max:100',
-            'tanggalMulai' => 'required|date',
-            'tanggalSelesai' => 'required|date|after_or_equal:tanggalMulai',
-            'fileSurat' => 'nullable|file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip',
-            'keteranganSurat' => 'nullable|string|max:1000',
-        ]);
-
-        try {
-            $suratIzin = SuratIzin::create([
-                'id_surat' => $this->generateSuratId(),
-                'karyawan_id_karyawan' => $kadiv->karyawan->id_karyawan,
-                'jenis_izin' => $this->jenisIzin,
-                'judul_surat' => $this->judulSurat,
-                'tanggal_izin' => $this->tanggalMulai, // Mengisi kolom lama agar tidak error NOT NULL jika belum di-migrasi
-                'tanggal_mulai' => $this->tanggalMulai,
-                'tanggal_selesai' => $this->tanggalSelesai,
-                'keterangan' => $this->keteranganSurat,
-                'file' => $this->fileSurat ? $this->fileSurat->store('surat_izin', 'private') : null,
-                'status' => 'Pending',
-            ]);
-
-            app(NotifyHrdUsers::class)(
-                'Surat Izin Masuk',
-                'Surat izin "'.$suratIzin->judul_surat.'" ('.$suratIzin->jenis_izin.') dari '
-                    .($kadiv->karyawan?->nama ?? $kadiv->username).' menunggu persetujuan HRD.'
-            );
-
-            $this->reset(['jenisIzin', 'judulSurat', 'tanggalMulai', 'tanggalSelesai', 'fileSurat', 'keteranganSurat']);
-            $this->dispatch('app-toast', message: 'Surat izin berhasil dikirim.', type: 'success');
-            $this->dispatch('tutup-modal-surat');
-        } catch (\Throwable $e) {
-            Log::error('kirimSuratIzin error: '.$e->getMessage());
-            $this->addError('judulSurat', 'Gagal mengirim surat izin: '.$e->getMessage());
-        }
-    }
-
     private function generateMessageId(): string
     {
         do {
             $id = 'PSN'.strtoupper(substr(uniqid('', true), -12));
             $id = str_replace('.', '', $id);
         } while (Pesan::whereKey($id)->exists());
-
-        return $id;
-    }
-
-    private function generateSuratId(): string
-    {
-        do {
-            $id = 'SRT'.strtoupper(substr(uniqid('', true), -10));
-            $id = str_replace('.', '', $id);
-        } while (SuratIzin::whereKey($id)->exists());
 
         return $id;
     }

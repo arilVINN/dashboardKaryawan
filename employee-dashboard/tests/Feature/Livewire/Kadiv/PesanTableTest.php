@@ -119,6 +119,16 @@ class PesanTableTest extends TestCase
         Event::assertDispatched(PesanDikirim::class);
     }
 
+    public function test_kadiv_pesan_page_renders_the_perizinan_modal_once(): void
+    {
+        $response = $this->actingAs($this->kadiv)->get(route('kadiv.pesan'));
+
+        $response->assertOk()
+            ->assertSee('name="jenis_pengajuan"', false)
+            ->assertSee('Ajukan Perizinan');
+        $this->assertSame(1, substr_count($response->getContent(), 'id="modalSuratIzin"'));
+    }
+
     public function test_non_kadiv_is_forbidden(): void
     {
         Livewire::actingAs($this->abby)->test(PesanTable::class)->assertForbidden();
