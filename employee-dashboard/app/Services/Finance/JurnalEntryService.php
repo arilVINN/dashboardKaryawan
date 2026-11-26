@@ -227,6 +227,44 @@ class JurnalEntryService
         $akun = CoaAkun::where('kode', $kode)->where('aktif', true)->first();
 
         if (! $akun) {
+            $fallback = match ($kode) {
+                '1101' => '1110',
+                '1110' => '1101',
+                '4101' => '4110',
+                '4110' => '4101',
+                '4102' => '7500',
+                '7500' => '4102',
+                '5102' => '7700',
+                '7700' => '5102',
+                default => null,
+            };
+
+            if ($fallback) {
+                $akun = CoaAkun::where('kode', $fallback)->where('aktif', true)->first();
+            }
+        }
+
+        if (! $akun) {
+            $defaults = [
+                '1101' => ['nama' => 'Kas', 'kelompok' => 'Aset'],
+                '1110' => ['nama' => 'Kas', 'kelompok' => 'Aset'],
+                '4101' => ['nama' => 'Pendapatan Jasa', 'kelompok' => 'Pendapatan'],
+                '4110' => ['nama' => 'Pendapatan Jasa Konsultasi', 'kelompok' => 'Pendapatan'],
+                '4102' => ['nama' => 'Pendapatan Lain-lain', 'kelompok' => 'Pendapatan'],
+                '7500' => ['nama' => 'Pendapatan Lain - Lain', 'kelompok' => 'Pendapatan'],
+                '5102' => ['nama' => 'Beban Operasional', 'kelompok' => 'Beban'],
+                '7700' => ['nama' => 'Biaya Lain - Lain', 'kelompok' => 'Beban'],
+            ];
+
+            if (isset($defaults[$kode])) {
+                $akun = CoaAkun::firstOrCreate(
+                    ['kode' => $kode],
+                    $defaults[$kode] + ['aktif' => true]
+                );
+            }
+        }
+
+        if (! $akun) {
             $this->fail('Akun COA dengan kode ' . $kode . ' tidak ditemukan atau tidak aktif.');
         }
 

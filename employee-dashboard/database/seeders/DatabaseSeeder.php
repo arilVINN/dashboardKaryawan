@@ -196,28 +196,32 @@ class DatabaseSeeder extends Seeder
 
         // Pass 1: Buat karyawan tanpa atasan_id agar tidak melanggar foreign key constraint
         foreach ($accounts as $acc) {
-            Karyawan::create([
-                'id_karyawan'       => $acc['id_karyawan'],
-                'nama'              => $acc['nama'],
-                'jenis_kelamin'     => $acc['jenis_kelamin'],
-                'tanggal_lahir'     => null, // Ignore tanggal lahir
-                'tanggal_masuk'     => now()->subMonths(6)->toDateString(),
-                'status_aktif'      => 'Aktif',
-                'jabatan'           => $acc['jabatan'],
-                'job_level'         => $acc['job_level'],
-                'divisi_id_divisi'  => $acc['divisi_id'],
-                'atasan_id'         => null,
-                'status_karyawan'   => 'tetap',
-                'aktif'             => true,
-            ]);
+            Karyawan::updateOrCreate(
+                ['id_karyawan' => $acc['id_karyawan']],
+                [
+                    'nama'              => $acc['nama'],
+                    'jenis_kelamin'     => $acc['jenis_kelamin'],
+                    'tanggal_lahir'     => null, // Ignore tanggal lahir
+                    'tanggal_masuk'     => now()->subMonths(6)->toDateString(),
+                    'status_aktif'      => 'Aktif',
+                    'email'             => $acc['email'] ?? ($acc['username'] . '@silindo.co.id'),
+                    'jabatan'           => $acc['jabatan'],
+                    'job_level'         => $acc['job_level'],
+                    'divisi_id_divisi'  => $acc['divisi_id'],
+                    'status_karyawan'   => 'tetap',
+                    'aktif'             => true,
+                ]
+            );
 
-            User2::create([
-                'id_user'               => $acc['id_user'],
-                'username'              => $acc['username'],
-                'password'              => Hash::make($acc['password']),
-                'role_id_role'          => $acc['role_id'],
-                'karyawan_id_karyawan'  => $acc['id_karyawan'],
-            ]);
+            User2::updateOrCreate(
+                ['id_user' => $acc['id_user']],
+                [
+                    'username'              => $acc['username'],
+                    'password'              => Hash::make($acc['password']),
+                    'role_id_role'          => $acc['role_id'],
+                    'karyawan_id_karyawan'  => $acc['id_karyawan'],
+                ]
+            );
         }
 
         // Pass 2: Hubungkan atasan_id setelah semua karyawan ada

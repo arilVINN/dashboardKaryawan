@@ -20,6 +20,8 @@ class TaskDeadlineReminderTest extends TestCase
 
         $this->seed(\Database\Seeders\DatabaseSeeder::class);
 
+        Karyawan::where('id_karyawan', 'KR001')->update(['email' => 'staff@silindo.co.id']);
+
         // Seeder membuat tugas dengan deadline "besok", yang bisa masuk jendela
         // 24 jam tergantung jam saat test berjalan. Tandai semuanya sudah
         // diingatkan agar hanya tugas yang dibuat test ini yang dikirim.

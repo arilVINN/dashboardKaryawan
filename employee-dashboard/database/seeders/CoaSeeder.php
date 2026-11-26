@@ -26,14 +26,19 @@ class CoaSeeder extends Seeder
             ];
 
             foreach ($pindah as [$kodeLama, $namaLama, $kodeBaru, $namaBaru]) {
-                CoaAkun::where('kode', $kodeLama)
-                    ->where('nama', $namaLama)
-                    ->update([
-                        'kode' => $kodeBaru,
-                        'nama' => $namaBaru,
-                        'kelompok' => $this->kelompokUtama($kodeBaru),
-                        'kelompok_detail' => $this->kelompokDetail($kodeBaru),
-                    ]);
+                $targetExists = CoaAkun::where('kode', $kodeBaru)->exists();
+                if ($targetExists) {
+                    CoaAkun::where('kode', $kodeLama)->delete();
+                } else {
+                    CoaAkun::where('kode', $kodeLama)
+                        ->where('nama', $namaLama)
+                        ->update([
+                            'kode' => $kodeBaru,
+                            'nama' => $namaBaru,
+                            'kelompok' => $this->kelompokUtama($kodeBaru),
+                            'kelompok_detail' => $this->kelompokDetail($kodeBaru),
+                        ]);
+                }
             }
 foreach ($this->daftarAkun() as [$kode, $nama]) {
     CoaAkun::updateOrCreate(

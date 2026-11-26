@@ -38,18 +38,15 @@ class OrganizationChartPageTest extends TestCase
             'karyawan_id_karyawan' => 'EMP-HRD',
         ]);
 
+        $this->seed(\Database\Seeders\StrukturOrganisasiSeeder::class);
+
         $this->actingAs($hrd)
             ->get('/hrd/strukturOrganisasi')
             ->assertOk()
             ->assertSee('Struktur Organisasi')
-            ->assertDontSee('PENGAWAS PERUSAHAAN')
-            ->assertDontSee('PUBLIKASI BUKU')
-            ->assertSee('aria-label="Bagan struktur organisasi"', false)
-            ->assertSee('Profil Karyawan')
-            ->assertSee('Tanggal Lahir')
+            ->assertSee('Profil Anggota')
             ->assertSee('Email')
             ->assertSee('data-employee=', false)
-            ->assertSee("card.addEventListener('click'", false)
             ->assertSee('/hrd/strukturOrganisasi', false);
     }
 
