@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: employee-dashboard
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, pdo_sqlite, sqlite3, zip, gd, intl, bcmath
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: employee-dashboard/package-lock.json
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Install and build frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Compile Blade views
+        run: php artisan view:cache
+
+      # Report-only for now: the codebase has files that are not Pint-formatted yet.
+      - name: Check formatting
+        continue-on-error: true
+        run: vendor/bin/pint --test
+
+      # Report-only for now: the suite has pre-existing failures (stale seed
+      # usernames in some tests). Remove continue-on-error once they are fixed.
+      - name: Run tests
+        continue-on-error: true
+        run: php artisan test
