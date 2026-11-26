@@ -241,14 +241,6 @@
                     const json = await response.json();
                     if (response.ok && json.data) {
                         const p = json.data;
-                        
-                        // Header
-                        document.getElementById('hdr-nama').textContent = p.nama || '-';
-                        document.getElementById('hdr-email').textContent = p.email || '-';
-                        document.getElementById('hdr-telp').textContent = p.no_telepon || '-';
-                        document.getElementById('prof-inisial').textContent = p.nama && p.nama !== '-' ? p.nama.charAt(0).toUpperCase() : 'U';
-
-                    const p = json.data;
                     teks('hdr-nama', p.nama);
                     teks('hdr-email', p.email);
                     teks('hdr-telp', p.no_telepon);
@@ -284,6 +276,7 @@
                     isi('input-telepon', p.no_telepon);
                     isi('input-rekening', p.no_rekening);
                     isi('input-alamat', p.alamat);
+                    }
                 } catch (e) {
                     console.error('Gagal memuat profil:', e);
                 }
