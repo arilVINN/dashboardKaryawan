@@ -344,8 +344,8 @@
                                 <span class="text-[11px] font-medium text-slate-600">Tetap / Kontrak</span>
                             </div>
                             <div class="flex items-center gap-1.5">
-                                <div class="w-5 border-t-2 border-dashed border-amber-500"></div>
-                                <span class="text-[11px] font-medium text-amber-700">Magang / Probation (┄┄)</span>
+                                <div class="w-5 border-t-2 border-dashed border-blue-500"></div>
+                                <span class="text-[11px] font-medium text-blue-700">Magang / Probation (┄┄)</span>
                             </div>
                         </div>
 
@@ -769,27 +769,27 @@
                     </div>
 
                     {{-- Status Kerja (Magang & Probation otomatis garis putus-putus) --}}
-                    <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2">
-                        <label class="block text-xs font-bold text-amber-900 uppercase">Status Kepegawaian</label>
+                    <div class="p-3 bg-blue-50/60 border border-blue-200 rounded-xl space-y-2">
+                        <label class="block text-xs font-bold text-blue-900 uppercase">Status Kepegawaian</label>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-amber-200 cursor-pointer">
-                                <input type="radio" name="status_karyawan" id="edit_status_tetap" value="tetap" class="text-amber-600">
+                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 cursor-pointer">
+                                <input type="radio" name="status_karyawan" id="edit_status_tetap" value="tetap" class="text-blue-600">
                                 <span>Tetap</span>
                             </label>
-                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-amber-200 cursor-pointer">
-                                <input type="radio" name="status_karyawan" id="edit_status_kontrak" value="kontrak" class="text-amber-600">
+                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 cursor-pointer">
+                                <input type="radio" name="status_karyawan" id="edit_status_kontrak" value="kontrak" class="text-blue-600">
                                 <span>Kontrak</span>
                             </label>
-                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-amber-200 cursor-pointer">
-                                <input type="radio" name="status_karyawan" id="edit_status_probation" value="probation" class="text-amber-600">
+                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 cursor-pointer">
+                                <input type="radio" name="status_karyawan" id="edit_status_probation" value="probation" class="text-blue-600">
                                 <span class="text-purple-700 font-semibold">Probation</span>
                             </label>
-                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-amber-200 cursor-pointer">
-                                <input type="radio" name="status_karyawan" id="edit_status_magang" value="magang" class="text-amber-600">
-                                <span class="text-amber-700 font-semibold">Magang</span>
+                            <label class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-blue-200 cursor-pointer">
+                                <input type="radio" name="status_karyawan" id="edit_status_magang" value="magang" class="text-blue-600">
+                                <span class="text-blue-700 font-semibold">Magang</span>
                             </label>
                         </div>
-                        <p class="text-[11px] text-amber-700">* Magang &amp; Probation otomatis tampil dengan garis &amp; border putus-putus (┄┄).</p>
+                        <p class="text-[11px] text-blue-700">* Magang &amp; Probation otomatis tampil dengan garis &amp; border putus-putus (┄┄).</p>
                     </div>
 
                     {{-- Atasan Langsung --}}
