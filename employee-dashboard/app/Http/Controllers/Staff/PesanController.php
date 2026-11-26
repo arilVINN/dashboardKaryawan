@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pesan;
 use App\Models\Tugas;
 use App\Models\User2;
+use App\Support\FileStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -63,7 +64,7 @@ class PesanController extends Controller
                 'lampiran' => [
                     'link' => $pesan->link_lampiran,
                     'file' => $pesan->file_lampiran
-                        ? Storage::disk('public')->url($pesan->file_lampiran)
+                        ? FileStorage::url($pesan->file_lampiran)
                         : null,
                 ],
                 'tugas' => null,
@@ -152,7 +153,7 @@ class PesanController extends Controller
                 'lampiran' => [
                     'link' => $pesan->link_lampiran,
                     'file' => $pesan->file_lampiran
-                        ? Storage::disk('public')->url($pesan->file_lampiran)
+                        ? FileStorage::url($pesan->file_lampiran)
                         : null,
                 ],
                 'tugas' => $pesan->tugas ? [
@@ -171,7 +172,7 @@ class PesanController extends Controller
                     'lampiran' => [
                         'link' => $reply->link_lampiran,
                         'file' => $reply->file_lampiran
-                            ? Storage::disk('public')->url($reply->file_lampiran)
+                            ? FileStorage::url($reply->file_lampiran)
                             : null,
                     ],
                     'created_at' => $reply->created_at?->toISOString(),
@@ -325,7 +326,7 @@ class PesanController extends Controller
                         'lampiran' => [
                             'link' => $pesan->link_lampiran,
                             'file' => $pesan->file_lampiran
-                                ? Storage::disk('public')->url($pesan->file_lampiran)
+                                ? FileStorage::url($pesan->file_lampiran)
                                 : null,
                         ],
 

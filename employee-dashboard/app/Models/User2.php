@@ -42,6 +42,74 @@ class User2 extends Authenticatable
         return $this->belongsTo(Role::class, 'role_id_role', 'id_role');
     }
 
+    /**
+     * Additional (secondary) roles granted to this user. The primary role
+     * remains on users2.role_id_role and is kept for backward compatibility.
+     */
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_user', 'id_user', 'id_role');
+    }
+
+    /**
+     * All role names assigned to this user: primary role + additional roles.
+     *
+     * @return array<int, string>
+     */
+    public function daftarRole(): array
+    {
+        $nama = $this->relationLoaded('role')
+            ? strtolower((string) $this->role?->nama_role)
+            : strtolower((string) ($this->role()->value('nama_role') ?? ''));
+
+        $daftar = array_filter([$nama]);
+
+        if ($this->relationLoaded('roles')) {
+            $tambahan = $this->roles
+                ->map(fn (Role $role) => strtolower((string) $role->nama_role));
+        } else {
+            $tambahan = $this->roles()->pluck('nama_role')
+                ->map(fn ($role) => strtolower((string) $role));
+        }
+
+        return array_values(array_unique(array_merge($daftar, $tambahan->all())));
+    }
+
+    /**
+     * True when the user holds the given role as primary or additional.
+     */
+    public function hasRole(string $namaRole): bool
+    {
+        return in_array(strtolower(trim($namaRole)), $this->daftarRole(), true);
+    }
+
+    /**
+     * True when the user holds any of the given roles.
+     *
+     * @param  array<int, string>  $namaRoles
+     */
+    public function hasAnyRole(array $namaRoles): bool
+    {
+        $yangDicari = array_map(fn ($nama) => strtolower(trim((string) $nama)), $namaRoles);
+
+        return (bool) array_intersect($yangDicari, $this->daftarRole());
+    }
+
+    /**
+     * Only the additional roles (excludes the primary role).
+     *
+     * @return array<int, string>
+     */
+    public function peranTambahan(): array
+    {
+        $utama = strtolower((string) ($this->relationLoaded('role') ? $this->role?->nama_role : $this->role()->value('nama_role')));
+
+        return array_values(array_filter(
+            $this->daftarRole(),
+            fn (string $nama) => $nama !== $utama,
+        ));
+    }
+
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id_karyawan', 'id_karyawan');
@@ -113,7 +181,7 @@ class User2 extends Authenticatable
      */
     public function isSuperAdmin(): bool
     {
-        return strtolower($this->role?->nama_role ?? '') === 'superadmin';
+        return $this->hasRole('superadmin');
     }
 
     /**
@@ -122,22 +190,18 @@ class User2 extends Authenticatable
      */
     public function isDirektur(): bool
     {
-        return in_array(
-            strtolower($this->role?->nama_role ?? ''),
-            self::SUPERADMIN_ROLES,
-            true
-        );
+        return (bool) array_intersect($this->daftarRole(), self::SUPERADMIN_ROLES);
     }
 
     /**
      * Cek apakah user ini adalah Kepala Divisi Finance & Accounting.
      * Criteria: role = 'kadiv' AND the employee's division is Finance.
-     * Direktur/Direksi inherits full finance access.
+     * Direktur/Direksi inherits finance *read* access (for monitoring), but
+     * the finance policies block them from approving/rejecting/verifying.
      */
     public function isKadivFinance(): bool
     {
         return $this->isDirektur()
-            || (strtolower($this->role?->nama_role ?? '') === 'kadiv'
-                && ($this->karyawan?->isFinance() ?? false));
+            || ($this->hasRole('kadiv') && ($this->karyawan?->isFinance() ?? false));
     }
 }

@@ -36,7 +36,7 @@ class PesanTable extends Component
         $user = auth()->user();
 
         if (! $user instanceof User2
-            || (strtolower($user->role?->nama_role ?? '') !== 'staff' && ! $user->isDirektur())
+            || (! $user instanceof \App\Models\User2 || ! $user->hasRole('staff') && ! $user->isDirektur())
             || ! $user->karyawan_id_karyawan) {
             abort(403);
         }

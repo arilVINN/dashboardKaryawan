@@ -28,8 +28,11 @@ class JurnalUmumSeeder extends Seeder
             ['kode' => '5103', 'nama' => 'Beban Perlengkapan', 'kelompok' => 'Beban'],
         ];
 
-        foreach ($akun as $row) {
-            CoaAkun::firstOrCreate(['kode' => $row['kode']], $row + ['aktif' => true]);
+        // Jika akun baru (1110) sudah ada, jangan buat kembali akun kode lama (1101)
+        if (! CoaAkun::where('kode', '1110')->exists()) {
+            foreach ($akun as $row) {
+                CoaAkun::firstOrCreate(['kode' => $row['kode']], $row + ['aktif' => true]);
+            }
         }
 
         // Kode divisi di Jurnal Umum = sub-perusahaan, bukan departemen.

@@ -29,6 +29,7 @@ class KaryawanFormTest extends TestCase
         Role::insert([
             ['id_role' => 'ROLE-HRD', 'nama_role' => 'HRD'],
             ['id_role' => 'ROLE-STAFF', 'nama_role' => 'Staff'],
+            ['id_role' => 'ROLE-KADIV', 'nama_role' => 'Kadiv'],
         ]);
 
         Divisi::create([
@@ -42,6 +43,7 @@ class KaryawanFormTest extends TestCase
         $this->jabatan = Jabatan::create([
             'division_id' => 'DIV-IT',
             'nama' => 'Staff',
+            'role_id_role' => 'ROLE-STAFF',
         ]);
 
         $karyawanHrd = Karyawan::create([
@@ -111,44 +113,6 @@ class KaryawanFormTest extends TestCase
 
         $component->assertSet('jabatanId', null)
             ->assertSet('jabatanResetNote', 'Jabatan direset karena divisi berubah.');
-    }
-
-    public function test_hrd_can_add_a_jabatan_from_the_form(): void
-    {
-        Livewire::actingAs($this->hrd)
-            ->test(KaryawanForm::class)
-            ->call('buka', 'create')
-            ->set('divisiId', 'DIV-IT')
-            ->call('buatJabatanDialog')
-            ->set('jabatanBaruNama', '  Staff   Administrasi  ')
-            ->call('simpanJabatanBaru')
-            ->assertHasNoErrors()
-            ->assertSet('showJabatanDialog', false);
-
-        $this->assertDatabaseHas('jabatan', [
-            'division_id' => 'DIV-IT',
-            'nama' => 'Staff Administrasi',
-        ]);
-
-        $this->assertDatabaseHas('audit_logs', [
-            'aksi' => 'tambah_jabatan',
-            'target_tipe' => 'jabatan',
-        ]);
-    }
-
-    public function test_duplicate_jabatan_offers_to_pick_the_existing_one(): void
-    {
-        Livewire::actingAs($this->hrd)
-            ->test(KaryawanForm::class)
-            ->call('buka', 'create')
-            ->set('divisiId', 'DIV-IT')
-            ->call('buatJabatanDialog')
-            ->set('jabatanBaruNama', 'staff')
-            ->call('simpanJabatanBaru')
-            ->assertHasErrors('jabatanBaruNama')
-            ->assertSet('showJabatanDialog', true);
-
-        $this->assertDatabaseCount('jabatan', 1);
     }
 
     public function test_invalid_dates_are_rejected(): void
@@ -264,6 +228,34 @@ class KaryawanFormTest extends TestCase
             ->assertSee('wire:blur="validateField(', false)
             ->call('validateField', 'tanggalMasuk')
             ->assertHasErrors('tanggalMasuk');
+    }
+
+
+    public function test_jobdesk_is_descriptive_and_saved_with_employee(): void
+    {
+        Livewire::actingAs($this->hrd)
+            ->test(KaryawanForm::class)
+            ->call('buka', 'create')
+            ->set('nama', 'Budi Santoso')
+            ->set('jenisKelamin', 'Laki-laki')
+            ->set('email', 'budi@silindo.co.id')
+            ->set('divisiId', 'DIV-IT')
+            ->set('jabatanId', $this->jabatan->id)
+            ->set('tanggalMasuk', '2026-01-10')
+            ->set('username', 'budi.santoso')
+            ->set('password', 'rahasia123')
+            ->set('jobdesk', 'Editorial')
+            ->call('simpan')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('karyawans', [
+            'nama' => 'Budi Santoso',
+            'jobdesk' => 'Editorial',
+        ]);
+        $this->assertDatabaseHas('users2', [
+            'username' => 'budi.santoso',
+            'role_id_role' => 'ROLE-STAFF',
+        ]);
     }
 
 }

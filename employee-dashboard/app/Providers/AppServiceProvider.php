@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 use Illuminate\Auth\Events\Login;
 
 use Illuminate\Support\Facades\URL;
@@ -50,19 +51,36 @@ class AppServiceProvider extends ServiceProvider
                 // No session available (e.g. token login); safe to ignore.
             }
         });
+        // Login: the per-IP limit alone can be bypassed by rotating
+        // X-Forwarded-For, so also cap attempts per username.
+        RateLimiter::for('login', function (Request $request) {
+            $input = $request->input('username');
+            $username = is_string($input) ? Str::lower(trim($input)) : '';
+
+            return [
+                Limit::perMinute(5)->by('login:pair:'.$username.'|'.$request->ip()),
+                Limit::perMinute(20)->by('login:user:'.$username),
+            ];
+        });
+
         // Submit form: tambah/revisi tugas, balas pesan, update profil, CRUD divisi/staff HRD
         RateLimiter::for('submit-form', function (Request $request) {
-            return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());
+            return Limit::perMinute(10)->by($request->user()?->getAuthIdentifier() ?: $request->ip());
         });
 
         // Pencarian/filter list data (daftarKaryawan, daftarDivisi, daftarPesan)
         RateLimiter::for('pencarian', function (Request $request) {
-            return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
+            return Limit::perMinute(30)->by($request->user()?->getAuthIdentifier() ?: $request->ip());
         });
 
         // Umum: halaman biasa (dashboard, detail, profile)
         RateLimiter::for('umum', function (Request $request) {
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            return Limit::perMinute(60)->by($request->user()?->getAuthIdentifier() ?: $request->ip());
+        });
+
+        // Upload foto profil — lebih ketat karena potensi upload bombing
+        RateLimiter::for('upload-foto', function (Request $request) {
+            return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
         });
     }
 }

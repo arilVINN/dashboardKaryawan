@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\Role;
 use App\Models\Tugas;
 use App\Services\HrdProtectionService;
+use App\Support\AccountSecurity;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class HrdKaryawanController extends Controller
 {
@@ -33,8 +36,18 @@ class HrdKaryawanController extends Controller
         $totalTugas = $karyawan->tugas->count();
         $tugasSelesai = $karyawan->tugas->where('status', Tugas::STATUS_SUDAH_ACC)->count();
         $daftarDivisi = Divisi::query()->ordered()->get();
+        $daftarRoleTambahan = Role::all()
+            ->reject(fn (Role $role) => strtolower((string) $role->nama_role) === 'superadmin')
+            ->sortBy('nama_role')
+            ->values();
 
-        return view('hrd.detailKaryawan', compact('karyawan', 'totalTugas', 'tugasSelesai', 'daftarDivisi'));
+        return view('hrd.detailKaryawan', compact(
+            'karyawan',
+            'totalTugas',
+            'tugasSelesai',
+            'daftarDivisi',
+            'daftarRoleTambahan',
+        ));
     }
 
     public function tandaiKeluar(Request $request, string $id)
@@ -46,6 +59,10 @@ class HrdKaryawanController extends Controller
         $tanggalKeluar = $validated['tanggal_keluar'] ?? now()->toDateString();
 
         $karyawan = Karyawan::with('user.role')->where('id_karyawan', $id)->firstOrFail();
+
+        // Defence in depth: the route already blocks read-only directors, but
+        // the policy keeps this safe if the route middleware changes later.
+        Gate::authorize('deactivate', $karyawan);
 
         // 1 & 2. Proteksi penonaktifan akun HRD terakhir & penonaktifan akun diri sendiri
         $authUser = $request->user() ?: auth()->user();
@@ -62,6 +79,11 @@ class HrdKaryawanController extends Controller
             'status_aktif' => 'Tidak Aktif',
             'aktif' => false,
         ]);
+
+        // A departing employee must lose API access immediately as well.
+        if ($karyawan->user) {
+            AccountSecurity::invalidate($karyawan->user);
+        }
 
         // 3. Catat audit log saat karyawan ditandai keluar (dinonaktifkan)
         AuditLog::catat(

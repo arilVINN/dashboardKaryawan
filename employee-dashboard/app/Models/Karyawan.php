@@ -39,6 +39,7 @@ class Karyawan extends Model
         'atasan_id',
         'pendidikan',
         'job_level',
+        'jobdesk',
         'status_karyawan',
         'aktif',
     ];
@@ -141,6 +142,11 @@ class Karyawan extends Model
     public static function pendidikanOptions(): array
     {
         return config('employee.pendidikan', self::PENDIDIKAN_OPTIONS);
+    }
+
+    public static function jobdeskOptions(): array
+    {
+        return config('employee.jobdesk', []);
     }
 
     public static function jobLevelOptions(): array

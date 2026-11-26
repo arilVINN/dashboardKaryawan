@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Staff;
 
 use App\Actions\StoreKaryawanFoto;
 use App\Http\Controllers\Controller;
+use App\Support\AccountSecurity;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -35,6 +36,7 @@ class ProfileController extends Controller
                 'email' => $textOrDash($karyawan?->email),
                 'alamat' => $textOrDash($karyawan?->alamat),
                 'jabatan' => $jabatan,
+                'jobdesk' => $karyawan?->jobdesk ?: '-',
                 'job_level' => $jobLevel !== '' ? $jobLevel : '-',
                 'pendidikan' => $pendidikan !== '' ? $pendidikan : '-',
                 'status_karyawan' => $karyawan
@@ -113,7 +115,7 @@ class ProfileController extends Controller
         
         $request->validate([
             'current_password' => 'required|string',
-            'new_password' => 'required|string|min:6',
+            'new_password' => 'required|string|min:8',
         ]);
 
         if (!\Illuminate\Support\Facades\Hash::check($request->current_password, $user->password)) {
@@ -121,8 +123,12 @@ class ProfileController extends Controller
         }
 
         $user->update([
-            'password' => \Illuminate\Support\Facades\Hash::make($request->new_password)
+            'password' => \Illuminate\Support\Facades\Hash::make($request->new_password),
+            'must_change_password' => false,
         ]);
+
+        // A password change invalidates every previously issued bearer token.
+        AccountSecurity::invalidate($user);
 
         return response()->json([
             'message' => 'Password berhasil diperbarui.',

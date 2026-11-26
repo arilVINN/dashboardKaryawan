@@ -19,7 +19,14 @@ class KadivTugasQuery
 
     public function apply(array $filters): Builder
     {
-        $query = Tugas::with(['karyawan.divisi', 'submitTugas', 'latestSubmitTugas']);
+        $query = Tugas::with([
+            // Keep the nested employee payload minimal: Kadiv must not receive
+            // payroll/bank or other sensitive Karyawan columns.
+            'karyawan:id_karyawan,nama,jabatan,divisi_id_divisi,foto,status_aktif',
+            'karyawan.divisi:id_divisi,nama_divisi',
+            'submitTugas',
+            'latestSubmitTugas',
+        ]);
         $karyawanQuery = Karyawan::query();
 
         if (!empty($this->divisiId)) {

@@ -1,4 +1,12 @@
 @php
+    // Nodes may be plain objects (from the controller's formatters) rather
+    // than Eloquent models, so guard the optional karyawan relation access.
+    $fotoKaryawan = function ($node): ?string {
+        if (! is_object($node)) return null;
+        $related = property_exists($node, 'karyawan') ? $node->karyawan : null;
+        return $related && ! empty($related->foto) ? (string) $related->foto : null;
+    };
+
     $role = $role ?? strtolower(auth()->user()?->role?->nama_role ?? 'hrd');
     $canManage = $canManage ?? in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true);
     $sidebar = $sidebar ?? match ($role) {
@@ -378,9 +386,49 @@
                         {{-- ============================================================ --}}
                         @if ($pengawas)
                             <div class="flex justify-center">
-                                @include('hrd.partials.org_exec_card', ['node' => $pengawas, 'canManage' => $canManage, 'width' => '290px'])
+                                <div class="org-card group {{ ($pengawas->garis_putus ?? null) ? 'is-dashed' : '' }}" style="width: 290px;"
+                                    id="org-card-{{ ($pengawas->id ?? null) }}"
+                                    data-id="{{ ($pengawas->id ?? null) }}"
+                                    data-employee='{{ e(json_encode([
+                                        "id"           => ($pengawas->id ?? null),
+                                        "nama"         => ($pengawas->nama ?? null),
+                                        "jabatan"      => ($pengawas->jabatan ?? null),
+                                        "divisi"       => ($pengawas->divisi ?? null),
+                                        "status_kerja" => ($pengawas->status_kerja ?? null) ?? "tetap",
+                                        "garis_putus"  => (bool)($pengawas->garis_putus ?? null),
+                                        "email"        => ($pengawas->email ?? null) ?? "-",
+                                        "no_telepon"   => ($pengawas->no_telepon ?? null) ?? "-",
+                                        "keterangan"   => ($pengawas->keterangan ?? null) ?? "-",
+                                        "foto"         => ($pengawas->foto ?? null) ? asset("storage/" . ($pengawas->foto ?? null)) : ($fotoKaryawan($pengawas) ? asset("storage/" . $fotoKaryawan($pengawas)) : ""),
+                                        "parent_id"    => ($pengawas->parent_id ?? null),
+                                        "urutan"       => ($pengawas->urutan ?? null),
+                                    ])) }}'
+                                    onclick="openProfileModal(this)">
+                                    
+                                    {{-- Photo / Avatar --}}
+                                    @if (($pengawas->foto ?? null) || $fotoKaryawan($pengawas))
+                                        <img src="{{ asset('storage/' . (($pengawas->foto ?? null) ?: $fotoKaryawan($pengawas))) }}"
+                                            alt="{{ ($pengawas->nama ?? null) }}" class="org-card-photo object-cover">
+                                    @else
+                                        <div class="org-card-photo">{{ mb_strtoupper(mb_substr(($pengawas->nama ?? null), 0, 1)) }}</div>
+                                    @endif
+
+                                    <div class="min-w-0 flex-1">
+                                        <h4 class="text-xs font-bold text-slate-900 truncate">{{ ($pengawas->nama ?? null) }}</h4>
+                                        <p class="text-[11px] text-slate-500 font-medium truncate mt-0.5">{{ ($pengawas->jabatan ?? null) }}</p>
+                                    </div>
+
+                                    @if ($canManage)
+                                        <div class="action-btn-group absolute right-2 top-2 hidden group-hover:flex items-center gap-1 z-30" onclick="event.stopPropagation(); event.stopImmediatePropagation();">
+                                            <button type="button" onclick="openEditNodeModal(event, {{ ($pengawas->id ?? null) }})" title="Edit Posisi"
+                                                class="p-1.5 rounded-lg bg-white shadow-sm border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-400 hover:bg-blue-50 active:scale-95 transition cursor-pointer">
+                                                <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                            </button>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="v-line mx-auto {{ !empty($dirUtama->garis_putus) ? 'is-dashed' : '' }}" style="height: 24px;"></div>
+                            <div class="v-line mx-auto {{ !empty(($dirUtama->garis_putus ?? null)) ? 'is-dashed' : '' }}" style="height: 24px;"></div>
                         @endif
 
                         {{-- ============================================================ --}}
@@ -388,7 +436,46 @@
                         {{-- ============================================================ --}}
                         @if ($dirUtama)
                             <div class="flex justify-center">
-                                @include('hrd.partials.org_exec_card', ['node' => $dirUtama, 'canManage' => $canManage, 'width' => '310px'])
+                                <div class="org-card group {{ ($dirUtama->garis_putus ?? null) ? 'is-dashed' : '' }}" style="width: 310px;"
+                                    id="org-card-{{ ($dirUtama->id ?? null) }}"
+                                    data-id="{{ ($dirUtama->id ?? null) }}"
+                                    data-employee='{{ e(json_encode([
+                                        "id"           => ($dirUtama->id ?? null),
+                                        "nama"         => ($dirUtama->nama ?? null),
+                                        "jabatan"      => ($dirUtama->jabatan ?? null),
+                                        "divisi"       => ($dirUtama->divisi ?? null),
+                                        "status_kerja" => ($dirUtama->status_kerja ?? null) ?? "tetap",
+                                        "garis_putus"  => (bool)($dirUtama->garis_putus ?? null),
+                                        "email"        => ($dirUtama->email ?? null) ?? "-",
+                                        "no_telepon"   => ($dirUtama->no_telepon ?? null) ?? "-",
+                                        "keterangan"   => ($dirUtama->keterangan ?? null) ?? "-",
+                                        "foto"         => ($dirUtama->foto ?? null) ? asset("storage/" . ($dirUtama->foto ?? null)) : ($fotoKaryawan($dirUtama) ? asset("storage/" . $fotoKaryawan($dirUtama)) : ""),
+                                        "parent_id"    => ($dirUtama->parent_id ?? null),
+                                        "urutan"       => ($dirUtama->urutan ?? null),
+                                    ])) }}'
+                                    onclick="openProfileModal(this)">
+                                    
+                                    @if (($dirUtama->foto ?? null) || $fotoKaryawan($dirUtama))
+                                        <img src="{{ asset('storage/' . (($dirUtama->foto ?? null) ?: $fotoKaryawan($dirUtama))) }}"
+                                            alt="{{ ($dirUtama->nama ?? null) }}" class="org-card-photo object-cover">
+                                    @else
+                                        <div class="org-card-photo">{{ mb_strtoupper(mb_substr(($dirUtama->nama ?? null), 0, 1)) }}</div>
+                                    @endif
+
+                                    <div class="min-w-0 flex-1">
+                                        <h4 class="text-xs font-bold text-slate-900 truncate">{{ ($dirUtama->nama ?? null) }}</h4>
+                                        <p class="text-[11px] text-slate-500 font-medium truncate mt-0.5">{{ ($dirUtama->jabatan ?? null) }}</p>
+                                    </div>
+
+                                    @if ($canManage)
+                                        <div class="action-btn-group absolute right-2 top-2 hidden group-hover:flex items-center gap-1 z-30" onclick="event.stopPropagation(); event.stopImmediatePropagation();">
+                                            <button type="button" onclick="openEditNodeModal(event, {{ ($dirUtama->id ?? null) }})" title="Edit Posisi"
+                                                class="p-1.5 rounded-lg bg-white shadow-sm border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-400 hover:bg-blue-50 active:scale-95 transition cursor-pointer">
+                                                <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                            </button>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                             <div class="v-line mx-auto" style="height: 28px;"></div>
                         @endif
@@ -397,44 +484,52 @@
                         {{-- LEVEL 3: SAYAP KIRI (Di bawah Dirut) | TENGAH 280px (Dir Ops) | SAYAP KANAN (Di bawah Dir Ops) --}}
                         {{-- Garis bercabang otomatis mengikuti jumlah divisi di masing-masing sayap --}}
                         {{-- ============================================================ --}}
-                        <div class="w-full grid items-stretch" style="grid-template-columns: 1fr 280px 1fr; min-width: 1180px;">
+                        <div style="position: relative; width: 1200px; height: 250px;">
+                            {{-- Main vertical line continues from director down to department branch --}}
+                            <div class="v-line" style="position: absolute; left: 600px; top: 0; height: 250px;"></div>
 
-                            {{-- SAYAP KIRI: Divisi di bawah Direktur Utama --}}
-                            <div class="flex justify-end items-start pt-0">
-                                @if ($dirutDivisions->isNotEmpty())
-                                    <div class="wing-left">
-                                        @foreach ($dirutDivisions as $divBox)
-                                            <div class="org-tree-col dept-column" data-dept="{{ $divBox->nama_divisi }}">
-                                                <div class="org-division-header group">
-                                                    <span class="truncate">{{ $divBox->nama_divisi }}</span>
-                                                    @if ($canManage)
-                                                        <button type="button"
-                                                            onclick="openLayoutModalFor('{{ $divBox->id_divisi }}', '{{ $divBox->posisi_bagan }}', {{ $divBox->urutan }})"
-                                                            title="Atur Posisi Divisi {{ $divBox->nama_divisi }}"
-                                                            class="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-sky-600 hover:bg-sky-50 rounded transition cursor-pointer">
-                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
-                                                        </button>
-                                                    @endif
-                                                </div>
+                            {{-- Kotak Direktur Operasional (Menimpa garis tengah) --}}
+                            @if ($dirOps)
+                                <div style="position: absolute; left: 470px; top: 44px; width: 260px; z-index: 2;">
+                                    <div class="org-card group {{ ($dirOps->garis_putus ?? null) ? 'is-dashed' : '' }}"
+                                        id="org-card-{{ ($dirOps->id ?? null) }}"
+                                        data-id="{{ ($dirOps->id ?? null) }}"
+                                        data-employee='{{ e(json_encode([
+                                            "id"           => ($dirOps->id ?? null),
+                                            "nama"         => ($dirOps->nama ?? null),
+                                            "jabatan"      => ($dirOps->jabatan ?? null),
+                                            "divisi"       => ($dirOps->divisi ?? null),
+                                            "status_kerja" => ($dirOps->status_kerja ?? null) ?? "tetap",
+                                            "garis_putus"  => (bool)($dirOps->garis_putus ?? null),
+                                            "email"        => ($dirOps->email ?? null) ?? "-",
+                                            "no_telepon"   => ($dirOps->no_telepon ?? null) ?? "-",
+                                            "keterangan"   => ($dirOps->keterangan ?? null) ?? "-",
+                                            "foto"         => ($dirOps->foto ?? null) ? asset("storage/" . ($dirOps->foto ?? null)) : ($fotoKaryawan($dirOps) ? asset("storage/" . $fotoKaryawan($dirOps)) : ""),
+                                            "parent_id"    => ($dirOps->parent_id ?? null),
+                                            "urutan"       => ($dirOps->urutan ?? null),
+                                        ])) }}'
+                                        onclick="openProfileModal(this)">
+                                        
+                                        @if (($dirOps->foto ?? null) || $fotoKaryawan($dirOps))
+                                            <img src="{{ asset('storage/' . (($dirOps->foto ?? null) ?: $fotoKaryawan($dirOps))) }}"
+                                                alt="{{ ($dirOps->nama ?? null) }}" class="org-card-photo object-cover" style="width: 44px; height: 44px;">
+                                        @else
+                                            <div class="org-card-photo" style="width: 44px; height: 44px; font-size: 15px;">{{ mb_strtoupper(mb_substr(($dirOps->nama ?? null), 0, 1)) }}</div>
+                                        @endif
 
-                                                @if ($divBox->members->isNotEmpty())
-                                                    <div class="v-line {{ $divBox->members->first()?->garis_putus ? 'is-dashed' : '' }}" style="height: 12px;"></div>
-                                                    <div class="flex flex-col items-center w-full">
-                                                        @foreach ($divBox->members as $index => $member)
-                                                            @if ($index > 0)
-                                                                <div class="v-line {{ $member->garis_putus ? 'is-dashed' : '' }}" style="height: 10px;"></div>
-                                                            @endif
-                                                            @include('hrd.partials.org_card_item', ['member' => $member, 'canManage' => $canManage])
-                                                        @endforeach
-                                                    </div>
-                                                @else
-                                                    <div class="v-line" style="height: 12px;"></div>
-                                                    <div class="w-full p-2.5 text-center border border-dashed border-slate-300 rounded-xl bg-white/70">
-                                                        <p class="text-[10px] text-slate-400">Belum ada anggota</p>
-                                                    </div>
-                                                @endif
+                                        <div class="min-w-0 flex-1">
+                                            <h4 class="text-xs font-bold text-slate-900 truncate">{{ ($dirOps->nama ?? null) }}</h4>
+                                            <p class="text-[11px] text-slate-500 font-medium truncate mt-0.5">{{ ($dirOps->jabatan ?? null) }}</p>
+                                        </div>
+
+                                        @if ($canManage)
+                                            <div class="action-btn-group absolute right-2 top-2 hidden group-hover:flex items-center gap-1 z-30" onclick="event.stopPropagation(); event.stopImmediatePropagation();">
+                                                <button type="button" onclick="openEditNodeModal(event, {{ ($dirOps->id ?? null) }})" title="Edit Posisi"
+                                                    class="p-1.5 rounded-lg bg-white shadow-sm border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-400 hover:bg-blue-50 active:scale-95 transition cursor-pointer">
+                                                    <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                </button>
                                             </div>
-                                        @endforeach
+                                        @endif
                                     </div>
                                 @endif
                             </div>
@@ -551,7 +646,7 @@
     {{-- MODAL DETAIL PROFIL KARYAWAN                                   --}}
     {{-- ============================================================== --}}
     <div id="employee-profile-modal"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm"
+        class="modal-overlay-in fixed inset-0 z-50 hidden items-center justify-center bg-[rgba(15,40,55,.45)] p-4"
         role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="employee-profile-title">
 
         <div class="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl">
@@ -614,7 +709,7 @@
         {{-- ============================================================== --}}
         {{-- MODAL ATUR POSISI DIVISI DI BAGAN (MUDAH & INSTAN)             --}}
         {{-- ============================================================== --}}
-        <div id="modalLayoutDivisi" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden p-4">
+        <div id="modalLayoutDivisi" class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,40,55,.45)] hidden p-4">
             <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                     <div class="flex items-center gap-2.5">
@@ -707,7 +802,7 @@
         {{-- ============================================================== --}}
         {{-- MODAL EDIT KARYAWAN / POSISI (SINKRON KE KARYAWANS)            --}}
         {{-- ============================================================== --}}
-        <div id="modalEditNode" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden p-4">
+        <div id="modalEditNode" class="modal-overlay-in fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,40,55,.45)] hidden p-4">
             <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh]">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                     <div class="flex items-center gap-2">

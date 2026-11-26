@@ -21,3 +21,7 @@ Schedule::command('catatan:remind-email')->dailyAt('08:00')->withoutOverlapping(
 // Sinkronkan hari libur nasional dari API. Dijalankan mingguan agar data
 // tahun berjalan dan tahun berikutnya tetap mengikuti SKB 3 Menteri.
 Schedule::command('holidays:sync --years=2')->weeklyOn(1, '03:15')->withoutOverlapping();
+
+// Hapus token Sanctum yang sudah expired dari database (sesuai sanctum.expiration = 240 menit).
+// Tanpa job ini, token "expired" tetap tersimpan di tabel personal_access_tokens.
+Schedule::command('sanctum:prune-expired --hours=4')->dailyAt('02:00')->withoutOverlapping();

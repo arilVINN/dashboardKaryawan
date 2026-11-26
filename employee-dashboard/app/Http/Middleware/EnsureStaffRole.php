@@ -39,7 +39,7 @@ class EnsureStaffRole
             return $next($request);
         }
 
-        if (strtolower($user->role?->nama_role ?? '') !== 'staff') {
+        if ($user instanceof User2 && ! $user->hasRole('staff')) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Akses hanya diberikan kepada Staff.'], 403);
             }

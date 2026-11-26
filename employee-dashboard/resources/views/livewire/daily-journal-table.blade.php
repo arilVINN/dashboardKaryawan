@@ -217,7 +217,7 @@
             <div class="bg-gradient-to-r from-[#146C94] to-[#0A4D68] rounded-2xl p-6 text-white shadow-md relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div class="relative z-10">
                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/15 text-white backdrop-blur-xs mb-2">
-                        📊 Persentase Divisi Minggu Ini
+                        Persentase Divisi Minggu Ini
                     </span>
                     <h3 class="text-2xl font-bold tracking-tight text-white mb-1">
                         {{ $activeDivisi->nama_divisi ?? 'Divisi' }}
@@ -613,7 +613,7 @@
                                         @foreach($day['journals'] as $jurnal)
                                             <div class="h-8 flex items-center">
                                                 @if($jurnal->file_bukti)
-                                                    <a href="{{ asset('storage/' . $jurnal->file_bukti) }}" target="_blank"
+                                                    <a href="{{ \App\Support\FileStorage::url($jurnal->file_bukti) }}" target="_blank"
                                                        class="inline-flex items-center gap-1.5 font-semibold text-rose-600 hover:text-rose-800 hover:underline">
                                                         <svg class="w-3.5 h-3.5 text-rose-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />

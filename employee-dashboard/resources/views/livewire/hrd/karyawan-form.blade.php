@@ -181,19 +181,6 @@
                                                 <p class="{{ $hint }}">{{ $jabatanResetNote }}</p>
                                             @endif
                                         </div>
-                                        @if ($this->canManageJabatan)
-                                            <button type="button" wire:click="buatJabatanDialog"
-                                                    @disabled($divisiId === '')
-                                                    @style(['border-color:#146C94' => $divisiId !== '' && $this->jabatanOptions->isEmpty()])
-                                                    aria-disabled="{{ $divisiId === '' ? 'true' : 'false' }}"
-                                                    title="Tambah jabatan baru di {{ $this->selectedDivisiNama ?: 'divisi yang dipilih' }}"
-                                                    aria-label="Tambah jabatan baru di {{ $this->selectedDivisiNama ?: 'divisi yang dipilih' }}"
-                                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#D5DEE3] text-[#146C94] transition enabled:hover:bg-[#F4F7F9] disabled:cursor-not-allowed disabled:opacity-50">
-                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                                </svg>
-                                            </button>
-                                        @endif
                                     </div>
                                     @error('jabatanId') <p data-error class="{{ $errorText }}">{{ $message }}</p> @enderror
                                 </div>
@@ -239,6 +226,14 @@
                                         @endforeach
                                     </select>
                                     @error('jobLevel') <p data-error class="{{ $errorText }}">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div>
+                                    <label class="{{ $label }}" for="kf-jobdesk">Keterangan jobdesk <span class="text-[#4B5563]">(opsional)</span></label>
+                                    <input id="kf-jobdesk" type="text" wire:model.blur="jobdesk" maxlength="50"
+                                           class="{{ $field }}">
+                                    <p class="{{ $hint }}">Keterangan pekerjaan staff; tidak memengaruhi hak akses.</p>
+                                    @error('jobdesk') <p data-error class="{{ $errorText }}">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
@@ -426,45 +421,6 @@
                         </button>
                     </div>
                 </form>
-
-                {{-- Dialog: tambah jabatan baru --}}
-                @if ($showJabatanDialog)
-                    <div class="absolute inset-0 z-10 flex items-center justify-center p-4 bg-[rgba(15,40,55,.45)]">
-                        <div id="kf-jabatan-dialog" class="w-full max-w-[400px] max-w-[92vw] rounded-xl border border-[#E2E8EC] bg-white p-5 shadow-2xl"
-                             role="dialog" aria-modal="true" aria-labelledby="jabatan-dialog-title">
-                            <h3 id="jabatan-dialog-title" class="text-[16px] font-semibold text-[#172B36]">Tambah jabatan baru</h3>
-
-                            <div class="mt-4 space-y-3">
-                                <div>
-                                    <label class="{{ $label }}">Divisi</label>
-                                    <div class="relative">
-                                        <input type="text" value="{{ $this->selectedDivisiNama }}" readonly
-                                               class="{{ $field }} bg-[#F4F7F9] pl-9" aria-label="Divisi">
-                                        <svg class="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#4B5563]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="{{ $label }}" for="kf-jabatan-baru">Nama jabatan <span class="text-[#DC2626]">*</span></label>
-                                    <input id="kf-jabatan-baru" type="text" wire:model.blur="jabatanBaruNama" maxlength="80"
-                                           placeholder="Contoh: Staff administrasi" class="{{ $field }}">
-                                    @error('jabatanBaruNama') <p data-error class="{{ $errorText }}">{{ $message }}</p> @enderror
-                                    @if ($jabatanDuplikatId)
-                                        <div class="mt-1 flex items-center justify-between gap-2">
-                                            <p data-error class="text-[12px] text-[#B91C1C]">Jabatan ini sudah ada di divisi ini</p>
-                                            <button type="button" wire:click="pilihJabatanDuplikat"
-                                                    class="text-[12px] font-medium" style="color:#146C94">Pilih jabatan ini</button>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <div class="mt-5 flex justify-end gap-2">
-                                <button type="button" wire:click="tutupJabatanDialog" class="{{ $btnSecondary }}">Batal</button>
-                                <button type="button" wire:click="simpanJabatanBaru" wire:loading.attr="disabled" class="{{ $btnPrimary }}">Simpan jabatan</button>
-                            </div>
-                        </div>
-                    </div>
-                @endif
 
                 {{-- Dialog: konfirmasi atur ulang password --}}
                 @if ($showResetDialog)

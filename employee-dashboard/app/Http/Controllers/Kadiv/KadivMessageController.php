@@ -12,6 +12,7 @@ use App\Queries\KadivMessageQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Support\FileStorage;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -125,7 +126,7 @@ class KadivMessageController extends Controller
         }
 
         $storedPath = $request->hasFile('file_lampiran')
-            ? $request->file('file_lampiran')->store('pesan-lampiran', 'public')
+            ? $request->file('file_lampiran')->store('pesan-lampiran', 'private')
             : null;
 
         try {
@@ -144,7 +145,7 @@ class KadivMessageController extends Controller
             ]);
         } catch (\Throwable $exception) {
             if ($storedPath) {
-                Storage::disk('public')->delete($storedPath);
+                FileStorage::delete($storedPath);
             }
 
             throw $exception;
@@ -160,7 +161,7 @@ class KadivMessageController extends Controller
                 'tipe' => $reply->tipe,
                 'judul_pesan' => $reply->judul_pesan,
                 'deskripsi' => $reply->deskripsi,
-                'file_lampiran' => $storedPath ? Storage::disk('public')->url($storedPath) : null,
+                'file_lampiran' => $storedPath ? FileStorage::url($storedPath) : null,
                 'pengirim_id_user' => $reply->pengirim_id_user,
                 'penerima_id_user' => $reply->penerima_id_user,
             ],
@@ -218,7 +219,7 @@ class KadivMessageController extends Controller
         $storedPath = null;
         try {
             if ($request->hasFile('file_lampiran')) {
-                $storedPath = $request->file('file_lampiran')->store('pesan-lampiran', 'public');
+                $storedPath = $request->file('file_lampiran')->store('pesan-lampiran', 'private');
             }
 
             $message = DB::transaction(fn () => Pesan::create([
@@ -236,7 +237,7 @@ class KadivMessageController extends Controller
             ]));
         } catch (\Throwable $exception) {
             if ($storedPath) {
-                Storage::disk('public')->delete($storedPath);
+                FileStorage::delete($storedPath);
             }
             throw $exception;
         }

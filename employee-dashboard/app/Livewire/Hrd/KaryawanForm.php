@@ -5,12 +5,11 @@ namespace App\Livewire\Hrd;
 use App\Models\AuditLog;
 use App\Models\Divisi;
 use App\Models\Jabatan;
+use App\Support\EmployeeAccess;
 use App\Models\Karyawan;
 use App\Models\User2;
 use App\Services\EmployeeValidation;
 use App\Services\EmployeeWriteService;
-use App\Support\EmployeeAccess;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -51,6 +50,7 @@ class KaryawanForm extends Component
     public ?string $tanggalAkhirKontrak = null;
     public string $pendidikan = '';
     public string $jobLevel = '';
+    public string $jobdesk = '';
     public string $statusAktif = 'Aktif';
     public string $jabatanResetNote = '';
 
@@ -68,11 +68,6 @@ class KaryawanForm extends Component
     public array $lampiran = [];
     public array $hapusLampiran = [];
     public array $lampiranLama = [];
-
-    // Dialog jabatan baru
-    public bool $showJabatanDialog = false;
-    public string $jabatanBaruNama = '';
-    public ?int $jabatanDuplikatId = null;
 
     // Dialog atur ulang password
     public bool $showResetDialog = false;
@@ -121,6 +116,7 @@ class KaryawanForm extends Component
             $this->tanggalAkhirKontrak = $karyawan->tanggal_akhir_kontrak?->toDateString();
             $this->pendidikan = (string) ($karyawan->pendidikan ?? '');
             $this->jobLevel = (string) ($karyawan->job_level ?? '');
+            $this->jobdesk = (string) ($karyawan->jobdesk ?? '');
             $this->statusAktif = (string) ($karyawan->status_aktif ?? 'Aktif');
             $this->hasAccount = $karyawan->user !== null;
             $this->username = (string) ($karyawan->user?->username ?? '');
@@ -142,7 +138,6 @@ class KaryawanForm extends Component
     public function tutup(): void
     {
         $this->show = false;
-        $this->showJabatanDialog = false;
         $this->showResetDialog = false;
         $this->resetErrorBag();
         $this->dispatch('karyawan-modal-closed');
@@ -156,8 +151,6 @@ class KaryawanForm extends Component
             $this->jabatanResetNote = 'Jabatan direset karena divisi berubah.';
         }
 
-        $this->jabatanDuplikatId = null;
-        $this->jabatanBaruNama = '';
         $this->validateOnly('divisiId');
     }
 
@@ -193,83 +186,6 @@ class KaryawanForm extends Component
         $this->showPassword = true;
         $this->generatedPassword = $this->password;
         $this->validateOnly('password');
-    }
-
-    public function buatJabatanDialog(): void
-    {
-        $this->authorizeJabatan();
-        $this->jabatanBaruNama = '';
-        $this->jabatanDuplikatId = null;
-        $this->showJabatanDialog = true;
-        $this->resetErrorBag('jabatanBaruNama');
-    }
-
-    public function tutupJabatanDialog(): void
-    {
-        $this->showJabatanDialog = false;
-    }
-
-    public function simpanJabatanBaru(): void
-    {
-        $this->authorizeJabatan();
-
-        $this->validateOnly('jabatanBaruNama', [
-            'jabatanBaruNama' => ['required', 'string', 'max:80'],
-        ], [
-            'jabatanBaruNama.required' => 'Nama jabatan wajib diisi.',
-            'jabatanBaruNama.max' => 'Nama jabatan maksimal 80 karakter.',
-        ]);
-
-        if ($this->divisiId === '') {
-            $this->addError('jabatanBaruNama', 'Pilih divisi terlebih dahulu.');
-
-            return;
-        }
-
-        $nama = Jabatan::normaliseNama($this->jabatanBaruNama);
-
-        $existing = Jabatan::where('division_id', $this->divisiId)
-            ->whereRaw('LOWER(TRIM(nama)) = ?', [mb_strtolower($nama)])
-            ->first();
-
-        if ($existing) {
-            $this->jabatanDuplikatId = $existing->id;
-            $this->addError('jabatanBaruNama', 'Jabatan ini sudah ada di divisi ini');
-
-            return;
-        }
-
-        $jabatan = Jabatan::create([
-            'division_id' => $this->divisiId,
-            'nama' => $nama,
-            'aktif' => true,
-        ]);
-
-        AuditLog::catat(auth()->user()?->id_user, 'tambah_jabatan', 'jabatan', (string) $jabatan->id, [
-            'division_id' => $this->divisiId,
-            'nama' => $nama,
-        ]);
-
-        $this->jabatanId = $jabatan->id;
-        $this->jabatanNama = $jabatan->nama;
-        $this->jabatanResetNote = '';
-        $this->showJabatanDialog = false;
-        $this->jabatanDuplikatId = null;
-        $this->resetErrorBag('jabatanBaruNama');
-    }
-
-    public function pilihJabatanDuplikat(): void
-    {
-        if (! $this->jabatanDuplikatId) {
-            return;
-        }
-
-        $jabatan = Jabatan::findOrFail($this->jabatanDuplikatId);
-        $this->jabatanId = $jabatan->id;
-        $this->jabatanNama = $jabatan->nama;
-        $this->showJabatanDialog = false;
-        $this->jabatanDuplikatId = null;
-        $this->resetErrorBag('jabatanBaruNama');
     }
 
     public function konfirmasiResetPassword(): void
@@ -398,15 +314,9 @@ class KaryawanForm extends Component
     }
 
     #[Computed]
-    public function canManageJabatan(): bool
-    {
-        return EmployeeAccess::canManage(auth()->user());
-    }
-
-    #[Computed]
     public function canChangeUsername(): bool
     {
-        return $this->mode === 'create' || EmployeeAccess::canManage(auth()->user());
+        return EmployeeAccess::canWrite(auth()->user());
     }
 
     #[Computed]
@@ -443,6 +353,7 @@ class KaryawanForm extends Component
             'jabatan' => $this->jabatanNama,
             'pendidikan' => $this->pendidikan ?: null,
             'job_level' => $this->jobLevel ?: null,
+            'jobdesk' => trim($this->jobdesk) ?: null,
             'status_aktif' => $this->statusAktif,
             'foto' => $this->foto,
             'hapus_foto' => $this->hapusFoto,
@@ -525,6 +436,7 @@ class KaryawanForm extends Component
         $this->tanggalAkhirKontrak = null;
         $this->pendidikan = '';
         $this->jobLevel = '';
+        $this->jobdesk = '';
         $this->statusAktif = 'Aktif';
         $this->jabatanResetNote = '';
         $this->hasAccount = false;
@@ -538,9 +450,6 @@ class KaryawanForm extends Component
         $this->hapusLampiran = [];
         $this->lampiranLama = [];
         $this->lampiranOpen = false;
-        $this->showJabatanDialog = false;
-        $this->jabatanBaruNama = '';
-        $this->jabatanDuplikatId = null;
         $this->showResetDialog = false;
     }
 
@@ -562,14 +471,13 @@ class KaryawanForm extends Component
 
     private function authorizeWrite(): void
     {
-        if (! EmployeeAccess::canManage(auth()->user())) {
+        // Direktur/Direksi are read-only monitors, so they may view the form
+        // but must never persist employee changes (including via Livewire,
+        // which bypasses the page-route middleware).
+        if (! EmployeeAccess::canWrite(auth()->user())) {
             abort(403);
         }
     }
 
-    private function authorizeJabatan(): void
-    {
-        $this->authorizeWrite();
-        Gate::authorize('create', Jabatan::class);
-    }
+
 }

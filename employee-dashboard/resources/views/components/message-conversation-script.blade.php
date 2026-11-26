@@ -139,7 +139,7 @@
                     }
                 } finally {
                     delete submit.dataset.loading;
-                    if (label) label.textContent = 'Kirim balasan';
+                    if (label) label.textContent = label.dataset.defaultLabel;
                     setSubmitState();
                 }
             });

@@ -73,7 +73,9 @@ class AuthController extends Controller
         }
 
         if ($request->expectsJson() || $isApiRequest) {
-            $token = $user->createToken('auth_token')->plainTextToken;
+            // Sertakan User-Agent agar token bisa diaudit per device/browser.
+            $deviceName = substr($request->userAgent() ?? 'api-client', 0, 80);
+            $token = $user->createToken($deviceName)->plainTextToken;
 
             return response()->json([
                 'access_token' => $token,
