@@ -24,7 +24,7 @@
         </button>
     </div>
 
-    <nav class="flex-1 p-3 space-y-2 overflow-y-auto">
+    <nav class="flex-1 p-3 space-y-2 overflow-y-auto sidebar-scroll">
 
         {{-- Dashboard --}}
         <a href="{{ url('/kadiv/dashboard') }}"

@@ -77,5 +77,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('umum', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->getAuthIdentifier() ?: $request->ip());
         });
+
+        // Upload foto profil — lebih ketat karena potensi upload bombing
+        RateLimiter::for('upload-foto', function (Request $request) {
+            return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
+        });
     }
 }

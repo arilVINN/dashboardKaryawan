@@ -217,7 +217,7 @@
             <div class="bg-gradient-to-r from-[#146C94] to-[#0A4D68] rounded-2xl p-6 text-white shadow-md relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div class="relative z-10">
                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/15 text-white backdrop-blur-xs mb-2">
-                        📊 Persentase Divisi Minggu Ini
+                        Persentase Divisi Minggu Ini
                     </span>
                     <h3 class="text-2xl font-bold tracking-tight text-white mb-1">
                         {{ $activeDivisi->nama_divisi ?? 'Divisi' }}

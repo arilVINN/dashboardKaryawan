@@ -721,7 +721,7 @@ class DailyJournalTable extends Component
             $dayJournals = $allJournals->get($dateString, collect());
 
             $isToday = $dateObj->isToday();
-            $isWeekend = $dateObj->isWeekend();
+            $isWeekend = $dateObj->isSunday(); // Hanya Minggu yang dianggap weekend (Sabtu tidak dimerahkan)
             $holiday = $holidays->get($dateString);
 
             $count = $dayJournals->count();
