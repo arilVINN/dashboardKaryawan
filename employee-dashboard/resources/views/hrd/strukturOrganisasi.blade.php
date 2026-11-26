@@ -484,52 +484,43 @@
                         {{-- LEVEL 3: SAYAP KIRI (Di bawah Dirut) | TENGAH 280px (Dir Ops) | SAYAP KANAN (Di bawah Dir Ops) --}}
                         {{-- Garis bercabang otomatis mengikuti jumlah divisi di masing-masing sayap --}}
                         {{-- ============================================================ --}}
-                        <div style="position: relative; width: 1200px; height: 250px;">
-                            {{-- Main vertical line continues from director down to department branch --}}
-                            <div class="v-line" style="position: absolute; left: 600px; top: 0; height: 250px;"></div>
+                        <div class="grid items-stretch justify-center" style="grid-template-columns: 1fr 280px 1fr; min-width: max-content;">
+                            {{-- SAYAP KIRI: Divisi di bawah Direktur Utama --}}
+                            <div class="flex justify-end items-start" style="padding-top: 12px;">
+                                @if ($dirutDivisions->isNotEmpty())
+                                    <div class="wing-left">
+                                        @foreach ($dirutDivisions as $divBox)
+                                            <div class="org-tree-col dept-column" data-dept="{{ $divBox->nama_divisi }}">
+                                                <div class="org-division-header group">
+                                                    <span class="truncate">{{ $divBox->nama_divisi }}</span>
+                                                    @if ($canManage)
+                                                        <button type="button"
+                                                            onclick="openLayoutModalFor('{{ $divBox->id_divisi }}', '{{ $divBox->posisi_bagan }}', {{ $divBox->urutan }})"
+                                                            title="Atur Posisi Divisi {{ $divBox->nama_divisi }}"
+                                                            class="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-sky-600 hover:bg-sky-50 rounded transition cursor-pointer">
+                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
+                                                        </button>
+                                                    @endif
+                                                </div>
 
-                            {{-- Kotak Direktur Operasional (Menimpa garis tengah) --}}
-                            @if ($dirOps)
-                                <div style="position: absolute; left: 470px; top: 44px; width: 260px; z-index: 2;">
-                                    <div class="org-card group {{ ($dirOps->garis_putus ?? null) ? 'is-dashed' : '' }}"
-                                        id="org-card-{{ ($dirOps->id ?? null) }}"
-                                        data-id="{{ ($dirOps->id ?? null) }}"
-                                        data-employee='{{ e(json_encode([
-                                            "id"           => ($dirOps->id ?? null),
-                                            "nama"         => ($dirOps->nama ?? null),
-                                            "jabatan"      => ($dirOps->jabatan ?? null),
-                                            "divisi"       => ($dirOps->divisi ?? null),
-                                            "status_kerja" => ($dirOps->status_kerja ?? null) ?? "tetap",
-                                            "garis_putus"  => (bool)($dirOps->garis_putus ?? null),
-                                            "email"        => ($dirOps->email ?? null) ?? "-",
-                                            "no_telepon"   => ($dirOps->no_telepon ?? null) ?? "-",
-                                            "keterangan"   => ($dirOps->keterangan ?? null) ?? "-",
-                                            "foto"         => ($dirOps->foto ?? null) ? asset("storage/" . ($dirOps->foto ?? null)) : ($fotoKaryawan($dirOps) ? asset("storage/" . $fotoKaryawan($dirOps)) : ""),
-                                            "parent_id"    => ($dirOps->parent_id ?? null),
-                                            "urutan"       => ($dirOps->urutan ?? null),
-                                        ])) }}'
-                                        onclick="openProfileModal(this)">
-                                        
-                                        @if (($dirOps->foto ?? null) || $fotoKaryawan($dirOps))
-                                            <img src="{{ asset('storage/' . (($dirOps->foto ?? null) ?: $fotoKaryawan($dirOps))) }}"
-                                                alt="{{ ($dirOps->nama ?? null) }}" class="org-card-photo object-cover" style="width: 44px; height: 44px;">
-                                        @else
-                                            <div class="org-card-photo" style="width: 44px; height: 44px; font-size: 15px;">{{ mb_strtoupper(mb_substr(($dirOps->nama ?? null), 0, 1)) }}</div>
-                                        @endif
-
-                                        <div class="min-w-0 flex-1">
-                                            <h4 class="text-xs font-bold text-slate-900 truncate">{{ ($dirOps->nama ?? null) }}</h4>
-                                            <p class="text-[11px] text-slate-500 font-medium truncate mt-0.5">{{ ($dirOps->jabatan ?? null) }}</p>
-                                        </div>
-
-                                        @if ($canManage)
-                                            <div class="action-btn-group absolute right-2 top-2 hidden group-hover:flex items-center gap-1 z-30" onclick="event.stopPropagation(); event.stopImmediatePropagation();">
-                                                <button type="button" onclick="openEditNodeModal(event, {{ ($dirOps->id ?? null) }})" title="Edit Posisi"
-                                                    class="p-1.5 rounded-lg bg-white shadow-sm border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-400 hover:bg-blue-50 active:scale-95 transition cursor-pointer">
-                                                    <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                                </button>
+                                                @if ($divBox->members->isNotEmpty())
+                                                    <div class="v-line {{ $divBox->members->first()?->garis_putus ? 'is-dashed' : '' }}" style="height: 12px;"></div>
+                                                    <div class="flex flex-col items-center w-full">
+                                                        @foreach ($divBox->members as $index => $member)
+                                                            @if ($index > 0)
+                                                                <div class="v-line {{ $member->garis_putus ? 'is-dashed' : '' }}" style="height: 10px;"></div>
+                                                            @endif
+                                                            @include('hrd.partials.org_card_item', ['member' => $member, 'canManage' => $canManage])
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <div class="v-line" style="height: 12px;"></div>
+                                                    <div class="w-full p-2.5 text-center border border-dashed border-slate-300 rounded-xl bg-white/70">
+                                                        <p class="text-[10px] text-slate-400">Belum ada anggota</p>
+                                                    </div>
+                                                @endif
                                             </div>
-                                        @endif
+                                        @endforeach
                                     </div>
                                 @endif
                             </div>
@@ -757,7 +748,6 @@
                                 <input type="radio" name="posisi_bagan" id="posisi_dirut_pendukung" value="dirut_pendukung" class="mt-0.5 text-sky-600 focus:ring-sky-500">
                                 <div>
                                     <p class="text-xs font-bold text-slate-800">Di Bawah Direktur Utama (Baris 3 Kiri)</p>
-                                    <p class="text-[11px] text-slate-500">Muncul otomatis dengan garis cabang di sebelah Legal, Personal Asst, atau Writer.</p>
                                 </div>
                             </label>
 
@@ -765,7 +755,6 @@
                                 <input type="radio" name="posisi_bagan" id="posisi_dirops_pendukung" value="dirops_pendukung" class="mt-0.5 text-sky-600 focus:ring-sky-500">
                                 <div>
                                     <p class="text-xs font-bold text-slate-800">Di Bawah Direktur Operasional (Baris 3 Kanan)</p>
-                                    <p class="text-[11px] text-slate-500">Muncul otomatis dengan garis cabang di sebelah Finance &amp; Accounting dan HR.</p>
                                 </div>
                             </label>
 
@@ -773,7 +762,6 @@
                                 <input type="radio" name="posisi_bagan" id="posisi_operasional" value="operasional" class="mt-0.5 text-sky-600 focus:ring-sky-500">
                                 <div>
                                     <p class="text-xs font-bold text-slate-800">Departemen Operasional (Baris 4 Bawah)</p>
-                                    <p class="text-[11px] text-slate-500">Tampil sejajar pada jajaran divisi operasional utama dengan garis otomatis di atasnya.</p>
                                 </div>
                             </label>
                         </div>
