@@ -15,6 +15,7 @@ class HrdListFilteringTest extends TestCase
     use RefreshDatabase;
 
     private User2 $hrd;
+
     private User2 $staffUser;
 
     protected function setUp(): void
@@ -64,7 +65,7 @@ class HrdListFilteringTest extends TestCase
         }
 
         return User2::create([
-            'id_user' => 'USR-' . $id,
+            'id_user' => 'USR-'.$id,
             'username' => $username,
             'password' => Hash::make('pass123'),
             'role_id_role' => $roleId,
@@ -79,7 +80,9 @@ class HrdListFilteringTest extends TestCase
 
     public function test_staff_list_forbidden_for_non_hrd(): void
     {
-        $this->actingAs($this->staffUser)->get('/hrd/daftarKaryawan')->assertForbidden();
+        $this->actingAs($this->staffUser)->get('/hrd/daftarKaryawan')
+            ->assertRedirect(route('dashboard'))
+            ->assertSessionHas('forbidden');
     }
 
     public function test_divisi_list_requires_authentication(): void
@@ -89,19 +92,18 @@ class HrdListFilteringTest extends TestCase
 
     public function test_divisi_list_forbidden_for_non_hrd(): void
     {
-        $this->actingAs($this->staffUser)->get('/hrd/daftarDivisi')->assertForbidden();
+        $this->actingAs($this->staffUser)->get('/hrd/daftarDivisi')
+            ->assertRedirect(route('dashboard'))
+            ->assertSessionHas('forbidden');
     }
-
 
     // NOTE: Karyawan sort/filter/search assertions moved to
     // tests/Feature/Livewire/Hrd/KaryawanTableTest.php — the list now renders
     // inside the App\Livewire\Hrd\KaryawanTable component.
 
-
     // NOTE: Divisi sort/filter/search assertions moved to
     // tests/Feature/Livewire/Hrd/DivisiTableTest.php — both lists now render
     // inside the App\Livewire\Hrd\DivisiTable component.
-
 
     // NOTE: the case-insensitive Karyawan search assertion moved to
     // tests/Feature/Livewire/Hrd/KaryawanTableTest.php.

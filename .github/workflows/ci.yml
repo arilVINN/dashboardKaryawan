@@ -64,8 +64,6 @@ jobs:
         continue-on-error: true
         run: vendor/bin/pint --test
 
-      # Report-only for now: the suite has pre-existing failures (stale seed
-      # usernames in some tests). Remove continue-on-error once they are fixed.
+      # Blocking: the suite is green as of the test-baseline fix.
       - name: Run tests
-        continue-on-error: true
         run: php artisan test

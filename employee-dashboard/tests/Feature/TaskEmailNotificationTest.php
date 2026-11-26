@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Kadiv\TugasTable;
 use App\Mail\TugasMail;
 use App\Models\Karyawan;
 use App\Models\Tugas;
 use App\Models\User2;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
@@ -19,15 +21,15 @@ class TaskEmailNotificationTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed(\Database\Seeders\DatabaseSeeder::class);
+        $this->seed(DatabaseSeeder::class);
     }
 
     public function test_creating_a_task_sends_an_email_to_the_assigned_employee(): void
     {
         Mail::fake();
 
-        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
-        $staff = Karyawan::where('email', 'staff@silindo.co.id')->firstOrFail();
+        $kadiv = User2::where('username', 'vini')->firstOrFail();
+        $staff = Karyawan::where('id_karyawan', 'KR001')->firstOrFail();
 
         $this->actingAs($kadiv, 'sanctum')
             ->postJson('/api/kadiv/tugas', [
@@ -49,8 +51,8 @@ class TaskEmailNotificationTest extends TestCase
         config(['mail.queue_notifications' => true]);
         Mail::fake();
 
-        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
-        $staff = Karyawan::where('email', 'staff@silindo.co.id')->firstOrFail();
+        $kadiv = User2::where('username', 'vini')->firstOrFail();
+        $staff = Karyawan::where('id_karyawan', 'KR001')->firstOrFail();
 
         $this->actingAs($kadiv, 'sanctum')
             ->postJson('/api/kadiv/tugas', [
@@ -71,8 +73,8 @@ class TaskEmailNotificationTest extends TestCase
     {
         Mail::fake();
 
-        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
-        $staff = Karyawan::where('email', 'staff@silindo.co.id')->firstOrFail();
+        $kadiv = User2::where('username', 'vini')->firstOrFail();
+        $staff = Karyawan::where('id_karyawan', 'KR001')->firstOrFail();
         $staffUser = User2::where('karyawan_id_karyawan', $staff->id_karyawan)->firstOrFail();
 
         $this->actingAs($kadiv, 'sanctum')
@@ -97,7 +99,7 @@ class TaskEmailNotificationTest extends TestCase
 
         Karyawan::where('id_karyawan', 'KR001')->update(['email' => null]);
 
-        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
+        $kadiv = User2::where('username', 'vini')->firstOrFail();
 
         $this->actingAs($kadiv, 'sanctum')
             ->postJson('/api/kadiv/tugas', [
@@ -115,11 +117,11 @@ class TaskEmailNotificationTest extends TestCase
     {
         Mail::fake();
 
-        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
-        $staff = Karyawan::where('email', 'staff@silindo.co.id')->firstOrFail();
+        $kadiv = User2::where('username', 'vini')->firstOrFail();
+        $staff = Karyawan::where('id_karyawan', 'KR001')->firstOrFail();
 
         Livewire::actingAs($kadiv)
-            ->test(\App\Livewire\Kadiv\TugasTable::class)
+            ->test(TugasTable::class)
             ->set('judul', 'Tugas Livewire')
             ->set('deskripsi', 'Dibuat dari modal.')
             ->set('tenggat', now()->addDay()->format('Y-m-d H:i:s'))
@@ -128,7 +130,7 @@ class TaskEmailNotificationTest extends TestCase
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('tugas', [
-            'id_tugas' => 'TG005',
+            'id_tugas' => 'TG001',
             'judul_tugas' => 'Tugas Livewire',
         ]);
 
@@ -140,9 +142,23 @@ class TaskEmailNotificationTest extends TestCase
 
     public function test_task_creation_works_when_legacy_tgs_ids_exist(): void
     {
-        // The seeder ships opaque "TGS-*" task IDs. The old generator sorted
+        // Legacy rows use opaque "TGS-*" task IDs. The old generator sorted
         // IDs as strings, picked TGS-*, and produced TG001 again, which
         // collided with the existing primary key and returned a 500.
+        $staff = Karyawan::where('id_karyawan', 'KR001')->firstOrFail();
+
+        Tugas::withoutEvents(fn () => Tugas::create([
+            'id_tugas' => 'TGS-LEGACY',
+            'karyawan_id_karyawan' => $staff->id_karyawan,
+            'judul_tugas' => 'Tugas Legacy',
+            'deskripsi' => 'ID lama yang tidak boleh merusak generator.',
+            'deadline' => now()->addDay(),
+            'progress' => '0',
+            'status' => Tugas::STATUS_BARU,
+            'tanggal_dibuat' => now(),
+            'tanggal_update' => now(),
+        ]));
+
         $this->assertGreaterThan(
             0,
             Tugas::where('id_tugas', 'like', 'TGS-%')->count()
@@ -150,7 +166,7 @@ class TaskEmailNotificationTest extends TestCase
 
         Mail::fake();
 
-        $kadiv = User2::where('username', 'tonokd')->firstOrFail();
+        $kadiv = User2::where('username', 'vini')->firstOrFail();
 
         $this->actingAs($kadiv, 'sanctum')
             ->postJson('/api/kadiv/tugas', [
@@ -160,9 +176,9 @@ class TaskEmailNotificationTest extends TestCase
                 'deadline' => now()->addDay()->format('Y-m-d\TH:i'),
             ])
             ->assertCreated()
-            ->assertJsonPath('data.id_tugas', 'TG005');
+            ->assertJsonPath('data.id_tugas', 'TG001');
 
-        $this->assertDatabaseHas('tugas', ['id_tugas' => 'TG005']);
+        $this->assertDatabaseHas('tugas', ['id_tugas' => 'TG001']);
     }
 
     public function test_the_email_renders_the_task_details_and_task_link(): void

@@ -2,20 +2,19 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Str;
-use Illuminate\Auth\Events\Login;
-
-use Illuminate\Support\Facades\URL;
 use App\Models\Jabatan;
 use App\Models\Karyawan;
 use App\Policies\JabatanPolicy;
 use App\Policies\KaryawanPolicy;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -80,7 +79,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Upload foto profil — lebih ketat karena potensi upload bombing
         RateLimiter::for('upload-foto', function (Request $request) {
-            return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
+            return Limit::perMinute(5)->by($request->user()?->getAuthIdentifier() ?: $request->ip());
         });
     }
 }
