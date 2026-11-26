@@ -13,10 +13,10 @@ class CheckRole
      */
     private const DASHBOARD_ROUTES = [
         'direktur' => 'direktur.dashboard',
-        'direksi'  => 'direktur.dashboard',
-        'hrd'      => 'hrd.dashboard',
-        'kadiv'    => 'kadiv.dashboard',
-        'staff'    => 'dashboard',
+        'direksi' => 'direktur.dashboard',
+        'hrd' => 'hrd.dashboard',
+        'kadiv' => 'kadiv.dashboard',
+        'staff' => 'dashboard',
     ];
 
     public function handle(Request $request, Closure $next, ...$roles)
@@ -27,6 +27,7 @@ class CheckRole
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
+
             return redirect()->route('login');
         }
 

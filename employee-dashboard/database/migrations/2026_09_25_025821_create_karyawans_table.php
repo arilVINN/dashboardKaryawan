@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('no_telepon', 20)->nullable();
             $table->string('email', 100)->unique();
             $table->string('jabatan', 100);
-            
+
             $table->string('divisi_id_divisi', 20);
 
             $table->foreign('divisi_id_divisi')

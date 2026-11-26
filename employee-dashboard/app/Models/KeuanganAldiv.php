@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class KeuanganAldiv extends Model
 {
-    protected $table      = 'keuangan_aldiv';
+    protected $table = 'keuangan_aldiv';
+
     protected $primaryKey = 'id_kad';
 
     public $incrementing = false;
-    protected $keyType   = 'string';
+
+    protected $keyType = 'string';
 
     protected $fillable = [
         'id_kad',

@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Hrd;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\AuditLog;
 use App\Models\Carousel;
-use App\Models\Karyawan;
 use App\Models\Divisi;
-use App\Models\Tugas;
+use App\Models\Karyawan;
+use App\Models\Notifikasi;
 use App\Models\Pesan;
 use App\Models\SuratIzin;
-use App\Models\Notifikasi;
+use App\Models\Tugas;
 use App\Services\BirthdayNotificationService;
 use App\Services\ContractExpiryReminder;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class HrdDashboardController extends Controller
 {
@@ -27,15 +27,14 @@ class HrdDashboardController extends Controller
         Request $request,
         BirthdayNotificationService $birthdayNotifications,
         ContractExpiryReminder $contractExpiryReminder
-    )
-    {
+    ) {
         $contractReminders = $contractExpiryReminder->forHrd();
 
-        $totalStaff  = Karyawan::count();
+        $totalStaff = Karyawan::count();
         $totalDivisi = Divisi::count();
 
-        $totalTugas       = Tugas::count();
-        $tugasSelesai     = Tugas::statusEfektif(Tugas::STATUS_SUDAH_ACC)->count();
+        $totalTugas = Tugas::count();
+        $tugasSelesai = Tugas::statusEfektif(Tugas::STATUS_SUDAH_ACC)->count();
         $persentaseTugas = $totalTugas > 0 ? round(($tugasSelesai / $totalTugas) * 100, 2) : 0;
 
         $totalPesanPerusahaan = Pesan::count();
@@ -65,17 +64,17 @@ class HrdDashboardController extends Controller
                 'message' => 'Berhasil mengambil data dashboard HRD',
                 'data' => [
                     'metrics' => [
-                        'total_staff'              => $totalStaff,
-                        'total_divisi'             => $totalDivisi,
-                        'total_karyawan_aktif'     => $totalKaryawanAktif,
-                        'total_karyawan_nonaktif'  => $totalKaryawanTidakAktif,
-                        'tugas_keseluruhan'        => $totalTugas,
-                        'tugas_selesai'            => $tugasSelesai,
-                        'persentase_tugas_selesai' => $persentaseTugas . '%',
-                        'total_pesan_perusahaan'   => $totalPesanPerusahaan,
+                        'total_staff' => $totalStaff,
+                        'total_divisi' => $totalDivisi,
+                        'total_karyawan_aktif' => $totalKaryawanAktif,
+                        'total_karyawan_nonaktif' => $totalKaryawanTidakAktif,
+                        'tugas_keseluruhan' => $totalTugas,
+                        'tugas_selesai' => $tugasSelesai,
+                        'persentase_tugas_selesai' => $persentaseTugas.'%',
+                        'total_pesan_perusahaan' => $totalPesanPerusahaan,
                     ],
                     'widgets' => [
-                        'divisi_terbesar' => $divisiTerbesar->map(fn($d) => [
+                        'divisi_terbesar' => $divisiTerbesar->map(fn ($d) => [
                             'nama_divisi' => $d->nama_divisi,
                             'total_staff' => $d->karyawans_count,
                         ]),
@@ -89,11 +88,11 @@ class HrdDashboardController extends Controller
         $ongoingBase = Tugas::statusEfektif(Tugas::STATUS_BERJALAN);
 
         $revisiTugas = (clone $ongoingBase)
-            ->whereHas('latestSubmitTugas', fn($q) => $q->where('status_review', 'revisi'))
+            ->whereHas('latestSubmitTugas', fn ($q) => $q->where('status_review', 'revisi'))
             ->count();
 
         $ongoingTugas = (clone $ongoingBase)
-            ->whereDoesntHave('latestSubmitTugas', fn($q) => $q->where('status_review', 'revisi'))
+            ->whereDoesntHave('latestSubmitTugas', fn ($q) => $q->where('status_review', 'revisi'))
             ->count();
 
         $pendingTugas = Tugas::statusEfektif(Tugas::STATUS_BARU)->count()
@@ -152,6 +151,7 @@ class HrdDashboardController extends Controller
             ->with(['user.karyawan', 'divisi'])
             ->latest()
             ->get();
+
         return view('hrd.dashboard', compact(
             'total',
             'tugasBuckets',
@@ -198,9 +198,9 @@ class HrdDashboardController extends Controller
             (string) $suratIzin->id_surat,
             [
                 'karyawan_id' => $suratIzin->karyawan_id_karyawan,
-                'nama'        => $suratIzin->karyawan?->nama,
-                'jenis_izin'  => $suratIzin->jenis_izin,
-                'status'      => 'Disetujui',
+                'nama' => $suratIzin->karyawan?->nama,
+                'jenis_izin' => $suratIzin->jenis_izin,
+                'status' => 'Disetujui',
             ]
         );
 
@@ -224,16 +224,16 @@ class HrdDashboardController extends Controller
             (string) $suratIzin->id_surat,
             [
                 'karyawan_id' => $suratIzin->karyawan_id_karyawan,
-                'nama'        => $suratIzin->karyawan?->nama,
-                'jenis_izin'  => $suratIzin->jenis_izin,
-                'status'      => 'Ditolak',
+                'nama' => $suratIzin->karyawan?->nama,
+                'jenis_izin' => $suratIzin->jenis_izin,
+                'status' => 'Ditolak',
             ]
         );
 
         return back()->with('success', 'Surat izin berhasil ditolak.');
     }
 
-    //untuk histori izin karyawan
+    // untuk histori izin karyawan
     public function getHistoriKaryawan($id)
     {
         // Mengambil data karyawan beserta surat izins, diurutkan dari yang terbaru
@@ -241,16 +241,16 @@ class HrdDashboardController extends Controller
             $query->latest();
         }])->where('id_karyawan', $id)->first();
 
-        if (!$karyawan) {
+        if (! $karyawan) {
             return response()->json([
                 'success' => false,
-                'message' => 'Karyawan tidak ditemukan'
+                'message' => 'Karyawan tidak ditemukan',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $karyawan
+            'data' => $karyawan,
         ]);
     }
 
@@ -340,7 +340,7 @@ class HrdDashboardController extends Controller
             ->select('tanggal_keluar')
             ->get()
             ->reduce(function (array $carry, $karyawan) {
-                $key = \Carbon\Carbon::parse($karyawan->tanggal_keluar)->format('Y-m');
+                $key = Carbon::parse($karyawan->tanggal_keluar)->format('Y-m');
                 $carry[$key] = ($carry[$key] ?? 0) + 1;
 
                 return $carry;
@@ -352,7 +352,7 @@ class HrdDashboardController extends Controller
             $bulan = now()->subMonths($i);
             $key = $bulan->format('Y-m');
             // Diperbaiki agar tidak terpotong
-            $turnoverLabel[] = $namaBulan[$bulan->month - 1] . ' ' . $bulan->format('y');
+            $turnoverLabel[] = $namaBulan[$bulan->month - 1].' '.$bulan->format('y');
             $turnoverData[] = $turnoverRaw[$key] ?? 0;
         }
 

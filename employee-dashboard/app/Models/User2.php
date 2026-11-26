@@ -11,8 +11,11 @@ class User2 extends Authenticatable
     use HasApiTokens, Notifiable;
 
     protected $table = 'users2';
+
     protected $primaryKey = 'id_user';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

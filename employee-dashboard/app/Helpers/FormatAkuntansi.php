@@ -12,13 +12,13 @@ class FormatAkuntansi
     public static function formatRupiah(float|int|null $nominal, bool $withPrefix = true): string
     {
         $nominal = (float) ($nominal ?? 0);
-        $prefix  = $withPrefix ? 'Rp ' : '';
+        $prefix = $withPrefix ? 'Rp ' : '';
 
         if ($nominal < 0) {
-            return '(' . $prefix . number_format(abs($nominal), 0, ',', '.') . ')';
+            return '('.$prefix.number_format(abs($nominal), 0, ',', '.').')';
         }
 
-        return $prefix . number_format($nominal, 0, ',', '.');
+        return $prefix.number_format($nominal, 0, ',', '.');
     }
 
     public static function rupiah(float|int|null $nominal, bool $withPrefix = true): string
@@ -41,7 +41,7 @@ class FormatAkuntansi
         }
 
         if ($nominal < 0) {
-            return '(' . number_format(abs($nominal), 0, ',', '.') . ')';
+            return '('.number_format(abs($nominal), 0, ',', '.').')';
         }
 
         return number_format($nominal, 0, ',', '.');
@@ -56,10 +56,10 @@ class FormatAkuntansi
         $margin = (float) ($margin ?? 0);
 
         if ($margin < 0) {
-            return '(' . number_format(abs($margin), 1, ',', '.') . '%)';
+            return '('.number_format(abs($margin), 1, ',', '.').'%)';
         }
 
-        return number_format($margin, 1, ',', '.') . '%';
+        return number_format($margin, 1, ',', '.').'%';
     }
 
     /**
@@ -92,6 +92,6 @@ class FormatAkuntansi
      */
     public static function generateId(string $prefix, int $count): string
     {
-        return $prefix . str_pad($count + 1, 5, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($count + 1, 5, '0', STR_PAD_LEFT);
     }
 }

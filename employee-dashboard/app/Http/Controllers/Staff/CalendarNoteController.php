@@ -9,7 +9,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class CalendarNoteController extends Controller
@@ -43,24 +42,24 @@ class CalendarNoteController extends Controller
             $warna = CalendarNote::WARNA_OPTIONS[$note->warna] ?? CalendarNote::WARNA_OPTIONS['slate'];
 
             return [
-                'id'              => 'NOTE-' . $note->id,
-                'title'           => $note->judul,
-                'start'           => $note->tanggal->toDateString(),
-                'allDay'          => true,
+                'id' => 'NOTE-'.$note->id,
+                'title' => $note->judul,
+                'start' => $note->tanggal->toDateString(),
+                'allDay' => true,
                 'backgroundColor' => $warna['bg'],
-                'borderColor'     => $warna['border'],
-                'textColor'       => $warna['text'],
-                'extendedProps'   => [
-                    'type'       => 'note',
-                    'note_id'    => $note->id,
-                    'judul'      => $note->judul,
-                    'detail'     => $note->detail,
-                    'warna'      => $note->warna,
-                    'dot_color'  => $warna['dot'],
+                'borderColor' => $warna['border'],
+                'textColor' => $warna['text'],
+                'extendedProps' => [
+                    'type' => 'note',
+                    'note_id' => $note->id,
+                    'judul' => $note->judul,
+                    'detail' => $note->detail,
+                    'warna' => $note->warna,
+                    'dot_color' => $warna['dot'],
                     'tanggal_label' => $note->tanggal->locale('id')->isoFormat('dddd, D MMMM Y'),
                     'reminder_days_before' => $note->reminder_days_before,
                     'reminder_label' => $note->reminderLabel(),
-                    'reminder_date'  => $note->reminderDate()?->toDateString(),
+                    'reminder_date' => $note->reminderDate()?->toDateString(),
                 ],
             ];
         });
@@ -80,10 +79,10 @@ class CalendarNoteController extends Controller
 
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'judul'   => 'required|string|max:255',
-            'detail'  => 'nullable|string|max:1000',
-            'warna'   => 'nullable|string|in:' . implode(',', array_keys(CalendarNote::WARNA_OPTIONS)),
-            'reminder_days_before' => 'nullable|integer|min:0|max:' . CalendarNote::REMINDER_MAX_DAYS,
+            'judul' => 'required|string|max:255',
+            'detail' => 'nullable|string|max:1000',
+            'warna' => 'nullable|string|in:'.implode(',', array_keys(CalendarNote::WARNA_OPTIONS)),
+            'reminder_days_before' => 'nullable|integer|min:0|max:'.CalendarNote::REMINDER_MAX_DAYS,
         ]);
 
         // Samakan validasi dengan UI: pengingat yang tanggalnya sudah lewat
@@ -102,10 +101,10 @@ class CalendarNoteController extends Controller
 
         $note = CalendarNote::create([
             'user_id_user' => $user->id_user,
-            'tanggal'      => Carbon::parse($validated['tanggal'])->toDateString(),
-            'judul'        => $validated['judul'],
-            'detail'       => $validated['detail'] ?? null,
-            'warna'        => $validated['warna'] ?? 'slate',
+            'tanggal' => Carbon::parse($validated['tanggal'])->toDateString(),
+            'judul' => $validated['judul'],
+            'detail' => $validated['detail'] ?? null,
+            'warna' => $validated['warna'] ?? 'slate',
             'reminder_days_before' => array_key_exists('reminder_days_before', $validated)
                 ? $validated['reminder_days_before']
                 : CalendarNote::REMINDER_DEFAULT_DAYS,
@@ -117,25 +116,25 @@ class CalendarNoteController extends Controller
 
         return response()->json([
             'message' => 'Note berhasil disimpan',
-            'event'   => [
-                'id'              => 'NOTE-' . $note->id,
-                'title'           => $note->judul,
-                'start'           => $note->tanggal->toDateString(),
-                'allDay'          => true,
+            'event' => [
+                'id' => 'NOTE-'.$note->id,
+                'title' => $note->judul,
+                'start' => $note->tanggal->toDateString(),
+                'allDay' => true,
                 'backgroundColor' => $warna['bg'],
-                'borderColor'     => $warna['border'],
-                'textColor'       => $warna['text'],
-                'extendedProps'   => [
-                    'type'          => 'note',
-                    'note_id'       => $note->id,
-                    'judul'         => $note->judul,
-                    'detail'        => $note->detail,
-                    'warna'         => $note->warna,
-                    'dot_color'     => $warna['dot'],
+                'borderColor' => $warna['border'],
+                'textColor' => $warna['text'],
+                'extendedProps' => [
+                    'type' => 'note',
+                    'note_id' => $note->id,
+                    'judul' => $note->judul,
+                    'detail' => $note->detail,
+                    'warna' => $note->warna,
+                    'dot_color' => $warna['dot'],
                     'tanggal_label' => $note->tanggal->locale('id')->isoFormat('dddd, D MMMM Y'),
                     'reminder_days_before' => $note->reminder_days_before,
                     'reminder_label' => $note->reminderLabel(),
-                    'reminder_date'  => $note->reminderDate()?->toDateString(),
+                    'reminder_date' => $note->reminderDate()?->toDateString(),
                 ],
             ],
         ], 201);

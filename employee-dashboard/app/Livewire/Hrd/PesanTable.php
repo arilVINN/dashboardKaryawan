@@ -74,7 +74,7 @@ class PesanTable extends Component
 
     public function updatedPerPage(): void
     {
-        if (!in_array($this->perPage, [5, 10, 25, 50], true)) {
+        if (! in_array($this->perPage, [5, 10, 25, 50], true)) {
             $this->perPage = 5;
         }
 
@@ -99,8 +99,8 @@ class PesanTable extends Component
         if ($this->search !== '') {
             $search = mb_strtolower($this->search);
             $query->where(function ($builder) use ($search): void {
-                $builder->whereRaw('LOWER(judul_pesan) LIKE ?', ['%' . $search . '%'])
-                    ->orWhereRaw('LOWER(deskripsi) LIKE ?', ['%' . $search . '%']);
+                $builder->whereRaw('LOWER(judul_pesan) LIKE ?', ['%'.$search.'%'])
+                    ->orWhereRaw('LOWER(deskripsi) LIKE ?', ['%'.$search.'%']);
             });
         }
 
@@ -114,7 +114,7 @@ class PesanTable extends Component
                 break;
             case 'pengirim':
                 $query->orderByRaw(
-                    '(select k.nama from karyawans k inner join users2 u on u.karyawan_id_karyawan = k.id_karyawan where u.id_user = pesans.pengirim_id_user) ' . $direction
+                    '(select k.nama from karyawans k inner join users2 u on u.karyawan_id_karyawan = k.id_karyawan where u.id_user = pesans.pengirim_id_user) '.$direction
                 );
                 break;
             default:

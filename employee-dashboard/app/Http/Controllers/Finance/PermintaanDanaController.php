@@ -6,13 +6,15 @@ use App\Actions\NotifyFinanceUsers;
 use App\Exceptions\PermintaanSudahDiprosesException;
 use App\Http\Controllers\Controller;
 use App\Models\Divisi;
-use App\Models\KLabaRugi;
 use App\Models\KeuanganAldiv;
+use App\Models\KLabaRugi;
 use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
 use App\Services\Finance\PermintaanDanaService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 /**
  * Manajemen Permintaan Dana:
@@ -25,7 +27,7 @@ class PermintaanDanaController extends Controller
     // BAGIAN FINANCE — Melihat semua pengajuan & approval
     // ═══════════════════════════════════════════════════════════════════════════
 
-    public function manajemenDana(Request $request): \Illuminate\View\View
+    public function manajemenDana(Request $request): View
     {
         $tab = $request->input('tab') === 'laporan' ? 'laporan' : 'permintaan';
         $status = $request->input('status', '');
@@ -78,9 +80,9 @@ class PermintaanDanaController extends Controller
     /**
      * Daftar semua permintaan dana (Finance view).
      */
-    public function index(Request $request): \Illuminate\View\View
+    public function index(Request $request): View
     {
-        $status   = $request->input('status', '');
+        $status = $request->input('status', '');
         $divisiId = $request->input('divisi_id', null);
 
         $query = KPermintDana::with('divisi', 'pemohon.karyawan')
@@ -94,9 +96,9 @@ class PermintaanDanaController extends Controller
             $query->where('divisi_id_divisi', $divisiId);
         }
 
-        $permintaan     = $query->paginate(15);
+        $permintaan = $query->paginate(15);
         $jumlahMenunggu = KPermintDana::where('status', KPermintDana::STATUS_MENUNGGU)->count();
-        $divisiList     = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
+        $divisiList = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
 
         return view('finance.permintaan.index', compact('permintaan', 'status', 'divisiId', 'divisiList', 'jumlahMenunggu'));
     }
@@ -104,14 +106,14 @@ class PermintaanDanaController extends Controller
     /**
      * Detail satu permintaan dana (Finance view).
      */
-    public function show(string $id): \Illuminate\View\View
+    public function show(string $id): View
     {
         $permintaan = KPermintDana::with('divisi', 'pemohon.karyawan', 'disetujuiOleh.karyawan', 'pengeluaran')
             ->findOrFail($id);
 
-        $periode       = now()->format('Y-m');
+        $periode = now()->format('Y-m');
         [$tahun, $bln] = explode('-', $periode);
-        $divisiId      = $permintaan->divisi_id_divisi;
+        $divisiId = $permintaan->divisi_id_divisi;
 
         $totalAlokasi = KeuanganAldiv::where('divisi_id_divisi', $divisiId)
             ->where('periode', $periode)
@@ -130,7 +132,7 @@ class PermintaanDanaController extends Controller
     /**
      * Setujui permintaan dana.
      */
-    public function approve(Request $request, string $id): \Illuminate\Http\RedirectResponse
+    public function approve(Request $request, string $id): RedirectResponse
     {
         try {
             app(PermintaanDanaService::class)->approve(
@@ -148,7 +150,7 @@ class PermintaanDanaController extends Controller
     /**
      * Tolak permintaan dana (wajib sertakan catatan alasan).
      */
-    public function reject(Request $request, string $id): \Illuminate\Http\RedirectResponse
+    public function reject(Request $request, string $id): RedirectResponse
     {
         $data = $request->validate([
             'catatan_finance' => ['required', 'string', 'max:500'],
@@ -176,18 +178,18 @@ class PermintaanDanaController extends Controller
     /**
      * Form pengajuan dana (semua Kadiv).
      */
-    public function create(): \Illuminate\View\View
+    public function create(): View
     {
-        $user       = Auth::user();
-        $divisiId   = $user->karyawan?->divisi_id_divisi;
-        $periode    = now()->format('Y-m');
+        $user = Auth::user();
+        $divisiId = $user->karyawan?->divisi_id_divisi;
+        $periode = now()->format('Y-m');
 
         // Hitung sisa pagu divisi untuk periode ini
-        $totalAlokasi   = KeuanganAldiv::where('divisi_id_divisi', $divisiId)
+        $totalAlokasi = KeuanganAldiv::where('divisi_id_divisi', $divisiId)
             ->where('periode', $periode)
             ->sum('nominal_alokasi');
 
-        $totalTerpakai  = KPengeluaran::where('divisi_id_divisi', $divisiId)
+        $totalTerpakai = KPengeluaran::where('divisi_id_divisi', $divisiId)
             ->whereYear('tanggal_cair', now()->year)
             ->whereMonth('tanggal_cair', now()->month)
             ->sum('nominal');
@@ -200,11 +202,11 @@ class PermintaanDanaController extends Controller
     /**
      * Simpan pengajuan dana baru (semua Kadiv).
      */
-    public function store(Request $request): \Illuminate\Http\RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'judul_pengajuan'  => ['required', 'string', 'max:250'],
-            'keperluan'        => ['required', 'string', 'max:250'],
+            'judul_pengajuan' => ['required', 'string', 'max:250'],
+            'keperluan' => ['required', 'string', 'max:250'],
             'nominal_diajukan' => ['required', 'numeric', 'min:1'],
             'lampiran_proposal' => ['nullable', 'file', 'mimes:pdf,xlsx,xls,doc,docx', 'max:5120'],
         ]);
@@ -214,15 +216,15 @@ class PermintaanDanaController extends Controller
                 ->store('keuangan/proposal', 'private');
         }
 
-        $user  = Auth::user();
+        $user = Auth::user();
         $count = KPermintDana::count();
 
         $divisiKode = strtoupper($user->karyawan?->divisi?->kode_divisi ?? 'XX');
-        $data['id_kpd']          = 'KPD' . str_pad($count + 1, 5, '0', STR_PAD_LEFT);
-        $data['nomor_pengajuan'] = 'REQ' . now()->format('ym') . str_pad($count + 1, 4, '0', STR_PAD_LEFT);
-        $data['status']          = KPermintDana::STATUS_MENUNGGU;
+        $data['id_kpd'] = 'KPD'.str_pad($count + 1, 5, '0', STR_PAD_LEFT);
+        $data['nomor_pengajuan'] = 'REQ'.now()->format('ym').str_pad($count + 1, 4, '0', STR_PAD_LEFT);
+        $data['status'] = KPermintDana::STATUS_MENUNGGU;
         $data['divisi_id_divisi'] = $user->karyawan?->divisi_id_divisi;
-        $data['user_id_user']    = $user->id_user;
+        $data['user_id_user'] = $user->id_user;
 
         $permintaan = KPermintDana::create($data);
 
@@ -240,9 +242,9 @@ class PermintaanDanaController extends Controller
     /**
      * Riwayat pengajuan dana untuk divisi user yang sedang login.
      */
-    public function riwayat(): \Illuminate\View\View
+    public function riwayat(): View
     {
-        $user     = Auth::user();
+        $user = Auth::user();
         $divisiId = $user->karyawan?->divisi_id_divisi;
 
         $riwayat = KPermintDana::where('divisi_id_divisi', $divisiId)

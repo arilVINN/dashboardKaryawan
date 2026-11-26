@@ -9,9 +9,12 @@ use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
 use App\Models\Notifikasi;
 use App\Services\Finance\JurnalEntryService;
+use App\Support\FileStorage;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 /**
  * Manajemen Pengeluaran / Pencairan Dana — hanya untuk Kadiv Finance.
@@ -21,9 +24,9 @@ class PengeluaranController extends Controller
     /**
      * Daftar pengeluaran, dapat difilter berdasarkan periode dan divisi.
      */
-    public function index(Request $request): \Illuminate\View\View
+    public function index(Request $request): View
     {
-        $periode  = $request->input('periode', now()->format('Y-m'));
+        $periode = $request->input('periode', now()->format('Y-m'));
         $divisiId = $request->input('divisi_id_divisi', null);
         [$tahun, $bulan] = explode('-', $periode);
 
@@ -35,10 +38,10 @@ class PengeluaranController extends Controller
             $query->where('divisi_id_divisi', $divisiId);
         }
 
-        $pengeluaran         = $query->latest('tanggal_cair')->paginate(15);
-        $totalPeriode        = $query->sum('nominal');
-        $divisiList          = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
-        $permintaanSiapCair  = KPermintDana::with('divisi', 'diajukanOleh.karyawan')
+        $pengeluaran = $query->latest('tanggal_cair')->paginate(15);
+        $totalPeriode = $query->sum('nominal');
+        $divisiList = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
+        $permintaanSiapCair = KPermintDana::with('divisi', 'diajukanOleh.karyawan')
             ->where('status', KPermintDana::STATUS_DISETUJUI)
             ->latest('tanggal_disetujui')
             ->get();
@@ -56,15 +59,15 @@ class PengeluaranController extends Controller
     /**
      * Simpan pengeluaran baru secara langsung (tanpa permintaan dana).
      */
-    public function store(Request $request): \Illuminate\Http\RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'nominal'           => ['required', 'numeric', 'min:1'],
-            'tanggal_cair'      => ['required', 'date'],
-            'metode_pembayaran' => ['required', 'string', 'in:' . implode(',', KPengeluaran::METODE_OPTIONS)],
-            'bukti_pencairan'   => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'keterangan'        => ['nullable', 'string', 'max:500'],
-            'divisi_id_divisi'  => ['required', 'string', 'exists:divisis,id_divisi'],
+            'nominal' => ['required', 'numeric', 'min:1'],
+            'tanggal_cair' => ['required', 'date'],
+            'metode_pembayaran' => ['required', 'string', 'in:'.implode(',', KPengeluaran::METODE_OPTIONS)],
+            'bukti_pencairan' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'keterangan' => ['nullable', 'string', 'max:500'],
+            'divisi_id_divisi' => ['required', 'string', 'exists:divisis,id_divisi'],
         ]);
 
         if ($request->hasFile('bukti_pencairan')) {
@@ -73,9 +76,9 @@ class PengeluaranController extends Controller
         }
 
         $count = KPengeluaran::count();
-        $data['id_kpengeluaran']  = 'KO' . str_pad($count + 1, 6, '0', STR_PAD_LEFT);
-        $data['kode_pengeluaran'] = 'OUT' . now()->format('ym') . str_pad($count + 1, 4, '0', STR_PAD_LEFT);
-        $data['user_id_user']     = Auth::id();
+        $data['id_kpengeluaran'] = 'KO'.str_pad($count + 1, 6, '0', STR_PAD_LEFT);
+        $data['kode_pengeluaran'] = 'OUT'.now()->format('ym').str_pad($count + 1, 4, '0', STR_PAD_LEFT);
+        $data['user_id_user'] = Auth::id();
 
         DB::transaction(function () use ($data) {
             $pengeluaran = KPengeluaran::create($data);
@@ -91,7 +94,7 @@ class PengeluaranController extends Controller
      * - Tandai status permintaan menjadi 'dicairkan'
      * - Buat record kpengeluaran baru secara otomatis
      */
-    public function cairkan(Request $request, string $idKpd): \Illuminate\Http\RedirectResponse
+    public function cairkan(Request $request, string $idKpd): RedirectResponse
     {
         $permintaan = KPermintDana::with('divisi')->findOrFail($idKpd);
 
@@ -103,10 +106,10 @@ class PengeluaranController extends Controller
         }
 
         $data = $request->validate([
-            'tanggal_cair'      => ['required', 'date'],
-            'metode_pembayaran' => ['required', 'string', 'in:' . implode(',', KPengeluaran::METODE_OPTIONS)],
-            'bukti_pencairan'   => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'keterangan'        => ['nullable', 'string', 'max:500'],
+            'tanggal_cair' => ['required', 'date'],
+            'metode_pembayaran' => ['required', 'string', 'in:'.implode(',', KPengeluaran::METODE_OPTIONS)],
+            'bukti_pencairan' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'keterangan' => ['nullable', 'string', 'max:500'],
         ]);
 
         $buktiBayar = null;
@@ -144,16 +147,16 @@ class PengeluaranController extends Controller
             $sequence = $max + 1;
 
             $pengeluaran = KPengeluaran::create([
-                'id_kpengeluaran'  => 'KO' . str_pad((string) $sequence, 6, '0', STR_PAD_LEFT),
-                'kode_pengeluaran' => 'OUT' . now()->format('ym') . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT),
-                'kpd_id_kpd'       => $locked->id_kpd,
-                'nominal'          => $locked->nominal_diajukan,
-                'tanggal_cair'     => $data['tanggal_cair'],
+                'id_kpengeluaran' => 'KO'.str_pad((string) $sequence, 6, '0', STR_PAD_LEFT),
+                'kode_pengeluaran' => 'OUT'.now()->format('ym').str_pad((string) $sequence, 4, '0', STR_PAD_LEFT),
+                'kpd_id_kpd' => $locked->id_kpd,
+                'nominal' => $locked->nominal_diajukan,
+                'tanggal_cair' => $data['tanggal_cair'],
                 'metode_pembayaran' => $data['metode_pembayaran'],
-                'bukti_pencairan'  => $buktiBayar,
-                'keterangan'       => $data['keterangan'] ?? $locked->judul_pengajuan,
+                'bukti_pencairan' => $buktiBayar,
+                'keterangan' => $data['keterangan'] ?? $locked->judul_pengajuan,
                 'divisi_id_divisi' => $locked->divisi_id_divisi,
-                'user_id_user'     => Auth::id(),
+                'user_id_user' => Auth::id(),
             ]);
 
             // Jurnal pencairan dana dibuat di transaksi yang sama.
@@ -167,7 +170,7 @@ class PengeluaranController extends Controller
         });
 
         if ($stale) {
-            \App\Support\FileStorage::delete($buktiBayar);
+            FileStorage::delete($buktiBayar);
 
             return back()->with('error', 'Pengajuan ini sudah diproses atau tidak lagi berstatus Disetujui.');
         }
@@ -181,21 +184,21 @@ class PengeluaranController extends Controller
             'pencairan_dana',
             (string) $permintaan->id_kpd,
             [
-                'user_id'         => Auth::id(),
-                'user_nama'       => Auth::user()?->karyawan?->nama ?? Auth::user()?->username,
-                'waktu'           => now()->toIso8601String(),
-                'divisi_id'       => $permintaan->divisi_id_divisi,
-                'divisi_nama'     => $permintaan->divisi?->nama_divisi,
+                'user_id' => Auth::id(),
+                'user_nama' => Auth::user()?->karyawan?->nama ?? Auth::user()?->username,
+                'waktu' => now()->toIso8601String(),
+                'divisi_id' => $permintaan->divisi_id_divisi,
+                'divisi_nama' => $permintaan->divisi?->nama_divisi,
                 'nomor_pengajuan' => $permintaan->nomor_pengajuan,
-                'nilai_lama'      => [
-                    'status'  => KPermintDana::STATUS_DISETUJUI,
+                'nilai_lama' => [
+                    'status' => KPermintDana::STATUS_DISETUJUI,
                     'nominal' => (float) $permintaan->nominal_diajukan,
                 ],
-                'nilai_baru'      => [
-                    'status'          => KPermintDana::STATUS_DICAIRKAN,
-                    'nominal'         => (float) ($pengeluaran?->nominal ?? $permintaan->nominal_diajukan),
+                'nilai_baru' => [
+                    'status' => KPermintDana::STATUS_DICAIRKAN,
+                    'nominal' => (float) ($pengeluaran?->nominal ?? $permintaan->nominal_diajukan),
                     'id_kpengeluaran' => $pengeluaran?->id_kpengeluaran,
-                    'tanggal_cair'    => $pengeluaran?->tanggal_cair?->toDateString(),
+                    'tanggal_cair' => $pengeluaran?->tanggal_cair?->toDateString(),
                 ],
             ]
         );

@@ -48,6 +48,7 @@ class PrivatizeStoredFiles extends Command
 
                 if (! is_resource($stream)) {
                     $this->error("cannot read {$path}, skipping");
+
                     continue;
                 }
 

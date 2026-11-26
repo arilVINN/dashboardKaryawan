@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Hrd;
 use App\Http\Controllers\Controller;
 use App\Models\Karyawan;
 use App\Models\LampiranKaryawan;
-use App\Support\EmployeeAccess;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;

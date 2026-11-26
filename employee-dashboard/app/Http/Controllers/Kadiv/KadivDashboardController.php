@@ -114,7 +114,7 @@ class KadivDashboardController extends Controller
 
         $user->loadMissing(['role', 'karyawan.divisi']);
 
-        if ((! $user instanceof \App\Models\User2 || ! $user->hasRole('kadiv') && ! $user->isDirektur())
+        if ((! $user instanceof User2 || ! $user->hasRole('kadiv') && ! $user->isDirektur())
             || ! $user->karyawan?->divisi) {
             return null;
         }

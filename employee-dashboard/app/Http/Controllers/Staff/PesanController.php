@@ -9,7 +9,6 @@ use App\Models\Tugas;
 use App\Models\User2;
 use App\Support\FileStorage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class PesanController extends Controller
 {
@@ -269,8 +268,7 @@ class PesanController extends Controller
         if ($role === 'staff' && $user->karyawan?->divisi_id_divisi) {
             return User2::query()
                 ->whereHas('role', fn ($query) => $query->whereRaw('LOWER(nama_role) = ?', ['kadiv']))
-                ->whereHas('karyawan', fn ($query) =>
-                    $query->where('divisi_id_divisi', $user->karyawan->divisi_id_divisi)
+                ->whereHas('karyawan', fn ($query) => $query->where('divisi_id_divisi', $user->karyawan->divisi_id_divisi)
                 )
                 ->first();
         }

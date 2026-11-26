@@ -52,4 +52,3 @@ class LampiranKaryawan extends Model
         );
     }
 }
-

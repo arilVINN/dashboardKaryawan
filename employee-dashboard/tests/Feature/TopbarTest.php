@@ -48,7 +48,7 @@ class TopbarTest extends TestCase
     {
         $this->actingAs($this->hrd)->get('/hrd/dashboard')
             ->assertOk()
-            ->assertSee('action="' . route('logout') . '"', false)
+            ->assertSee('action="'.route('logout').'"', false)
             ->assertSee('name="_token"', false);
     }
 

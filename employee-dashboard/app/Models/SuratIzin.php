@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class SuratIzin extends Model
 {
     protected $table = 'surat_izin';
+
     protected $primaryKey = 'id_surat';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

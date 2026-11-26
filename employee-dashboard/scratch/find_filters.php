@@ -5,17 +5,21 @@ $dirs = [
     'resources/views/kadiv',
 ];
 
-function scanDirRec($dir) {
+function scanDirRec($dir)
+{
     $files = [];
     foreach (scandir($dir) as $item) {
-        if ($item === '.' || $item === '..') continue;
-        $path = $dir . '/' . $item;
+        if ($item === '.' || $item === '..') {
+            continue;
+        }
+        $path = $dir.'/'.$item;
         if (is_dir($path)) {
             $files = array_merge($files, scanDirRec($path));
         } elseif (str_ends_with($item, '.blade.php')) {
             $files[] = $path;
         }
     }
+
     return $files;
 }
 
@@ -36,7 +40,7 @@ foreach ($allFiles as $file) {
             $lines = explode("\n", $formBody);
             foreach ($lines as $line) {
                 if (stripos($line, '<button') !== false || stripos($line, 'filter') !== false || stripos($line, 'onchange') !== false || stripos($line, '<select') !== false || stripos($line, '<input') !== false) {
-                    echo "   " . trim($line) . "\n";
+                    echo '   '.trim($line)."\n";
                 }
             }
         }

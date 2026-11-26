@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\User2;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -24,6 +23,7 @@ class EnsureKadivFinance
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
+
             return redirect()->route('login');
         }
 
@@ -36,6 +36,7 @@ class EnsureKadivFinance
             }
 
             $redirectRoute = $user->isDirektur() ? 'direktur.dashboard' : 'kadiv.dashboard';
+
             return redirect()->route($redirectRoute)
                 ->with('forbidden', 'Akses ini khusus Kepala Divisi Finance & Accounting.');
         }

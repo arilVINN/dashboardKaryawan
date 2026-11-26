@@ -16,7 +16,9 @@ class HrdDualRoleTest extends TestCase
     use RefreshDatabase;
 
     private User2 $direktur;
+
     private User2 $hrd;
+
     private Karyawan $karyawan;
 
     protected function setUp(): void

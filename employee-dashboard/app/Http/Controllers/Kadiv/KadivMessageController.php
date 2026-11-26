@@ -9,11 +9,10 @@ use App\Models\Tugas;
 use App\Models\User2;
 use App\Presenters\MessagePresenter;
 use App\Queries\KadivMessageQuery;
+use App\Support\FileStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Support\FileStorage;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class KadivMessageController extends Controller
@@ -64,8 +63,7 @@ class KadivMessageController extends Controller
             ->where(function ($query) use ($user): void {
                 $query->where('pengirim_id_user', $user->id_user)
                     ->orWhere('penerima_id_user', $user->id_user)
-                    ->orWhereHas('tugas.karyawan', fn ($employeeQuery) =>
-                        $employeeQuery->where('divisi_id_divisi', $user->karyawan->divisi_id_divisi)
+                    ->orWhereHas('tugas.karyawan', fn ($employeeQuery) => $employeeQuery->where('divisi_id_divisi', $user->karyawan->divisi_id_divisi)
                     );
             })
             ->first();
@@ -105,8 +103,7 @@ class KadivMessageController extends Controller
             ->where(function ($query) use ($user): void {
                 $query->where('pengirim_id_user', $user->id_user)
                     ->orWhere('penerima_id_user', $user->id_user)
-                    ->orWhereHas('tugas.karyawan', fn ($employeeQuery) =>
-                        $employeeQuery->where('divisi_id_divisi', $user->karyawan->divisi_id_divisi)
+                    ->orWhereHas('tugas.karyawan', fn ($employeeQuery) => $employeeQuery->where('divisi_id_divisi', $user->karyawan->divisi_id_divisi)
                     );
             })
             ->first();
@@ -250,7 +247,6 @@ class KadivMessageController extends Controller
             'data' => MessagePresenter::for($message, $user),
         ], 201);
     }
-
 
     private function authenticatedKadiv(Request $request): ?User2
     {

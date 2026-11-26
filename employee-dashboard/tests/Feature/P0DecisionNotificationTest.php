@@ -6,7 +6,6 @@ use App\Events\TugasDitugasan;
 use App\Models\BookingRequest;
 use App\Models\Divisi;
 use App\Models\Karyawan;
-use App\Models\KeuanganAldiv;
 use App\Models\KLabaRugi;
 use App\Models\KPermintDana;
 use App\Models\Notifikasi;
@@ -20,6 +19,7 @@ use App\Services\Finance\VerifikasiLaporanService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class P0DecisionNotificationTest extends TestCase
@@ -27,9 +27,13 @@ class P0DecisionNotificationTest extends TestCase
     use RefreshDatabase;
 
     private User2 $staff;
+
     private User2 $hrd;
+
     private User2 $kadiv;
+
     private User2 $finance;
+
     private User2 $direktur;
 
     protected function setUp(): void
@@ -276,7 +280,7 @@ class P0DecisionNotificationTest extends TestCase
             'status' => 'Pending',
         ]);
         BookingRequest::create([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'kategori' => 'Ruangan',
             'jenis' => 'Ruang Meeting',
             'tanggal' => now()->addDay()->toDateString(),

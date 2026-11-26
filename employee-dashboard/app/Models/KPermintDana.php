@@ -9,16 +9,21 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class KPermintDana extends Model
 {
-    protected $table      = 'kpermint_dana';
+    protected $table = 'kpermint_dana';
+
     protected $primaryKey = 'id_kpd';
 
     public $incrementing = false;
-    protected $keyType   = 'string';
+
+    protected $keyType = 'string';
 
     // Status constants
-    public const STATUS_MENUNGGU  = 'menunggu';
+    public const STATUS_MENUNGGU = 'menunggu';
+
     public const STATUS_DISETUJUI = 'disetujui';
-    public const STATUS_DITOLAK   = 'ditolak';
+
+    public const STATUS_DITOLAK = 'ditolak';
+
     public const STATUS_DICAIRKAN = 'dicairkan';
 
     protected $fillable = [
@@ -78,8 +83,23 @@ class KPermintDana extends Model
         return FormatAkuntansi::formatRupiah($this->nominal_diajukan);
     }
 
-    public function isMenunggu(): bool   { return $this->status === self::STATUS_MENUNGGU; }
-    public function isDisetujui(): bool  { return $this->status === self::STATUS_DISETUJUI; }
-    public function isDitolak(): bool    { return $this->status === self::STATUS_DITOLAK; }
-    public function isDicairkan(): bool  { return $this->status === self::STATUS_DICAIRKAN; }
+    public function isMenunggu(): bool
+    {
+        return $this->status === self::STATUS_MENUNGGU;
+    }
+
+    public function isDisetujui(): bool
+    {
+        return $this->status === self::STATUS_DISETUJUI;
+    }
+
+    public function isDitolak(): bool
+    {
+        return $this->status === self::STATUS_DITOLAK;
+    }
+
+    public function isDicairkan(): bool
+    {
+        return $this->status === self::STATUS_DICAIRKAN;
+    }
 }

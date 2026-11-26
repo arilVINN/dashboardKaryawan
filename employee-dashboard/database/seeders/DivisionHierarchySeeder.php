@@ -3,11 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Divisi;
-use App\Models\Karyawan;
 use App\Models\Role;
-use App\Models\User2;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 /**
  * Seeds the dummy company structure used by the dashboard:

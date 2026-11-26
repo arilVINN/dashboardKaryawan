@@ -13,7 +13,7 @@ use App\Support\FileStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class StaffTugasController extends Controller
@@ -27,7 +27,7 @@ class StaffTugasController extends Controller
 
         return response()->json([
             'message' => 'Daftar tugas Anda',
-            'data' => $tugas
+            'data' => $tugas,
         ]);
     }
 
@@ -37,10 +37,10 @@ class StaffTugasController extends Controller
         $karyawanId = $request->user()->karyawan_id_karyawan;
 
         $tugas = Tugas::with(['submitTugas', 'pesans.pengirim'])->where('id_tugas', $id)
-                      ->where('karyawan_id_karyawan', $karyawanId)
-                      ->first();
+            ->where('karyawan_id_karyawan', $karyawanId)
+            ->first();
 
-        if (!$tugas) {
+        if (! $tugas) {
             return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
         }
 
@@ -60,7 +60,7 @@ class StaffTugasController extends Controller
 
         return response()->json([
             'message' => 'Detail tugas',
-            'data' => $tugas
+            'data' => $tugas,
         ]);
     }
 
@@ -88,14 +88,14 @@ class StaffTugasController extends Controller
     }
 
     // POST /staff/tugas/{id}/submit
-     public function submit(Request $request, $id)
+    public function submit(Request $request, $id)
     {
         $karyawanId = $request->user()->karyawan_id_karyawan;
-        
+
         $tugas = Tugas::where('id_tugas', $id)
-                      ->where('karyawan_id_karyawan', $karyawanId)
-                      ->first();
-        if (!$tugas) {
+            ->where('karyawan_id_karyawan', $karyawanId)
+            ->first();
+        if (! $tugas) {
             return response()->json(['message' => 'Tugas tidak ditemukan'], 404);
         }
 
@@ -137,7 +137,7 @@ class StaffTugasController extends Controller
             $filePath = $uploadedFile->store('submissions', 'private');
 
             if (! $filePath) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
+                throw ValidationException::withMessages([
                     'file_hasil' => 'File gagal disimpan. Silakan coba lagi.',
                 ]);
             }
@@ -179,7 +179,7 @@ class StaffTugasController extends Controller
 
         try {
             $this->notifyKadivOnSubmission($tugas, $request->user(), $isRevisionSubmission);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             Log::error('Gagal membuat notifikasi pengumpulan tugas: '.$exception->getMessage(), [
                 'id_tugas' => $tugas->id_tugas,
             ]);

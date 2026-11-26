@@ -32,10 +32,10 @@ class AuditLog extends Model
     {
         return self::create([
             'user_id_user' => $userId,
-            'aksi'         => $aksi,
-            'target_tipe'  => $targetTipe,
-            'target_id'    => $targetId,
-            'detail'       => $detail,
+            'aksi' => $aksi,
+            'target_tipe' => $targetTipe,
+            'target_id' => $targetId,
+            'detail' => $detail,
         ]);
     }
 }

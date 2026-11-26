@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Hrd;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Divisi;
 use App\Models\Tugas;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class HrdDivisiController extends Controller
@@ -55,7 +55,7 @@ class HrdDivisiController extends Controller
         $exists = Divisi::where('nama_divisi', $validated['nama_divisi'])->first();
         if ($exists) {
             return response()->json([
-                'message' => 'Divisi dengan nama "' . $validated['nama_divisi'] . '" sudah ada'
+                'message' => 'Divisi dengan nama "'.$validated['nama_divisi'].'" sudah ada',
             ], 409); // 409 Conflict
         }
 
@@ -128,14 +128,15 @@ class HrdDivisiController extends Controller
         } catch (QueryException $e) {
             // Race condition: duplikat lolos validasi (kode/nama/ID)
             report($e);
+
             return response()->json([
-                'message' => 'Divisi dengan kode atau nama tersebut sudah ada'
+                'message' => 'Divisi dengan kode atau nama tersebut sudah ada',
             ], 409);
         }
 
         return response()->json([
             'message' => 'Divisi berhasil ditambahkan',
-            'data' => $divisi
+            'data' => $divisi,
         ], 201);
     }
 
@@ -151,7 +152,7 @@ class HrdDivisiController extends Controller
 
         return response()->json([
             'message' => 'Berhasil mengambil daftar divisi',
-            'data' => $divisis
+            'data' => $divisis,
         ]);
     }
 
@@ -163,7 +164,7 @@ class HrdDivisiController extends Controller
     {
         $divisi = Divisi::where('id_divisi', $id)->first();
 
-        if (!$divisi) {
+        if (! $divisi) {
             return response()->json(['message' => 'Divisi tidak ditemukan'], 404);
         }
 
@@ -281,7 +282,7 @@ class HrdDivisiController extends Controller
     {
         $divisi = Divisi::where('id_divisi', $id)->first();
 
-        if (!$divisi) {
+        if (! $divisi) {
             return response()->json(['message' => 'Divisi tidak ditemukan'], 404);
         }
 
@@ -301,6 +302,7 @@ class HrdDivisiController extends Controller
             $divisi->delete();
         } catch (QueryException $e) {
             report($e);
+
             return response()->json([
                 'message' => 'Divisi tidak dapat dihapus karena masih memiliki data terkait',
             ], 409);
@@ -323,7 +325,7 @@ class HrdDivisiController extends Controller
             },
         ])->where('id_divisi', $id)->first();
 
-        if (!$divisi) {
+        if (! $divisi) {
             return response()->json(['message' => 'Divisi tidak ditemukan'], 404);
         }
 
@@ -356,8 +358,8 @@ class HrdDivisiController extends Controller
                 'total_staff' => $divisi->karyawans->count(),
                 'total_tugas' => $totalTugas,
                 'tugas_selesai' => $tugasSelesai,
-                'persentase_selesai' => $persentase . '%',
-            ]
+                'persentase_selesai' => $persentase.'%',
+            ],
         ]);
     }
 

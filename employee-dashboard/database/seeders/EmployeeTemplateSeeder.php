@@ -159,6 +159,7 @@ class EmployeeTemplateSeeder extends Seeder
     {
         if ($this->rows === []) {
             $this->command->warn('EmployeeTemplateSeeder: array $rows masih kosong. Tidak ada data yang dibuat.');
+
             return;
         }
 
@@ -178,6 +179,7 @@ class EmployeeTemplateSeeder extends Seeder
             if ($username === '' || ! preg_match('/^[a-z0-9]+$/', $username)) {
                 $this->command->warn("  [{$label}] dilewati: username harus huruf/angka saja (tanpa titik/spasi).");
                 $skipped++;
+
                 continue;
             }
 
@@ -185,6 +187,7 @@ class EmployeeTemplateSeeder extends Seeder
             if (! $role) {
                 $this->command->warn("  [{$label}] dilewati: role '{$roleName}' tidak ditemukan.");
                 $skipped++;
+
                 continue;
             }
 
@@ -192,6 +195,7 @@ class EmployeeTemplateSeeder extends Seeder
             if (! $divisi) {
                 $this->command->warn("  [{$label}] dilewati: divisi dengan kode '{$divisiKode}' tidak ditemukan.");
                 $skipped++;
+
                 continue;
             }
 
@@ -205,25 +209,25 @@ class EmployeeTemplateSeeder extends Seeder
             Karyawan::updateOrCreate(
                 ['id_karyawan' => $idKaryawan],
                 [
-                    'nama'              => $row['nama'] ?? $username,
-                    'jenis_kelamin'     => $row['jenis_kelamin'] ?? 'Laki-laki',
-                    'jabatan'           => $row['jabatan'] ?? 'Staff',
-                    'divisi_id_divisi'  => $divisi->id_divisi,
-                    'email'             => $row['email'] ?? null,
-                    'no_telepon'        => $row['no_telepon'] ?? null,
-                    'tanggal_masuk'     => $row['tanggal_masuk'] ?? null,
-                    'status_aktif'      => 'Aktif',
-                    'aktif'             => true,
+                    'nama' => $row['nama'] ?? $username,
+                    'jenis_kelamin' => $row['jenis_kelamin'] ?? 'Laki-laki',
+                    'jabatan' => $row['jabatan'] ?? 'Staff',
+                    'divisi_id_divisi' => $divisi->id_divisi,
+                    'email' => $row['email'] ?? null,
+                    'no_telepon' => $row['no_telepon'] ?? null,
+                    'tanggal_masuk' => $row['tanggal_masuk'] ?? null,
+                    'status_aktif' => 'Aktif',
+                    'aktif' => true,
                 ]
             );
 
             User2::updateOrCreate(
                 ['id_user' => $idUser],
                 [
-                    'username'              => $username,
-                    'password'              => Hash::make($row['password'] ?? 'pass123'),
-                    'role_id_role'          => $role->id_role,
-                    'karyawan_id_karyawan'  => $idKaryawan,
+                    'username' => $username,
+                    'password' => Hash::make($row['password'] ?? 'pass123'),
+                    'role_id_role' => $role->id_role,
+                    'karyawan_id_karyawan' => $idKaryawan,
                 ]
             );
 

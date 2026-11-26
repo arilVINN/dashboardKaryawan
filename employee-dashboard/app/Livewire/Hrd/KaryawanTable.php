@@ -4,7 +4,6 @@ namespace App\Livewire\Hrd;
 
 use App\Models\Divisi;
 use App\Models\Jabatan;
-use App\Models\Karyawan;
 use App\Models\User2;
 use App\Queries\HrdKaryawanQuery;
 use Livewire\Attributes\On;
@@ -48,7 +47,7 @@ class KaryawanTable extends Component
         $user = auth()->user();
 
         if (! $user instanceof User2
-            || (! $user instanceof \App\Models\User2 || ! $user->hasRole('hrd') && ! $user->isDirektur())) {
+            || (! $user instanceof User2 || ! $user->hasRole('hrd') && ! $user->isDirektur())) {
             abort(403);
         }
 
@@ -93,7 +92,7 @@ class KaryawanTable extends Component
 
     public function updatedPerPage(): void
     {
-        if (!in_array($this->perPage, [5, 10, 25, 50], true)) {
+        if (! in_array($this->perPage, [5, 10, 25, 50], true)) {
             $this->perPage = 5;
         }
 

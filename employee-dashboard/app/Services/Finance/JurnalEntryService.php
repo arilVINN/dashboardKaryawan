@@ -50,7 +50,7 @@ class JurnalEntryService
 
         return $this->create([
             'entry_date' => $pemasukan->tanggal_masuk->toDateString(),
-            'ref_code' => 'DMIN' . str_pad($this->numericPart((string) $pemasukan->id_kp), 3, '0', STR_PAD_LEFT),
+            'ref_code' => 'DMIN'.str_pad($this->numericPart((string) $pemasukan->id_kp), 3, '0', STR_PAD_LEFT),
             'source_type' => KPemasukan::class,
             'source_id' => (string) $pemasukan->id_kp,
             'created_by' => $pemasukan->user_id_user,
@@ -76,7 +76,7 @@ class JurnalEntryService
 
         return $this->create([
             'entry_date' => $pengeluaran->tanggal_cair->toDateString(),
-            'ref_code' => 'DMOUT' . str_pad($this->numericPart((string) $pengeluaran->id_kpengeluaran), 2, '0', STR_PAD_LEFT),
+            'ref_code' => 'DMOUT'.str_pad($this->numericPart((string) $pengeluaran->id_kpengeluaran), 2, '0', STR_PAD_LEFT),
             'source_type' => KPengeluaran::class,
             'source_id' => (string) $pengeluaran->id_kpengeluaran,
             'created_by' => $pengeluaran->user_id_user,
@@ -105,7 +105,7 @@ class JurnalEntryService
      */
     public function reverse(JurnalEntry $entry, string $alasan, ?string $createdBy): JurnalEntry
     {
-        $keterangan = 'Pembatalan jurnal #' . $entry->id . '. Alasan: ' . trim($alasan);
+        $keterangan = 'Pembatalan jurnal #'.$entry->id.'. Alasan: '.trim($alasan);
 
         $lines = $entry->lines->map(fn (JurnalLine $line) => [
             'account_id' => $line->account_id,
@@ -153,15 +153,15 @@ class JurnalEntryService
                 $this->fail('Satu baris hanya boleh berisi debit atau kredit, tidak keduanya.');
             }
             if ($debit === 0 && $credit === 0) {
-                $this->fail('Baris ke-' . ($index + 1) . ' belum memiliki nominal.');
+                $this->fail('Baris ke-'.($index + 1).' belum memiliki nominal.');
             }
 
             $account = CoaAkun::find($line['account_id'] ?? null);
             if (! $account) {
-                $this->fail('Akun pada baris ke-' . ($index + 1) . ' tidak ditemukan.');
+                $this->fail('Akun pada baris ke-'.($index + 1).' tidak ditemukan.');
             }
             if (! $account->aktif) {
-                $this->fail('Akun ' . $account->kode . ' tidak aktif.');
+                $this->fail('Akun '.$account->kode.' tidak aktif.');
             }
 
             $totalDebit += $debit;
@@ -179,7 +179,7 @@ class JurnalEntryService
 
         if ($totalDebit <= 0 || $totalDebit !== $totalCredit) {
             $this->fail(
-                'Total debit (' . $totalDebit . ') dan kredit (' . $totalCredit . ') harus sama dan lebih dari nol.'
+                'Total debit ('.$totalDebit.') dan kredit ('.$totalCredit.') harus sama dan lebih dari nol.'
             );
         }
 
@@ -265,7 +265,7 @@ class JurnalEntryService
         }
 
         if (! $akun) {
-            $this->fail('Akun COA dengan kode ' . $kode . ' tidak ditemukan atau tidak aktif.');
+            $this->fail('Akun COA dengan kode '.$kode.' tidak ditemukan atau tidak aktif.');
         }
 
         return $akun->id;
@@ -283,7 +283,7 @@ class JurnalEntryService
 
     private function fail(string $message): never
     {
-        Log::error('Jurnal Umum: ' . $message);
+        Log::error('Jurnal Umum: '.$message);
         throw new InvalidArgumentException($message);
     }
 }

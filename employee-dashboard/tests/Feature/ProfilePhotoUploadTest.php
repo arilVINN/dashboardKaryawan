@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -271,7 +272,7 @@ class ProfilePhotoUploadTest extends TestCase
     public function test_hrd_can_change_their_own_password(): void
     {
         $this->hrd->update([
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'password' => Hash::make('password'),
         ]);
 
         $this->actingAs($this->hrd)

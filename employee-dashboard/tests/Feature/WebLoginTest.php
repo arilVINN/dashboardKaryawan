@@ -37,7 +37,7 @@ class WebLoginTest extends TestCase
             ->assertViewIs('hrd.profile')
             ->assertSee('Profil Saya')
             ->assertSee('Manajemen Divisi')
-            ->assertSee('href="' . route('hrd.profile') . '"', false)
+            ->assertSee('href="'.route('hrd.profile').'"', false)
             ->assertSee('/api/hrd/profile', false)
             ->assertDontSee('Guest');
     }
@@ -107,7 +107,7 @@ class WebLoginTest extends TestCase
         $this->get('/hrd/dashboard')
             ->assertOk()
             ->assertViewIs('hrd.dashboard')
-            ->assertSee('href="' . route('hrd.profile') . '"', false);
+            ->assertSee('href="'.route('hrd.profile').'"', false);
 
         $this->get('/hrd/profile')
             ->assertOk()

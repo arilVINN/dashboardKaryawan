@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Divisi;
+use App\Models\Jabatan;
 use App\Models\Karyawan;
 use App\Models\StrukturOrganisasi;
 use Illuminate\Http\JsonResponse;
@@ -58,20 +59,20 @@ class StrukturOrganisasiController extends Controller
             ->get();
 
         // 2. Tentukan Pimpinan Utama (Pengawas, Direktur Utama, Direktur Operasional)
-        $pengawasKaryawan = $allKaryawan->first(fn(Karyawan $k) => str_contains(strtolower((string)$k->jabatan), 'pengawas'));
-        $pengawasStruktur = $strukturNodes->first(fn($n) => str_contains(strtolower((string)$n->jabatan), 'pengawas'));
+        $pengawasKaryawan = $allKaryawan->first(fn (Karyawan $k) => str_contains(strtolower((string) $k->jabatan), 'pengawas'));
+        $pengawasStruktur = $strukturNodes->first(fn ($n) => str_contains(strtolower((string) $n->jabatan), 'pengawas'));
         $pengawas = $pengawasKaryawan
             ? $this->formatKaryawanNode($pengawasKaryawan)
             : ($pengawasStruktur ? $this->formatStrukturNode($pengawasStruktur) : null);
 
-        $dirUtamaKaryawan = $allKaryawan->first(fn(Karyawan $k) => $k->isDirekturUtama() || $k->divisi?->isDirekturUtama());
-        $dirUtamaStruktur = $strukturNodes->first(fn($n) => str_contains(strtolower((string)$n->jabatan), 'direktur utama'));
+        $dirUtamaKaryawan = $allKaryawan->first(fn (Karyawan $k) => $k->isDirekturUtama() || $k->divisi?->isDirekturUtama());
+        $dirUtamaStruktur = $strukturNodes->first(fn ($n) => str_contains(strtolower((string) $n->jabatan), 'direktur utama'));
         $dirUtama = $dirUtamaKaryawan
             ? $this->formatKaryawanNode($dirUtamaKaryawan)
             : ($dirUtamaStruktur ? $this->formatStrukturNode($dirUtamaStruktur) : null);
 
-        $dirOpsKaryawan = $allKaryawan->first(fn(Karyawan $k) => str_contains(strtolower((string)$k->jabatan), 'direktur operasional'));
-        $dirOpsStruktur = $strukturNodes->first(fn($n) => str_contains(strtolower((string)$n->jabatan), 'direktur operasional'));
+        $dirOpsKaryawan = $allKaryawan->first(fn (Karyawan $k) => str_contains(strtolower((string) $k->jabatan), 'direktur operasional'));
+        $dirOpsStruktur = $strukturNodes->first(fn ($n) => str_contains(strtolower((string) $n->jabatan), 'direktur operasional'));
         $dirOps = $dirOpsKaryawan
             ? $this->formatKaryawanNode($dirOpsKaryawan)
             : ($dirOpsStruktur ? $this->formatStrukturNode($dirOpsStruktur) : null);
@@ -96,29 +97,31 @@ class StrukturOrganisasiController extends Controller
                         return false;
                     }
                     // Abaikan akun sistem Superadmin agar tidak mengotori bagan
-                    if (strtolower((string)$k->job_level) === 'superadmin' || strtolower((string)$k->jabatan) === 'superadmin') {
+                    if (strtolower((string) $k->job_level) === 'superadmin' || strtolower((string) $k->jabatan) === 'superadmin') {
                         return false;
                     }
+
                     return $k->divisi_id_divisi === $divisi->id_divisi;
                 })
                 ->sortBy(function (Karyawan $k) {
-                    $jab = strtolower((string)$k->jabatanLabel());
+                    $jab = strtolower((string) $k->jabatanLabel());
                     $isHead = $k->isKadiv()
                         || str_contains($jab, 'kepala')
                         || str_contains($jab, 'koord')
                         || str_contains($jab, 'manager');
-                    return ($isHead ? '0_' : '1_') . strtolower($k->nama);
+
+                    return ($isHead ? '0_' : '1_').strtolower($k->nama);
                 })
-                ->map(fn(Karyawan $k) => $this->formatKaryawanNode($k, $divisi))
+                ->map(fn (Karyawan $k) => $this->formatKaryawanNode($k, $divisi))
                 ->values();
 
             $divBox = (object) [
-                'id_divisi'    => $divisi->id_divisi,
-                'kode_divisi'  => $divisi->kode_divisi,
-                'nama_divisi'  => $divisi->nama_divisi,
+                'id_divisi' => $divisi->id_divisi,
+                'kode_divisi' => $divisi->kode_divisi,
+                'nama_divisi' => $divisi->nama_divisi,
                 'posisi_bagan' => $divisi->posisi_bagan ?: Divisi::POSISI_OPERASIONAL,
-                'urutan'       => (int) $divisi->urutan,
-                'members'      => $members,
+                'urutan' => (int) $divisi->urutan,
+                'members' => $members,
             ];
 
             if ($divBox->posisi_bagan === Divisi::POSISI_DIRUT_PENDUKUNG) {
@@ -133,7 +136,7 @@ class StrukturOrganisasiController extends Controller
         $daftarDivisiObj = $unitDivisions;
         $daftarDivisi = $unitDivisions->pluck('nama_divisi')->values();
         $daftarKaryawan = $allKaryawan->filter(
-            fn(Karyawan $k) => strtolower((string)$k->job_level) !== 'superadmin'
+            fn (Karyawan $k) => strtolower((string) $k->job_level) !== 'superadmin'
         )->values();
 
         return view('hrd.strukturOrganisasi', compact(
@@ -177,22 +180,22 @@ class StrukturOrganisasiController extends Controller
             || str_contains($jabLower, 'manager');
 
         return (object) [
-            'id'           => $k->id_karyawan,
-            'node_key'     => 'kar_' . $k->id_karyawan,
-            'source_type'  => 'karyawan',
-            'id_karyawan'  => $k->id_karyawan,
-            'nama'         => $k->nama,
-            'jabatan'      => $jabatan,
-            'divisi_id'    => $divModel?->id_divisi ?? $k->divisi_id_divisi,
-            'divisi'       => $divModel?->nama_divisi ?? '-',
+            'id' => $k->id_karyawan,
+            'node_key' => 'kar_'.$k->id_karyawan,
+            'source_type' => 'karyawan',
+            'id_karyawan' => $k->id_karyawan,
+            'nama' => $k->nama,
+            'jabatan' => $jabatan,
+            'divisi_id' => $divModel?->id_divisi ?? $k->divisi_id_divisi,
+            'divisi' => $divModel?->nama_divisi ?? '-',
             'status_kerja' => $statusKerja,
-            'garis_putus'  => in_array($statusKerja, ['magang', 'probation'], true),
-            'is_kadiv'     => $isKadiv,
-            'email'        => filled(trim((string) $k->email)) ? $k->email : '-',
-            'no_telepon'   => filled(trim((string) $k->no_telepon)) ? $k->no_telepon : '-',
-            'keterangan'   => $k->atasan ? 'Atasan: ' . $k->atasan->nama : ($divModel?->nama_divisi ?? '-'),
-            'foto'         => $k->foto ? asset('storage/' . $k->foto) : '',
-            'atasan_id'    => $k->atasan_id,
+            'garis_putus' => in_array($statusKerja, ['magang', 'probation'], true),
+            'is_kadiv' => $isKadiv,
+            'email' => filled(trim((string) $k->email)) ? $k->email : '-',
+            'no_telepon' => filled(trim((string) $k->no_telepon)) ? $k->no_telepon : '-',
+            'keterangan' => $k->atasan ? 'Atasan: '.$k->atasan->nama : ($divModel?->nama_divisi ?? '-'),
+            'foto' => $k->foto ? asset('storage/'.$k->foto) : '',
+            'atasan_id' => $k->atasan_id,
         ];
     }
 
@@ -203,26 +206,26 @@ class StrukturOrganisasiController extends Controller
     {
         $statusKerja = strtolower((string) ($n->status_kerja ?? 'tetap'));
         $fotoUrl = $n->foto
-            ? asset('storage/' . $n->foto)
-            : ($n->karyawan?->foto ? asset('storage/' . $n->karyawan->foto) : '');
+            ? asset('storage/'.$n->foto)
+            : ($n->karyawan?->foto ? asset('storage/'.$n->karyawan->foto) : '');
 
         return (object) [
-            'id'           => $n->id,
-            'node_key'     => 'str_' . $n->id,
-            'source_type'  => 'struktur',
-            'id_karyawan'  => $n->id_karyawan,
-            'nama'         => $n->nama,
-            'jabatan'      => $n->jabatan,
-            'divisi_id'    => null,
-            'divisi'       => $n->divisi ?? '-',
+            'id' => $n->id,
+            'node_key' => 'str_'.$n->id,
+            'source_type' => 'struktur',
+            'id_karyawan' => $n->id_karyawan,
+            'nama' => $n->nama,
+            'jabatan' => $n->jabatan,
+            'divisi_id' => null,
+            'divisi' => $n->divisi ?? '-',
             'status_kerja' => $statusKerja,
-            'garis_putus'  => (bool) ($n->garis_putus || in_array($statusKerja, ['magang', 'probation'], true)),
-            'is_kadiv'     => false,
-            'email'        => $n->email ?? '-',
-            'no_telepon'   => $n->no_telepon ?? '-',
-            'keterangan'   => $n->keterangan ?? '-',
-            'foto'         => $fotoUrl,
-            'atasan_id'    => $n->parent_id,
+            'garis_putus' => (bool) ($n->garis_putus || in_array($statusKerja, ['magang', 'probation'], true)),
+            'is_kadiv' => false,
+            'email' => $n->email ?? '-',
+            'no_telepon' => $n->no_telepon ?? '-',
+            'keterangan' => $n->keterangan ?? '-',
+            'foto' => $fotoUrl,
+            'atasan_id' => $n->parent_id,
         ];
     }
 
@@ -234,9 +237,9 @@ class StrukturOrganisasiController extends Controller
         $this->authorizeManagement();
 
         $validated = $request->validate([
-            'id_divisi'    => 'required|string|exists:divisis,id_divisi',
+            'id_divisi' => 'required|string|exists:divisis,id_divisi',
             'posisi_bagan' => 'required|string|in:dirut_pendukung,dirops_pendukung,operasional',
-            'urutan'       => 'nullable|integer|min:1|max:999',
+            'urutan' => 'nullable|integer|min:1|max:999',
         ]);
 
         $divisi = Divisi::where('id_divisi', $validated['id_divisi'])->firstOrFail();
@@ -264,7 +267,7 @@ class StrukturOrganisasiController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Posisi divisi '{$divisi->nama_divisi}' berhasil diperbarui.",
-            'data'    => $divisi,
+            'data' => $divisi,
         ]);
     }
 
@@ -278,14 +281,14 @@ class StrukturOrganisasiController extends Controller
         $karyawan = Karyawan::findOrFail($id);
 
         $validated = $request->validate([
-            'nama'             => 'required|string|max:255',
-            'jabatan'          => 'required|string|max:255',
+            'nama' => 'required|string|max:255',
+            'jabatan' => 'required|string|max:255',
             'divisi_id_divisi' => 'required|string|exists:divisis,id_divisi',
-            'status_karyawan'  => 'nullable|string|in:tetap,kontrak,probation,magang',
-            'atasan_id'        => 'nullable|string|exists:karyawans,id_karyawan',
-            'email'            => 'nullable|email|max:255',
-            'no_telepon'       => 'nullable|string|max:50',
-            'foto'             => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
+            'status_karyawan' => 'nullable|string|in:tetap,kontrak,probation,magang',
+            'atasan_id' => 'nullable|string|exists:karyawans,id_karyawan',
+            'email' => 'nullable|email|max:255',
+            'no_telepon' => 'nullable|string|max:50',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
         ]);
 
         if (! empty($validated['atasan_id']) && $validated['atasan_id'] === $karyawan->id_karyawan) {
@@ -303,20 +306,20 @@ class StrukturOrganisasiController extends Controller
         }
 
         $statusKerja = $validated['status_karyawan'] ?? $karyawan->status_karyawan ?? 'tetap';
-        $jabatanNama = \App\Models\Jabatan::normaliseNama($validated['jabatan']);
-        $jabatanModel = \App\Models\Jabatan::firstOrCreate(
+        $jabatanNama = Jabatan::normaliseNama($validated['jabatan']);
+        $jabatanModel = Jabatan::firstOrCreate(
             ['division_id' => $validated['divisi_id_divisi'], 'nama' => $jabatanNama],
             ['aktif' => true],
         );
 
-        $karyawan->nama             = $validated['nama'];
-        $karyawan->jabatan          = $jabatanModel->nama;
-        $karyawan->jabatan_id       = $jabatanModel->id;
+        $karyawan->nama = $validated['nama'];
+        $karyawan->jabatan = $jabatanModel->nama;
+        $karyawan->jabatan_id = $jabatanModel->id;
         $karyawan->divisi_id_divisi = $validated['divisi_id_divisi'];
-        $karyawan->status_karyawan  = $statusKerja;
-        $karyawan->atasan_id        = $validated['atasan_id'] ?: null;
-        $karyawan->email            = $validated['email'] ?? $karyawan->email;
-        $karyawan->no_telepon       = $validated['no_telepon'] ?? $karyawan->no_telepon;
+        $karyawan->status_karyawan = $statusKerja;
+        $karyawan->atasan_id = $validated['atasan_id'] ?: null;
+        $karyawan->email = $validated['email'] ?? $karyawan->email;
+        $karyawan->no_telepon = $validated['no_telepon'] ?? $karyawan->no_telepon;
 
         if ($statusKerja === 'magang') {
             $karyawan->job_level = 'Magang';
@@ -329,7 +332,7 @@ class StrukturOrganisasiController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Data '{$karyawan->nama}' berhasil diperbarui dan disinkronkan.",
-            'data'    => $karyawan,
+            'data' => $karyawan,
         ]);
     }
 
@@ -350,9 +353,9 @@ class StrukturOrganisasiController extends Controller
         foreach ($nodes as $n) {
             $fotoUrl = null;
             if ($n->foto) {
-                $fotoUrl = asset('storage/' . $n->foto);
+                $fotoUrl = asset('storage/'.$n->foto);
             } elseif ($n->karyawan?->foto) {
-                $fotoUrl = asset('storage/' . $n->karyawan->foto);
+                $fotoUrl = asset('storage/'.$n->karyawan->foto);
             }
 
             $matchesSearch = true;
@@ -360,40 +363,40 @@ class StrukturOrganisasiController extends Controller
                 $searchLower = mb_strtolower($search);
                 $matchesSearch = str_contains(mb_strtolower($n->nama), $searchLower)
                     || str_contains(mb_strtolower($n->jabatan), $searchLower)
-                    || str_contains(mb_strtolower((string)$n->divisi), $searchLower);
+                    || str_contains(mb_strtolower((string) $n->divisi), $searchLower);
             }
 
             $matchesDivisi = true;
             if ($filterDivisi !== '' && strtolower($filterDivisi) !== 'all') {
-                $matchesDivisi = strcasecmp((string)$n->divisi, $filterDivisi) === 0;
+                $matchesDivisi = strcasecmp((string) $n->divisi, $filterDivisi) === 0;
             }
 
             $nodesById[$n->id] = [
-                'id'             => $n->id,
-                'nama'           => $n->nama,
-                'jabatan'        => $n->jabatan,
-                'tipe_node'      => $n->tipe_node ?? 'orang',
-                'status_kerja'   => $n->status_kerja ?? 'tetap',
-                'garis_putus'    => (bool)($n->garis_putus || in_array($n->status_kerja, ['magang', 'probation'])),
-                'divisi'         => $n->divisi ?? '-',
-                'parent_id'      => $n->parent_id,
-                'parent_nama'    => $n->parent?->nama,
-                'urutan'         => $n->urutan,
-                'level'          => $n->level,
-                'foto'           => $fotoUrl,
-                'initial'        => mb_strtoupper(mb_substr($n->nama, 0, 1)),
-                'email'          => $n->email ?? '-',
-                'no_telepon'     => $n->no_telepon ?? '-',
-                'keterangan'     => $n->keterangan ?? '-',
-                'id_karyawan'    => $n->id_karyawan,
+                'id' => $n->id,
+                'nama' => $n->nama,
+                'jabatan' => $n->jabatan,
+                'tipe_node' => $n->tipe_node ?? 'orang',
+                'status_kerja' => $n->status_kerja ?? 'tetap',
+                'garis_putus' => (bool) ($n->garis_putus || in_array($n->status_kerja, ['magang', 'probation'])),
+                'divisi' => $n->divisi ?? '-',
+                'parent_id' => $n->parent_id,
+                'parent_nama' => $n->parent?->nama,
+                'urutan' => $n->urutan,
+                'level' => $n->level,
+                'foto' => $fotoUrl,
+                'initial' => mb_strtoupper(mb_substr($n->nama, 0, 1)),
+                'email' => $n->email ?? '-',
+                'no_telepon' => $n->no_telepon ?? '-',
+                'keterangan' => $n->keterangan ?? '-',
+                'id_karyawan' => $n->id_karyawan,
                 'matches_search' => $matchesSearch,
                 'matches_divisi' => $matchesDivisi,
             ];
         }
 
         return response()->json([
-            'success'     => true,
-            'nodes'       => array_values($nodesById),
+            'success' => true,
+            'nodes' => array_values($nodesById),
             'total_nodes' => count($nodesById),
         ]);
     }
@@ -407,32 +410,32 @@ class StrukturOrganisasiController extends Controller
 
         $fotoUrl = null;
         if ($node->foto) {
-            $fotoUrl = asset('storage/' . $node->foto);
+            $fotoUrl = asset('storage/'.$node->foto);
         } elseif ($node->karyawan?->foto) {
-            $fotoUrl = asset('storage/' . $node->karyawan->foto);
+            $fotoUrl = asset('storage/'.$node->karyawan->foto);
         }
 
         return response()->json([
             'success' => true,
-            'data'    => [
-                'id'           => $node->id,
-                'nama'         => $node->nama,
-                'jabatan'      => $node->jabatan,
-                'tipe_node'    => $node->tipe_node ?? 'orang',
+            'data' => [
+                'id' => $node->id,
+                'nama' => $node->nama,
+                'jabatan' => $node->jabatan,
+                'tipe_node' => $node->tipe_node ?? 'orang',
                 'status_kerja' => $node->status_kerja ?? 'tetap',
-                'garis_putus'  => (bool)($node->garis_putus || in_array($node->status_kerja, ['magang', 'probation'])),
-                'divisi'       => $node->divisi,
-                'parent_id'    => $node->parent_id,
-                'parent_nama'  => $node->parent?->nama,
-                'parent_jab'   => $node->parent?->jabatan,
-                'urutan'       => $node->urutan,
-                'level'        => $node->level,
-                'foto'         => $fotoUrl,
-                'initial'      => mb_strtoupper(mb_substr($node->nama, 0, 1)),
-                'email'        => $node->email,
-                'no_telepon'   => $node->no_telepon,
-                'keterangan'   => $node->keterangan,
-                'id_karyawan'  => $node->id_karyawan,
+                'garis_putus' => (bool) ($node->garis_putus || in_array($node->status_kerja, ['magang', 'probation'])),
+                'divisi' => $node->divisi,
+                'parent_id' => $node->parent_id,
+                'parent_nama' => $node->parent?->nama,
+                'parent_jab' => $node->parent?->jabatan,
+                'urutan' => $node->urutan,
+                'level' => $node->level,
+                'foto' => $fotoUrl,
+                'initial' => mb_strtoupper(mb_substr($node->nama, 0, 1)),
+                'email' => $node->email,
+                'no_telepon' => $node->no_telepon,
+                'keterangan' => $node->keterangan,
+                'id_karyawan' => $node->id_karyawan,
             ],
         ]);
     }
@@ -445,24 +448,24 @@ class StrukturOrganisasiController extends Controller
         $this->authorizeManagement();
 
         $validated = $request->validate([
-            'nama'         => 'required|string|max:255',
-            'jabatan'      => 'required|string|max:255',
-            'divisi'       => 'required|string|max:255',
+            'nama' => 'required|string|max:255',
+            'jabatan' => 'required|string|max:255',
+            'divisi' => 'required|string|max:255',
             'status_kerja' => 'nullable|string|in:tetap,probation,magang,kontrak',
-            'garis_putus'  => 'nullable|boolean',
-            'parent_id'    => 'nullable|exists:struktur_organisasis,id',
-            'urutan'       => 'nullable|integer|min:1',
-            'email'        => 'nullable|email|max:255',
-            'no_telepon'   => 'nullable|string|max:50',
-            'keterangan'   => 'nullable|string|max:1000',
-            'id_karyawan'  => 'nullable|exists:karyawans,id_karyawan',
-            'foto'         => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
+            'garis_putus' => 'nullable|boolean',
+            'parent_id' => 'nullable|exists:struktur_organisasis,id',
+            'urutan' => 'nullable|integer|min:1',
+            'email' => 'nullable|email|max:255',
+            'no_telepon' => 'nullable|string|max:50',
+            'keterangan' => 'nullable|string|max:1000',
+            'id_karyawan' => 'nullable|exists:karyawans,id_karyawan',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
         ]);
 
-        $parentId = !empty($validated['parent_id']) ? (int)$validated['parent_id'] : null;
+        $parentId = ! empty($validated['parent_id']) ? (int) $validated['parent_id'] : null;
 
         // Jika parent tidak diisi, otomatis hubungkan ke atasan divisi terkait atau Direktur Operasional
-        if (!$parentId) {
+        if (! $parentId) {
             $divisiAtasan = StrukturOrganisasi::where('divisi', $validated['divisi'])
                 ->orderBy('level', 'asc')
                 ->orderBy('urutan', 'asc')
@@ -489,7 +492,7 @@ class StrukturOrganisasiController extends Controller
             $maxUrutan = StrukturOrganisasi::where('divisi', $validated['divisi'])->max('urutan');
             $urutan = $maxUrutan ? $maxUrutan + 1 : 1;
         } else {
-            $urutan = (int)$validated['urutan'];
+            $urutan = (int) $validated['urutan'];
         }
 
         // Upload foto jika ada
@@ -504,27 +507,27 @@ class StrukturOrganisasiController extends Controller
             : in_array($statusKerja, ['magang', 'probation']);
 
         $node = StrukturOrganisasi::create([
-            'nama'         => $validated['nama'],
-            'jabatan'      => $validated['jabatan'],
-            'divisi'       => $validated['divisi'],
-            'tipe_node'    => 'orang',
+            'nama' => $validated['nama'],
+            'jabatan' => $validated['jabatan'],
+            'divisi' => $validated['divisi'],
+            'tipe_node' => 'orang',
             'status_kerja' => $statusKerja,
-            'garis_putus'  => $garisPutus,
-            'parent_id'    => $parentId,
-            'urutan'       => $urutan,
-            'level'        => $level,
-            'foto'         => $fotoPath,
-            'email'        => $validated['email'] ?? null,
-            'no_telepon'   => $validated['no_telepon'] ?? null,
-            'keterangan'   => $validated['keterangan'] ?? null,
-            'id_karyawan'  => $validated['id_karyawan'] ?? null,
+            'garis_putus' => $garisPutus,
+            'parent_id' => $parentId,
+            'urutan' => $urutan,
+            'level' => $level,
+            'foto' => $fotoPath,
+            'email' => $validated['email'] ?? null,
+            'no_telepon' => $validated['no_telepon'] ?? null,
+            'keterangan' => $validated['keterangan'] ?? null,
+            'id_karyawan' => $validated['id_karyawan'] ?? null,
         ]);
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'message' => "Karyawan '{$node->nama}' ({$node->jabatan}) berhasil ditambahkan ke Divisi {$node->divisi}.",
-                'data'    => $node,
+                'data' => $node,
             ], 201);
         }
 
@@ -541,26 +544,26 @@ class StrukturOrganisasiController extends Controller
         $node = StrukturOrganisasi::findOrFail($id);
 
         $validated = $request->validate([
-            'nama'         => 'required|string|max:255',
-            'jabatan'      => 'required|string|max:255',
-            'divisi'       => 'required|string|max:255',
+            'nama' => 'required|string|max:255',
+            'jabatan' => 'required|string|max:255',
+            'divisi' => 'required|string|max:255',
             'status_kerja' => 'nullable|string|in:tetap,probation,magang,kontrak',
-            'garis_putus'  => 'nullable|boolean',
-            'parent_id'    => 'nullable|exists:struktur_organisasis,id',
-            'urutan'       => 'nullable|integer|min:1',
-            'email'        => 'nullable|email|max:255',
-            'no_telepon'   => 'nullable|string|max:50',
-            'keterangan'   => 'nullable|string|max:1000',
-            'id_karyawan'  => 'nullable|exists:karyawans,id_karyawan',
-            'foto'         => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
-            'hapus_foto'   => 'nullable|boolean',
+            'garis_putus' => 'nullable|boolean',
+            'parent_id' => 'nullable|exists:struktur_organisasis,id',
+            'urutan' => 'nullable|integer|min:1',
+            'email' => 'nullable|email|max:255',
+            'no_telepon' => 'nullable|string|max:50',
+            'keterangan' => 'nullable|string|max:1000',
+            'id_karyawan' => 'nullable|exists:karyawans,id_karyawan',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
+            'hapus_foto' => 'nullable|boolean',
         ]);
 
-        $newParentId = !empty($validated['parent_id']) ? (int)$validated['parent_id'] : null;
+        $newParentId = ! empty($validated['parent_id']) ? (int) $validated['parent_id'] : null;
 
         // Cegah circular loop jika memilih parent
         if ($newParentId && $newParentId !== $node->parent_id) {
-            if ($newParentId === (int)$node->id) {
+            if ($newParentId === (int) $node->id) {
                 return $this->errorResponse($request, 'Posisi tidak dapat dijadikan atasan bagi dirinya sendiri.', 422);
             }
             if ($node->isDescendantOf($newParentId)) {
@@ -587,18 +590,18 @@ class StrukturOrganisasiController extends Controller
             ? $request->boolean('garis_putus')
             : in_array($statusKerja, ['magang', 'probation']);
 
-        $node->nama         = $validated['nama'];
-        $node->jabatan      = $validated['jabatan'];
-        $node->divisi       = $validated['divisi'];
+        $node->nama = $validated['nama'];
+        $node->jabatan = $validated['jabatan'];
+        $node->divisi = $validated['divisi'];
         $node->status_kerja = $statusKerja;
-        $node->garis_putus  = $garisPutus;
-        $node->parent_id    = $newParentId;
-        $node->email        = $validated['email'] ?? null;
-        $node->no_telepon   = $validated['no_telepon'] ?? null;
-        $node->keterangan   = $validated['keterangan'] ?? null;
+        $node->garis_putus = $garisPutus;
+        $node->parent_id = $newParentId;
+        $node->email = $validated['email'] ?? null;
+        $node->no_telepon = $validated['no_telepon'] ?? null;
+        $node->keterangan = $validated['keterangan'] ?? null;
 
-        if (array_key_exists('urutan', $validated) && !empty($validated['urutan'])) {
-            $node->urutan = (int)$validated['urutan'];
+        if (array_key_exists('urutan', $validated) && ! empty($validated['urutan'])) {
+            $node->urutan = (int) $validated['urutan'];
         }
         if (array_key_exists('id_karyawan', $validated)) {
             $node->id_karyawan = $validated['id_karyawan'];
@@ -611,7 +614,7 @@ class StrukturOrganisasiController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Data posisi '{$node->nama}' berhasil diperbarui.",
-                'data'    => $node,
+                'data' => $node,
             ]);
         }
 
@@ -656,7 +659,8 @@ class StrukturOrganisasiController extends Controller
             return back()->with('success', "Posisi '{$namaNode}' berhasil dihapus dari struktur.");
         } catch (\Throwable $th) {
             DB::rollBack();
-            return $this->errorResponse($request, 'Gagal menghapus data posisi: ' . $th->getMessage(), 500);
+
+            return $this->errorResponse($request, 'Gagal menghapus data posisi: '.$th->getMessage(), 500);
         }
     }
 
@@ -669,7 +673,7 @@ class StrukturOrganisasiController extends Controller
 
         // Direktur/Direksi are read-only monitors, so they cannot manage the
         // organization chart even though they can view it.
-        if (!in_array($role, ['hrd', 'superadmin'], true)) {
+        if (! in_array($role, ['hrd', 'superadmin'], true)) {
             abort(403, 'Anda tidak memiliki hak akses untuk mengelola Struktur Organisasi.');
         }
     }

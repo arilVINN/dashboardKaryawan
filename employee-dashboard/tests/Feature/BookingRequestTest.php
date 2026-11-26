@@ -11,6 +11,7 @@ use App\Models\SuratIzin;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class BookingRequestTest extends TestCase
@@ -18,8 +19,11 @@ class BookingRequestTest extends TestCase
     use RefreshDatabase;
 
     private User2 $staff;
+
     private User2 $hrd;
+
     private User2 $direksi;
+
     private User2 $kadiv;
 
     protected function setUp(): void
@@ -223,13 +227,13 @@ class BookingRequestTest extends TestCase
 
         BookingRequest::create([
             ...$this->bookingData(),
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'pemohon_id_user' => $this->staff->id_user,
             'status' => 'Pending',
         ]);
         BookingRequest::create([
             ...$this->bookingData(['keperluan' => 'Booking Kadiv']),
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'pemohon_id_user' => $this->kadiv->id_user,
             'status' => 'ACC',
         ]);
@@ -255,14 +259,14 @@ class BookingRequestTest extends TestCase
 
     private function createUser(string $suffix, string $roleId, string $name): User2
     {
-        $employeeId = 'EMP-' . $suffix;
-        $userId = 'USR-' . $suffix;
+        $employeeId = 'EMP-'.$suffix;
+        $userId = 'USR-'.$suffix;
 
         Karyawan::create([
             'id_karyawan' => $employeeId,
             'nama' => $name,
             'jenis_kelamin' => 'Laki-laki',
-            'email' => strtolower($suffix) . '@example.test',
+            'email' => strtolower($suffix).'@example.test',
             'jabatan' => $name,
             'divisi_id_divisi' => 'DIV-IT',
         ]);

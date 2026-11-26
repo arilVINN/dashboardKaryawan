@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Kadiv;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Karyawan;
+use Illuminate\Http\Request;
 
 class KadivStaffController extends Controller
 {
@@ -26,7 +26,7 @@ class KadivStaffController extends Controller
     ];
 
     /**
-    * GET /api/kadiv/staff
+     * GET /api/kadiv/staff
      * Mengambil daftar seluruh karyawan di divisi Kadiv.
      */
     public function index(Request $request)
@@ -63,12 +63,12 @@ class KadivStaffController extends Controller
 
         return response()->json([
             'message' => 'Berhasil mengambil data staff divisi',
-            'data' => $staffs
+            'data' => $staffs,
         ]);
     }
 
     /**
-    * GET /api/kadiv/staff/{id}
+     * GET /api/kadiv/staff/{id}
      * Detail profil staff + daftar tugas yang sedang dikerjakan staff tersebut.
      */
     public function show(Request $request, $id)
@@ -93,13 +93,13 @@ class KadivStaffController extends Controller
 
         $staff = $query->first();
 
-        if (!$staff) {
+        if (! $staff) {
             return response()->json(['message' => 'Staff tidak ditemukan atau bukan bagian dari divisi Anda'], 404);
         }
 
         return response()->json([
             'message' => 'Berhasil mengambil detail staff',
-            'data' => $staff
+            'data' => $staff,
         ]);
     }
 }

@@ -28,6 +28,7 @@ class ArsipPusatDataSeeder extends Seeder
             if (empty($managerKaryawanIds)) {
                 return null;
             }
+
             return $managerKaryawanIds[array_rand($managerKaryawanIds)];
         };
 

@@ -11,6 +11,7 @@ use App\Models\SuratIzin;
 use App\Models\User2;
 use App\Presenters\MessagePresenter;
 use App\Queries\KadivMessageQuery;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Attributes\On;
@@ -21,8 +22,8 @@ use Livewire\WithPagination;
 
 class PesanTable extends Component
 {
-    use WithPagination;
     use WithFileUploads;
+    use WithPagination;
 
     #[Url]
     public string $search = '';
@@ -40,25 +41,39 @@ class PesanTable extends Component
     public string $arah = '';
 
     public string $divisiId = '';
+
     public string $recipientUserId = '';
+
     public string $judul = '';
+
     public string $isi = '';
 
     public bool $showCompose = false;
+
     public bool $listOpen = false;
+
     public bool $confirmDiscard = false;
+
     public bool $sending = false;
+
     public string $recipientSearch = '';
+
     /** @var array{id: string, nama: string, jabatan: string, divisi: string, foto: ?string, initials: string}|null */
     public ?array $recipient = null;
+
     public string $errorMessage = '';
 
     // Properti untuk form Kirim Surat Izin (Diperbarui)
     public string $jenisIzin = '';
+
     public string $judulSurat = '';
+
     public string $tanggalMulai = '';
+
     public string $tanggalSelesai = '';
+
     public $fileSurat = null;
+
     public string $keteranganSurat = '';
 
     public function mount(): void
@@ -72,7 +87,7 @@ class PesanTable extends Component
 
         if (
             ! $user instanceof User2
-            || (! $user instanceof \App\Models\User2 || ! $user->hasRole('kadiv') && ! $user->isDirektur())
+            || (! $user instanceof User2 || ! $user->hasRole('kadiv') && ! $user->isDirektur())
             || ! $user->karyawan
         ) {
             abort(403);
@@ -131,6 +146,7 @@ class PesanTable extends Component
         if ($this->divisiId !== '' || $this->recipientUserId || trim($this->judul) !== ''
             || trim($this->isi) !== '' || trim($this->recipientSearch) !== '') {
             $this->confirmDiscard = true;
+
             return;
         }
         $this->closeCompose();
@@ -156,6 +172,7 @@ class PesanTable extends Component
 
         if (! $karyawan?->user) {
             $this->addError('recipientUserId', 'Penerima tidak valid.');
+
             return;
         }
 
@@ -202,7 +219,9 @@ class PesanTable extends Component
             ->with(['user.role', 'divisi'])
             ->whereHas('user', fn ($q) => $q->where('users2.id_user', '!=', $sender->id_user))
             ->where('status_aktif', 'Aktif')
-            ->where(function ($q): void { $q->where('aktif', true)->orWhereNull('aktif'); });
+            ->where(function ($q): void {
+                $q->where('aktif', true)->orWhereNull('aktif');
+            });
 
         if ($this->divisiId !== '') {
             $query->where('divisi_id_divisi', $this->divisiId);
@@ -217,6 +236,7 @@ class PesanTable extends Component
     private function present(Karyawan $karyawan): array
     {
         $nama = (string) $karyawan->nama;
+
         return [
             'id' => (string) $karyawan->user?->id_user,
             'nama' => $nama,
@@ -283,12 +303,14 @@ class PesanTable extends Component
 
         if (! $recipient || $recipient->id_user === $kadiv->id_user) {
             $this->addError('recipientUserId', 'Penerima tidak valid.');
+
             return;
         }
 
         $rateKey = 'kadiv-pesan:'.$kadiv->id_user;
         if (RateLimiter::tooManyAttempts($rateKey, 20)) {
             $this->errorMessage = 'Terlalu banyak pesan dikirim. Tunggu sebentar sebelum mencoba lagi.';
+
             return;
         }
 
@@ -364,15 +386,15 @@ class PesanTable extends Component
             $this->dispatch('app-toast', message: 'Surat izin berhasil dikirim.', type: 'success');
             $this->dispatch('tutup-modal-surat');
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('kirimSuratIzin error: ' . $e->getMessage());
-            $this->addError('judulSurat', 'Gagal mengirim surat izin: ' . $e->getMessage());
+            Log::error('kirimSuratIzin error: '.$e->getMessage());
+            $this->addError('judulSurat', 'Gagal mengirim surat izin: '.$e->getMessage());
         }
     }
 
     private function generateMessageId(): string
     {
         do {
-            $id = 'PSN' . strtoupper(substr(uniqid('', true), -12));
+            $id = 'PSN'.strtoupper(substr(uniqid('', true), -12));
             $id = str_replace('.', '', $id);
         } while (Pesan::whereKey($id)->exists());
 
@@ -382,7 +404,7 @@ class PesanTable extends Component
     private function generateSuratId(): string
     {
         do {
-            $id = 'SRT' . strtoupper(substr(uniqid('', true), -10));
+            $id = 'SRT'.strtoupper(substr(uniqid('', true), -10));
             $id = str_replace('.', '', $id);
         } while (SuratIzin::whereKey($id)->exists());
 
@@ -402,7 +424,7 @@ class PesanTable extends Component
                 'q' => $this->search,
             ])
             ->paginate(10)
-            ->through(fn(Pesan $message) => MessagePresenter::for($message, $kadiv));
+            ->through(fn (Pesan $message) => MessagePresenter::for($message, $kadiv));
 
         $divisis = Divisi::query()->ordered()->get();
 
@@ -410,7 +432,7 @@ class PesanTable extends Component
             ->where('id_user', '!=', $kadiv->id_user);
 
         if ($this->divisiId !== '') {
-            $recipientsQuery->whereHas('karyawan', fn($q) => $q->where('divisi_id_divisi', $this->divisiId));
+            $recipientsQuery->whereHas('karyawan', fn ($q) => $q->where('divisi_id_divisi', $this->divisiId));
         }
 
         $recipients = $recipientsQuery->get()

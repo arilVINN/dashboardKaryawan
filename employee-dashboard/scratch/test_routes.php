@@ -1,16 +1,21 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
-$app = require_once __DIR__ . '/../bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+use App\Models\User2;
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+require __DIR__.'/../vendor/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
-$user = \App\Models\User2::where('username', 'sarifin')->first();
-if (!$user) {
+$user = User2::where('username', 'sarifin')->first();
+if (! $user) {
     echo "User sarifin not found!\n";
     exit(1);
 }
-\Illuminate\Support\Facades\Auth::login($user);
+Auth::login($user);
 
 $routes = [
     '/kadiv/keuangan/dashboard' => 'Dashboard Keuangan',
@@ -30,7 +35,7 @@ $allOk = true;
 
 foreach ($routes as $uri => $name) {
     try {
-        $req = \Illuminate\Http\Request::create($uri, 'GET');
+        $req = Request::create($uri, 'GET');
         $res = $app->handle($req);
         $status = $res->getStatusCode();
         $target = $res->headers->get('Location') ?? '';
@@ -38,8 +43,8 @@ foreach ($routes as $uri => $name) {
         if ($status !== 200) {
             $allOk = false;
         }
-    } catch (\Throwable $e) {
-        echo "[ERR] $name ($uri): " . $e->getMessage() . "\n";
+    } catch (Throwable $e) {
+        echo "[ERR] $name ($uri): ".$e->getMessage()."\n";
         $allOk = false;
     }
 }

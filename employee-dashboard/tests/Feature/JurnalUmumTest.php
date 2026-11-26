@@ -11,7 +11,6 @@ use App\Models\JurnalDivisi;
 use App\Models\JurnalEntry;
 use App\Models\JurnalLine;
 use App\Models\Karyawan;
-use App\Models\KPemasukan;
 use App\Models\KPermintDana;
 use App\Models\Role;
 use App\Models\User2;
@@ -20,10 +19,9 @@ use Database\Seeders\JurnalUmumSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Livewire\Livewire;
+use Maatwebsite\Excel\Facades\Excel;
 use Tests\TestCase;
 
 class JurnalUmumTest extends TestCase
@@ -299,7 +297,7 @@ class JurnalUmumTest extends TestCase
         app(JurnalEntryService::class)->reverse($original, 'Salah input nominal', $this->finance->id_user);
 
         $this->assertSame(2, JurnalEntry::count());
-        $reversal = JurnalEntry::where('source_type', \App\Models\JurnalEntry::class)
+        $reversal = JurnalEntry::where('source_type', JurnalEntry::class)
             ->where('source_id', (string) $original->id)
             ->firstOrFail();
         $this->assertNull($reversal->ref_code);
@@ -355,8 +353,8 @@ class JurnalUmumTest extends TestCase
                 'entry_date' => sprintf('2026-11-%02d', $i),
                 'jurnal_divisi_id' => $divisiId,
                 'lines' => [
-                    ['account_id' => $kas->id, 'keterangan' => 'Jurnal ' . $i, 'debit' => 100000, 'credit' => 0],
-                    ['account_id' => $pendapatan->id, 'keterangan' => 'Jurnal ' . $i, 'debit' => 0, 'credit' => 100000],
+                    ['account_id' => $kas->id, 'keterangan' => 'Jurnal '.$i, 'debit' => 100000, 'credit' => 0],
+                    ['account_id' => $pendapatan->id, 'keterangan' => 'Jurnal '.$i, 'debit' => 0, 'credit' => 100000],
                 ],
             ], $this->finance->id_user);
         }

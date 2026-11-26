@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\Hrd;
 
-use App\Http\Controllers\Controller;
+use App\Actions\MarkConversationAsRead;
 use App\Events\PesanDikirim;
+use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
 use App\Models\Pesan;
 use App\Models\SuratIzin;
 use App\Models\User2;
+use App\Support\FileStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
-use App\Support\FileStorage;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class HrdPesanController extends Controller
@@ -54,7 +54,7 @@ class HrdPesanController extends Controller
         $isParticipant = $pesan->pengirim_id_user === $user->id_user
             || $pesan->penerima_id_user === $user->id_user;
 
-        \App\Actions\MarkConversationAsRead::handle($user, $id_pesan);
+        MarkConversationAsRead::handle($user, $id_pesan);
 
         return view('hrd.detailPesan', [
             'pesan' => $pesan,
@@ -86,8 +86,8 @@ class HrdPesanController extends Controller
             'message' => 'Berhasil mengambil pusat pesan',
             'data' => [
                 'metrics' => $metrics,
-                'list_pesan' => $pesan
-            ]
+                'list_pesan' => $pesan,
+            ],
         ]);
     }
 
@@ -105,7 +105,7 @@ class HrdPesanController extends Controller
             'deskripsi' => 'required|string|max:2000',
             'tipe' => 'required|in:pesan,surat',
             'file_lampiran' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
-            'link_lampiran' => 'nullable|url|max:2048'
+            'link_lampiran' => 'nullable|url|max:2048',
         ]);
 
         $recipient = User2::with(['role', 'karyawan'])->findOrFail($validated['penerima_id_user']);
@@ -141,9 +141,10 @@ class HrdPesanController extends Controller
 
         return response()->json([
             'message' => 'Pesan/Surat berhasil dikirim',
-            'data' => $pesan
+            'data' => $pesan,
         ], 201);
     }
+
     public function show(Request $request, string $id_pesan): JsonResponse
     {
         $user = $request->user();

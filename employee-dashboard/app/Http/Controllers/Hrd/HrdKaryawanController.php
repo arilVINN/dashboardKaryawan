@@ -92,9 +92,9 @@ class HrdKaryawanController extends Controller
             'karyawan',
             $karyawan->id_karyawan,
             [
-                'nama'           => $karyawan->nama,
-                'username'       => $karyawan->user?->username,
-                'role'           => $karyawan->user?->role?->nama_role,
+                'nama' => $karyawan->nama,
+                'username' => $karyawan->user?->username,
+                'role' => $karyawan->user?->role?->nama_role,
                 'tanggal_keluar' => $tanggalKeluar,
             ]
         );

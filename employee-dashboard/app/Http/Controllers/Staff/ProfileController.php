@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Staff;
 use App\Actions\StoreKaryawanFoto;
 use App\Http\Controllers\Controller;
 use App\Support\AccountSecurity;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
@@ -46,16 +48,16 @@ class ProfileController extends Controller
                 'divisi' => $textOrDash($karyawan?->divisi?->nama_divisi),
                 'no_telepon' => $textOrDash($karyawan?->no_telepon),
                 'no_rekening' => $textOrDash($karyawan?->no_rekening),
-                'tanggal_masuk' => $tglMasuk ? \Carbon\Carbon::parse($tglMasuk)->format('Y-m-d') : null,
-                'tanggal_masuk_label' => $tglMasuk ? \Carbon\Carbon::parse($tglMasuk)->format('d M Y') : '-',
-                'tanggal_rekrut' => $tglMasuk ? \Carbon\Carbon::parse($tglMasuk)->format('Y-m-d') : null,
-                'tanggal_akhir_kontrak' => $tglAkhirKontrak ? \Carbon\Carbon::parse($tglAkhirKontrak)->format('d M Y') : 'Karyawan Tetap / Tidak Ada',
-                'tanggal_lahir' => $tglLahir ? \Carbon\Carbon::parse($tglLahir)->format('d M Y') : '-',
+                'tanggal_masuk' => $tglMasuk ? Carbon::parse($tglMasuk)->format('Y-m-d') : null,
+                'tanggal_masuk_label' => $tglMasuk ? Carbon::parse($tglMasuk)->format('d M Y') : '-',
+                'tanggal_rekrut' => $tglMasuk ? Carbon::parse($tglMasuk)->format('Y-m-d') : null,
+                'tanggal_akhir_kontrak' => $tglAkhirKontrak ? Carbon::parse($tglAkhirKontrak)->format('d M Y') : 'Karyawan Tetap / Tidak Ada',
+                'tanggal_lahir' => $tglLahir ? Carbon::parse($tglLahir)->format('d M Y') : '-',
                 'jenis_kelamin' => $textOrDash($karyawan?->jenis_kelamin),
                 'tingkatan' => $user->role?->nama_role ? ucfirst($user->role->nama_role) : ($jabatan !== '-' ? $jabatan : 'Staff'),
                 'tanggal_dibuat' => $user->created_at ? $user->created_at->format('d F Y') : '-',
                 'foto_url' => $foto ? '/storage/'.$foto : null,
-            ]
+            ],
         ]);
     }
 
@@ -112,18 +114,18 @@ class ProfileController extends Controller
     public function updatePassword(Request $request)
     {
         $user = $request->user();
-        
+
         $request->validate([
             'current_password' => 'required|string',
             'new_password' => 'required|string|min:8',
         ]);
 
-        if (!\Illuminate\Support\Facades\Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return response()->json(['message' => 'Password saat ini salah.'], 400);
         }
 
         $user->update([
-            'password' => \Illuminate\Support\Facades\Hash::make($request->new_password),
+            'password' => Hash::make($request->new_password),
             'must_change_password' => false,
         ]);
 
