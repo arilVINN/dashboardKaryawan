@@ -16,6 +16,6 @@
     },
     "dependencies": {
         "framer-motion": "^13.4.4",
-        "motion": "^13.4.4"
+        "motion": "^14.14.0"
     }
 }
