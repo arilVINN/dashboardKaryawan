@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class KPengeluaran extends Model
 {
-    protected $table      = 'kpengeluaran';
+    protected $table = 'kpengeluaran';
+
     protected $primaryKey = 'id_kpengeluaran';
 
     public $incrementing = false;
-    protected $keyType   = 'string';
+
+    protected $keyType = 'string';
 
     public const METODE_OPTIONS = [
         'Transfer Bank',
@@ -34,7 +36,7 @@ class KPengeluaran extends Model
     ];
 
     protected $casts = [
-        'nominal'      => 'float',
+        'nominal' => 'float',
         'tanggal_cair' => 'date',
     ];
 

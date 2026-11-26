@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Models\Pesan;
 use App\Models\User2;
 
 class PesanPolicy

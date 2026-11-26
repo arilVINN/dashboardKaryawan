@@ -18,6 +18,7 @@ class KaryawanTableTest extends TestCase
     use RefreshDatabase;
 
     private User2 $hrd;
+
     private User2 $staffUser;
 
     protected function setUp(): void

@@ -75,7 +75,7 @@ class DirekturRoleTest extends TestCase
         $this->get('/login')
             ->assertOk()
             ->assertSee("role === 'direktur'", false)
-            ->assertSee("/direktur/dashboard", false);
+            ->assertSee('/direktur/dashboard', false);
     }
 
     public function test_direktur_can_view_executive_dashboard_with_slim_sidebar(): void

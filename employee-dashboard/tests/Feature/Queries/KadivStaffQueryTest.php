@@ -36,7 +36,7 @@ class KadivStaffQueryTest extends TestCase
     {
         Karyawan::create(['id_karyawan' => $id, 'nama' => $nama, 'jenis_kelamin' => 'Laki-laki', 'jabatan' => $nama, 'divisi_id_divisi' => 'DIV-IT']);
         User2::create([
-            'id_user' => 'USR-' . $id,
+            'id_user' => 'USR-'.$id,
             'username' => strtolower($nama),
             'password' => Hash::make('pass123'),
             'role_id_role' => 'ROLE-STAFF',
@@ -50,7 +50,7 @@ class KadivStaffQueryTest extends TestCase
         Tugas::create([
             'id_tugas' => $id,
             'karyawan_id_karyawan' => $karyawanId,
-            'judul_tugas' => 'Tugas ' . $id,
+            'judul_tugas' => 'Tugas '.$id,
             'deadline' => now()->addDays(5)->toDateString(),
             'status' => Tugas::STATUS_BARU,
             'progress' => '0',

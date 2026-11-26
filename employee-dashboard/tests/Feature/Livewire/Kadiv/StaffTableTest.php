@@ -17,6 +17,7 @@ class StaffTableTest extends TestCase
     use RefreshDatabase;
 
     private User2 $kadiv;
+
     private User2 $staff;
 
     protected function setUp(): void
@@ -40,7 +41,7 @@ class StaffTableTest extends TestCase
         Karyawan::create(['id_karyawan' => $id, 'nama' => $nama, 'jenis_kelamin' => 'Laki-laki', 'jabatan' => $nama, 'divisi_id_divisi' => 'DIV-IT']);
 
         return User2::create([
-            'id_user' => 'USR-' . $id,
+            'id_user' => 'USR-'.$id,
             'username' => $username,
             'password' => Hash::make('pass123'),
             'role_id_role' => $role,

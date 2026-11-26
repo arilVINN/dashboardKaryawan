@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class StaffTugasQuery
 {
-    private function __construct(private string $karyawanId)
-    {
-    }
+    private function __construct(private string $karyawanId) {}
 
     public static function forStaff(User2 $staff): self
     {
@@ -24,7 +22,7 @@ class StaffTugasQuery
 
         $q = $filters['q'] ?? null;
         if ($q !== null && trim((string) $q) !== '') {
-            $query->whereRaw('LOWER(judul_tugas) LIKE ?', ['%' . mb_strtolower($q) . '%']);
+            $query->whereRaw('LOWER(judul_tugas) LIKE ?', ['%'.mb_strtolower($q).'%']);
         }
 
         $status = $filters['status'] ?? null;

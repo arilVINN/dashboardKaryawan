@@ -20,9 +20,13 @@ class TowerDatabaseTableTest extends TestCase
     use RefreshDatabase;
 
     private User2 $staffIt;
+
     private User2 $kadivIt;
+
     private User2 $hrd;
+
     private Divisi $divisiIt;
+
     private Divisi $divisiHr;
 
     protected function setUp(): void
@@ -69,7 +73,7 @@ class TowerDatabaseTableTest extends TestCase
         ]);
 
         return User2::create([
-            'id_user' => 'USR-' . $id,
+            'id_user' => 'USR-'.$id,
             'username' => $username,
             'password' => Hash::make('password123'),
             'role_id_role' => $roleId,

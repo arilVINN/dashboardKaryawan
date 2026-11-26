@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Events\TugasDitugaskan;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class Tugas extends Model
@@ -128,11 +129,11 @@ class Tugas extends Model
                 : $this->latestSubmitTugas()->first();
 
             return $submission !== null
-                && \Illuminate\Support\Carbon::parse($submission->created_at)
-                    ->gt(\Illuminate\Support\Carbon::parse($this->deadline));
+                && Carbon::parse($submission->created_at)
+                    ->gt(Carbon::parse($this->deadline));
         }
 
-        return \Illuminate\Support\Carbon::parse($this->deadline)->lt(now());
+        return Carbon::parse($this->deadline)->lt(now());
     }
 
     /**
@@ -157,7 +158,7 @@ class Tugas extends Model
         }
 
         if ($this->status === self::STATUS_BARU && $this->tanggal_dibuat) {
-            $created = \Illuminate\Support\Carbon::parse($this->tanggal_dibuat);
+            $created = Carbon::parse($this->tanggal_dibuat);
             if ($created->diffInDays(now()) >= 1) {
                 return self::STATUS_BERJALAN;
             }
@@ -200,7 +201,7 @@ class Tugas extends Model
             return $query->where('status', $status);
         }
 
-        //kalo status nungggu acc, lewat dl tidak dianggap terlambat
+        // kalo status nungggu acc, lewat dl tidak dianggap terlambat
         if ($status === self::STATUS_MENUNGGU_ACC) {
             return $query->where('status', $status);
         }

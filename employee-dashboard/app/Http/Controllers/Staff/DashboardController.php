@@ -88,12 +88,12 @@ class DashboardController extends Controller
         // Buat objek virtual notifikasi pengingat dari note hari ini
         $pengingatNote = $notesHariIni->map(function (CalendarNote $note) {
             return [
-                'id_notifikasi'      => 'note-reminder-' . $note->id,
-                'judul_notifikasi'   => 'Pengingat Kalender',
-                'isi_notif'          => $note->reminderMessage(),
+                'id_notifikasi' => 'note-reminder-'.$note->id,
+                'judul_notifikasi' => 'Pengingat Kalender',
+                'isi_notif' => $note->reminderMessage(),
                 'tanggal_notifikasi' => now()->toDateString(),
-                'created_at'         => now()->toISOString(),
-                'is_note_reminder'   => true,
+                'created_at' => now()->toISOString(),
+                'is_note_reminder' => true,
             ];
         })->values()->all();
 
@@ -110,13 +110,13 @@ class DashboardController extends Controller
             $waktuLabel = $jam !== '00.00' ? " pukul {$jam}" : '';
 
             return [
-                'id_notifikasi'      => 'tugas-reminder-' . $tugas->id_tugas,
-                'judul_notifikasi'   => 'Pengingat Tugas',
-                'isi_notif'          => "Tugas \"{$tugas->judul_tugas}\" tenggat waktunya besok, {$tanggalLabel}{$waktuLabel}.",
-                'tugas_id_tugas'     => $tugas->id_tugas,
+                'id_notifikasi' => 'tugas-reminder-'.$tugas->id_tugas,
+                'judul_notifikasi' => 'Pengingat Tugas',
+                'isi_notif' => "Tugas \"{$tugas->judul_tugas}\" tenggat waktunya besok, {$tanggalLabel}{$waktuLabel}.",
+                'tugas_id_tugas' => $tugas->id_tugas,
                 'tanggal_notifikasi' => now()->toDateString(),
-                'created_at'         => now()->toISOString(),
-                'is_tugas_reminder'  => true,
+                'created_at' => now()->toISOString(),
+                'is_tugas_reminder' => true,
             ];
         })->values()->all();
 
@@ -155,13 +155,13 @@ class DashboardController extends Controller
                     $pengingatKontrak ? [$pengingatKontrak] : [],
                     $notifikasiTerbaru->map(function (Notifikasi $notifikasi) {
                         return [
-                            'id_notifikasi'      => $notifikasi->id_notifikasi,
-                            'judul_notifikasi'   => $notifikasi->judul_notifikasi,
-                            'isi_notif'          => $notifikasi->displayMessage(),
-                            'tugas_id_tugas'     => $notifikasi->tugas_id_tugas,
-                            'pesan_id_pesan'     => $notifikasi->pesan_id_pesan,
+                            'id_notifikasi' => $notifikasi->id_notifikasi,
+                            'judul_notifikasi' => $notifikasi->judul_notifikasi,
+                            'isi_notif' => $notifikasi->displayMessage(),
+                            'tugas_id_tugas' => $notifikasi->tugas_id_tugas,
+                            'pesan_id_pesan' => $notifikasi->pesan_id_pesan,
                             'tanggal_notifikasi' => $notifikasi->tanggal_notifikasi,
-                            'created_at'         => $notifikasi->created_at?->toISOString(),
+                            'created_at' => $notifikasi->created_at?->toISOString(),
                         ];
                     })->all()
                 ))

@@ -17,10 +17,10 @@ class HrdProtectionService
             $q->whereRaw('LOWER(nama_role) = ?', ['hrd']);
         })->whereHas('karyawan', function ($q) {
             $q->whereNull('tanggal_keluar')
-              ->where(function ($k) {
-                  $k->where('aktif', true)
-                    ->orWhere('status_aktif', 'Aktif');
-              });
+                ->where(function ($k) {
+                    $k->where('aktif', true)
+                        ->orWhere('status_aktif', 'Aktif');
+                });
         })->count();
     }
 

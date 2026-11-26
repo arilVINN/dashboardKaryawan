@@ -43,7 +43,7 @@ class KadivMessageQueryTest extends TestCase
         Karyawan::create(['id_karyawan' => $id, 'nama' => $nama, 'jenis_kelamin' => 'Laki-laki', 'jabatan' => $nama, 'divisi_id_divisi' => 'DIV-IT']);
 
         return User2::create([
-            'id_user' => 'USR-' . $id,
+            'id_user' => 'USR-'.$id,
             'username' => $username,
             'password' => Hash::make('pass123'),
             'role_id_role' => $role,
@@ -56,7 +56,7 @@ class KadivMessageQueryTest extends TestCase
         Pesan::create([
             'id_pesan' => $id,
             'judul_pesan' => $judul,
-            'deskripsi' => $judul . ' body',
+            'deskripsi' => $judul.' body',
             'tipe' => 'pesan',
             'tanggal_pesan' => '2026-09-30',
             'pengirim_id_user' => $pengirim,

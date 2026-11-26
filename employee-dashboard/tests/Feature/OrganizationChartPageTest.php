@@ -6,6 +6,7 @@ use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\User2;
+use Database\Seeders\StrukturOrganisasiSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -38,7 +39,7 @@ class OrganizationChartPageTest extends TestCase
             'karyawan_id_karyawan' => 'EMP-HRD',
         ]);
 
-        $this->seed(\Database\Seeders\StrukturOrganisasiSeeder::class);
+        $this->seed(StrukturOrganisasiSeeder::class);
 
         $this->actingAs($hrd)
             ->get('/hrd/strukturOrganisasi')

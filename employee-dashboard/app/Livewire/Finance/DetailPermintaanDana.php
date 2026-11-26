@@ -7,11 +7,10 @@ use App\Helpers\FormatAkuntansi;
 use App\Models\KeuanganAldiv;
 use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
+use App\Services\Finance\PermintaanDanaService;
 use App\Support\FileStorage;
 use App\Support\StatusPalette;
-use App\Services\Finance\PermintaanDanaService;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Livewire\Component;
 
@@ -239,7 +238,7 @@ class DetailPermintaanDana extends Component
                 'name' => basename($path),
                 'type' => strtoupper(pathinfo($path, PATHINFO_EXTENSION)),
                 'size' => $this->formatFileSize($size),
-                'url' => \App\Support\FileStorage::url($path),
+                'url' => FileStorage::url($path),
             ]);
         }
 

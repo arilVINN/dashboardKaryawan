@@ -51,7 +51,7 @@ class KadivTopbarTest extends TestCase
     public function test_kadiv_topbar_logout_posts_to_the_logout_route(): void
     {
         $this->actingAs($this->kadiv)->get('/kadiv/dashboard')
-            ->assertSee('action="' . route('logout') . '"', false)
+            ->assertSee('action="'.route('logout').'"', false)
             ->assertSee('id="topbar-logout-form"', false)
             ->assertSee('id="btn-logout-topbar"', false)
             ->assertSee('name="_token"', false);

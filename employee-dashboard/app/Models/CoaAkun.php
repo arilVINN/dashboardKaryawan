@@ -40,6 +40,6 @@ class CoaAkun extends Model
 
     public function getLabelAttribute(): string
     {
-        return $this->kode . ' ' . $this->nama;
+        return $this->kode.' '.$this->nama;
     }
 }

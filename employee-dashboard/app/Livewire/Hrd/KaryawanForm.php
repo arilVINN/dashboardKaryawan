@@ -2,14 +2,13 @@
 
 namespace App\Livewire\Hrd;
 
-use App\Models\AuditLog;
 use App\Models\Divisi;
 use App\Models\Jabatan;
-use App\Support\EmployeeAccess;
 use App\Models\Karyawan;
-use App\Models\User2;
 use App\Services\EmployeeValidation;
 use App\Services\EmployeeWriteService;
+use App\Support\EmployeeAccess;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -25,48 +24,79 @@ class KaryawanForm extends Component
     use WithFileUploads;
 
     public bool $show = false;
+
     public string $mode = 'create';
+
     public ?string $karyawanId = null;
+
     public ?string $divisiTerkunci = null;
+
     public ?string $judulTambah = null;
 
     // Data karyawan
     public string $nama = '';
+
     public string $jenisKelamin = 'Laki-laki';
+
     public ?string $tanggalLahir = null;
+
     public string $noTelepon = '';
+
     public string $email = '';
+
     public string $alamat = '';
+
     public string $noRekening = '';
+
     public $foto = null;
+
     public bool $hapusFoto = false;
+
     public ?string $fotoLama = null;
 
     // Kepegawaian
     public string $divisiId = '';
+
     public ?int $jabatanId = null;
+
     public string $jabatanNama = '';
+
     public ?string $tanggalMasuk = null;
+
     public ?string $tanggalAkhirKontrak = null;
+
     public string $pendidikan = '';
+
     public string $jobLevel = '';
+
     public string $jobdesk = '';
+
     public string $statusAktif = 'Aktif';
+
     public string $jabatanResetNote = '';
 
     // Akun login
     public bool $hasAccount = false;
+
     public string $username = '';
+
     public string $password = '';
+
     public bool $showPassword = false;
+
     public bool $mustChangePassword = true;
+
     public string $usernameStatus = '';
+
     public ?string $generatedPassword = null;
 
     // Lampiran
     public bool $lampiranOpen = false;
+
     public array $lampiran = [];
+
     public array $hapusLampiran = [];
+
     public array $lampiranLama = [];
 
     // Dialog atur ulang password
@@ -458,7 +488,7 @@ class KaryawanForm extends Component
         $path = $lampiran->path_file;
         foreach (['private', 'public'] as $disk) {
             try {
-                $size = \Illuminate\Support\Facades\Storage::disk($disk)->size($path);
+                $size = Storage::disk($disk)->size($path);
                 if ($size !== false) {
                     return round($size / 1024).' KB';
                 }
@@ -478,6 +508,4 @@ class KaryawanForm extends Component
             abort(403);
         }
     }
-
-
 }

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Mail\TugasDeadlineMail;
 use App\Models\Karyawan;
 use App\Models\Tugas;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -18,7 +19,7 @@ class TaskDeadlineReminderTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed(\Database\Seeders\DatabaseSeeder::class);
+        $this->seed(DatabaseSeeder::class);
 
         Karyawan::where('id_karyawan', 'KR001')->update(['email' => 'staff@silindo.co.id']);
 

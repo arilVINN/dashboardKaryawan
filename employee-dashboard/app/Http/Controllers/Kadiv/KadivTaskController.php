@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Kadiv;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Tugas;
 use App\Models\Karyawan;
 use App\Models\Notifikasi;
+use App\Models\Tugas;
 use App\Queries\KadivTugasQuery;
 use App\Support\FileMetadata;
 use App\Support\FileStorage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class KadivTaskController extends Controller
 {
     /**
-    * GET /api/kadiv/tugas
+     * GET /api/kadiv/tugas
      * Menampilkan semua tugas di divisi terkait.
      */
     public function index(Request $request)
@@ -31,7 +31,7 @@ class KadivTaskController extends Controller
 
         return response()->json([
             'message' => 'Berhasil mengambil daftar tugas divisi',
-            'data' => $tugas
+            'data' => $tugas,
         ]);
     }
 
@@ -72,7 +72,7 @@ class KadivTaskController extends Controller
     }
 
     /**
-    * POST /api/kadiv/tugas
+     * POST /api/kadiv/tugas
      * Membuat tugas baru
      */
     public function store(Request $request)
@@ -97,7 +97,7 @@ class KadivTaskController extends Controller
         }
         $karyawanTujuan = $karyawanQuery->first();
 
-        if (!$karyawanTujuan) {
+        if (! $karyawanTujuan) {
             return response()->json(['message' => 'Karyawan tidak valid atau beda divisi'], 403);
         }
 
@@ -121,7 +121,7 @@ class KadivTaskController extends Controller
             'file_pendukung' => $filePath,
             'file_pendukung_name' => $fileName,
             'link_pendukung' => $request->link_pendukung,
-            'deadline' => \Illuminate\Support\Carbon::parse($request->deadline)->format('Y-m-d H:i:s'),
+            'deadline' => Carbon::parse($request->deadline)->format('Y-m-d H:i:s'),
             'progress' => '0',
             'status' => Tugas::STATUS_BARU,
             'tanggal_dibuat' => now(),
@@ -130,12 +130,12 @@ class KadivTaskController extends Controller
 
         return response()->json([
             'message' => 'Tugas berhasil dibuat',
-            'data' => $tugas
+            'data' => $tugas,
         ], 201);
     }
 
     /**
-    * PUT /api/kadiv/tugas/{id}
+     * PUT /api/kadiv/tugas/{id}
      * Mengedit tugas
      */
     public function update(Request $request, $id)
@@ -145,7 +145,7 @@ class KadivTaskController extends Controller
 
         $tugas = Tugas::with('karyawan:id_karyawan,divisi_id_divisi')->where('id_tugas', $id)->first();
 
-        if (!$tugas || (! $userKadiv->isDirektur() && $tugas->karyawan?->divisi_id_divisi !== $divisiId)) {
+        if (! $tugas || (! $userKadiv->isDirektur() && $tugas->karyawan?->divisi_id_divisi !== $divisiId)) {
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar wewenang'], 404);
         }
 
@@ -159,7 +159,7 @@ class KadivTaskController extends Controller
             'deadline' => ['sometimes', 'required', 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s,Y-m-d H:i:s'],
             'karyawan_id_karyawan' => 'sometimes|required|exists:karyawans,id_karyawan',
             'file_pendukung' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
-            'link_pendukung' => 'nullable|url|max:2048'
+            'link_pendukung' => 'nullable|url|max:2048',
         ]);
 
         // Jika pindah tangan, pastikan karyawan baru se-divisi (kecuali Direktur)
@@ -168,7 +168,7 @@ class KadivTaskController extends Controller
             if (! $userKadiv->isDirektur()) {
                 $karyawanTujuan->where('divisi_id_divisi', $divisiId);
             }
-            if (!$karyawanTujuan->first()) {
+            if (! $karyawanTujuan->first()) {
                 return response()->json(['message' => 'Karyawan pengganti tidak valid atau beda divisi'], 403);
             }
         }
@@ -189,19 +189,19 @@ class KadivTaskController extends Controller
             'file_pendukung_name' => $fileName,
             'link_pendukung' => $request->link_pendukung ?? $tugas->link_pendukung,
             'deadline' => $request->filled('deadline')
-                ? \Illuminate\Support\Carbon::parse($request->deadline)->format('Y-m-d H:i:s')
+                ? Carbon::parse($request->deadline)->format('Y-m-d H:i:s')
                 : $tugas->deadline,
             'tanggal_update' => now(),
         ]);
 
         return response()->json([
             'message' => 'Tugas berhasil diubah',
-            'data' => $tugas
+            'data' => $tugas,
         ]);
     }
 
     /**
-    * DELETE /api/kadiv/tugas/{id}
+     * DELETE /api/kadiv/tugas/{id}
      * Menghapus tugas
      */
     public function destroy(Request $request, $id)
@@ -211,22 +211,22 @@ class KadivTaskController extends Controller
 
         $tugas = Tugas::with('karyawan:id_karyawan,divisi_id_divisi')->where('id_tugas', $id)->first();
 
-        if (!$tugas || (! $userKadiv->isDirektur() && $tugas->karyawan?->divisi_id_divisi !== $divisiId)) {
+        if (! $tugas || (! $userKadiv->isDirektur() && $tugas->karyawan?->divisi_id_divisi !== $divisiId)) {
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar wewenang'], 404);
         }
 
         // Opsional: Hapus record SubmitTugas terkait
-        $tugas->submitTugas()->delete(); 
-        
+        $tugas->submitTugas()->delete();
+
         $tugas->delete();
 
         return response()->json([
-            'message' => 'Tugas berhasil dihapus'
+            'message' => 'Tugas berhasil dihapus',
         ]);
     }
 
     /**
-    * POST /api/kadiv/tugas/{id}/review
+     * POST /api/kadiv/tugas/{id}/review
      * ACC / Approval atau Revisi
      */
     public function review(Request $request, $id)
@@ -239,7 +239,7 @@ class KadivTaskController extends Controller
             'submitTugas' => fn ($query) => $query->orderBy('created_at', 'desc'),
         ])->where('id_tugas', $id)->first();
 
-        if (!$tugas || $tugas->karyawan->divisi_id_divisi !== $divisiId) {
+        if (! $tugas || $tugas->karyawan->divisi_id_divisi !== $divisiId) {
             return response()->json(['message' => 'Tugas tidak ditemukan atau di luar wewenang'], 404);
         }
 
@@ -265,7 +265,7 @@ class KadivTaskController extends Controller
         ]);
 
         $latestSubmit = $tugas->submitTugas->first();
-        if (!$latestSubmit) {
+        if (! $latestSubmit) {
             return response()->json(['message' => 'Belum ada pengumpulan dari Staff.'], 400);
         }
         if ($latestSubmit->status_review !== 'submitted') {
@@ -290,7 +290,7 @@ class KadivTaskController extends Controller
                     'file_revisi' => $filePath ?? $latestSubmit->file_revisi,
                     'file_revisi_name' => $filePath ? $fileName : $latestSubmit->file_revisi_name,
                     'deadline_revisi' => $validated['status_review'] === 'revisi'
-                        ? \Illuminate\Support\Carbon::parse($validated['deadline'])->format('Y-m-d H:i:s')
+                        ? Carbon::parse($validated['deadline'])->format('Y-m-d H:i:s')
                         : $latestSubmit->deadline_revisi,
                 ]);
 
@@ -299,7 +299,7 @@ class KadivTaskController extends Controller
                         ? Tugas::STATUS_SUDAH_ACC
                         : Tugas::STATUS_BERJALAN,
                     'deadline' => $validated['status_review'] === 'revisi'
-                        ? \Illuminate\Support\Carbon::parse($validated['deadline'])->format('Y-m-d H:i:s')
+                        ? Carbon::parse($validated['deadline'])->format('Y-m-d H:i:s')
                         : $tugas->deadline,
                 ]);
 
@@ -340,8 +340,8 @@ class KadivTaskController extends Controller
             'message' => 'Review berhasil disimpan',
             'data' => [
                 'tugas' => $tugas,
-                'submit' => $latestSubmit
-            ]
+                'submit' => $latestSubmit,
+            ],
         ]);
     }
 

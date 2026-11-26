@@ -8,15 +8,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class KLabaRugi extends Model
 {
-    protected $table      = 'klaba_rugi';
+    protected $table = 'klaba_rugi';
+
     protected $primaryKey = 'id_klr';
 
     public $incrementing = false;
-    protected $keyType   = 'string';
+
+    protected $keyType = 'string';
 
     // Status verifikasi constants
-    public const STATUS_MENUNGGU     = 'menunggu';
-    public const STATUS_DISETUJUI    = 'disetujui';
+    public const STATUS_MENUNGGU = 'menunggu';
+
+    public const STATUS_DISETUJUI = 'disetujui';
+
     public const STATUS_PERLU_REVISI = 'perlu_revisi';
 
     protected $fillable = [
@@ -45,19 +49,19 @@ class KLabaRugi extends Model
     ];
 
     protected $casts = [
-        'total_pendapatan'            => 'float',
-        'total_pengeluaran'           => 'float',
-        'pendapatan_operasional'      => 'float',
-        'pendapatan_non_operasional'  => 'float',
-        'beban_operasional'           => 'float',
-        'beban_non_operasional'       => 'float',
-        'laba_operasional'            => 'float',
-        'laba_bersih'                 => 'float',
-        'margin_persen'               => 'float',
-        'tanggal_mulai'               => 'date',
-        'tanggal_selesai'             => 'date',
-        'tanggal_kirim'               => 'date',
-        'minggu_ke'                   => 'integer',
+        'total_pendapatan' => 'float',
+        'total_pengeluaran' => 'float',
+        'pendapatan_operasional' => 'float',
+        'pendapatan_non_operasional' => 'float',
+        'beban_operasional' => 'float',
+        'beban_non_operasional' => 'float',
+        'laba_operasional' => 'float',
+        'laba_bersih' => 'float',
+        'margin_persen' => 'float',
+        'tanggal_mulai' => 'date',
+        'tanggal_selesai' => 'date',
+        'tanggal_kirim' => 'date',
+        'minggu_ke' => 'integer',
     ];
 
     // ─── Static Helpers ───────────────────────────────────────────────────────
@@ -156,7 +160,18 @@ class KLabaRugi extends Model
         return FormatAkuntansi::formatMargin($this->margin_persen);
     }
 
-    public function isMenunggu(): bool    { return $this->status_verifikasi === self::STATUS_MENUNGGU; }
-    public function isDisetujui(): bool   { return $this->status_verifikasi === self::STATUS_DISETUJUI; }
-    public function isPerluRevisi(): bool { return $this->status_verifikasi === self::STATUS_PERLU_REVISI; }
+    public function isMenunggu(): bool
+    {
+        return $this->status_verifikasi === self::STATUS_MENUNGGU;
+    }
+
+    public function isDisetujui(): bool
+    {
+        return $this->status_verifikasi === self::STATUS_DISETUJUI;
+    }
+
+    public function isPerluRevisi(): bool
+    {
+        return $this->status_verifikasi === self::STATUS_PERLU_REVISI;
+    }
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature\Security;
 
 use App\Models\CoaAkun;
 use App\Models\Divisi;
+use App\Models\JurnalEntry;
 use App\Models\Karyawan;
 use App\Models\KPengeluaran;
 use App\Models\KPermintDana;
@@ -102,7 +103,7 @@ class Phase5DisbursementRaceTest extends TestCase
             ->assertSessionHas('error');
 
         $this->assertSame(1, KPengeluaran::where('kpd_id_kpd', 'KPD001')->count());
-        $this->assertSame(1, \App\Models\JurnalEntry::where('source_type', KPengeluaran::class)
+        $this->assertSame(1, JurnalEntry::where('source_type', KPengeluaran::class)
             ->where('source_id', KPengeluaran::firstOrFail()->id_kpengeluaran)
             ->count());
     }

@@ -3,8 +3,8 @@
 namespace Tests\Feature\Security;
 
 use App\Models\Divisi;
-use App\Models\KPermintDana;
 use App\Models\Karyawan;
+use App\Models\KPermintDana;
 use App\Models\Role;
 use App\Models\Tugas;
 use App\Models\User2;
@@ -266,7 +266,7 @@ class Phase1AuthorizationTest extends TestCase
         $direktur = $this->createUser('U-DIR', 'direktur', 'ROLE-DIR', 'DIV-A');
         $superadmin = $this->createUser('U-SUPER', 'rootadmin', 'ROLE-SUPER', 'DIV-A');
 
-        $permintaan = new KPermintDana();
+        $permintaan = new KPermintDana;
         $permintaan->user_id_user = 'SOMEONE-ELSE';
 
         $this->assertFalse(Gate::forUser($direktur)->allows('approve', $permintaan));

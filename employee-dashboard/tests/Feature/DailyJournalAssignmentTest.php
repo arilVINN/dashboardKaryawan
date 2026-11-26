@@ -18,9 +18,13 @@ class DailyJournalAssignmentTest extends TestCase
     use RefreshDatabase;
 
     private User2 $kadiv;
+
     private User2 $hrd;
+
     private User2 $direktur;
+
     private User2 $staff;
+
     private User2 $otherKadiv;
 
     protected function setUp(): void

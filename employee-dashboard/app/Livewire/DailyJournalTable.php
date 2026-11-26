@@ -7,10 +7,9 @@ use App\Models\Divisi;
 use App\Models\Holiday;
 use App\Models\Karyawan;
 use App\Models\User2;
+use App\Support\FileStorage;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use App\Support\FileStorage;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -26,27 +25,41 @@ class DailyJournalTable extends Component
 
     // Filters for Kadiv & HRD
     public ?string $filterDivisiId = null;
+
     public ?string $filterKaryawanId = null;
 
     // Modal state
     public bool $isModalOpen = false;
+
     public string $modalDate = '';
+
     public string $modalDateFormatted = '';
+
     public bool $isViewingOther = false; // true if viewing someone else's journal (read-only for status if not boss)
 
     // Form inputs
     public ?int $editingJournalId = null;
+
     public ?string $targetKaryawanId = null; // Karyawan yang ditugaskan
+
     public string $aktivitas = '';
+
     public string $prioritas = 'tinggi'; // rendah | sedang | tinggi
+
     public string $status = 'pending'; // pending (0%) | on_progress (50%) | selesai (90%) | revisi (50%) | disetujui (100%)
+
     public string $catatan = '';
+
     public $fileBukti = null;
+
     public ?string $existingFileBukti = null;
+
     public ?string $existingFileNamaAsli = null;
+
     public string $linkBukti = '';
 
     public ?string $feedbackMessage = null;
+
     public ?string $feedbackType = 'success'; // success | error
 
     protected function rules(): array
@@ -111,6 +124,7 @@ class DailyJournalTable extends Component
         if (! in_array($mode, $allowedModes, true)) {
             $this->feedbackMessage = 'Anda tidak memiliki akses ke mode To Do tersebut.';
             $this->feedbackType = 'error';
+
             return;
         }
 
@@ -169,6 +183,7 @@ class DailyJournalTable extends Component
             $this->targetKaryawanId = null;
             $this->feedbackMessage = 'Anda tidak memiliki akses untuk menugaskan To Do kepada karyawan tersebut.';
             $this->feedbackType = 'error';
+
             return;
         }
 
@@ -237,6 +252,7 @@ class DailyJournalTable extends Component
         if ($targetKaryawanId && ! $targetKaryawan) {
             $this->feedbackMessage = 'Karyawan penerima To Do tidak ditemukan.';
             $this->feedbackType = 'error';
+
             return;
         }
 
@@ -245,6 +261,7 @@ class DailyJournalTable extends Component
                 ? 'Staff hanya dapat membuat To Do untuk diri sendiri.'
                 : 'Anda tidak memiliki akses untuk menugaskan To Do kepada karyawan tersebut.';
             $this->feedbackType = 'error';
+
             return;
         }
 
@@ -255,6 +272,7 @@ class DailyJournalTable extends Component
         if (! $targetUserId) {
             $this->feedbackMessage = 'Karyawan penerima belum memiliki akun untuk menerima To Do.';
             $this->feedbackType = 'error';
+
             return;
         }
 
@@ -268,7 +286,7 @@ class DailyJournalTable extends Component
 
         $link = trim($this->linkBukti);
         if (! empty($link) && ! preg_match('~^(?:f|ht)tps?://~i', $link)) {
-            $link = 'https://' . $link;
+            $link = 'https://'.$link;
         }
 
         if ($this->editingJournalId) {
@@ -277,12 +295,14 @@ class DailyJournalTable extends Component
             if (! $journal) {
                 $this->feedbackMessage = 'Catatan to do tidak ditemukan.';
                 $this->feedbackType = 'error';
+
                 return;
             }
 
             if (! $this->canManageJournal($user, $journal)) {
                 $this->feedbackMessage = 'Anda tidak memiliki hak akses untuk mengedit to do ini.';
                 $this->feedbackType = 'error';
+
                 return;
             }
 
@@ -345,6 +365,7 @@ class DailyJournalTable extends Component
         if (! $this->canManageJournal($user, $journal)) {
             $this->feedbackMessage = 'Anda tidak memiliki hak akses untuk mengedit to do ini.';
             $this->feedbackType = 'error';
+
             return;
         }
 
@@ -381,6 +402,7 @@ class DailyJournalTable extends Component
         if (! $this->canDeleteJournal($user, $journal)) {
             $this->feedbackMessage = 'To Do ini ditugaskan oleh atasan dan hanya dapat dihapus oleh pemberi tugas.';
             $this->feedbackType = 'error';
+
             return;
         }
 
@@ -432,6 +454,7 @@ class DailyJournalTable extends Component
                 if (in_array($newStatus, ['revisi', 'disetujui'], true)) {
                     $this->feedbackMessage = 'Status revisi dan complete 100% hanya dapat ditentukan oleh Kadiv atau Pimpinan.';
                     $this->feedbackType = 'error';
+
                     return;
                 }
             }
@@ -441,6 +464,7 @@ class DailyJournalTable extends Component
             if (! $isKadivOfDivision && ! $isHrdOrDirektur && ! $isAssigner) {
                 $this->feedbackMessage = 'Anda tidak memiliki hak akses untuk mengubah status to do ini.';
                 $this->feedbackType = 'error';
+
                 return;
             }
         }
@@ -466,6 +490,7 @@ class DailyJournalTable extends Component
         if (! in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true)) {
             $this->feedbackMessage = 'Anda tidak memiliki akses untuk mereview to do karyawan lain.';
             $this->feedbackType = 'error';
+
             return;
         }
 
@@ -509,7 +534,7 @@ class DailyJournalTable extends Component
             'sedang' => 'Medium',
             'rendah' => 'Low',
         };
-        $this->feedbackMessage = 'Prioritas berhasil diubah ke ' . $label . '.';
+        $this->feedbackMessage = 'Prioritas berhasil diubah ke '.$label.'.';
         $this->feedbackType = 'success';
     }
 
@@ -672,11 +697,11 @@ class DailyJournalTable extends Component
 
         // Formatted title for the week (e.g. "10 – 16 November 2026")
         if ($startOfWeek->year !== $endOfWeek->year) {
-            $weekTitle = $startOfWeek->locale('id')->translatedFormat('j M Y') . ' – ' . $endOfWeek->locale('id')->translatedFormat('j M Y');
+            $weekTitle = $startOfWeek->locale('id')->translatedFormat('j M Y').' – '.$endOfWeek->locale('id')->translatedFormat('j M Y');
         } elseif ($startOfWeek->month !== $endOfWeek->month) {
-            $weekTitle = $startOfWeek->locale('id')->translatedFormat('j M') . ' – ' . $endOfWeek->locale('id')->translatedFormat('j M Y');
+            $weekTitle = $startOfWeek->locale('id')->translatedFormat('j M').' – '.$endOfWeek->locale('id')->translatedFormat('j M Y');
         } else {
-            $weekTitle = $startOfWeek->locale('id')->translatedFormat('j') . ' – ' . $endOfWeek->locale('id')->translatedFormat('j F Y');
+            $weekTitle = $startOfWeek->locale('id')->translatedFormat('j').' – '.$endOfWeek->locale('id')->translatedFormat('j F Y');
         }
 
         // Target user/karyawan for journal query
@@ -694,8 +719,8 @@ class DailyJournalTable extends Component
                 $query->whereRaw('1 = 0');
             }
         } elseif ($this->filterKaryawanId && $user && $this->canViewKaryawan($user, $this->filterKaryawanId)) {
-                $query->where('karyawan_id_karyawan', $this->filterKaryawanId);
-                $activeTargetKaryawan = Karyawan::find($this->filterKaryawanId);
+            $query->where('karyawan_id_karyawan', $this->filterKaryawanId);
+            $activeTargetKaryawan = Karyawan::find($this->filterKaryawanId);
         } else {
             $query->whereRaw('1 = 0');
         }

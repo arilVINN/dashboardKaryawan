@@ -19,8 +19,11 @@ class ComposeMessageTest extends TestCase
     use RefreshDatabase;
 
     private User2 $hrd;
+
     private User2 $staff;
+
     private User2 $inactive;
+
     private User2 $otherHrd;
 
     protected function setUp(): void

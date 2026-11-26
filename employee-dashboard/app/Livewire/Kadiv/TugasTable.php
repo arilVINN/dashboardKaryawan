@@ -7,6 +7,8 @@ use App\Models\Tugas;
 use App\Models\User2;
 use App\Queries\KadivStaffQuery;
 use App\Queries\KadivTugasQuery;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -14,8 +16,8 @@ use Livewire\WithPagination;
 
 class TugasTable extends Component
 {
-    use WithPagination;
     use WithFileUploads;
+    use WithPagination;
 
     private const FILTER_SESSION_KEY = 'kadiv.tugas.filters';
 
@@ -35,9 +37,13 @@ class TugasTable extends Component
     public string $staff = '';
 
     public string $judul = '';
+
     public string $deskripsi = '';
+
     public string $tenggat = '';
+
     public string $recipient = '';
+
     public $attachment = null;
 
     public function mount(): void
@@ -148,17 +154,17 @@ class TugasTable extends Component
         $divisionId = $this->divisionId();
 
         $this->validate([
-            'judul'      => 'required|string|max:100',
-            'deskripsi'  => 'required|string',
-            'tenggat'    => 'required|date|after:now',
-            'recipient'  => 'required|string',
+            'judul' => 'required|string|max:100',
+            'deskripsi' => 'required|string',
+            'tenggat' => 'required|date|after:now',
+            'recipient' => 'required|string',
             'attachment' => 'nullable|file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
         ], [
             'tenggat.after' => 'Invalid tanggal: tidak bisa mengambil waktu masa lalu.',
         ]);
 
-        $staffQuery = Karyawan::whereHas('user.role', fn($q) => $q->whereRaw('LOWER(nama_role) = ?', ['staff']));
-        if (!empty($divisionId)) {
+        $staffQuery = Karyawan::whereHas('user.role', fn ($q) => $q->whereRaw('LOWER(nama_role) = ?', ['staff']));
+        if (! empty($divisionId)) {
             $staffQuery->where('divisi_id_divisi', $divisionId);
         }
         $staffIds = $staffQuery->pluck('id_karyawan');
@@ -167,11 +173,13 @@ class TugasTable extends Component
             $recipients = $staffIds->all();
             if (empty($recipients)) {
                 $this->addError('recipient', 'Belum ada staff di divisi ini.');
+
                 return;
             }
         } else {
             if (! $staffIds->contains($this->recipient)) {
                 $this->addError('recipient', 'Penerima tidak valid atau beda divisi.');
+
                 return;
             }
             $recipients = [$this->recipient];
@@ -179,7 +187,7 @@ class TugasTable extends Component
 
         try {
             $filePath = $this->attachment ? $this->attachment->store('tugas_pendukung', 'private') : null;
-            $deadline = \Illuminate\Support\Carbon::parse($this->tenggat)->format('Y-m-d H:i:s');
+            $deadline = Carbon::parse($this->tenggat)->format('Y-m-d H:i:s');
 
             foreach ($recipients as $karyawanId) {
                 // Shared, portable generator: skips legacy "TGS-*" IDs and
@@ -187,16 +195,16 @@ class TugasTable extends Component
                 $newId = Tugas::nextId();
 
                 Tugas::create([
-                    'id_tugas'            => $newId,
+                    'id_tugas' => $newId,
                     'karyawan_id_karyawan' => $karyawanId,
-                    'judul_tugas'         => $this->judul,
-                    'deskripsi'           => $this->deskripsi,
-                    'file_pendukung'      => $filePath,
-                    'deadline'            => $deadline,
-                    'progress'            => '0',
-                    'status'              => Tugas::STATUS_BARU,
-                    'tanggal_dibuat'      => now(),
-                    'tanggal_update'      => now(),
+                    'judul_tugas' => $this->judul,
+                    'deskripsi' => $this->deskripsi,
+                    'file_pendukung' => $filePath,
+                    'deadline' => $deadline,
+                    'progress' => '0',
+                    'status' => Tugas::STATUS_BARU,
+                    'tanggal_dibuat' => now(),
+                    'tanggal_update' => now(),
                 ]);
             }
 
@@ -205,10 +213,11 @@ class TugasTable extends Component
             $this->dispatch('tutup-modal-tugas');
             $this->resetPage();
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('createTask error: ' . $e->getMessage());
-            $this->addError('judul', 'Gagal membuat tugas: ' . $e->getMessage());
+            Log::error('createTask error: '.$e->getMessage());
+            $this->addError('judul', 'Gagal membuat tugas: '.$e->getMessage());
         }
     }
+
     public function render()
     {
         $divisionId = $this->divisionId();

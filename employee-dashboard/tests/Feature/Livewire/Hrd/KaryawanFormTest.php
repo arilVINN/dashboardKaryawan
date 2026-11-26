@@ -19,6 +19,7 @@ class KaryawanFormTest extends TestCase
     use RefreshDatabase;
 
     protected User2 $hrd;
+
     protected Jabatan $jabatan;
 
     protected function setUp(): void
@@ -199,7 +200,6 @@ class KaryawanFormTest extends TestCase
         ]);
     }
 
-
     public function test_divisi_and_jabatan_selects_sync_immediately(): void
     {
         $component = Livewire::actingAs($this->hrd)
@@ -219,7 +219,6 @@ class KaryawanFormTest extends TestCase
         $this->assertStringContainsString('Staff', $markup);
     }
 
-
     public function test_date_field_blur_validation_calls_a_component_method(): void
     {
         Livewire::actingAs($this->hrd)
@@ -229,7 +228,6 @@ class KaryawanFormTest extends TestCase
             ->call('validateField', 'tanggalMasuk')
             ->assertHasErrors('tanggalMasuk');
     }
-
 
     public function test_jobdesk_is_descriptive_and_saved_with_employee(): void
     {
@@ -257,5 +255,4 @@ class KaryawanFormTest extends TestCase
             'role_id_role' => 'ROLE-STAFF',
         ]);
     }
-
 }

@@ -31,7 +31,6 @@ return [
      */
     'jabatan_role' => ['staff', 'kadiv', 'hrd', 'direktur'],
 
-
     /*
      * Jabatan titles that predate the jabatan table. Kept for legacy imports
      * and API clients that still post a plain `jabatan` string.

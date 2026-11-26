@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Models\User2;
 
 return [
 
@@ -69,7 +70,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User2::class, 
+            'model' => User2::class,
         ],
 
         // 'users' => [
@@ -118,6 +119,5 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
-
 
 ];

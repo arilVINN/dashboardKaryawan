@@ -9,8 +9,8 @@ use App\Models\Role;
 use App\Models\Tugas;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -20,6 +20,7 @@ class TugasTableTest extends TestCase
     use RefreshDatabase;
 
     private User2 $kadiv;
+
     private User2 $staff;
 
     protected function setUp(): void
@@ -47,7 +48,7 @@ class TugasTableTest extends TestCase
         Karyawan::create(['id_karyawan' => $id, 'nama' => $nama, 'jenis_kelamin' => 'Laki-laki', 'jabatan' => $nama, 'divisi_id_divisi' => $divisionId]);
 
         return User2::create([
-            'id_user' => 'USR-' . $id,
+            'id_user' => 'USR-'.$id,
             'username' => $username,
             'password' => Hash::make('pass123'),
             'role_id_role' => $role,

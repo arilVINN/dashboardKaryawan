@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Direktur\DirekturDashboardController;
+use App\Http\Controllers\Hrd\HrdDashboardController;
 use App\Http\Controllers\Hrd\HrdDivisiController;
 use App\Http\Controllers\Hrd\HrdPesanController;
 use App\Http\Controllers\Hrd\HrdStaffController;
@@ -9,7 +10,11 @@ use App\Http\Controllers\Kadiv\KadivDashboardController;
 use App\Http\Controllers\Kadiv\KadivMessageController;
 use App\Http\Controllers\Kadiv\KadivStaffController;
 use App\Http\Controllers\Kadiv\KadivTaskController;
+use App\Http\Controllers\Staff\DashboardController;
+use App\Http\Controllers\Staff\KalenderController;
+use App\Http\Controllers\Staff\NotifikasiController;
 use App\Http\Controllers\Staff\PesanController;
+use App\Http\Controllers\Staff\ProfileController;
 use App\Http\Controllers\Staff\StaffTugasController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,10 +38,10 @@ Route::middleware([
     // Kadiv dashboard & messaging endpoints
     Route::middleware('role:kadiv')->prefix('kadiv')->group(function (): void {
         Route::get('/dashboard', [KadivDashboardController::class, 'index']);
-        Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
-        Route::put('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update'])->middleware('throttle:submit-form');
-        Route::put('/profile/password', [\App\Http\Controllers\Staff\ProfileController::class, 'updatePassword'])->middleware('throttle:submit-form');
-        Route::post('/profile/foto', [\App\Http\Controllers\Staff\ProfileController::class, 'updateFoto'])->middleware('throttle:upload-foto');
+        Route::get('/profile', [ProfileController::class, 'show']);
+        Route::put('/profile', [ProfileController::class, 'update'])->middleware('throttle:submit-form');
+        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:submit-form');
+        Route::post('/profile/foto', [ProfileController::class, 'updateFoto'])->middleware('throttle:upload-foto');
         Route::get('/pesan', [KadivMessageController::class, 'index'])->middleware('throttle:pencarian');
         Route::get('/pesan/{id_pesan}', [KadivMessageController::class, 'show']);
         Route::post('/pesan/{id_pesan}/balas', [KadivMessageController::class, 'balas'])->middleware('throttle:submit-form');
@@ -45,8 +50,8 @@ Route::middleware([
 
     // Staff‑only routes (role middleware registered as "role")
     Route::middleware('role:staff')->prefix('staff')->group(function () {
-        Route::get('/dashboard', [\App\Http\Controllers\Staff\DashboardController::class, 'index']);
-        Route::get('/notifikasi', [\App\Http\Controllers\Staff\NotifikasiController::class, 'index'])->middleware('throttle:pencarian');
+        Route::get('/dashboard', [DashboardController::class, 'index']);
+        Route::get('/notifikasi', [NotifikasiController::class, 'index'])->middleware('throttle:pencarian');
         Route::get('/tugas', [StaffTugasController::class, 'index'])->middleware('throttle:pencarian');
         Route::get('/tugas/{id}', [StaffTugasController::class, 'show']);
 
@@ -59,11 +64,11 @@ Route::middleware([
         Route::get('/pesan', [PesanController::class, 'index'])->middleware('throttle:pencarian');
         Route::get('/pesan/{id_pesan}', [PesanController::class, 'show']);
         Route::post('/pesan/{id_pesan}/balas', [PesanController::class, 'balas'])->middleware('throttle:submit-form');
-        Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
-        Route::put('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update'])->middleware('throttle:submit-form');
-        Route::put('/profile/password', [\App\Http\Controllers\Staff\ProfileController::class, 'updatePassword'])->middleware('throttle:submit-form');
-        Route::post('/profile/foto', [\App\Http\Controllers\Staff\ProfileController::class, 'updateFoto'])->middleware('throttle:upload-foto');
-        Route::get('/kalender-events', [\App\Http\Controllers\Staff\KalenderController::class, 'events']);
+        Route::get('/profile', [ProfileController::class, 'show']);
+        Route::put('/profile', [ProfileController::class, 'update'])->middleware('throttle:submit-form');
+        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:submit-form');
+        Route::post('/profile/foto', [ProfileController::class, 'updateFoto'])->middleware('throttle:upload-foto');
+        Route::get('/kalender-events', [KalenderController::class, 'events']);
     });
 
     // Kadiv‑only routes
@@ -75,7 +80,7 @@ Route::middleware([
         // Manajemen Tugas (read / monitoring)
         Route::get('/tugas', [KadivTaskController::class, 'index'])->middleware('throttle:pencarian');
         Route::get('/tugas/{id}', [KadivTaskController::class, 'show']);
-        Route::get('/kalender-events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsKadiv']);
+        Route::get('/kalender-events', [KalenderController::class, 'eventsKadiv']);
 
         // Director-level roles are read-only: they cannot mutate tugas.
         Route::middleware('deny.superadmin')->group(function (): void {
@@ -89,11 +94,11 @@ Route::middleware([
 
     // HRD‑only routes
     Route::middleware('role:hrd')->prefix('hrd')->group(function () {
-        Route::get('/dashboard', [\App\Http\Controllers\Hrd\HrdDashboardController::class, 'index']);
-        Route::get('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'show']);
-        Route::put('/profile', [\App\Http\Controllers\Staff\ProfileController::class, 'update'])->middleware('throttle:submit-form');
-        Route::put('/profile/password', [\App\Http\Controllers\Staff\ProfileController::class, 'updatePassword'])->middleware('throttle:submit-form');
-        Route::post('/profile/foto', [\App\Http\Controllers\Staff\ProfileController::class, 'updateFoto'])->middleware('throttle:upload-foto');
+        Route::get('/dashboard', [HrdDashboardController::class, 'index']);
+        Route::get('/profile', [ProfileController::class, 'show']);
+        Route::put('/profile', [ProfileController::class, 'update'])->middleware('throttle:submit-form');
+        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:submit-form');
+        Route::post('/profile/foto', [ProfileController::class, 'updateFoto'])->middleware('throttle:upload-foto');
 
         Route::get('/pesan', [HrdPesanController::class, 'index'])->middleware('throttle:pencarian');
         Route::post('/pesan', [HrdPesanController::class, 'store'])->middleware('throttle:submit-form');
@@ -105,7 +110,7 @@ Route::middleware([
         Route::get('/divisi/{id}', [HrdDivisiController::class, 'show']);
 
         // Kalender
-        Route::get('/kalender-events', [\App\Http\Controllers\Staff\KalenderController::class, 'eventsHrd']);
+        Route::get('/kalender-events', [KalenderController::class, 'eventsHrd']);
 
         // Manajemen Staff (read / monitoring)
         Route::get('/staff', [HrdStaffController::class, 'index'])->middleware('throttle:pencarian');
@@ -124,5 +129,5 @@ Route::middleware([
             Route::delete('/staff/{id}', [HrdStaffController::class, 'destroy'])->middleware('throttle:submit-form');
         });
     });
-    
+
 });

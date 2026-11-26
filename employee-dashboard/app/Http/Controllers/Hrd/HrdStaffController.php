@@ -4,14 +4,13 @@ namespace App\Http\Controllers\Hrd;
 
 use App\Actions\StoreKaryawanFoto;
 use App\Http\Controllers\Controller;
-use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\Tugas;
-use App\Models\User2;
 use App\Services\EmployeeWriteService;
 use App\Services\HrdProtectionService;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -20,9 +19,7 @@ use Throwable;
 
 class HrdStaffController extends Controller
 {
-    public function __construct(private readonly EmployeeWriteService $employeeService)
-    {
-    }
+    public function __construct(private readonly EmployeeWriteService $employeeService) {}
 
     /**
      * GET /hrd/staff — daftar seluruh karyawan perusahaan.
@@ -290,7 +287,7 @@ class HrdStaffController extends Controller
      * Keep legacy error keys (e.g. `jabatan`) while the new form uses
      * `jabatan_id`.
      */
-    private function legacyValidationResponse(ValidationException $e): \Illuminate\Http\JsonResponse
+    private function legacyValidationResponse(ValidationException $e): JsonResponse
     {
         $errors = $e->errors();
 

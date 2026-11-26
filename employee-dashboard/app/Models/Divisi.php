@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Divisi extends Model
 {
     protected $table = 'divisis';
+
     protected $primaryKey = 'id_divisi';
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     /**
@@ -22,7 +24,9 @@ class Divisi extends Model
      * levels above them.
      */
     public const TIPE_DIREKTUR = 'direktur';
+
     public const TIPE_MANAJEMEN = 'manajemen';
+
     public const TIPE_DIVISI = 'divisi';
 
     public const TIPE_OPTIONS = [
@@ -32,7 +36,9 @@ class Divisi extends Model
     ];
 
     public const POSISI_DIRUT_PENDUKUNG = 'dirut_pendukung';
+
     public const POSISI_DIROPS_PENDUKUNG = 'dirops_pendukung';
+
     public const POSISI_OPERASIONAL = 'operasional';
 
     public const POSISI_BAGAN_OPTIONS = [
@@ -46,9 +52,13 @@ class Divisi extends Model
      * Everything else should be driven by `tipe` and `kapasitas`, not names.
      */
     public const KODE_DIREKTUR = 'DIRUT';
+
     public const KODE_MANAJEMEN = 'MGT';
+
     public const KODE_HR = 'HR';
+
     public const KODE_FINANCE = 'FIN';
+
     public const KODE_IT = 'IT';
 
     protected $fillable = [

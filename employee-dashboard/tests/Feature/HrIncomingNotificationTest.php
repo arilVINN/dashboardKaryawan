@@ -18,7 +18,9 @@ class HrIncomingNotificationTest extends TestCase
     use RefreshDatabase;
 
     private User2 $staff;
+
     private User2 $kadiv;
+
     private User2 $hrd;
 
     protected function setUp(): void

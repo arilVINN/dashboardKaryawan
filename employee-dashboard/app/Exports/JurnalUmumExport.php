@@ -16,7 +16,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class JurnalUmumExport implements FromCollection, WithHeadings, WithStyles, ShouldAutoSize, WithColumnFormatting, WithTitle
+class JurnalUmumExport implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithHeadings, WithStyles, WithTitle
 {
     public function __construct(
         private readonly string $periode,
@@ -122,7 +122,7 @@ class JurnalUmumExport implements FromCollection, WithHeadings, WithStyles, Shou
         ]);
 
         if ($totalRow > 2) {
-            $sheet->getStyle('E2:F' . ($totalRow - 1))
+            $sheet->getStyle('E2:F'.($totalRow - 1))
                 ->getAlignment()
                 ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         }
@@ -151,6 +151,6 @@ class JurnalUmumExport implements FromCollection, WithHeadings, WithStyles, Shou
 
     public function title(): string
     {
-        return 'Jurnal Umum ' . $this->periode;
+        return 'Jurnal Umum '.$this->periode;
     }
 }

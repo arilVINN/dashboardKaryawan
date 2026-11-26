@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Hrd;
 
+use App\Models\Divisi;
 use App\Models\User2;
 use App\Queries\HrdDivisiQuery;
 use Livewire\Attributes\Url;
@@ -54,7 +55,7 @@ class DivisiTable extends Component
         $user = auth()->user();
 
         if (! $user instanceof User2
-            || (! $user instanceof \App\Models\User2 || ! $user->hasRole('hrd') && ! $user->isDirektur())) {
+            || (! $user instanceof User2 || ! $user->hasRole('hrd') && ! $user->isDirektur())) {
             abort(403);
         }
 
@@ -146,7 +147,7 @@ class DivisiTable extends Component
         if ($this->showHierarchy && $this->tipe !== '') {
             $chips[] = [
                 'name' => 'tipe',
-                'label' => 'Tingkat: '.(\App\Models\Divisi::TIPE_OPTIONS[$this->tipe] ?? $this->tipe),
+                'label' => 'Tingkat: '.(Divisi::TIPE_OPTIONS[$this->tipe] ?? $this->tipe),
             ];
         }
 

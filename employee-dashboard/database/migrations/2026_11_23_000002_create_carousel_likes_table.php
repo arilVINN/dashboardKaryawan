@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('carousel_likes')) {
+        if (! Schema::hasTable('carousel_likes')) {
             Schema::create('carousel_likes', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('carousel_id')->constrained('carousels')->cascadeOnDelete();

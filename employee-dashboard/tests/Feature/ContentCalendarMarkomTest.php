@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Livewire\ContentCalendar;
 use App\Models\ContentAccount;
 use App\Models\ContentEvent;
-use App\Models\ContentEventComment;
 use App\Models\ContentType;
 use App\Models\Divisi;
 use App\Models\Karyawan;
@@ -23,11 +22,17 @@ class ContentCalendarMarkomTest extends TestCase
     use RefreshDatabase;
 
     private User2 $staffPb;
+
     private User2 $markomPb;
+
     private User2 $layouterPb;
+
     private User2 $kadivPb;
+
     private User2 $staffHr;
+
     private User2 $direktur;
+
     private ContentEvent $event;
 
     protected function setUp(): void
