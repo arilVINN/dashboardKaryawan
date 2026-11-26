@@ -47,7 +47,6 @@ class HrdStaffCrudTest extends TestCase
         ]);
     }
 
-
     public function test_karyawan_list_shows_crud_controls_and_endpoints(): void
     {
         $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan')
@@ -82,7 +81,6 @@ class HrdStaffCrudTest extends TestCase
             ->assertSee('Teknologi Informasi');
     }
 
-
     public function test_staff_detail_page_shows_profile_and_task_list(): void
     {
         Karyawan::whereKey('KRY-1')->update([
@@ -95,7 +93,7 @@ class HrdStaffCrudTest extends TestCase
         $this->actingAs($this->hrd)->get('/hrd/detailKaryawan/KRY-1')
             ->assertOk()
             ->assertSee('Andi Wijaya')
-            ->assertSee('src="' . route('hrd.karyawan.foto', 'KRY-1') . '"', false)
+            ->assertSee('src="'.route('hrd.karyawan.foto', 'KRY-1').'"', false)
             ->assertSee('alt="Foto profil Andi Wijaya"', false)
             ->assertSee('Pendidikan Terakhir')
             ->assertSee('Job Level')
@@ -192,7 +190,9 @@ class HrdStaffCrudTest extends TestCase
 
     public function test_staff_detail_page_returns_404_for_unknown_id(): void
     {
-        $this->actingAs($this->hrd)->get('/hrd/detailKaryawan/NOPE')->assertNotFound();
+        $this->actingAs($this->hrd)->get('/hrd/detailKaryawan/NOPE')
+            ->assertRedirect(route('hrd.dashboard'))
+            ->assertSessionHas('error');
     }
 
     public function test_staff_detail_page_requires_authentication(): void

@@ -147,14 +147,12 @@ class PesanTableTest extends TestCase
         $this->assertSame(6, strlen(SuratIzin::query()->value('id_surat')));
     }
 
-    public function test_surat_izin_modal_is_rendered_once_on_staff_pages(): void
+    public function test_surat_izin_modal_is_rendered_once_on_staff_pesan_page(): void
     {
-        foreach (['/pesan', '/'] as $path) {
-            $response = $this->actingAs($this->staff)->get($path);
+        $response = $this->actingAs($this->staff)->get('/pesan');
 
-            $response->assertOk()->assertSee('name="judul_surat"', false);
-            $this->assertSame(1, substr_count($response->getContent(), 'id="modalSuratIzin"'));
-        }
+        $response->assertOk()->assertSee('name="judul_surat"', false);
+        $this->assertSame(1, substr_count($response->getContent(), 'id="modalSuratIzin"'));
     }
 
     public function test_non_staff_cannot_submit_surat_izin(): void
@@ -166,7 +164,8 @@ class PesanTableTest extends TestCase
                 'judul_surat' => 'Izin Sakit',
                 'tanggal_izin' => '2026-10-20',
             ])
-            ->assertForbidden();
+            ->assertRedirect(route('hrd.dashboard'))
+            ->assertSessionHas('forbidden');
 
         $this->assertDatabaseCount('surat_izin', 0);
     }

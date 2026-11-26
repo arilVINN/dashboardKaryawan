@@ -299,8 +299,8 @@ class PagePolishTest extends TestCase
     {
         $html = $this->getPage($this->staff, '/');
 
-        $this->assertStringContainsString('Tabel Tugas', $html);
-        $this->assertStringContainsString('Tabel Pesan', $html);
+        $this->assertStringContainsString('Tugas saya', $html);
+        $this->assertStringContainsString('Notifikasi', $html);
     }
 
     public function test_custom_pagination_view_renders_branded_nav(): void
