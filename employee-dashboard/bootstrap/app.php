@@ -97,7 +97,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], $statusCode);
             }
             // Helper untuk redirect pengguna browser ke dashboard peran masing-masing dengan pesan toast
-            $redirectToDashboard = function (string $key, string $message) use ($request) {
+            $redirectToDashboard = function (string $key, string $message, int $status = 500) use ($request) {
                 $user = $request->user() ?: auth()->user();
                 $role = strtolower($user?->role?->nama_role ?? '');
 
@@ -119,7 +119,14 @@ return Application::configure(basePath: dirname(__DIR__))
                     // Already on the destination. Redirecting again (including
                     // back()) can produce ERR_TOO_MANY_REDIRECTS when the
                     // destination itself is the source of the error.
-                    return response()->view('errors.loop', ['message' => $message], 500);
+                    $title = match ($status) {
+                        403 => 'Akses ditolak',
+                        404 => 'Data tidak ditemukan',
+                        429 => 'Terlalu banyak permintaan',
+                        default => 'Terjadi kendala pada sistem',
+                    };
+
+                    return response()->view('errors.loop', compact('title', 'message'), $status);
                 }
 
                 return redirect()->route($dashboardRoute)->with($key, $message);
@@ -149,7 +156,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     return back()->withInput()->with('error', 'Terlalu banyak percobaan. Harap tunggu beberapa saat sebelum mencoba kembali.');
                 }
 
-                return $redirectToDashboard('error', 'Terlalu banyak permintaan. Harap tunggu beberapa saat sebelum mencoba kembali.');
+                return $redirectToDashboard('error', 'Terlalu banyak permintaan. Harap tunggu beberapa saat sebelum mencoba kembali.', 429);
             }
 
             if ($e instanceof NotFoundHttpException || $e instanceof ModelNotFoundException) {
@@ -157,7 +164,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     return response()->json(['message' => 'Data atau halaman tidak ditemukan.'], 404);
                 }
 
-                return $redirectToDashboard('error', 'Halaman atau data tidak ditemukan. Anda telah diarahkan ke dashboard Anda.');
+                return $redirectToDashboard('error', 'Halaman atau data tidak ditemukan. Anda telah diarahkan ke dashboard Anda.', 404);
             }
 
             if ($e instanceof AccessDeniedHttpException || $e instanceof AuthorizationException) {
@@ -165,7 +172,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     return response()->json(['message' => 'Forbidden. Akses ditolak.'], 403);
                 }
 
-                return $redirectToDashboard('forbidden', 'Akses ditolak. Anda telah diarahkan ke dashboard Anda.');
+                return $redirectToDashboard('forbidden', 'Akses ditolak. Anda telah diarahkan ke dashboard Anda.', 403);
             }
 
             $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;

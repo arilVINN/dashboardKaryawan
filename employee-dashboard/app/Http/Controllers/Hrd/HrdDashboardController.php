@@ -16,6 +16,7 @@ use App\Services\ContractExpiryReminder;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class HrdDashboardController extends Controller
 {
@@ -183,54 +184,101 @@ class HrdDashboardController extends Controller
 
     public function approveSuratIzin(SuratIzin $suratIzin)
     {
-        abort_unless($suratIzin->status === 'Pending', 409, 'Surat izin sudah diproses.');
-
-        DB::transaction(function () use ($suratIzin): void {
-            $suratIzin->update(['status' => 'Disetujui']);
-            $this->notifySuratIzinRequester($suratIzin, 'Disetujui');
-        });
-
-        $suratIzin->loadMissing('karyawan.user');
-        AuditLog::catat(
-            auth()->id(),
-            'approve_surat_izin',
-            'surat_izin',
-            (string) $suratIzin->id_surat,
-            [
-                'karyawan_id' => $suratIzin->karyawan_id_karyawan,
-                'nama' => $suratIzin->karyawan?->nama,
-                'jenis_izin' => $suratIzin->jenis_izin,
-                'status' => 'Disetujui',
-            ]
-        );
-
-        return back()->with('success', 'Surat izin berhasil disetujui.');
+        return $this->processSuratIzinDecision($suratIzin, 'Disetujui');
     }
 
     public function rejectSuratIzin(SuratIzin $suratIzin)
     {
+        return $this->processSuratIzinDecision($suratIzin, 'Ditolak');
+    }
+
+    private function processSuratIzinDecision(SuratIzin $suratIzin, string $status)
+    {
         abort_unless($suratIzin->status === 'Pending', 409, 'Surat izin sudah diproses.');
 
-        DB::transaction(function () use ($suratIzin): void {
-            $suratIzin->update(['status' => 'Ditolak']);
-            $this->notifySuratIzinRequester($suratIzin, 'Ditolak');
-        });
+        try {
+            $processed = DB::transaction(function () use ($suratIzin, $status): bool {
+                $fresh = SuratIzin::query()
+                    ->whereKey($suratIzin->getKey())
+                    ->lockForUpdate()
+                    ->first();
 
-        $suratIzin->loadMissing('karyawan.user');
-        AuditLog::catat(
-            auth()->id(),
-            'reject_surat_izin',
-            'surat_izin',
-            (string) $suratIzin->id_surat,
-            [
-                'karyawan_id' => $suratIzin->karyawan_id_karyawan,
-                'nama' => $suratIzin->karyawan?->nama,
-                'jenis_izin' => $suratIzin->jenis_izin,
-                'status' => 'Ditolak',
-            ]
+                if (! $fresh || $fresh->status !== 'Pending') {
+                    return false;
+                }
+
+                $fresh->update(['status' => $status]);
+
+                return true;
+            });
+        } catch (\Throwable $e) {
+            report($e);
+            Log::error('Gagal memproses keputusan surat izin', [
+                'surat_izin' => $suratIzin->id_surat,
+                'status' => $status,
+                'actor' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Gagal memproses surat izin. Silakan coba lagi.');
+        }
+
+        abort_unless($processed, 409, 'Surat izin sudah diproses.');
+
+        $suratIzin->refresh();
+
+        $this->safeNotifySuratIzinRequester($suratIzin, $status);
+        $this->safeAuditSuratIzin($suratIzin, $status);
+
+        return back()->with(
+            'success',
+            $status === 'Disetujui'
+                ? 'Surat izin berhasil disetujui.'
+                : 'Surat izin berhasil ditolak.'
         );
+    }
 
-        return back()->with('success', 'Surat izin berhasil ditolak.');
+    private function safeNotifySuratIzinRequester(SuratIzin $suratIzin, string $status): void
+    {
+        try {
+            $this->notifySuratIzinRequester($suratIzin, $status);
+        } catch (\Throwable $e) {
+            report($e);
+            Log::warning('Notifikasi keputusan surat izin gagal dikirim', [
+                'surat_izin' => $suratIzin->id_surat,
+                'status' => $status,
+                'actor' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function safeAuditSuratIzin(SuratIzin $suratIzin, string $status): void
+    {
+        try {
+            $suratIzin->loadMissing('karyawan.user');
+
+            AuditLog::catat(
+                auth()->id(),
+                $status === 'Disetujui' ? 'approve_surat_izin' : 'reject_surat_izin',
+                'surat_izin',
+                (string) $suratIzin->id_surat,
+                [
+                    'karyawan_id' => $suratIzin->karyawan_id_karyawan,
+                    'nama' => $suratIzin->karyawan?->nama,
+                    'jenis_izin' => $suratIzin->jenis_izin,
+                    'status' => $status,
+                ]
+            );
+        } catch (\Throwable $e) {
+            report($e);
+            Log::warning('Audit keputusan surat izin gagal dicatat', [
+                'surat_izin' => $suratIzin->id_surat,
+                'status' => $status,
+                'actor' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     // untuk histori izin karyawan
