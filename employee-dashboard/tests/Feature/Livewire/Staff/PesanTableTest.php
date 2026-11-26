@@ -180,6 +180,8 @@ class PesanTableTest extends TestCase
             ->assertSee('name="tanggal_pengajuan"', false)
             ->assertSee('name="keperluan"', false)
             ->assertSee('name="jenis_pengajuan"', false)
+            ->assertSee('name="jam_pengajuan"', false)
+            ->assertSee('placeholder="HH:MM"', false)
             ->assertSee('Tidak Masuk')
             ->assertSee('Ajukan Perizinan');
         $this->assertSame(1, substr_count($response->getContent(), 'id="modalSuratIzin"'));

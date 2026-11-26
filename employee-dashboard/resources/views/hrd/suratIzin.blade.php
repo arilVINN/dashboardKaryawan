@@ -54,7 +54,7 @@
                                         <div class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs">
                                             <span class="font-medium text-[#19A7CE]">{{ $surat->kategori_pengajuan ?? 'Izin / Cuti' }}</span>
                                             <span class="text-slate-300">·</span>
-                                            <span class="text-slate-500">{{ $surat->jenis_izin ?? '-' }}</span>
+                                            <span class="text-slate-500">{{ $surat->jenis_izin ?? '-' }}@if ($surat->jam_pengajuan) · {{ $surat->jam_pengajuan_label }}@endif</span>
                                             @if ($surat->keperluan)
                                                 <span class="rounded-full border border-[#E2E8EC] bg-[#F8FAFC] px-1.5 py-0.5 text-[10px] font-medium text-[#4B5563]">
                                                     {{ $surat->keperluan }}
@@ -89,8 +89,20 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        @if ($surat->status === 'Pending')
-                                            <div class="inline-flex items-center gap-2">
+                                        <div class="inline-flex flex-wrap items-center justify-center gap-2">
+                                            @if ($surat->status === 'Disetujui')
+                                                <a href="{{ route('suratIzin.pdf', ['suratIzin' => $surat, 'preview' => 1]) }}"
+                                                   target="_blank" rel="noopener"
+                                                   class="inline-flex items-center gap-1.5 rounded-md border border-[#D5DEE3] bg-white px-3 py-1.5 text-xs font-semibold text-[#146C94] transition hover:border-[#146C94] hover:bg-[#EAF6FA]">
+                                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                              d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5Zm-3 0h.008v.008H15V10.5Z" />
+                                                    </svg>
+                                                    Cetak PDF
+                                                </a>
+                                            @endif
+
+                                            @if ($surat->status === 'Pending')
                                                 <form method="POST" action="{{ route('hrd.suratIzin.acc', $surat) }}">
                                                     @csrf
                                                     <button type="submit"
@@ -105,10 +117,10 @@
                                                         Tolak
                                                     </button>
                                                 </form>
-                                            </div>
-                                        @else
-                                            <span class="text-slate-400 text-xs italic">Sudah diproses</span>
-                                        @endif
+                                            @else
+                                                <span class="text-slate-400 text-xs italic">Sudah diproses</span>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty

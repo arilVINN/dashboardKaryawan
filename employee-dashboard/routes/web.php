@@ -33,6 +33,7 @@ use App\Http\Controllers\Staff\NotifikasiController;
 use App\Http\Controllers\Staff\PesanController;
 use App\Http\Controllers\Staff\SuratIzinController;
 use App\Http\Controllers\StrukturOrganisasiController;
+use App\Http\Controllers\SuratIzinPdfController;
 use App\Http\Middleware\EnsureContentCalendarAccess;
 use App\Http\Middleware\EnsureStaffRole;
 use App\Models\BookingRequest;
@@ -519,6 +520,11 @@ Route::middleware(['auth', 'role:hrd,direksi', 'throttle:umum'])->prefix('hrd')-
 Route::post('/surat-izin', [SuratIzinController::class, 'store'])
     ->middleware(['auth', 'role:staff,kadiv', 'throttle:submit-form'])
     ->name('staff.suratIzin.store');
+
+// Cetak / unduh formulir perizinan sebagai PDF
+Route::get('/surat-izin/{suratIzin}/pdf', [SuratIzinPdfController::class, 'show'])
+    ->middleware(['auth', 'throttle:umum'])
+    ->name('suratIzin.pdf');
 
 // Surat Izin (HRD)
 Route::get('/suratIzin', [HrdDashboardController::class, 'suratIzinPage'])

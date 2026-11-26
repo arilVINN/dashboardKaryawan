@@ -45,11 +45,23 @@ class SuratIzin extends Model
         ],
     ];
 
+    /**
+     * Jenis pengajuan yang membutuhkan isian jam.
+     *
+     * @var list<string>
+     */
+    public const JENIS_DENGAN_JAM = [
+        'Lupa Absen',
+        'Datang Terlambat',
+        'Pulang Lebih Awal',
+    ];
+
     protected $fillable = [
         'id_surat',
         'karyawan_id_karyawan',
         'tanggal_pengajuan',
         'jenis_izin',
+        'jam_pengajuan',
         'keperluan',
         'kategori_pengajuan',
         'judul_surat',
@@ -91,6 +103,17 @@ class SuratIzin extends Model
     public static function judulUntuk(string $kategori, string $jenis): string
     {
         return 'Pengajuan '.$kategori.' - '.$jenis;
+    }
+
+    public function getJamPengajuanLabelAttribute(): ?string
+    {
+        $value = $this->attributes['jam_pengajuan'] ?? null;
+
+        if (! $value) {
+            return null;
+        }
+
+        return substr((string) $value, 0, 5);
     }
 
     public function suratIzins()

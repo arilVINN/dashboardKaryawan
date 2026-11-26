@@ -5,6 +5,7 @@
     $jenisGroups = \App\Models\SuratIzin::JENIS_PENGAJUAN_GROUPS;
     $selectedJenis = old('jenis_pengajuan');
     $selectedKeperluan = old('keperluan');
+    $jamAktif = in_array($selectedJenis, \App\Models\SuratIzin::JENIS_DENGAN_JAM, true);
 @endphp
 
 <div id="modalSuratIzin"
@@ -192,6 +193,28 @@
                         @error('jenis_pengajuan')
                             <p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>
                         @enderror
+
+                        <div id="jamPengajuanField"
+                             data-jam-jenis='@json(\App\Models\SuratIzin::JENIS_DENGAN_JAM)'
+                             class="{{ $jamAktif || $errors->has('jam_pengajuan') ? '' : 'hidden' }} mt-3 max-w-[240px]">
+                            <label for="jamPengajuan" class="mb-1.5 block text-[12px] font-medium text-[#334155]">
+                                Jam <span class="text-[#B91C1C]" aria-hidden="true">*</span>
+                            </label>
+                            <input id="jamPengajuan" type="text" name="jam_pengajuan"
+                                   value="{{ old('jam_pengajuan') }}"
+                                   inputmode="numeric" maxlength="5" autocomplete="off"
+                                   placeholder="HH:MM"
+                                   class="h-10 w-full rounded-lg border px-3 text-sm text-[#283044] outline-none
+                                          placeholder:text-[#94A3B8]
+                                          focus:border-[#19A7CE] focus:ring-1 focus:ring-[#19A7CE]
+                                          @error('jam_pengajuan') border-red-400 focus:border-red-500 focus:ring-red-200 @else border-[#CBD5E1] @enderror">
+                            <p class="mt-1 text-[11px] text-[#64748B]">
+                                Format 24 jam, contoh 08:30.
+                            </p>
+                            @error('jam_pengajuan')
+                                <p class="mt-1 text-[11px] text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
             </section>
@@ -284,6 +307,9 @@
 
     const judulInput = document.getElementById('judulSuratInput');
     const jenisRadios = modal.querySelectorAll('input[name="jenis_pengajuan"]');
+    const jamField = document.getElementById('jamPengajuanField');
+    const jamInput = document.getElementById('jamPengajuan');
+    const jamJenis = jamField ? JSON.parse(jamField.dataset.jamJenis || '[]') : [];
     const tanggalMulai = document.getElementById('tanggalMulai');
     const tanggalSelesai = document.getElementById('tanggalSelesai');
     const fileInput = document.getElementById('fileSurat');
@@ -297,8 +323,52 @@
         judulInput.value = kategori ? ('Pengajuan ' + kategori + ' - ' + selected.value) : selected.value;
     }
 
+    function syncJamField() {
+        if (!jamField || !jamInput) return;
+        const selected = modal.querySelector('input[name="jenis_pengajuan"]:checked');
+        const needsJam = selected ? jamJenis.includes(selected.value) : false;
+
+        jamField.classList.toggle('hidden', !needsJam);
+        jamInput.required = needsJam;
+
+        if (!needsJam) {
+            jamInput.value = '';
+        }
+    }
+
+    if (jamInput) {
+        jamInput.addEventListener('input', function () {
+            const digits = this.value.replace(/\D/g, '').slice(0, 4);
+            this.value = digits.length > 2
+                ? digits.slice(0, 2) + ':' + digits.slice(2)
+                : digits;
+        });
+
+        jamInput.addEventListener('blur', function () {
+            const digits = this.value.replace(/\D/g, '');
+            if (digits === '') return;
+
+            let value;
+            if (digits.length <= 2) {
+                value = digits.padStart(2, '0') + ':00';
+            } else if (digits.length === 3) {
+                value = '0' + digits[0] + ':' + digits.slice(1);
+            } else {
+                value = digits.slice(0, 2) + ':' + digits.slice(2);
+            }
+
+            const match = value.match(/^(\d{2}):(\d{2})$/);
+            if (match && Number(match[1]) <= 23 && Number(match[2]) <= 59) {
+                this.value = value;
+            }
+        });
+    }
+
     jenisRadios.forEach(function (radio) {
-        radio.addEventListener('change', syncJudul);
+        radio.addEventListener('change', function () {
+            syncJudul();
+            syncJamField();
+        });
     });
 
     if (tanggalMulai && tanggalSelesai) {
@@ -335,6 +405,7 @@
     }
 
     syncJudul();
+    syncJamField();
 
     @if ($errors->any())
         window.setModal?.('modalSuratIzin', true);
