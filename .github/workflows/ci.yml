@@ -59,9 +59,7 @@ jobs:
       - name: Compile Blade views
         run: php artisan view:cache
 
-      # Report-only for now: the codebase has files that are not Pint-formatted yet.
       - name: Check formatting
-        continue-on-error: true
         run: vendor/bin/pint --test
 
       # Blocking: the suite is green as of the test-baseline fix.
