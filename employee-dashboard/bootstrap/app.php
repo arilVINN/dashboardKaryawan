@@ -98,10 +98,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 }
 
                 $targetUrl = route($dashboardRoute);
-                // Jika sudah di halaman dashboard, jangan redirect (cukup flash session saja)
                 if ($request->url() === $targetUrl) {
-                    session()->flash($key, $message);
-                    return back()->with($key, $message);
+                    // Already on the destination. Redirecting again (including
+                    // back()) can produce ERR_TOO_MANY_REDIRECTS when the
+                    // destination itself is the source of the error.
+                    return response()->view('errors.loop', ['message' => $message], 500);
                 }
 
                 return redirect()->route($dashboardRoute)->with($key, $message);
