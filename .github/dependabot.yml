@@ -9,12 +9,28 @@ updates:
         patterns:
           - "*"
 
+  # Routine minor/patch bumps arrive as a single PR per ecosystem; major
+  # versions stay separate so they can be reviewed individually.
   - package-ecosystem: composer
     directory: "/employee-dashboard"
     schedule:
       interval: weekly
+    groups:
+      composer-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: npm
     directory: "/employee-dashboard"
     schedule:
       interval: weekly
+    groups:
+      npm-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
