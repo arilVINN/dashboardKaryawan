@@ -26,7 +26,9 @@ class HrdPesanController extends Controller
             'totalPesan' => Pesan::count(),
             'pesanMasuk' => Pesan::where('penerima_id_user', $user->id_user)->count(),
             'bookingMasuk' => BookingRequest::count(),
-            'suratIzinMasuk' => SuratIzin::count(),
+            'suratIzinMasuk' => SuratIzin::where('status', 'Pending')
+                ->where('tahap', 'hrd')
+                ->count(),
         ]);
     }
 

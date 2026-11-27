@@ -65,7 +65,7 @@ class HrIncomingNotificationTest extends TestCase
         $this->assertSame(0, Notifikasi::where('user_id_user', $this->staff->id_user)->count());
     }
 
-    public function test_surat_izin_submission_notifies_hrd(): void
+    public function test_staff_surat_izin_submission_notifies_kadiv(): void
     {
         $this->actingAs($this->staff)
             ->post(route('staff.suratIzin.store'), [
@@ -78,11 +78,14 @@ class HrIncomingNotificationTest extends TestCase
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $notification = Notifikasi::where('user_id_user', $this->hrd->id_user)->firstOrFail();
-        $this->assertSame('Surat Izin Masuk', $notification->judul_notifikasi);
+        $notification = Notifikasi::where('user_id_user', $this->kadiv->id_user)->firstOrFail();
+        $this->assertSame('Surat Izin Menunggu Persetujuan', $notification->judul_notifikasi);
         $this->assertStringContainsString('Izin Sakit Hari Ini', $notification->isi_notif);
         $this->assertStringContainsString('Izin Sakit', $notification->isi_notif);
         $this->assertStringContainsString('Staff Satu', $notification->isi_notif);
+        $this->assertSame(0, Notifikasi::where('user_id_user', $this->hrd->id_user)
+            ->where('judul_notifikasi', 'Surat Izin Masuk')
+            ->count());
     }
 
     public function test_kadiv_surat_izin_submission_notifies_hrd(): void

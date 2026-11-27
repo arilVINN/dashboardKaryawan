@@ -268,40 +268,10 @@
     </form>
 </div>
 
+@include('components.modal-scripts')
+
 <script>
 (function () {
-    if (!window.__modalReady) {
-        window.__modalReady = true;
-        window.setModal = function (id, show) {
-            const modal = document.getElementById(id);
-            if (!modal) return;
-            const panel = modal.querySelector('[data-modal-panel]');
-            modal.classList.toggle('opacity-0', !show);
-            modal.classList.toggle('pointer-events-none', !show);
-            modal.classList.toggle('opacity-100', show);
-            if (panel) {
-                panel.classList.toggle('scale-95', !show);
-                panel.classList.toggle('translate-y-2', !show);
-                panel.classList.toggle('scale-100', show);
-                panel.classList.toggle('translate-y-0', show);
-            }
-            document.body.classList.toggle('overflow-hidden', show);
-        };
-        document.addEventListener('click', function (e) {
-            const open = e.target.closest('[data-modal-open]');
-            const close = e.target.closest('[data-modal-close]');
-            if (open) return setModal(open.dataset.modalOpen, true);
-            if (close) return setModal(close.dataset.modalClose, false);
-            if (e.target.matches('[id^="modal"]')) setModal(e.target.id, false);
-        });
-        document.addEventListener('keydown', function (e) {
-            if (e.key !== 'Escape') return;
-            document.querySelectorAll('[id^="modal"].opacity-100').forEach(function (modal) {
-                setModal(modal.id, false);
-            });
-        });
-    }
-
     const modal = document.getElementById('modalSuratIzin');
     if (!modal) return;
 

@@ -43,6 +43,7 @@ class Karyawan extends Model
         'jobdesk',
         'status_karyawan',
         'aktif',
+        'tanda_tangan',
     ];
 
     protected $casts = [

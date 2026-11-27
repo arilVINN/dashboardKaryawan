@@ -19,8 +19,10 @@ use App\Http\Controllers\Hrd\HrdJabatanController;
 use App\Http\Controllers\Hrd\HrdKaryawanController;
 use App\Http\Controllers\Hrd\HrdPeranController;
 use App\Http\Controllers\Hrd\HrdPesanController;
+use App\Http\Controllers\Hrd\HrdSignatureController;
 use App\Http\Controllers\Hrd\HrdStaffController;
 use App\Http\Controllers\Kadiv\KadivMessageController;
+use App\Http\Controllers\Kadiv\KadivSuratIzinController;
 use App\Http\Controllers\KadivController;
 use App\Http\Controllers\PasswordChangeController;
 use App\Http\Controllers\ProfilePhotoController;
@@ -147,17 +149,17 @@ Route::middleware(['auth', 'role:staff', 'throttle:umum'])->group(function () {
 
     Route::get('/pesan', function () {
         $user = auth()->user();
-        $suratIzinStatus = SuratIzin::query()
-            ->where('karyawan_id_karyawan', $user->karyawan_id_karyawan)
-            ->latest()
-            ->get();
         $bookingStatus = BookingRequest::query()
             ->where('pemohon_id_user', $user->id_user)
             ->latest()
             ->get();
 
-        return view('staff.pesan', compact('suratIzinStatus', 'bookingStatus'));
+        return view('staff.pesan', compact('bookingStatus'));
     })->name('pesan');
+
+    Route::get('/staff/suratIzin', [SuratIzinController::class, 'index'])
+        ->middleware('throttle:pencarian')
+        ->name('staff.suratIzin');
 
     Route::get('/pesan/detail/{id?}', function ($id = null) {
         if (! $id) {
@@ -294,17 +296,28 @@ Route::middleware(['auth', 'role:kadiv', 'throttle:umum'])->prefix('kadiv')->gro
     // Pesan
     Route::get('/pesan', function () {
         $user = auth()->user();
-        $suratIzinStatus = SuratIzin::query()
-            ->where('karyawan_id_karyawan', $user->karyawan_id_karyawan)
-            ->latest()
-            ->get();
         $bookingStatus = BookingRequest::query()
             ->where('pemohon_id_user', $user->id_user)
             ->latest()
             ->get();
 
-        return view('kadiv.pesan', compact('suratIzinStatus', 'bookingStatus'));
+        return view('kadiv.pesan', compact('bookingStatus'));
     })->name('kadiv.pesan');
+
+    // Persetujuan Surat Izin (Kadiv)
+    Route::get('/suratIzin', [KadivSuratIzinController::class, 'index'])
+        ->name('kadiv.suratIzin');
+    Route::post('/suratIzin/{suratIzin}/acc', [KadivSuratIzinController::class, 'approve'])
+        ->middleware('throttle:submit-form')
+        ->name('kadiv.suratIzin.acc');
+    Route::post('/suratIzin/{suratIzin}/tolak', [KadivSuratIzinController::class, 'reject'])
+        ->middleware('throttle:submit-form')
+        ->name('kadiv.suratIzin.tolak');
+    Route::post('/tanda-tangan', [KadivSuratIzinController::class, 'uploadSignature'])
+        ->middleware('throttle:submit-form')
+        ->name('kadiv.signature.upload');
+    Route::get('/tanda-tangan', [KadivSuratIzinController::class, 'showSignature'])
+        ->name('kadiv.signature.show');
 
     Route::get('/detailPesan/{id}', function ($id) {
         $user = auth()->user();
@@ -514,6 +527,11 @@ Route::middleware(['auth', 'role:hrd,direksi', 'throttle:umum'])->prefix('hrd')-
         ->middleware('throttle:submit-form');
     Route::post('/suratIzin/{suratIzin}/tolak', [HrdDashboardController::class, 'rejectSuratIzin'])
         ->middleware('throttle:submit-form');
+    Route::post('/tanda-tangan', [HrdSignatureController::class, 'upload'])
+        ->middleware('throttle:submit-form')
+        ->name('hrd.signature.upload');
+    Route::get('/tanda-tangan', [HrdSignatureController::class, 'show'])
+        ->name('hrd.signature.show');
 });
 
 // Surat Izin (Staff & Kadiv)

@@ -241,20 +241,39 @@ class BookingRequestTest extends TestCase
         $this->actingAs($this->staff)
             ->get('/pesan')
             ->assertOk()
-            ->assertSee('Status Surat Izin')
             ->assertSee('Status Booking Kendaraan/Ruangan')
-            ->assertSee('Izin Staff')
             ->assertSee('Rapat koordinasi')
+            ->assertDontSee('Status Surat Izin')
+            ->assertDontSee('Izin Staff')
             ->assertDontSee('Izin Kadiv')
             ->assertDontSee('Booking Kadiv');
+
+        $this->actingAs($this->staff)
+            ->get('/staff/suratIzin')
+            ->assertOk()
+            ->assertSee('Status Surat Izin Saya')
+            ->assertSee('Izin Staff')
+            ->assertDontSee('Izin Kadiv')
+            ->assertDontSee('Status Booking Kendaraan/Ruangan');
 
         $this->actingAs($this->kadiv)
             ->get('/kadiv/pesan')
             ->assertOk()
-            ->assertSee('Izin Kadiv')
             ->assertSee('Booking Kadiv')
+            ->assertDontSee('Status Surat Izin')
+            ->assertDontSee('Izin Kadiv')
             ->assertDontSee('Izin Staff')
             ->assertDontSee('Rapat koordinasi');
+
+        $this->actingAs($this->kadiv)
+            ->get('/kadiv/suratIzin')
+            ->assertOk()
+            ->assertSee('Pengajuan Saya')
+            ->assertSee('Status Surat Izin Saya')
+            ->assertSee('Izin Kadiv')
+            ->assertSee('Izin Staff')
+            ->assertSee('Menunggu HRD')
+            ->assertDontSee('Status Booking Kendaraan/Ruangan');
     }
 
     private function createUser(string $suffix, string $roleId, string $name): User2

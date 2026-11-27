@@ -21,11 +21,36 @@
                 'currentPage' => 'Surat Izin Masuk',
                 'inline' => true,
             ])
-            <x-page-heading title="Surat Izin Masuk" icon="mail" class="mb-6" />
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+                <x-page-heading title="Surat Izin Masuk" icon="mail" />
+
+                @if ($canManageSignature)
+                    <button type="button" data-modal-open="modalHrdSignature"
+                        class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg border border-[#D5DEE3] bg-white px-4 text-sm font-medium text-[#172B36] transition hover:bg-[#F1F5F9]">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+                        </svg>
+                        Tanda Tangan
+                    </button>
+                @endif
+            </div>
 
             @if (session('success'))
                 <div class="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
                     {{ session('success') }}
+                </div>
+            @endif
+
+            @if ($canManageSignature && ! $signatureAvailable)
+                <div class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                    <p class="text-[12px] text-amber-800">
+                        Tanda tangan HR belum diunggah. Surat izin tetap dapat disetujui, tetapi kolom HR pada PDF akan kosong.
+                    </p>
+                    <button type="button" data-modal-open="modalHrdSignature"
+                        class="inline-flex h-8 shrink-0 items-center rounded-lg border border-amber-300 bg-white px-3 text-[12px] font-semibold text-amber-800 transition hover:bg-amber-100">
+                        Unggah Tanda Tangan
+                    </button>
                 </div>
             @endif
 
@@ -39,7 +64,7 @@
                                 <th class="px-6 py-4 font-medium text-center">Tanggal Mulai s/d Selesai</th>
                                 <th class="px-6 py-4 font-medium">Keterangan</th>
                                 <th class="px-6 py-4 font-medium">File</th>
-                                <th class="px-6 py-4 font-medium">Status</th>
+                                <th class="px-6 py-4 font-medium">Status / Tahap</th>
                                 <th class="px-6 py-4 font-medium text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -85,7 +110,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span
                                             class="inline-block px-2.5 py-0.5 rounded-full border text-xs font-semibold {{ $surat->status === 'Disetujui' ? 'bg-emerald-100 text-emerald-700 border-emerald-500' : ($surat->status === 'Ditolak' ? 'bg-red-100 text-red-700 border-red-500' : 'bg-amber-100 text-amber-700 border-amber-500') }}">
-                                            {{ $surat->status }}
+                                            {{ $surat->tahap_label }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
@@ -102,7 +127,7 @@
                                                 </a>
                                             @endif
 
-                                            @if ($surat->status === 'Pending')
+                                            @if ($surat->status === 'Pending' && $surat->tahap === 'hrd')
                                                 <form method="POST" action="{{ route('hrd.suratIzin.acc', $surat) }}">
                                                     @csrf
                                                     <button type="submit"
@@ -117,6 +142,8 @@
                                                         Tolak
                                                     </button>
                                                 </form>
+                                            @elseif ($surat->status === 'Pending')
+                                                <span class="text-amber-600 text-xs italic">Menunggu Kadiv</span>
                                             @else
                                                 <span class="text-slate-400 text-xs italic">Sudah diproses</span>
                                             @endif
@@ -138,6 +165,19 @@
                     {{ $suratIzin->links('vendor.pagination.custom-links') }}
                 </div>
             </div>
+
+            @if ($canManageSignature)
+                <x-signature-modal
+                    id="modalHrdSignature"
+                    title="Tanda Tangan HR"
+                    description="Unggah tanda tangan PNG yang akan dicetak pada surat izin yang Anda setujui sebagai HR."
+                    :action="route('hrd.signature.upload')"
+                    :preview-url="route('hrd.signature.show')"
+                    :employee="$hrdEmployee"
+                    :has-signature="$signatureAvailable"
+                    submit-label="Simpan Tanda Tangan"
+                />
+            @endif
         </main>
     </div>
 </body>

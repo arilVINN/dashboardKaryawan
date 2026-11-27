@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratIzin;
 use App\Models\User2;
+use App\Support\FileStorage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 class SuratIzinPdfController extends Controller
@@ -21,12 +23,13 @@ class SuratIzinPdfController extends Controller
             'Softcopy hanya tersedia setelah pengajuan disetujui HRD.'
         );
 
-        $suratIzin->loadMissing(['karyawan.divisi', 'karyawan.user.role']);
+        $suratIzin->loadMissing(['karyawan.divisi', 'karyawan.user.role', 'kadiv', 'hrd.karyawan']);
 
         $pdf = Pdf::loadView('pdf.surat-izin', [
             'suratIzin' => $suratIzin,
             'logoDataUri' => $this->logoDataUri(),
-            'signatureDataUri' => $this->signatureDataUri(),
+            'signatureDataUri' => $this->signatureDataUri($suratIzin),
+            'hrdSignatureDataUri' => $this->hrdSignatureDataUri($suratIzin),
             'showSignature' => true,
         ])->setPaper('a4', 'portrait');
 
@@ -68,14 +71,52 @@ class SuratIzinPdfController extends Controller
         return 'data:image/png;base64,'.base64_encode((string) file_get_contents($path));
     }
 
-    private function signatureDataUri(): ?string
+    private function signatureDataUri(SuratIzin $suratIzin): ?string
     {
-        $path = public_path('gambar/dummy-signature.png');
+        $path = $suratIzin->kadiv_signature_path;
 
-        if (! is_file($path)) {
+        if ($path) {
+            $disk = FileStorage::diskFor($path);
+
+            if ($disk !== null && Storage::disk($disk)->exists($path)) {
+                return 'data:image/png;base64,'.base64_encode(
+                    (string) Storage::disk($disk)->get($path)
+                );
+            }
+        }
+
+        // A request that has a recorded Kadiv approver must never fall back to
+        // a placeholder signature. Only legacy records approved before this
+        // flow use the old placeholder.
+        if ($suratIzin->kadiv_id_karyawan !== null) {
             return null;
         }
 
-        return 'data:image/png;base64,'.base64_encode((string) file_get_contents($path));
+        $fallback = public_path('gambar/dummy-signature.png');
+
+        if (! is_file($fallback)) {
+            return null;
+        }
+
+        return 'data:image/png;base64,'.base64_encode((string) file_get_contents($fallback));
+    }
+
+    private function hrdSignatureDataUri(SuratIzin $suratIzin): ?string
+    {
+        $path = $suratIzin->hrd_signature_path;
+
+        if (! $path) {
+            return null;
+        }
+
+        $disk = FileStorage::diskFor($path);
+
+        if ($disk === null) {
+            return null;
+        }
+
+        return 'data:image/png;base64,'.base64_encode(
+            (string) Storage::disk($disk)->get($path)
+        );
     }
 }

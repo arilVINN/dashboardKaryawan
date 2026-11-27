@@ -13,10 +13,12 @@ use App\Models\SuratIzin;
 use App\Models\Tugas;
 use App\Services\BirthdayNotificationService;
 use App\Services\ContractExpiryReminder;
+use App\Services\SignatureService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class HrdDashboardController extends Controller
 {
@@ -176,10 +178,27 @@ class HrdDashboardController extends Controller
     public function suratIzinPage()
     {
         $suratIzin = SuratIzin::with('karyawan.user.role')
+            ->where(function ($query) {
+                $query->where('tahap', 'hrd')
+                    ->orWhere(function ($query) {
+                        $query->where('tahap', 'selesai')
+                            ->whereNull('kadiv_rejected_at');
+                    });
+            })
             ->latest()
             ->paginate(5);
 
-        return view('hrd.suratIzin', compact('suratIzin'));
+        $hrdEmployee = auth()->user()?->karyawan;
+        $canManageSignature = auth()->user()?->hasRole('hrd') && $hrdEmployee;
+        $signatureAvailable = $canManageSignature
+            && app(SignatureService::class)->pathFor($hrdEmployee) !== null;
+
+        return view('hrd.suratIzin', compact(
+            'suratIzin',
+            'hrdEmployee',
+            'canManageSignature',
+            'signatureAvailable'
+        ));
     }
 
     public function approveSuratIzin(SuratIzin $suratIzin)
@@ -194,24 +213,53 @@ class HrdDashboardController extends Controller
 
     private function processSuratIzinDecision(SuratIzin $suratIzin, string $status)
     {
-        abort_unless($suratIzin->status === 'Pending', 409, 'Surat izin sudah diproses.');
+        abort_unless(
+            $suratIzin->status === 'Pending' && $suratIzin->tahap === 'hrd',
+            409,
+            'Surat izin belum disetujui Kepala Divisi atau sudah diproses.'
+        );
+
+        $hrdEmployee = auth()->user()?->karyawan;
+        $hrdSignaturePath = null;
+
+        if ($status === 'Disetujui' && $hrdEmployee) {
+            $hrdSignaturePath = app(SignatureService::class)
+                ->snapshot($hrdEmployee, 'hrd-'.$suratIzin->id_surat);
+        }
 
         try {
-            $processed = DB::transaction(function () use ($suratIzin, $status): bool {
+            $processed = DB::transaction(function () use ($suratIzin, $status, $hrdSignaturePath): bool {
                 $fresh = SuratIzin::query()
                     ->whereKey($suratIzin->getKey())
                     ->lockForUpdate()
                     ->first();
 
-                if (! $fresh || $fresh->status !== 'Pending') {
+                if (! $fresh || $fresh->status !== 'Pending' || $fresh->tahap !== 'hrd') {
                     return false;
                 }
 
-                $fresh->update(['status' => $status]);
+                $update = [
+                    'status' => $status,
+                    'tahap' => 'selesai',
+                    'hrd_id_user' => auth()->id(),
+                ];
+
+                if ($status === 'Disetujui') {
+                    $update['hrd_approved_at'] = now();
+                    $update['hrd_signature_path'] = $hrdSignaturePath;
+                } else {
+                    $update['hrd_rejected_at'] = now();
+                }
+
+                $fresh->update($update);
 
                 return true;
             });
         } catch (\Throwable $e) {
+            if ($hrdSignaturePath) {
+                Storage::disk('private')->delete($hrdSignaturePath);
+            }
+
             report($e);
             Log::error('Gagal memproses keputusan surat izin', [
                 'surat_izin' => $suratIzin->id_surat,
@@ -223,7 +271,13 @@ class HrdDashboardController extends Controller
             return back()->with('error', 'Gagal memproses surat izin. Silakan coba lagi.');
         }
 
-        abort_unless($processed, 409, 'Surat izin sudah diproses.');
+        if (! $processed) {
+            if ($hrdSignaturePath) {
+                Storage::disk('private')->delete($hrdSignaturePath);
+            }
+
+            abort(409, 'Surat izin sudah diproses.');
+        }
 
         $suratIzin->refresh();
 

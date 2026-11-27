@@ -70,6 +70,15 @@ class SuratIzin extends Model
         'file',
         'keterangan',
         'status',
+        'tahap',
+        'kadiv_id_karyawan',
+        'kadiv_signature_path',
+        'kadiv_approved_at',
+        'kadiv_rejected_at',
+        'hrd_id_user',
+        'hrd_signature_path',
+        'hrd_approved_at',
+        'hrd_rejected_at',
     ];
 
     protected $casts = [
@@ -77,6 +86,10 @@ class SuratIzin extends Model
         'tanggal_izin' => 'date',
         'tanggal_mulai' => 'date',
         'tanggal_selesai' => 'date',
+        'kadiv_approved_at' => 'datetime',
+        'kadiv_rejected_at' => 'datetime',
+        'hrd_approved_at' => 'datetime',
+        'hrd_rejected_at' => 'datetime',
     ];
 
     /**
@@ -114,6 +127,29 @@ class SuratIzin extends Model
         }
 
         return substr((string) $value, 0, 5);
+    }
+
+    public function getTahapLabelAttribute(): string
+    {
+        if ($this->status === 'Disetujui') {
+            return 'Disetujui';
+        }
+
+        if ($this->status === 'Ditolak') {
+            return 'Ditolak';
+        }
+
+        return $this->tahap === 'kadiv' ? 'Menunggu Kadiv' : 'Menunggu HRD';
+    }
+
+    public function kadiv()
+    {
+        return $this->belongsTo(Karyawan::class, 'kadiv_id_karyawan', 'id_karyawan');
+    }
+
+    public function hrd()
+    {
+        return $this->belongsTo(User2::class, 'hrd_id_user', 'id_user');
     }
 
     public function suratIzins()

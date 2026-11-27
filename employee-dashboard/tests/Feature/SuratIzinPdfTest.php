@@ -168,11 +168,12 @@ class SuratIzinPdfTest extends TestCase
         $this->assertStringContainsString('30 November 2026', $html);
         $this->assertStringContainsString('Lupa Absen', $html);
         $this->assertStringContainsString('Lupa melakukan absensi masuk.', $html);
-        $this->assertStringContainsString('Pemohon', $html);
-        $this->assertStringContainsString('Disetujui Oleh', $html);
-        $this->assertStringContainsString('Mengetahui', $html);
-        $this->assertStringContainsString('Kepala Divisi', $html);
+        $this->assertSame(2, substr_count($html, 'Disetujui Oleh,'));
+        $this->assertStringContainsString('Kepala Divisi,', $html);
+        $this->assertStringContainsString('HR,', $html);
+        $this->assertStringContainsString('Mengetahui,', $html);
         $this->assertStringContainsString('Direktur PT. Silindo', $html);
+        $this->assertStringNotContainsString('Pemohon', $html);
 
         // One checked jenis; the selected keperluan is marked by underline.
         $this->assertSame(1, substr_count($html, 'class="checkbox checkbox-checked"'));
@@ -263,7 +264,7 @@ class SuratIzinPdfTest extends TestCase
             'showSignature' => true,
         ])->render();
 
-        $this->assertStringContainsString('alt="Tanda tangan"', $html);
+        $this->assertStringContainsString('alt="Tanda tangan Kadiv"', $html);
     }
 
     public function test_pdf_view_hides_the_signature_when_not_approved(): void
@@ -275,7 +276,35 @@ class SuratIzinPdfTest extends TestCase
             'showSignature' => false,
         ])->render();
 
-        $this->assertStringNotContainsString('alt="Tanda tangan"', $html);
+        $this->assertStringNotContainsString('alt="Tanda tangan', $html);
+    }
+
+    public function test_pdf_view_prints_the_kadiv_and_hr_names(): void
+    {
+        $this->suratIzin->update([
+            'kadiv_id_karyawan' => 'KRY-B',
+            'hrd_id_user' => $this->hrd->id_user,
+        ]);
+
+        $html = view('pdf.surat-izin', [
+            'suratIzin' => $this->suratIzin->load('karyawan.divisi'),
+            'logoDataUri' => null,
+        ])->render();
+
+        $this->assertStringContainsString('( Karyawan Lain )', $html);
+        $this->assertStringContainsString('( HRD User )', $html);
+    }
+
+    public function test_pdf_view_includes_the_hr_signature_when_available(): void
+    {
+        $html = view('pdf.surat-izin', [
+            'suratIzin' => $this->suratIzin->load('karyawan.divisi'),
+            'logoDataUri' => null,
+            'hrdSignatureDataUri' => 'data:image/png;base64,BBBB',
+            'showSignature' => true,
+        ])->render();
+
+        $this->assertStringContainsString('alt="Tanda tangan HR"', $html);
     }
 
     public function test_pdf_view_keeps_one_page_for_long_keterangan(): void
@@ -297,7 +326,7 @@ class SuratIzinPdfTest extends TestCase
     public function test_soft_file_link_is_available_in_the_surat_izin_status_table(): void
     {
         $this->actingAs($this->staff)
-            ->get('/pesan')
+            ->get('/staff/suratIzin')
             ->assertOk()
             ->assertSee('Lampiran')
             ->assertSee('PDF')
@@ -309,7 +338,7 @@ class SuratIzinPdfTest extends TestCase
         $this->suratIzin->update(['status' => 'Pending']);
 
         $this->actingAs($this->staff)
-            ->get('/pesan')
+            ->get('/staff/suratIzin')
             ->assertOk()
             ->assertSee('Setelah disetujui')
             ->assertDontSee(route('suratIzin.pdf', ['suratIzin' => $this->suratIzin, 'preview' => 1]), false);
@@ -320,7 +349,7 @@ class SuratIzinPdfTest extends TestCase
         $this->suratIzin->update(['status' => 'Ditolak']);
 
         $this->actingAs($this->staff)
-            ->get('/pesan')
+            ->get('/staff/suratIzin')
             ->assertOk()
             ->assertSee('Tidak tersedia')
             ->assertDontSee(route('suratIzin.pdf', ['suratIzin' => $this->suratIzin, 'preview' => 1]), false);

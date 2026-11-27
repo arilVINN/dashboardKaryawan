@@ -74,6 +74,16 @@
             <span class="sidebar-text whitespace-nowrap transition-all duration-150">Pesan & Informasi</span>
         </a>
 
+        <a href="{{ url('/staff/suratIzin') }}"
+           class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('staff/suratIzin*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 15 2 2 4-4" />
+            </svg>
+            <span class="sidebar-text whitespace-nowrap transition-all duration-150">Surat Izin</span>
+        </a>
+
         <a href="{{ url('/pusat-data') }}"
            class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition {{ request()->is('pusat-data*') ? 'bg-white/40 text-white font-medium' : 'text-slate-300 hover:bg-white/20 hover:text-white' }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

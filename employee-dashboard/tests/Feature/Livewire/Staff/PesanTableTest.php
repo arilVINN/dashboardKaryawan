@@ -172,9 +172,9 @@ class PesanTableTest extends TestCase
         ]);
     }
 
-    public function test_surat_izin_modal_is_rendered_once_on_staff_pesan_page(): void
+    public function test_surat_izin_modal_is_rendered_once_on_staff_surat_izin_page(): void
     {
-        $response = $this->actingAs($this->staff)->get('/pesan');
+        $response = $this->actingAs($this->staff)->get('/staff/suratIzin');
 
         $response->assertOk()
             ->assertSee('name="tanggal_pengajuan"', false)
@@ -183,8 +183,15 @@ class PesanTableTest extends TestCase
             ->assertSee('name="jam_pengajuan"', false)
             ->assertSee('placeholder="HH:MM"', false)
             ->assertSee('Tidak Masuk')
-            ->assertSee('Ajukan Perizinan');
+            ->assertSee('Ajukan Perizinan')
+            ->assertSee('Status Surat Izin Saya');
         $this->assertSame(1, substr_count($response->getContent(), 'id="modalSuratIzin"'));
+
+        $this->actingAs($this->staff)
+            ->get('/pesan')
+            ->assertOk()
+            ->assertDontSee('id="modalSuratIzin"', false)
+            ->assertDontSee('Status Surat Izin Saya');
     }
 
     public function test_non_staff_cannot_submit_surat_izin(): void

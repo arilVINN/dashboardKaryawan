@@ -399,7 +399,7 @@
                                     </td>
                                     <td class="px-6 py-3 text-center">
                                         <span class="px-2 py-1 text-xs font-bold rounded {{ $badgeColor }}">
-                                            {{ ucfirst($izin->status) }}
+                                            {{ $izin->tahap_label }}
                                         </span>
                                     </td>
                                 </tr>

@@ -4,14 +4,28 @@ namespace App\Http\Controllers\Staff;
 
 // app/Http/Controllers/Staff/SuratIzinController.php
 use App\Actions\NotifyHrdUsers;
+use App\Actions\NotifyKadivUsers;
 use App\Http\Controllers\Controller;
 use App\Models\SuratIzin;
+use App\Models\User2;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class SuratIzinController extends Controller
 {
+    public function index()
+    {
+        $user = auth()->user();
+
+        $suratIzinStatus = SuratIzin::query()
+            ->where('karyawan_id_karyawan', $user->karyawan_id_karyawan)
+            ->latest()
+            ->get();
+
+        return view('staff.suratIzin', compact('suratIzinStatus'));
+    }
+
     public function store(Request $request)
     {
         $this->normalizeLegacyPayload($request);
@@ -40,6 +54,21 @@ class SuratIzinController extends Controller
         $karyawanId = auth()->user()->karyawan_id_karyawan;
         $kategori = SuratIzin::kategoriUntukJenis($data['jenis_pengajuan']);
 
+        $user = auth()->user();
+        $employee = $user->karyawan;
+        $divisionId = $employee?->divisi_id_divisi;
+        $hasKadiv = $divisionId !== null && User2::query()
+            ->where(function ($query) {
+                $query->whereHas('role', fn ($roleQuery) => $roleQuery
+                    ->whereRaw('LOWER(nama_role) = ?', ['kadiv']))
+                    ->orWhereHas('roles', fn ($roleQuery) => $roleQuery
+                        ->whereRaw('LOWER(nama_role) = ?', ['kadiv']));
+            })
+            ->whereHas('karyawan', fn ($query) => $query
+                ->where('divisi_id_divisi', $divisionId))
+            ->exists();
+        $tahap = (! $user->hasRole('kadiv') && $hasKadiv) ? 'kadiv' : 'hrd';
+
         do {
             $newId = 'SRT'.strtoupper(Str::random(3));
         } while (SuratIzin::whereKey($newId)->exists());
@@ -66,14 +95,25 @@ class SuratIzinController extends Controller
             'file' => $request->hasFile('file')
                 ? $request->file('file')->store('surat_izin', 'private') : null,
             'status' => 'Pending',
+            'tahap' => $tahap,
         ]);
 
-        $user = auth()->user();
-        app(NotifyHrdUsers::class)(
-            'Surat Izin Masuk',
-            'Surat izin "'.$suratIzin->judul_surat.'" ('.$suratIzin->jenis_izin.') dari '
-                .($user->karyawan?->nama ?? $user->username).' menunggu persetujuan HRD.'
-        );
+        $namaPemohon = $employee?->nama ?? $user->username;
+
+        if ($tahap === 'kadiv') {
+            app(NotifyKadivUsers::class)(
+                'Surat Izin Menunggu Persetujuan',
+                'Surat izin "'.$suratIzin->judul_surat.'" ('.$suratIzin->jenis_izin.') dari '
+                    .$namaPemohon.' menunggu persetujuan Kepala Divisi.',
+                $divisionId
+            );
+        } else {
+            app(NotifyHrdUsers::class)(
+                'Surat Izin Masuk',
+                'Surat izin "'.$suratIzin->judul_surat.'" ('.$suratIzin->jenis_izin.') dari '
+                    .$namaPemohon.' menunggu persetujuan HRD.'
+            );
+        }
 
         return back()->with('success', 'Surat izin berhasil dikirim.');
     }

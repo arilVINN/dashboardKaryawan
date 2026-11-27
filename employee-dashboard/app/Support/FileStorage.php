@@ -32,6 +32,8 @@ final class FileStorage
         'submissions',
         'revisi',
         'surat_izin',
+        'tanda_tangan',
+        'tanda_tangan_surat_izin',
         'daily-journals',
         'tower_files',
     ];

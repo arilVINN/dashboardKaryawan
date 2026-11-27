@@ -24,6 +24,7 @@
     $jamOptions = \App\Models\SuratIzin::JENIS_DENGAN_JAM;
     $showSignature = $showSignature ?? false;
     $signatureDataUri = $signatureDataUri ?? null;
+    $hrdSignatureDataUri = $hrdSignatureDataUri ?? null;
 
     $bulan = [
         1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
@@ -271,25 +272,15 @@
 
         .approval {
             margin-top: 6mm;
-            padding: 0 3mm 5mm;
+            padding: 0 3mm 4mm;
             page-break-inside: avoid;
         }
 
         .approval-table td {
-            vertical-align: top;
+            width: 33.33%;
             padding: 0 3mm;
-        }
-
-        .approval-col-1 {
-            width: 35%;
-        }
-
-        .approval-col-2 {
-            width: 33%;
-        }
-
-        .approval-col-3 {
-            width: 32%;
+            vertical-align: top;
+            text-align: center;
         }
 
         .approval-heading {
@@ -298,14 +289,14 @@
         }
 
         .approval-signature-slot {
-            height: 18mm;
+            height: 20mm;
             text-align: center;
         }
 
         .signature-image {
-            width: 42mm;
-            height: 13mm;
-            margin-top: 2mm;
+            width: 55mm;
+            height: 18.3mm;
+            margin-top: 1mm;
         }
 
         .signature-blank {
@@ -313,13 +304,14 @@
             width: 30mm;
         }
 
-        .approval-name {
+        .approval-role {
+            margin-top: 0.5mm;
             font-size: 8pt;
             text-align: center;
         }
 
-        .approval-role {
-            margin-top: 1.4mm;
+        .approval-person {
+            margin-top: 0.8mm;
             font-size: 8pt;
             text-align: center;
         }
@@ -443,25 +435,43 @@
         <div class="approval">
             <table class="approval-table">
                 <tr>
-                    <td class="approval-col-1">
-                        <div class="approval-heading">Pemohon,</div>
-                        <div class="approval-signature-slot"></div>
-                        <div class="approval-name">(<span class="signature-blank"></span>)</div>
-                    </td>
-                    <td class="approval-col-2">
+                    <td>
                         <div class="approval-heading">Disetujui Oleh,</div>
                         <div class="approval-signature-slot">
                             @if ($showSignature && $signatureDataUri)
-                                <img src="{{ $signatureDataUri }}" class="signature-image" alt="Tanda tangan">
+                                <img src="{{ $signatureDataUri }}" class="signature-image" alt="Tanda tangan Kadiv">
                             @endif
                         </div>
-                        <div class="approval-name">(<span class="signature-blank"></span>)</div>
-                        <div class="approval-role">Kepala Divisi</div>
+                        <div class="approval-role">Kepala Divisi,</div>
+                        <div class="approval-person">
+                            @if ($suratIzin->kadiv?->nama)
+                                ( {{ $suratIzin->kadiv->nama }} )
+                            @else
+                                (<span class="signature-blank"></span>)
+                            @endif
+                        </div>
                     </td>
-                    <td class="approval-col-3">
+                    <td>
+                        <div class="approval-heading">Disetujui Oleh,</div>
+                        <div class="approval-signature-slot">
+                            @if ($showSignature && $hrdSignatureDataUri)
+                                <img src="{{ $hrdSignatureDataUri }}" class="signature-image" alt="Tanda tangan HR">
+                            @endif
+                        </div>
+                        <div class="approval-role">HR,</div>
+                        <div class="approval-person">
+                            @if ($suratIzin->hrd?->karyawan?->nama)
+                                ( {{ $suratIzin->hrd->karyawan->nama }} )
+                            @elseif ($suratIzin->hrd?->username)
+                                ( {{ $suratIzin->hrd->username }} )
+                            @else
+                                (<span class="signature-blank"></span>)
+                            @endif
+                        </div>
+                    </td>
+                    <td>
                         <div class="approval-heading">Mengetahui,</div>
                         <div class="approval-signature-slot"></div>
-                        <div class="approval-name">(<span class="signature-blank"></span>)</div>
                         <div class="approval-role">Direktur PT. Silindo</div>
                     </td>
                 </tr>
