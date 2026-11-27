@@ -41,7 +41,6 @@ use App\Http\Middleware\EnsureStaffRole;
 use App\Models\BookingRequest;
 use App\Models\Carousel;
 use App\Models\Divisi;
-use App\Models\SuratIzin;
 use App\Services\BirthdayNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;

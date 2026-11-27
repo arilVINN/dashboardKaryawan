@@ -7,6 +7,7 @@ use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\SuratIzin;
 use App\Models\User2;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -313,7 +314,7 @@ class SuratIzinPdfTest extends TestCase
             'keterangan' => str_repeat('Keterangan panjang untuk pengujian pembungkusan teks. ', 18),
         ]);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.surat-izin', [
+        $pdf = Pdf::loadView('pdf.surat-izin', [
             'suratIzin' => $this->suratIzin->load('karyawan.divisi'),
             'logoDataUri' => null,
         ])->setPaper('a4', 'portrait');

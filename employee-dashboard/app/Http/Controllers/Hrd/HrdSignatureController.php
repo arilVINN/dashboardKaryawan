@@ -11,9 +11,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class HrdSignatureController extends Controller
 {
-    public function __construct(private SignatureService $signatures)
-    {
-    }
+    public function __construct(private SignatureService $signatures) {}
 
     public function upload(Request $request)
     {

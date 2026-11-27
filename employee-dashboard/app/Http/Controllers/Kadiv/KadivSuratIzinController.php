@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Kadiv;
 use App\Actions\NotifyHrdUsers;
 use App\Http\Controllers\Controller;
 use App\Models\Karyawan;
-use App\Models\Notifikasi;
 use App\Models\SuratIzin;
 use App\Models\User2;
 use App\Services\SignatureService;
@@ -17,9 +16,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class KadivSuratIzinController extends Controller
 {
-    public function __construct(private SignatureService $signatures)
-    {
-    }
+    public function __construct(private SignatureService $signatures) {}
 
     public function index()
     {
