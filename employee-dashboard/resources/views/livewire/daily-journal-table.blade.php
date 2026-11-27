@@ -82,33 +82,31 @@
         }
     </style>
 
-    {{-- Toolbar: Navigasi Minggu + Judul Periode + Filter Dropdown --}}
-    <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
-        {{-- Navigasi < > Hari Ini + Periode Mingguan --}}
-        <div class="flex min-w-0 flex-wrap items-center gap-3">
-            <div class="cal-nav-group">
-                <button type="button" wire:click="prevWeek" class="cal-btn cal-nav" aria-label="Minggu Sebelumnya" title="Minggu Sebelumnya">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                </button>
-                <button type="button" wire:click="nextWeek" class="cal-btn cal-nav" aria-label="Minggu Berikutnya" title="Minggu Berikutnya">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
-                </button>
-                <button type="button" wire:click="goToToday" class="cal-btn">Hari ini</button>
+    {{-- Toolbar: Navigasi Minggu + Judul Periode + Role Tabs + Filter Dropdown --}}
+    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs space-y-3">
+        {{-- Baris 1: Navigasi < > Hari Ini + Periode Mingguan (kiri) & Role Tabs (kanan, posisi tetap) --}}
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex min-w-0 flex-wrap items-center gap-3">
+                <div class="cal-nav-group">
+                    <button type="button" wire:click="prevWeek" class="cal-btn cal-nav" aria-label="Minggu Sebelumnya" title="Minggu Sebelumnya">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <button type="button" wire:click="nextWeek" class="cal-btn cal-nav" aria-label="Minggu Berikutnya" title="Minggu Berikutnya">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                    <button type="button" wire:click="goToToday" class="cal-btn">Hari ini</button>
+                </div>
+
+                <h2 class="truncate text-lg md:text-xl font-bold text-[#172B36] tracking-tight">
+                    {{ $weekTitle }}
+                </h2>
             </div>
 
-            <h2 class="truncate text-lg md:text-xl font-bold text-[#172B36] tracking-tight">
-                {{ $weekTitle }}
-            </h2>
-
-        </div>
-
-        {{-- Role Tabs & Dropdowns Filter --}}
-        <div class="flex flex-wrap items-center gap-2">
-            <div class="cal-view-group">
+            <div class="cal-view-group shrink-0">
                 <button type="button" wire:click="setViewMode('my')"
                         class="cal-btn {{ $viewMode === 'my' ? 'is-active' : '' }}">
                     To Do Saya
@@ -148,57 +146,64 @@
                     </button>
                 @endif
             </div>
+        </div>
 
+        {{-- Baris 2: Dropdown Filter (kiri) + Ringkasan Progres & Tombol Tambah (kanan) --}}
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
             {{-- Dropdown Divisi & Karyawan --}}
-            @if($viewMode === 'rekap_divisi')
-                @if(in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true))
-                    <select wire:model.live="filterDivisiId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none">
-                        <option value="">Semua Divisi</option>
-                        @foreach($divisions as $div)
-                            <option value="{{ $div->id_divisi }}">{{ $div->nama_divisi }}</option>
-                        @endforeach
-                    </select>
-                @endif
-            @elseif($viewMode !== 'my')
-                @if(in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true))
-                    <select wire:model.live="filterDivisiId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none">
-                        <option value="">Semua Divisi</option>
-                        @foreach($divisions as $div)
-                            <option value="{{ $div->id_divisi }}">{{ $div->nama_divisi }}</option>
-                        @endforeach
-                    </select>
-                @endif
+            <div class="flex flex-wrap items-center gap-2">
+                @if($viewMode === 'rekap_divisi')
+                    @if(in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true))
+                        <select wire:model.live="filterDivisiId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none">
+                            <option value="">Semua Divisi</option>
+                            @foreach($divisions as $div)
+                                <option value="{{ $div->id_divisi }}">{{ $div->nama_divisi }}</option>
+                            @endforeach
+                        </select>
+                    @endif
+                @elseif($viewMode !== 'my')
+                    @if(in_array($role, ['hrd', 'direktur', 'direksi', 'superadmin'], true))
+                        <select wire:model.live="filterDivisiId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none">
+                            <option value="">Semua Divisi</option>
+                            @foreach($divisions as $div)
+                                <option value="{{ $div->id_divisi }}">{{ $div->nama_divisi }}</option>
+                            @endforeach
+                        </select>
+                    @endif
 
-                @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true))
-                    <select wire:model.live="filterKaryawanId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none min-w-[150px]">
-                        <option value="">Pilih Karyawan</option>
-                        @foreach($employeeOptions as $emp)
-                            <option value="{{ $emp->id_karyawan }}">{{ $emp->nama }}</option>
-                        @endforeach
-                    </select>
-                @endif
-            @endif
-
-            {{-- Ringkasan Mingguan Mini --}}
-            <div class="hidden sm:flex items-center gap-2 pl-2 border-l border-slate-200 text-xs">
-                <span class="text-slate-500">Progres:</span>
-                <span class="font-bold px-2 py-0.5 rounded-full {{ $stats['activePercentage'] >= 80 ? 'bg-emerald-100 text-emerald-800' : ($stats['activePercentage'] >= 50 ? 'bg-sky-100 text-sky-800' : 'bg-amber-100 text-amber-800') }}">
-                    {{ $stats['activePercentage'] }}%
-                </span>
-                @if($activeDivisi)
-                    <span class="text-slate-400">| Divisi: <strong class="text-slate-800 font-bold">{{ $stats['divisiWeeklyPercentage'] }}%</strong></span>
+                    @if(in_array($role, ['kadiv', 'hrd', 'direktur', 'direksi', 'superadmin'], true))
+                        <select wire:model.live="filterKaryawanId" class="text-xs px-2.5 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#19A7CE] outline-none min-w-[150px]">
+                            <option value="">Pilih Karyawan</option>
+                            @foreach($employeeOptions as $emp)
+                                <option value="{{ $emp->id_karyawan }}">{{ $emp->nama }}</option>
+                            @endforeach
+                        </select>
+                    @endif
                 @endif
             </div>
 
-            @if($viewMode === 'my' || ($canAssignTodos && $viewMode !== 'rekap_divisi' && $filterKaryawanId))
-                <button type="button" wire:click="openCreateModal"
-                        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#0097B2] hover:bg-[#008199] text-white text-xs font-bold shadow-2xs transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    <span>{{ $viewMode === 'my' ? 'Tambah To Do' : 'Tugaskan To Do' }}</span>
-                </button>
-            @endif
+            {{-- Ringkasan Mingguan Mini & Tombol Tambah --}}
+            <div class="ml-auto flex flex-wrap items-center gap-2">
+                <div class="hidden sm:flex items-center gap-2 text-xs">
+                    <span class="text-slate-500">Progres:</span>
+                    <span class="font-bold px-2 py-0.5 rounded-full {{ $stats['activePercentage'] >= 80 ? 'bg-emerald-100 text-emerald-800' : ($stats['activePercentage'] >= 50 ? 'bg-sky-100 text-sky-800' : 'bg-amber-100 text-amber-800') }}">
+                        {{ $stats['activePercentage'] }}%
+                    </span>
+                    @if($activeDivisi)
+                        <span class="text-slate-400">| Divisi: <strong class="text-slate-800 font-bold">{{ $stats['divisiWeeklyPercentage'] }}%</strong></span>
+                    @endif
+                </div>
+
+                @if($viewMode === 'my' || ($canAssignTodos && $viewMode !== 'rekap_divisi' && $filterKaryawanId))
+                    <button type="button" wire:click="openCreateModal"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#0097B2] hover:bg-[#008199] text-white text-xs font-bold shadow-2xs transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        <span>{{ $viewMode === 'my' ? 'Tambah To Do' : 'Tugaskan To Do' }}</span>
+                    </button>
+                @endif
+            </div>
         </div>
     </div>
 
