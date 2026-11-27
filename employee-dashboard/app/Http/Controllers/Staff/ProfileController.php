@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Staff;
 
 use App\Actions\StoreKaryawanFoto;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Support\AccountSecurity;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -49,13 +51,13 @@ class ProfileController extends Controller
                 'no_telepon' => $textOrDash($karyawan?->no_telepon),
                 'no_rekening' => $textOrDash($karyawan?->no_rekening),
                 'tanggal_masuk' => $tglMasuk ? Carbon::parse($tglMasuk)->format('Y-m-d') : null,
-                'tanggal_masuk_label' => $tglMasuk ? Carbon::parse($tglMasuk)->format('d M Y') : '-',
+                'tanggal_masuk_label' => $tglMasuk ? Carbon::parse($tglMasuk)->locale('id')->translatedFormat('j M Y') : '-',
                 'tanggal_rekrut' => $tglMasuk ? Carbon::parse($tglMasuk)->format('Y-m-d') : null,
-                'tanggal_akhir_kontrak' => $tglAkhirKontrak ? Carbon::parse($tglAkhirKontrak)->format('d M Y') : 'Karyawan Tetap / Tidak Ada',
-                'tanggal_lahir' => $tglLahir ? Carbon::parse($tglLahir)->format('d M Y') : '-',
+                'tanggal_akhir_kontrak' => $tglAkhirKontrak ? Carbon::parse($tglAkhirKontrak)->locale('id')->translatedFormat('j M Y') : null,
+                'tanggal_lahir' => $tglLahir ? Carbon::parse($tglLahir)->locale('id')->translatedFormat('j M Y') : '-',
                 'jenis_kelamin' => $textOrDash($karyawan?->jenis_kelamin),
                 'tingkatan' => $user->role?->nama_role ? ucfirst($user->role->nama_role) : ($jabatan !== '-' ? $jabatan : 'Staff'),
-                'tanggal_dibuat' => $user->created_at ? $user->created_at->format('d F Y') : '-',
+                'tanggal_dibuat' => $user->created_at ? $user->created_at->locale('id')->translatedFormat('j M Y') : '-',
                 'foto_url' => $foto ? '/storage/'.$foto : null,
             ],
         ]);
@@ -115,22 +117,39 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $request->validate([
+        $validated = $request->validate([
             'current_password' => 'required|string',
             'new_password' => 'required|string|min:8',
+            'confirm_password' => 'nullable|string|same:new_password',
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'new_password.required' => 'Password baru wajib diisi.',
+            'new_password.min' => 'Password baru minimal 8 karakter.',
+            'confirm_password.same' => 'Konfirmasi password tidak cocok.',
         ]);
 
-        if (! Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($validated['current_password'], $user->password)) {
             return response()->json(['message' => 'Password saat ini salah.'], 400);
         }
 
-        $user->update([
-            'password' => Hash::make($request->new_password),
-            'must_change_password' => false,
-        ]);
+        DB::transaction(function () use ($user, $validated): void {
+            $user->update([
+                'password' => Hash::make($validated['new_password']),
+                'must_change_password' => false,
+            ]);
 
-        // A password change invalidates every previously issued bearer token.
-        AccountSecurity::invalidate($user);
+            // Rotating the session version and deleting bearer/session rows ends
+            // every other active session for this account.
+            AccountSecurity::invalidate($user);
+
+            AuditLog::catat(
+                $user->id_user,
+                'ubah_password',
+                'user',
+                $user->id_user,
+                ['sumber' => 'profil_saya'],
+            );
+        });
 
         return response()->json([
             'message' => 'Password berhasil diperbarui.',

@@ -284,6 +284,73 @@ class ProfilePhotoUploadTest extends TestCase
             ->assertJsonPath('message', 'Password berhasil diperbarui.');
     }
 
+    public function test_profile_show_uses_short_indonesian_dates_without_leading_zero(): void
+    {
+        $this->staff->karyawan->update([
+            'tanggal_lahir' => '2026-11-03',
+            'tanggal_masuk' => '2026-11-03',
+            'tanggal_akhir_kontrak' => '2026-11-03',
+        ]);
+
+        $this->actingAs($this->staff)
+            ->getJson('/api/staff/profile')
+            ->assertOk()
+            ->assertJsonPath('data.tanggal_lahir', '3 Nov 2026')
+            ->assertJsonPath('data.tanggal_masuk_label', '3 Nov 2026')
+            ->assertJsonPath('data.tanggal_akhir_kontrak', '3 Nov 2026');
+    }
+
+    public function test_password_change_requires_eight_characters_hashes_and_audits(): void
+    {
+        $this->hrd->update([
+            'password' => Hash::make('password'),
+        ]);
+
+        $this->actingAs($this->hrd)
+            ->putJson('/api/hrd/profile/password', [
+                'current_password' => 'password',
+                'new_password' => 'pendek',
+            ])
+            ->assertUnprocessable();
+
+        $this->assertDatabaseMissing('audit_logs', ['aksi' => 'ubah_password']);
+
+        $this->actingAs($this->hrd)
+            ->putJson('/api/hrd/profile/password', [
+                'current_password' => 'password',
+                'new_password' => 'password-baru',
+                'confirm_password' => 'password-baru',
+            ])
+            ->assertOk()
+            ->assertJsonPath('message', 'Password berhasil diperbarui.');
+
+        $this->assertTrue(Hash::check('password-baru', $this->hrd->fresh()->password));
+        $this->assertDatabaseHas('audit_logs', [
+            'user_id_user' => 'USR-KRY-HRD',
+            'aksi' => 'ubah_password',
+            'target_tipe' => 'user',
+        ]);
+    }
+
+    public function test_password_change_rejects_a_wrong_current_password(): void
+    {
+        $this->hrd->update([
+            'password' => Hash::make('password'),
+        ]);
+
+        $this->actingAs($this->hrd)
+            ->putJson('/api/hrd/profile/password', [
+                'current_password' => 'salah',
+                'new_password' => 'password-baru',
+                'confirm_password' => 'password-baru',
+            ])
+            ->assertStatus(400)
+            ->assertJsonPath('message', 'Password saat ini salah.');
+
+        $this->assertTrue(Hash::check('password', $this->hrd->fresh()->password));
+        $this->assertDatabaseMissing('audit_logs', ['aksi' => 'ubah_password']);
+    }
+
     public function test_profile_pages_share_personal_fields_and_edit_controls(): void
     {
         foreach ([
