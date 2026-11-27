@@ -9,6 +9,7 @@ class ContentCalendarAccess
 {
     /** Divisi dengan aturan CRUD khusus (kode / nama). */
     private const RESTRICTED_KODE = 'PB';
+
     private const RESTRICTED_NAMA = 'publikasi buku';
 
     /** @var array<string, bool> */

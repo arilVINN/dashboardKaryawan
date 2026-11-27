@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class KadivMessageQuery
 {
-    private function __construct(private User2 $kadiv)
-    {
-    }
+    private function __construct(private User2 $kadiv) {}
 
     public static function forUser(User2 $kadiv): self
     {
@@ -42,8 +40,8 @@ class KadivMessageQuery
         if ($q !== null && $q !== '') {
             $kata = mb_strtolower($q);
             $query->where(function ($w) use ($kata): void {
-                $w->whereRaw('LOWER(judul_pesan) LIKE ?', ['%' . $kata . '%'])
-                    ->orWhereRaw('LOWER(deskripsi) LIKE ?', ['%' . $kata . '%']);
+                $w->whereRaw('LOWER(judul_pesan) LIKE ?', ['%'.$kata.'%'])
+                    ->orWhereRaw('LOWER(deskripsi) LIKE ?', ['%'.$kata.'%']);
             });
         }
 
@@ -57,7 +55,7 @@ class KadivMessageQuery
                 break;
             case 'pengirim':
                 $query->orderByRaw(
-                    '(select k.nama from karyawans k inner join users2 u on u.karyawan_id_karyawan = k.id_karyawan where u.id_user = pesans.pengirim_id_user) ' . $dir
+                    '(select k.nama from karyawans k inner join users2 u on u.karyawan_id_karyawan = k.id_karyawan where u.id_user = pesans.pengirim_id_user) '.$dir
                 );
                 break;
             default:

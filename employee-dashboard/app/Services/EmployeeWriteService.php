@@ -10,6 +10,7 @@ use App\Models\LampiranKaryawan;
 use App\Models\Role;
 use App\Models\User2;
 use App\Support\AccountSecurity;
+use Carbon\CarbonInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -35,7 +36,7 @@ final class EmployeeWriteService
         $deletedPaths = [];
 
         try {
-            $result = DB::transaction(function () use ($validated, $payload, $actor, $strict, &$storedPaths, &$deletedPaths, $plainPassword): array {
+            $result = DB::transaction(function () use ($validated, $payload, $actor, &$storedPaths, &$deletedPaths, $plainPassword): array {
                 $divisi = Divisi::findOrFail($validated['divisi_id_divisi']);
 
                 if (! $divisi->canAcceptMember()) {
@@ -386,10 +387,15 @@ final class EmployeeWriteService
             'alamat', 'divisi_id_divisi', 'pendidikan', 'job_level', 'jobdesk', 'status_aktif',
         ];
 
+        $nullableKeys = ['no_rekening', 'no_telepon', 'email', 'alamat', 'pendidikan', 'job_level'];
         $fields = [];
         foreach ($keys as $key) {
             if (array_key_exists($key, $payload)) {
-                $fields[$key] = $payload[$key];
+                $value = $payload[$key];
+                if (in_array($key, $nullableKeys, true) && is_string($value) && trim($value) === '') {
+                    $value = null;
+                }
+                $fields[$key] = $value;
             }
         }
 
@@ -398,7 +404,7 @@ final class EmployeeWriteService
 
     private function normaliseForCompare(mixed $value): string
     {
-        if ($value instanceof \Carbon\CarbonInterface) {
+        if ($value instanceof CarbonInterface) {
             return $value->toDateString();
         }
         if ($value === null) {

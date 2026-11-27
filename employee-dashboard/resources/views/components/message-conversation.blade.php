@@ -91,7 +91,7 @@
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
                     </svg>
-                    <span data-reply-label>Kirim balasan</span>
+                    <span data-reply-label data-default-label="Kirim balasan">Kirim balasan</span>
                 </button>
             </div>
         </div>

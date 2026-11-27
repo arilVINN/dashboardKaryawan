@@ -18,6 +18,7 @@ class FinanceNotificationVisibilityTest extends TestCase
     use RefreshDatabase;
 
     private User2 $finance;
+
     private User2 $itKadiv;
 
     protected function setUp(): void
@@ -91,5 +92,4 @@ class FinanceNotificationVisibilityTest extends TestCase
         $this->assertStringContainsString('2026-11', $notification->isi_notif);
         $this->assertStringContainsString('IT Lead', $notification->isi_notif);
     }
-
 }

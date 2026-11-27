@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,6 +43,7 @@ class Karyawan extends Model
         'jobdesk',
         'status_karyawan',
         'aktif',
+        'tanda_tangan',
     ];
 
     protected $casts = [
@@ -59,13 +61,14 @@ class Karyawan extends Model
 
     public function setTanggalRekrutAttribute($value): void
     {
-        $this->attributes['tanggal_masuk'] = $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null;
+        $this->attributes['tanggal_masuk'] = $value ? Carbon::parse($value)->format('Y-m-d') : null;
     }
 
     public function setAttribute($key, $value)
     {
         if (in_array($key, ['tanggal_masuk', 'tanggal_lahir', 'tanggal_akhir_kontrak', 'tanggal_keluar'], true)) {
-            $this->attributes[$key] = $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null;
+            $this->attributes[$key] = $value ? Carbon::parse($value)->format('Y-m-d') : null;
+
             return $this;
         }
 
@@ -78,10 +81,15 @@ class Karyawan extends Model
      * the staff API validates against this list.
      */
     public const JABATAN_DIREKTUR = 'Direktur Utama';
+
     public const JABATAN_KEPALA = 'Kepala Divisi';
+
     public const JABATAN_STAFF = 'Staff';
+
     public const JABATAN_HRD_MANAGER = 'HRD Manager';
+
     public const JABATAN_MARKOM = 'Markom';
+
     public const JABATAN_LAYOUTER = 'Layouter';
 
     public const JABATAN_OPTIONS = [
@@ -133,7 +141,10 @@ class Karyawan extends Model
 
     public function jabatanLabel(): string
     {
-        return $this->jabatanRef?->label() ?? ($this->jabatan ?? '-');
+        $label = $this->jabatanRef?->label() ?? $this->jabatan;
+        $label = trim((string) $label);
+
+        return $label !== '' ? $label : '-';
     }
 
     public static function pendidikanOptions(): array

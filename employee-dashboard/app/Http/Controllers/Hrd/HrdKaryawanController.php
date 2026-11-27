@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\Role;
 use App\Models\Tugas;
 use App\Services\HrdProtectionService;
 use App\Support\AccountSecurity;
@@ -26,7 +27,7 @@ class HrdKaryawanController extends Controller
 
     public function detailPage(string $id)
     {
-        $karyawan = Karyawan::with(['divisi', 'user.role', 'tugas', 'lampiran', 'suratIzins' => function ($q) {
+        $karyawan = Karyawan::with(['divisi', 'jabatanRef', 'user.role', 'tugas', 'lampiran', 'suratIzins' => function ($q) {
             $q->latest();
         }])
             ->where('id_karyawan', $id)
@@ -35,8 +36,18 @@ class HrdKaryawanController extends Controller
         $totalTugas = $karyawan->tugas->count();
         $tugasSelesai = $karyawan->tugas->where('status', Tugas::STATUS_SUDAH_ACC)->count();
         $daftarDivisi = Divisi::query()->ordered()->get();
+        $daftarRoleTambahan = Role::all()
+            ->reject(fn (Role $role) => strtolower((string) $role->nama_role) === 'superadmin')
+            ->sortBy('nama_role')
+            ->values();
 
-        return view('hrd.detailKaryawan', compact('karyawan', 'totalTugas', 'tugasSelesai', 'daftarDivisi'));
+        return view('hrd.detailKaryawan', compact(
+            'karyawan',
+            'totalTugas',
+            'tugasSelesai',
+            'daftarDivisi',
+            'daftarRoleTambahan',
+        ));
     }
 
     public function tandaiKeluar(Request $request, string $id)
@@ -81,9 +92,9 @@ class HrdKaryawanController extends Controller
             'karyawan',
             $karyawan->id_karyawan,
             [
-                'nama'           => $karyawan->nama,
-                'username'       => $karyawan->user?->username,
-                'role'           => $karyawan->user?->role?->nama_role,
+                'nama' => $karyawan->nama,
+                'username' => $karyawan->user?->username,
+                'role' => $karyawan->user?->role?->nama_role,
                 'tanggal_keluar' => $tanggalKeluar,
             ]
         );

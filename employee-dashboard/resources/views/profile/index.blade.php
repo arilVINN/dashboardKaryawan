@@ -4,7 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil {{ ucfirst($profileRole) }} - PT Silindo</title>
+    @php
+        $profileTitle = match ($profileRole) {
+            'hrd' => 'HRD',
+            'kadiv' => 'Kadiv',
+            default => 'Saya',
+        };
+    @endphp
+    <title>Profil {{ $profileTitle }} - PT Silindo</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -239,9 +246,8 @@
                 try {
                     const response = await fetch(endpoint, { headers: headers(false) });
                     const json = await response.json();
-                    if (!response.ok || !json.data) return;
-
-                    const p = json.data;
+                    if (response.ok && json.data) {
+                        const p = json.data;
                     teks('hdr-nama', p.nama);
                     teks('hdr-email', p.email);
                     teks('hdr-telp', p.no_telepon);
@@ -277,6 +283,7 @@
                     isi('input-telepon', p.no_telepon);
                     isi('input-rekening', p.no_rekening);
                     isi('input-alamat', p.alamat);
+                    }
                 } catch (e) {
                     console.error('Gagal memuat profil:', e);
                 }
@@ -308,7 +315,7 @@
                             no_telepon: document.getElementById('input-telepon').value.trim(),
                             no_rekening: document.getElementById('input-rekening').value.trim() || null,
                             alamat: document.getElementById('input-alamat').value.trim(),
-                        }),
+                        })
                     });
                     const data = await res.json();
                     if (!res.ok) {

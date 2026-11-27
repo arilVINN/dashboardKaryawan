@@ -7,8 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Karyawan;
 use App\Models\Tugas;
 use App\Services\HrdProtectionService;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Illuminate\Http\JsonResponse;
 
 class HrdKaryawanDeletionController extends Controller
 {
@@ -16,7 +15,7 @@ class HrdKaryawanDeletionController extends Controller
      * Delete a karyawan if no accepted tasks exist.
      *
      * @param  string|int  $id
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function destroy($id)
     {
@@ -30,7 +29,7 @@ class HrdKaryawanDeletionController extends Controller
         }
 
         // If there is no related user, we can safely delete the karyawan record
-        if (!$karyawan->user) {
+        if (! $karyawan->user) {
             $nama = $karyawan->nama;
             $karyawan->delete();
 
@@ -52,7 +51,7 @@ class HrdKaryawanDeletionController extends Controller
 
         if ($hasAcceptedTask) {
             return response()->json([
-                'message' => 'Tidak dapat menghapus karyawan karena ada tugas yang sudah di‑acc.'
+                'message' => 'Tidak dapat menghapus karyawan karena ada tugas yang sudah di‑acc.',
             ], 403);
         }
 
@@ -70,13 +69,12 @@ class HrdKaryawanDeletionController extends Controller
             'karyawan',
             $id,
             [
-                'nama'     => $nama,
+                'nama' => $nama,
                 'username' => $username,
-                'role'     => $roleName,
+                'role' => $roleName,
             ]
         );
 
         return response()->json(['message' => 'Karyawan berhasil dihapus.'], 200);
     }
 }
-

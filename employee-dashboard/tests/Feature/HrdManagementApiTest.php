@@ -161,7 +161,7 @@ class HrdManagementApiTest extends TestCase
             ->assertSee('Kepala Baru');
 
         $this->actingAs($this->hrd)
-            ->putJson('/hrd/staff/' . $employeeId, ['jabatan' => 'Staff'])
+            ->putJson('/hrd/staff/'.$employeeId, ['jabatan' => 'Staff'])
             ->assertOk()
             ->assertJsonPath('data.jabatan', 'Staff')
             ->assertJsonPath('data.user.role.nama_role', 'Staff');
@@ -397,8 +397,7 @@ class HrdManagementApiTest extends TestCase
         $this->actingAs($this->hrd)
             ->get('/hrd/dashboard')
             ->assertOk()
-            ->assertViewHas('tugasBuckets', fn ($buckets) =>
-                $buckets['revisi'] === 0 && $buckets['ongoing'] === 1
+            ->assertViewHas('tugasBuckets', fn ($buckets) => $buckets['revisi'] === 0 && $buckets['ongoing'] === 1
             );
     }
 
@@ -570,7 +569,8 @@ class HrdManagementApiTest extends TestCase
 
         $this->actingAs($otherUser)
             ->get('/hrd/detailPesan/PSN-HRD-001')
-            ->assertForbidden();
+            ->assertRedirect(route('dashboard'))
+            ->assertSessionHas('forbidden');
 
         $this->actingAs($this->hrd)
             ->postJson('/hrd/detailPesan/PSN-HRD-001/balas', [

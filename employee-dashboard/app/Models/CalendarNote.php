@@ -59,11 +59,11 @@ class CalendarNote extends Model
      * Key = nilai di DB, Value = label display
      */
     public const WARNA_OPTIONS = [
-        'slate'  => ['bg' => '#F1F5F9', 'border' => '#94A3B8', 'text' => '#475569', 'dot' => '#64748B'],
-        'blue'   => ['bg' => '#DBEAFE', 'border' => '#3B82F6', 'text' => '#1D4ED8', 'dot' => '#3B82F6'],
-        'green'  => ['bg' => '#D1FAE5', 'border' => '#10B981', 'text' => '#065F46', 'dot' => '#10B981'],
-        'amber'  => ['bg' => '#FEF3C7', 'border' => '#F59E0B', 'text' => '#92400E', 'dot' => '#F59E0B'],
-        'red'    => ['bg' => '#FEE2E2', 'border' => '#EF4444', 'text' => '#991B1B', 'dot' => '#EF4444'],
+        'slate' => ['bg' => '#F1F5F9', 'border' => '#94A3B8', 'text' => '#475569', 'dot' => '#64748B'],
+        'blue' => ['bg' => '#DBEAFE', 'border' => '#3B82F6', 'text' => '#1D4ED8', 'dot' => '#3B82F6'],
+        'green' => ['bg' => '#D1FAE5', 'border' => '#10B981', 'text' => '#065F46', 'dot' => '#10B981'],
+        'amber' => ['bg' => '#FEF3C7', 'border' => '#F59E0B', 'text' => '#92400E', 'dot' => '#F59E0B'],
+        'red' => ['bg' => '#FEE2E2', 'border' => '#EF4444', 'text' => '#991B1B', 'dot' => '#EF4444'],
         'purple' => ['bg' => '#EDE9FE', 'border' => '#8B5CF6', 'text' => '#5B21B6', 'dot' => '#8B5CF6'],
     ];
 
@@ -100,7 +100,7 @@ class CalendarNote extends Model
         return match ($this->reminder_days_before) {
             0 => 'Hari H',
             1 => '1 hari sebelum',
-            default => $this->reminder_days_before . ' hari sebelum',
+            default => $this->reminder_days_before.' hari sebelum',
         };
     }
 
@@ -115,7 +115,7 @@ class CalendarNote extends Model
             0 => 'hari ini',
             1 => 'besok',
             null => 'segera',
-            default => $this->reminder_days_before . ' hari lagi',
+            default => $this->reminder_days_before.' hari lagi',
         };
 
         return "Catatan \"{$this->judul}\" dijadwalkan {$when}, {$tanggalLabel}.";

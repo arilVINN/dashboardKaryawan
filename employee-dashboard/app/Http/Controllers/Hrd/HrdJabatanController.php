@@ -7,7 +7,6 @@ use App\Models\AuditLog;
 use App\Models\Divisi;
 use App\Models\Jabatan;
 use App\Models\Role;
-use App\Support\EmployeeAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -15,6 +14,38 @@ use Illuminate\Validation\ValidationException;
 
 class HrdJabatanController extends Controller
 {
+    /**
+     * Dedicated HRD page for managing jabatan (create/rename/deactivate).
+     */
+    public function index(Request $request)
+    {
+        Gate::authorize('viewAny', Jabatan::class);
+
+        $divisiFilter = trim((string) $request->query('divisi', ''));
+        $divisis = Divisi::query()->ordered()->get();
+
+        $jabatans = Jabatan::query()
+            ->with(['divisi', 'role'])
+            ->withCount(['karyawans as jumlah_karyawan' => fn ($q) => $q->whereNull('tanggal_keluar')])
+            ->when($divisiFilter !== '', fn ($q) => $q->where('division_id', $divisiFilter))
+            ->orderBy('division_id')
+            ->orderBy('nama')
+            ->get()
+            ->groupBy('division_id');
+
+        $roleOptions = Role::all()
+            ->filter(fn (Role $role) => in_array(strtolower((string) $role->nama_role), Jabatan::roleOptions(), true))
+            ->sortBy('nama_role')
+            ->values();
+
+        return view('hrd.manajemenJabatan', compact(
+            'divisis',
+            'jabatans',
+            'divisiFilter',
+            'roleOptions',
+        ));
+    }
+
     public function store(Request $request)
     {
         Gate::authorize('create', Jabatan::class);

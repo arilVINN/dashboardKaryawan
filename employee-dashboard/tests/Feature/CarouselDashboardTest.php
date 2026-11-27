@@ -17,8 +17,11 @@ class CarouselDashboardTest extends TestCase
     use RefreshDatabase;
 
     private User2 $staff;
+
     private User2 $kadiv;
+
     private User2 $otherDivisionKadiv;
+
     private User2 $hrd;
 
     protected function setUp(): void
@@ -169,7 +172,7 @@ class CarouselDashboardTest extends TestCase
         $otherDivisionCarousel = Carousel::where('title', 'Info divisi Pemasaran')->firstOrFail();
 
         $this->actingAs($this->kadiv)
-            ->delete('/kadiv/carousel/' . $otherDivisionCarousel->id)
+            ->delete('/kadiv/carousel/'.$otherDivisionCarousel->id)
             ->assertRedirect()
             ->assertSessionHas('error', 'Anda tidak dapat menghapus konten yang dibuat oleh orang lain.');
 
@@ -183,10 +186,10 @@ class CarouselDashboardTest extends TestCase
         $this->actingAs($this->kadiv)->get('/kadiv/dashboard')
             ->assertOk()
             ->assertSee('Quotes HRD untuk semua divisi')
-            ->assertDontSee('action="' . route('carousel.destroy', $otherUserCarousel->id) . '"', false);
+            ->assertDontSee('action="'.route('carousel.destroy', $otherUserCarousel->id).'"', false);
 
         $this->actingAs($this->kadiv)
-            ->delete('/kadiv/carousel/' . $otherUserCarousel->id)
+            ->delete('/kadiv/carousel/'.$otherUserCarousel->id)
             ->assertRedirect()
             ->assertSessionHas('error', 'Anda tidak dapat menghapus konten yang dibuat oleh orang lain.');
 
@@ -291,7 +294,7 @@ class CarouselDashboardTest extends TestCase
 
     private function createUser(string $id, string $roleId, string $divisionId): User2
     {
-        $employeeId = 'EMP-' . substr($id, 4);
+        $employeeId = 'EMP-'.substr($id, 4);
         Karyawan::create([
             'id_karyawan' => $employeeId,
             'nama' => $id,

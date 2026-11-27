@@ -18,6 +18,7 @@ class StaffFormFixesTest extends TestCase
     use RefreshDatabase;
 
     private User2 $hrd;
+
     private Jabatan $jabatanTarget;
 
     protected function setUp(): void

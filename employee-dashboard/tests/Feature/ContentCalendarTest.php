@@ -1398,7 +1398,6 @@ class ContentCalendarTest extends TestCase
             ->assertSeeHtml('background-color: #7C3AED; border-color: #7C3AED; color: #FFFFFF;');
     }
 
-
     public function test_markom_division_users_can_open_the_calendar_and_manage_options(): void
     {
         $this->actingAs($this->staffMarkomDivision)
@@ -1547,7 +1546,6 @@ class ContentCalendarTest extends TestCase
             ->assertSet('optionForm', '');
     }
 
-
     public function test_manager_sees_delete_buttons_on_type_and_pillar_rows(): void
     {
         Livewire::actingAs($this->staffHr)
@@ -1641,5 +1639,4 @@ class ContentCalendarTest extends TestCase
             ->call('deleteOption')
             ->assertForbidden();
     }
-
 }

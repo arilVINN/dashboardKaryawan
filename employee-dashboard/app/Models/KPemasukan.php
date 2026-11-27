@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class KPemasukan extends Model
 {
-    protected $table      = 'kpemasukan';
+    protected $table = 'kpemasukan';
+
     protected $primaryKey = 'id_kp';
 
     public $incrementing = false;
-    protected $keyType   = 'string';
+
+    protected $keyType = 'string';
 
     protected $fillable = [
         'id_kp',
@@ -27,7 +29,7 @@ class KPemasukan extends Model
     ];
 
     protected $casts = [
-        'nominal'      => 'float',
+        'nominal' => 'float',
         'tanggal_masuk' => 'date',
     ];
 

@@ -44,15 +44,6 @@
                         Buat Pesan
                     </button>
 
-                    <button type="button" data-modal-open="modalSuratIzin"
-                        class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-[#146C94] px-4 text-sm font-medium text-white transition hover:bg-[#0f5878]">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 12h6m-6 4h6M9 8h1m5 12H7a2 2 0 01-2-2V6a2 2 0 012-2h6l5 5v11a2 2 0 01-2 2z" />
-                        </svg>
-                        Kirim Surat Izin
-                    </button>
-
                     <button type="button" data-modal-open="modalBooking"
                         class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-[#149463] px-4 text-sm font-medium text-white transition hover:bg-[#0f5878]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -68,7 +59,6 @@
                 <livewire:staff.pesan-table />
                 @include('components.request-status-tables')
                 <livewire:staff.compose-message />
-                @include('components.modalSuratIzin', ['routeSurat' => 'staff.suratIzin.store'])
                 @include('components.modalBooking')
             </div>
         </main>

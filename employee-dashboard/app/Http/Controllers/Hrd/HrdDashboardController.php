@@ -3,19 +3,22 @@
 namespace App\Http\Controllers\Hrd;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\AuditLog;
 use App\Models\Carousel;
-use App\Models\Karyawan;
 use App\Models\Divisi;
-use App\Models\Tugas;
+use App\Models\Karyawan;
+use App\Models\Notifikasi;
 use App\Models\Pesan;
 use App\Models\SuratIzin;
-use App\Models\Notifikasi;
+use App\Models\Tugas;
 use App\Services\BirthdayNotificationService;
 use App\Services\ContractExpiryReminder;
+use App\Services\SignatureService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class HrdDashboardController extends Controller
 {
@@ -27,15 +30,14 @@ class HrdDashboardController extends Controller
         Request $request,
         BirthdayNotificationService $birthdayNotifications,
         ContractExpiryReminder $contractExpiryReminder
-    )
-    {
+    ) {
         $contractReminders = $contractExpiryReminder->forHrd();
 
-        $totalStaff  = Karyawan::count();
+        $totalStaff = Karyawan::count();
         $totalDivisi = Divisi::count();
 
-        $totalTugas       = Tugas::count();
-        $tugasSelesai     = Tugas::statusEfektif(Tugas::STATUS_SUDAH_ACC)->count();
+        $totalTugas = Tugas::count();
+        $tugasSelesai = Tugas::statusEfektif(Tugas::STATUS_SUDAH_ACC)->count();
         $persentaseTugas = $totalTugas > 0 ? round(($tugasSelesai / $totalTugas) * 100, 2) : 0;
 
         $totalPesanPerusahaan = Pesan::count();
@@ -65,17 +67,17 @@ class HrdDashboardController extends Controller
                 'message' => 'Berhasil mengambil data dashboard HRD',
                 'data' => [
                     'metrics' => [
-                        'total_staff'              => $totalStaff,
-                        'total_divisi'             => $totalDivisi,
-                        'total_karyawan_aktif'     => $totalKaryawanAktif,
-                        'total_karyawan_nonaktif'  => $totalKaryawanTidakAktif,
-                        'tugas_keseluruhan'        => $totalTugas,
-                        'tugas_selesai'            => $tugasSelesai,
-                        'persentase_tugas_selesai' => $persentaseTugas . '%',
-                        'total_pesan_perusahaan'   => $totalPesanPerusahaan,
+                        'total_staff' => $totalStaff,
+                        'total_divisi' => $totalDivisi,
+                        'total_karyawan_aktif' => $totalKaryawanAktif,
+                        'total_karyawan_nonaktif' => $totalKaryawanTidakAktif,
+                        'tugas_keseluruhan' => $totalTugas,
+                        'tugas_selesai' => $tugasSelesai,
+                        'persentase_tugas_selesai' => $persentaseTugas.'%',
+                        'total_pesan_perusahaan' => $totalPesanPerusahaan,
                     ],
                     'widgets' => [
-                        'divisi_terbesar' => $divisiTerbesar->map(fn($d) => [
+                        'divisi_terbesar' => $divisiTerbesar->map(fn ($d) => [
                             'nama_divisi' => $d->nama_divisi,
                             'total_staff' => $d->karyawans_count,
                         ]),
@@ -89,11 +91,11 @@ class HrdDashboardController extends Controller
         $ongoingBase = Tugas::statusEfektif(Tugas::STATUS_BERJALAN);
 
         $revisiTugas = (clone $ongoingBase)
-            ->whereHas('latestSubmitTugas', fn($q) => $q->where('status_review', 'revisi'))
+            ->whereHas('latestSubmitTugas', fn ($q) => $q->where('status_review', 'revisi'))
             ->count();
 
         $ongoingTugas = (clone $ongoingBase)
-            ->whereDoesntHave('latestSubmitTugas', fn($q) => $q->where('status_review', 'revisi'))
+            ->whereDoesntHave('latestSubmitTugas', fn ($q) => $q->where('status_review', 'revisi'))
             ->count();
 
         $pendingTugas = Tugas::statusEfektif(Tugas::STATUS_BARU)->count()
@@ -152,6 +154,7 @@ class HrdDashboardController extends Controller
             ->with(['user.karyawan', 'divisi'])
             ->latest()
             ->get();
+
         return view('hrd.dashboard', compact(
             'total',
             'tugasBuckets',
@@ -175,65 +178,164 @@ class HrdDashboardController extends Controller
     public function suratIzinPage()
     {
         $suratIzin = SuratIzin::with('karyawan.user.role')
+            ->where(function ($query) {
+                $query->where('tahap', 'hrd')
+                    ->orWhere(function ($query) {
+                        $query->where('tahap', 'selesai')
+                            ->whereNull('kadiv_rejected_at');
+                    });
+            })
             ->latest()
             ->paginate(5);
 
-        return view('hrd.suratIzin', compact('suratIzin'));
+        $hrdEmployee = auth()->user()?->karyawan;
+        $canManageSignature = auth()->user()?->hasRole('hrd') && $hrdEmployee;
+        $signatureAvailable = $canManageSignature
+            && app(SignatureService::class)->pathFor($hrdEmployee) !== null;
+
+        return view('hrd.suratIzin', compact(
+            'suratIzin',
+            'hrdEmployee',
+            'canManageSignature',
+            'signatureAvailable'
+        ));
     }
 
     public function approveSuratIzin(SuratIzin $suratIzin)
     {
-        abort_unless($suratIzin->status === 'Pending', 409, 'Surat izin sudah diproses.');
-
-        DB::transaction(function () use ($suratIzin): void {
-            $suratIzin->update(['status' => 'Disetujui']);
-            $this->notifySuratIzinRequester($suratIzin, 'Disetujui');
-        });
-
-        $suratIzin->loadMissing('karyawan.user');
-        AuditLog::catat(
-            auth()->id(),
-            'approve_surat_izin',
-            'surat_izin',
-            (string) $suratIzin->id_surat,
-            [
-                'karyawan_id' => $suratIzin->karyawan_id_karyawan,
-                'nama'        => $suratIzin->karyawan?->nama,
-                'jenis_izin'  => $suratIzin->jenis_izin,
-                'status'      => 'Disetujui',
-            ]
-        );
-
-        return back()->with('success', 'Surat izin berhasil disetujui.');
+        return $this->processSuratIzinDecision($suratIzin, 'Disetujui');
     }
 
     public function rejectSuratIzin(SuratIzin $suratIzin)
     {
-        abort_unless($suratIzin->status === 'Pending', 409, 'Surat izin sudah diproses.');
-
-        DB::transaction(function () use ($suratIzin): void {
-            $suratIzin->update(['status' => 'Ditolak']);
-            $this->notifySuratIzinRequester($suratIzin, 'Ditolak');
-        });
-
-        $suratIzin->loadMissing('karyawan.user');
-        AuditLog::catat(
-            auth()->id(),
-            'reject_surat_izin',
-            'surat_izin',
-            (string) $suratIzin->id_surat,
-            [
-                'karyawan_id' => $suratIzin->karyawan_id_karyawan,
-                'nama'        => $suratIzin->karyawan?->nama,
-                'jenis_izin'  => $suratIzin->jenis_izin,
-                'status'      => 'Ditolak',
-            ]
-        );
-
-        return back()->with('success', 'Surat izin berhasil ditolak.');
+        return $this->processSuratIzinDecision($suratIzin, 'Ditolak');
     }
 
-    //untuk histori izin karyawan
+    private function processSuratIzinDecision(SuratIzin $suratIzin, string $status)
+    {
+        abort_unless(
+            $suratIzin->status === 'Pending' && $suratIzin->tahap === 'hrd',
+            409,
+            'Surat izin belum disetujui Kepala Divisi atau sudah diproses.'
+        );
+
+        $hrdEmployee = auth()->user()?->karyawan;
+        $hrdSignaturePath = null;
+
+        if ($status === 'Disetujui' && $hrdEmployee) {
+            $hrdSignaturePath = app(SignatureService::class)
+                ->snapshot($hrdEmployee, 'hrd-'.$suratIzin->id_surat);
+        }
+
+        try {
+            $processed = DB::transaction(function () use ($suratIzin, $status, $hrdSignaturePath): bool {
+                $fresh = SuratIzin::query()
+                    ->whereKey($suratIzin->getKey())
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $fresh || $fresh->status !== 'Pending' || $fresh->tahap !== 'hrd') {
+                    return false;
+                }
+
+                $update = [
+                    'status' => $status,
+                    'tahap' => 'selesai',
+                    'hrd_id_user' => auth()->id(),
+                ];
+
+                if ($status === 'Disetujui') {
+                    $update['hrd_approved_at'] = now();
+                    $update['hrd_signature_path'] = $hrdSignaturePath;
+                } else {
+                    $update['hrd_rejected_at'] = now();
+                }
+
+                $fresh->update($update);
+
+                return true;
+            });
+        } catch (\Throwable $e) {
+            if ($hrdSignaturePath) {
+                Storage::disk('private')->delete($hrdSignaturePath);
+            }
+
+            report($e);
+            Log::error('Gagal memproses keputusan surat izin', [
+                'surat_izin' => $suratIzin->id_surat,
+                'status' => $status,
+                'actor' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Gagal memproses surat izin. Silakan coba lagi.');
+        }
+
+        if (! $processed) {
+            if ($hrdSignaturePath) {
+                Storage::disk('private')->delete($hrdSignaturePath);
+            }
+
+            abort(409, 'Surat izin sudah diproses.');
+        }
+
+        $suratIzin->refresh();
+
+        $this->safeNotifySuratIzinRequester($suratIzin, $status);
+        $this->safeAuditSuratIzin($suratIzin, $status);
+
+        return back()->with(
+            'success',
+            $status === 'Disetujui'
+                ? 'Surat izin berhasil disetujui.'
+                : 'Surat izin berhasil ditolak.'
+        );
+    }
+
+    private function safeNotifySuratIzinRequester(SuratIzin $suratIzin, string $status): void
+    {
+        try {
+            $this->notifySuratIzinRequester($suratIzin, $status);
+        } catch (\Throwable $e) {
+            report($e);
+            Log::warning('Notifikasi keputusan surat izin gagal dikirim', [
+                'surat_izin' => $suratIzin->id_surat,
+                'status' => $status,
+                'actor' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function safeAuditSuratIzin(SuratIzin $suratIzin, string $status): void
+    {
+        try {
+            $suratIzin->loadMissing('karyawan.user');
+
+            AuditLog::catat(
+                auth()->id(),
+                $status === 'Disetujui' ? 'approve_surat_izin' : 'reject_surat_izin',
+                'surat_izin',
+                (string) $suratIzin->id_surat,
+                [
+                    'karyawan_id' => $suratIzin->karyawan_id_karyawan,
+                    'nama' => $suratIzin->karyawan?->nama,
+                    'jenis_izin' => $suratIzin->jenis_izin,
+                    'status' => $status,
+                ]
+            );
+        } catch (\Throwable $e) {
+            report($e);
+            Log::warning('Audit keputusan surat izin gagal dicatat', [
+                'surat_izin' => $suratIzin->id_surat,
+                'status' => $status,
+                'actor' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    // untuk histori izin karyawan
     public function getHistoriKaryawan($id)
     {
         // Mengambil data karyawan beserta surat izins, diurutkan dari yang terbaru
@@ -241,16 +343,16 @@ class HrdDashboardController extends Controller
             $query->latest();
         }])->where('id_karyawan', $id)->first();
 
-        if (!$karyawan) {
+        if (! $karyawan) {
             return response()->json([
                 'success' => false,
-                'message' => 'Karyawan tidak ditemukan'
+                'message' => 'Karyawan tidak ditemukan',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'data' => $karyawan
+            'data' => $karyawan,
         ]);
     }
 
@@ -340,7 +442,7 @@ class HrdDashboardController extends Controller
             ->select('tanggal_keluar')
             ->get()
             ->reduce(function (array $carry, $karyawan) {
-                $key = \Carbon\Carbon::parse($karyawan->tanggal_keluar)->format('Y-m');
+                $key = Carbon::parse($karyawan->tanggal_keluar)->format('Y-m');
                 $carry[$key] = ($carry[$key] ?? 0) + 1;
 
                 return $carry;
@@ -352,7 +454,7 @@ class HrdDashboardController extends Controller
             $bulan = now()->subMonths($i);
             $key = $bulan->format('Y-m');
             // Diperbaiki agar tidak terpotong
-            $turnoverLabel[] = $namaBulan[$bulan->month - 1] . ' ' . $bulan->format('y');
+            $turnoverLabel[] = $namaBulan[$bulan->month - 1].' '.$bulan->format('y');
             $turnoverData[] = $turnoverRaw[$key] ?? 0;
         }
 

@@ -15,10 +15,10 @@ class EnsureStaffRole
      */
     private const DASHBOARD_ROUTES = [
         'direktur' => 'direktur.dashboard',
-        'direksi'  => 'direktur.dashboard',
-        'hrd'      => 'hrd.dashboard',
-        'kadiv'    => 'kadiv.dashboard',
-        'staff'    => 'dashboard',
+        'direksi' => 'direktur.dashboard',
+        'hrd' => 'hrd.dashboard',
+        'kadiv' => 'kadiv.dashboard',
+        'staff' => 'dashboard',
     ];
 
     public function handle(Request $request, Closure $next): Response|JsonResponse
@@ -29,6 +29,7 @@ class EnsureStaffRole
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'User staff belum terautentikasi.'], 401);
             }
+
             return redirect()->route('login');
         }
 
@@ -39,12 +40,12 @@ class EnsureStaffRole
             return $next($request);
         }
 
-        if (strtolower($user->role?->nama_role ?? '') !== 'staff') {
+        if ($user instanceof User2 && ! $user->hasRole('staff')) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Akses hanya diberikan kepada Staff.'], 403);
             }
 
-            $userRole       = strtolower($user->role?->nama_role ?? '');
+            $userRole = strtolower($user->role?->nama_role ?? '');
             $dashboardRoute = self::DASHBOARD_ROUTES[$userRole] ?? 'login';
 
             return redirect()->route($dashboardRoute)

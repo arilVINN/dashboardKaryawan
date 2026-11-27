@@ -4,10 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\Pesan;
 use App\Models\Role;
 use App\Models\SuratIzin;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -41,7 +43,6 @@ class HrdListUiTest extends TestCase
             'karyawan_id_karyawan' => 'KRY-HRD',
         ]);
     }
-
 
     public function test_staff_list_marks_sortable_columns_and_leaves_status_plain(): void
     {
@@ -107,7 +108,6 @@ class HrdListUiTest extends TestCase
             ->assertDontSee('wire:click="sortBy(\'status\')"', false);
     }
 
-
     public function test_active_filter_chips_render_only_when_filtered(): void
     {
         $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?divisi=DIV-IT&status=aktif')
@@ -128,7 +128,6 @@ class HrdListUiTest extends TestCase
             ->assertSee('data-filter-chip="status"', false);
     }
 
-
     public function test_staff_list_shows_filtered_empty_state(): void
     {
         $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan?q=ZZZNOMATCH')
@@ -148,7 +147,6 @@ class HrdListUiTest extends TestCase
         $this->actingAs($this->hrd)->get('/hrd/daftarKaryawan')
             ->assertDontSee('Tidak ada data yang cocok dengan filter.');
     }
-
 
     public function test_manajemen_divisi_marks_sortable_columns_and_chips(): void
     {
@@ -182,10 +180,9 @@ class HrdListUiTest extends TestCase
         $this->assertStringContainsString('hapusDivisi', $html);
     }
 
-
-    public function test_dashboard_stat_cards_are_not_links(): void
+    public function test_dashboard_stat_cards_link_to_detail_pages(): void
     {
-        // Stat cards are display-only; page access lives in the sidebar.
+        // The cards duplicate the sidebar navigation on purpose.
         $html = view('component_hrd.statusbar', [
             'total' => ['karyawan' => 1, 'divisi' => 2, 'pesan' => 3],
             'tugasBuckets' => ['ongoing' => 1, 'pending' => 1, 'revisi' => 1],
@@ -195,7 +192,10 @@ class HrdListUiTest extends TestCase
         ])->render();
 
         $this->assertStringContainsString('Total Karyawan', $html);
-        $this->assertStringNotContainsString('<a ', $html);
+        $this->assertStringContainsString('href="'.route('hrd.pesan').'"', $html);
+        $this->assertStringContainsString('href="'.route('hrd.manajemenDivisi').'"', $html);
+        $this->assertStringContainsString('href="'.route('hrd.analitikKaryawan').'"', $html);
+        $this->assertStringContainsString('href="'.route('hrd.turnoverKaryawan').'"', $html);
     }
 
     public function test_sidebar_links_to_staff_list(): void
@@ -204,7 +204,6 @@ class HrdListUiTest extends TestCase
 
         $this->assertStringContainsString(url('/hrd/daftarKaryawan'), $html);
     }
-
 
     public function test_breadcrumb_component_renders_supplied_parent_and_current(): void
     {
@@ -216,7 +215,7 @@ class HrdListUiTest extends TestCase
 
         $this->assertStringContainsString('data-breadcrumb-parent="Dashboard"', $html);
         $this->assertStringContainsString('data-breadcrumb-current="Karyawan"', $html);
-        $this->assertStringContainsString('href="' . url('/hrd/dashboard') . '"', $html);
+        $this->assertStringContainsString('href="'.url('/hrd/dashboard').'"', $html);
     }
 
     public function test_hrd_list_pages_show_relevant_breadcrumbs(): void
@@ -333,9 +332,56 @@ class HrdListUiTest extends TestCase
         $this->assertDatabaseHas('surat_izin', ['id_surat' => 'SRT005', 'status' => 'Disetujui']);
     }
 
+    public function test_employee_with_an_additional_hrd_role_can_process_a_pending_request(): void
+    {
+        Karyawan::create([
+            'id_karyawan' => 'KRY-HRD-ADD',
+            'nama' => 'HRD Additional',
+            'jenis_kelamin' => 'Perempuan',
+            'tanggal_lahir' => '1995-01-01',
+            'tanggal_masuk' => '2026-01-01',
+            'no_telepon' => '0812',
+            'jabatan' => 'Staff',
+            'divisi_id_divisi' => 'DIV-IT',
+        ]);
+
+        $actor = User2::create([
+            'id_user' => 'USR-HRD-ADD',
+            'username' => 'hrd.additional',
+            'password' => Hash::make('pass123'),
+            'role_id_role' => 'ROLE-STAFF',
+            'karyawan_id_karyawan' => 'KRY-HRD-ADD',
+        ]);
+
+        DB::table('role_user')->insert([
+            'id_user' => $actor->id_user,
+            'id_role' => 'ROLE-HRD',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        SuratIzin::create([
+            'id_surat' => 'SRT-ADD',
+            'karyawan_id_karyawan' => 'KRY-A',
+            'judul_surat' => 'Izin Additional HRD',
+            'tanggal_izin' => '2026-10-20',
+            'status' => 'Pending',
+        ]);
+
+        $this->actingAs($actor)
+            ->post(route('hrd.suratIzin.acc', 'SRT-ADD'))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('surat_izin', [
+            'id_surat' => 'SRT-ADD',
+            'status' => 'Disetujui',
+        ]);
+    }
+
     public function test_hrd_detail_pesan_breadcrumb_points_to_pesan(): void
     {
-        \App\Models\Pesan::create([
+        Pesan::create([
             'id_pesan' => 'PSN-BC-1',
             'judul_pesan' => 'Halo',
             'deskripsi' => 'Isi pesan',

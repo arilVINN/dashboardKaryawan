@@ -27,8 +27,13 @@ class NotifyHrdUsers
     private function recipients(): Collection
     {
         return User2::query()
-            ->whereHas('role', fn ($query) => $query
-                ->whereRaw('LOWER(nama_role) = ?', ['hrd']))
+            ->where(function ($query) {
+                $query->whereHas('role', fn ($roleQuery) => $roleQuery
+                    ->whereRaw('LOWER(nama_role) = ?', ['hrd']))
+                    ->orWhereHas('roles', fn ($roleQuery) => $roleQuery
+                        ->whereRaw('LOWER(nama_role) = ?', ['hrd']));
+            })
+            ->distinct()
             ->get();
     }
 }

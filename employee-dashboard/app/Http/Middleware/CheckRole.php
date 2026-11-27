@@ -13,10 +13,10 @@ class CheckRole
      */
     private const DASHBOARD_ROUTES = [
         'direktur' => 'direktur.dashboard',
-        'direksi'  => 'direktur.dashboard',
-        'hrd'      => 'hrd.dashboard',
-        'kadiv'    => 'kadiv.dashboard',
-        'staff'    => 'dashboard',
+        'direksi' => 'direktur.dashboard',
+        'hrd' => 'hrd.dashboard',
+        'kadiv' => 'kadiv.dashboard',
+        'staff' => 'dashboard',
     ];
 
     public function handle(Request $request, Closure $next, ...$roles)
@@ -27,14 +27,19 @@ class CheckRole
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
+
             return redirect()->route('login');
         }
 
-        // Case-insensitive comparison so 'Staff', 'staff', 'STAFF' all match.
         $userRole = strtolower($user->role?->nama_role ?? '');
 
         // Direktur / Direksi memiliki hak akses Super-Admin ke seluruh modul.
         if ($user instanceof User2 && $user->isDirektur()) {
+            return $next($request);
+        }
+
+        // Primary + additional roles all grant access.
+        if ($user instanceof User2 && $user->hasAnyRole($roles)) {
             return $next($request);
         }
 

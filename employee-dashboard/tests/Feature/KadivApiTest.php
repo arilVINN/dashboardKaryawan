@@ -10,6 +10,7 @@ use App\Models\Pesan;
 use App\Models\Role;
 use App\Models\Tugas;
 use App\Models\User2;
+use App\Support\FileStorage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -195,7 +196,7 @@ class KadivApiTest extends TestCase
             ->getJson('/api/hrd/pesan/PSN-TO-HRD')
             ->assertOk()
             ->assertJsonCount(2, 'data.balasan')
-            ->assertJsonFragment(['file' => \App\Support\FileStorage::url(Pesan::where('balasan_dari_id_pesan', 'PSN-TO-HRD')->first()->file_lampiran)]);
+            ->assertJsonFragment(['file' => FileStorage::url(Pesan::where('balasan_dari_id_pesan', 'PSN-TO-HRD')->first()->file_lampiran)]);
 
         Pesan::create([
             'id_pesan' => 'PSN-LETTER-HRD',
@@ -293,7 +294,7 @@ class KadivApiTest extends TestCase
         $this->createTask('T-2', 'ST-2', Tugas::STATUS_SUDAH_ACC);
 
         $byStatus = $this->actingAs($kadiv)
-            ->getJson('/api/kadiv/tugas?status=' . urlencode('sudah di-acc'))
+            ->getJson('/api/kadiv/tugas?status='.urlencode('sudah di-acc'))
             ->assertOk();
         $this->assertSame(['T-2'], collect($byStatus->json('data'))->pluck('id_tugas')->all());
 
@@ -456,7 +457,9 @@ class KadivApiTest extends TestCase
     {
         $staff = $this->createAccount('ST-1', 'Staff IT', 'DIV-IT', 'ROLE-STAFF', 'staff.it');
 
-        $this->actingAs($staff)->get('/kadiv/dashboard')->assertForbidden();
+        $this->actingAs($staff)->get('/kadiv/dashboard')
+            ->assertRedirect(route('dashboard'))
+            ->assertSessionHas('forbidden');
     }
 
     private function makeMessage(
@@ -469,7 +472,7 @@ class KadivApiTest extends TestCase
         Pesan::create([
             'id_pesan' => $id,
             'judul_pesan' => $judul,
-            'deskripsi' => $judul . ' body',
+            'deskripsi' => $judul.' body',
             'tipe' => $tipe,
             'tanggal_pesan' => '2026-09-30',
             'pengirim_id_user' => $pengirimId,

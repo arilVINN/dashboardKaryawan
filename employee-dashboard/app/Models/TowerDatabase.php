@@ -28,7 +28,9 @@ class TowerDatabase extends Model
     ];
 
     public const JENIS_FILE = 'file';
+
     public const JENIS_NOMOR = 'nomor';
+
     public const JENIS_LINK = 'link';
 
     public function dibuatOleh(): BelongsTo

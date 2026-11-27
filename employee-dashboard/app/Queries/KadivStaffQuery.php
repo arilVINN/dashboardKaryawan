@@ -7,9 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class KadivStaffQuery
 {
-    private function __construct(private ?string $divisiId = null)
-    {
-    }
+    private function __construct(private ?string $divisiId = null) {}
 
     public static function forDivision(?string $divisiId = null): self
     {
@@ -22,16 +20,16 @@ class KadivStaffQuery
 
         $query = Karyawan::query()
             ->whereHas('user.role', fn ($q) => $q->whereRaw('LOWER(nama_role) = ?', ['staff']))
-            ->with(['divisi', 'user:id_user,karyawan_id_karyawan,last_login_at'])
+            ->with(['divisi', 'jabatanRef', 'user:id_user,karyawan_id_karyawan,last_login_at'])
             ->withCount('tugas');
 
-        if (!empty($this->divisiId)) {
+        if (! empty($this->divisiId)) {
             $query->where('divisi_id_divisi', $this->divisiId);
         }
 
         $q = $filters['q'] ?? null;
         if ($q !== null && $q !== '') {
-            $query->whereRaw('LOWER(nama) LIKE ?', ['%' . mb_strtolower($q) . '%']);
+            $query->whereRaw('LOWER(nama) LIKE ?', ['%'.mb_strtolower($q).'%']);
         }
 
         switch ($filters['sort'] ?? null) {
@@ -40,7 +38,7 @@ class KadivStaffQuery
                 break;
             case 'login':
                 $query->orderByRaw(
-                    '(select last_login_at from users2 where users2.karyawan_id_karyawan = karyawans.id_karyawan) ' . $dir
+                    '(select last_login_at from users2 where users2.karyawan_id_karyawan = karyawans.id_karyawan) '.$dir
                 )->orderBy('nama');
                 break;
             default:

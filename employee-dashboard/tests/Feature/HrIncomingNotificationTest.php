@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Kadiv\PesanTable;
 use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\Notifikasi;
@@ -10,7 +9,6 @@ use App\Models\Role;
 use App\Models\User2;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class HrIncomingNotificationTest extends TestCase
@@ -18,7 +16,9 @@ class HrIncomingNotificationTest extends TestCase
     use RefreshDatabase;
 
     private User2 $staff;
+
     private User2 $kadiv;
+
     private User2 $hrd;
 
     protected function setUp(): void
@@ -65,7 +65,7 @@ class HrIncomingNotificationTest extends TestCase
         $this->assertSame(0, Notifikasi::where('user_id_user', $this->staff->id_user)->count());
     }
 
-    public function test_surat_izin_submission_notifies_hrd(): void
+    public function test_staff_surat_izin_submission_notifies_kadiv(): void
     {
         $this->actingAs($this->staff)
             ->post(route('staff.suratIzin.store'), [
@@ -78,27 +78,33 @@ class HrIncomingNotificationTest extends TestCase
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $notification = Notifikasi::where('user_id_user', $this->hrd->id_user)->firstOrFail();
-        $this->assertSame('Surat Izin Masuk', $notification->judul_notifikasi);
+        $notification = Notifikasi::where('user_id_user', $this->kadiv->id_user)->firstOrFail();
+        $this->assertSame('Surat Izin Menunggu Persetujuan', $notification->judul_notifikasi);
         $this->assertStringContainsString('Izin Sakit Hari Ini', $notification->isi_notif);
         $this->assertStringContainsString('Izin Sakit', $notification->isi_notif);
         $this->assertStringContainsString('Staff Satu', $notification->isi_notif);
+        $this->assertSame(0, Notifikasi::where('user_id_user', $this->hrd->id_user)
+            ->where('judul_notifikasi', 'Surat Izin Masuk')
+            ->count());
     }
 
     public function test_kadiv_surat_izin_submission_notifies_hrd(): void
     {
-        Livewire::actingAs($this->kadiv)
-            ->test(PesanTable::class)
-            ->set('jenisIzin', 'Izin Keluarga')
-            ->set('judulSurat', 'Izin Acara Keluarga')
-            ->set('tanggalMulai', now()->toDateString())
-            ->set('tanggalSelesai', now()->toDateString())
-            ->call('kirimSuratIzin')
-            ->assertHasNoErrors();
+        $this->actingAs($this->kadiv)
+            ->post(route('staff.suratIzin.store'), [
+                'tanggal_pengajuan' => now()->toDateString(),
+                'keperluan' => 'Pribadi',
+                'jenis_pengajuan' => 'Tahunan',
+                'tanggal_mulai' => now()->toDateString(),
+                'tanggal_selesai' => now()->toDateString(),
+                'keterangan' => 'Acara keluarga',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
 
         $notification = Notifikasi::where('user_id_user', $this->hrd->id_user)->firstOrFail();
         $this->assertSame('Surat Izin Masuk', $notification->judul_notifikasi);
-        $this->assertStringContainsString('Izin Acara Keluarga', $notification->isi_notif);
+        $this->assertStringContainsString('Pengajuan Cuti - Tahunan', $notification->isi_notif);
         $this->assertStringContainsString('Kadiv Satu', $notification->isi_notif);
     }
 

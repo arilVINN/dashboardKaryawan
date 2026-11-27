@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\QueryException;
 use App\Models\User2;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -43,10 +43,11 @@ class AuthController extends Controller
             }
         }
 
-        if (!$passwordMatches) {
+        if (! $passwordMatches) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json(['message' => 'Username atau password salah'], 401);
             }
+
             return back()->withErrors(['username' => 'Username atau password salah']);
         }
 
@@ -58,6 +59,7 @@ class AuthController extends Controller
             if ($request->expectsJson() || $isApiRequest) {
                 return response()->json(['message' => $message], 403);
             }
+
             return back()->withErrors(['username' => $message]);
         }
 
@@ -73,7 +75,9 @@ class AuthController extends Controller
         }
 
         if ($request->expectsJson() || $isApiRequest) {
-            $token = $user->createToken('auth_token')->plainTextToken;
+            // Sertakan User-Agent agar token bisa diaudit per device/browser.
+            $deviceName = substr($request->userAgent() ?? 'api-client', 0, 80);
+            $token = $user->createToken($deviceName)->plainTextToken;
 
             return response()->json([
                 'access_token' => $token,
@@ -108,8 +112,6 @@ class AuthController extends Controller
             return response()->json(['message' => 'Logout berhasil']);
         }
 
-
-        
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

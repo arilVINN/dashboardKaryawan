@@ -76,6 +76,7 @@ class StrukturOrganisasi extends Model
         }
 
         $parent = $this->parent ?: static::find($this->parent_id);
+
         return $parent ? $parent->level + 1 : 1;
     }
 
@@ -102,7 +103,7 @@ class StrukturOrganisasi extends Model
         $visited = [];
 
         while ($current) {
-            if ((int)$current->id === (int)$targetId) {
+            if ((int) $current->id === (int) $targetId) {
                 return true;
             }
             if (in_array($current->id, $visited, true)) {

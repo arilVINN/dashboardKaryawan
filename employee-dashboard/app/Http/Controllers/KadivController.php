@@ -9,12 +9,12 @@ class KadivController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'judul'     => 'required|string|max:255',
-            'divisi'    => 'required',
-            'penerima'  => 'required',
+            'judul' => 'required|string|max:255',
+            'divisi' => 'required',
+            'penerima' => 'required',
             'deskripsi' => 'nullable|string',
-            'tenggat'   => 'required|date',
-            'lampiran'  => 'nullable|file|max:5120',
+            'tenggat' => 'required|date',
+            'lampiran' => 'nullable|file|max:5120',
         ]);
 
         if ($request->hasFile('lampiran')) {
@@ -25,7 +25,6 @@ class KadivController extends Controller
 
         return back()->with('success', 'Tugas berhasil dikirim');
     }
-
 
     private function dataPesan($id)
     {
@@ -49,17 +48,17 @@ class KadivController extends Controller
     {
         $request->validate([
             'isi_balasan' => 'required|string',
-            'lampiran'    => 'nullable|file|max:204800',
+            'lampiran' => 'nullable|file|max:204800',
         ]);
 
         $balasan = session('balasan_pesan', []);
         $balasan[] = [
             'id_pesan' => (int) $id,
-            'isi'      => $request->isi_balasan,
-            'file'     => $request->hasFile('lampiran')
+            'isi' => $request->isi_balasan,
+            'file' => $request->hasFile('lampiran')
                 ? $request->file('lampiran')->getClientOriginalName()
                 : null,
-            'waktu'    => now()->format('d M Y, H.i'),
+            'waktu' => now()->format('d M Y, H.i'),
         ];
         session(['balasan_pesan' => $balasan]);
 

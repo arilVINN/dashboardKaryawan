@@ -38,7 +38,7 @@ class KadivTugasQueryTest extends TestCase
             'id_tugas' => $id,
             'karyawan_id_karyawan' => $karyawanId,
             'judul_tugas' => $judul,
-            'deskripsi' => $judul . ' desc',
+            'deskripsi' => $judul.' desc',
             'deadline' => now()->addDays(10)->toDateString(),
             'progress' => '0',
             'status' => $status,

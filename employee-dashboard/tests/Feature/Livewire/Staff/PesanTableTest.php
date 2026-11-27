@@ -147,14 +147,51 @@ class PesanTableTest extends TestCase
         $this->assertSame(6, strlen(SuratIzin::query()->value('id_surat')));
     }
 
-    public function test_surat_izin_modal_is_rendered_once_on_staff_pages(): void
+    public function test_staff_can_submit_the_new_perizinan_form(): void
     {
-        foreach (['/pesan', '/'] as $path) {
-            $response = $this->actingAs($this->staff)->get($path);
+        $response = $this->actingAs($this->staff)->post(route('staff.suratIzin.store'), [
+            'tanggal_pengajuan' => now()->toDateString(),
+            'keperluan' => 'Dinas',
+            'jenis_pengajuan' => 'Kunjungan Klien atau Lapangan',
+            'tanggal_mulai' => '2026-11-27',
+            'tanggal_selesai' => '2026-11-28',
+            'keterangan' => 'Kunjungan klien baru',
+        ]);
 
-            $response->assertOk()->assertSee('name="judul_surat"', false);
-            $this->assertSame(1, substr_count($response->getContent(), 'id="modalSuratIzin"'));
-        }
+        $response->assertRedirect();
+        $response->assertSessionHas('success', 'Surat izin berhasil dikirim.');
+
+        $this->assertDatabaseHas('surat_izin', [
+            'karyawan_id_karyawan' => $this->staff->karyawan_id_karyawan,
+            'keperluan' => 'Dinas',
+            'kategori_pengajuan' => 'Dinas Luar',
+            'jenis_izin' => 'Kunjungan Klien atau Lapangan',
+            'judul_surat' => 'Pengajuan Dinas Luar - Kunjungan Klien atau Lapangan',
+            'tanggal_mulai' => '2026-11-27 00:00:00',
+            'tanggal_selesai' => '2026-11-28 00:00:00',
+        ]);
+    }
+
+    public function test_surat_izin_modal_is_rendered_once_on_staff_surat_izin_page(): void
+    {
+        $response = $this->actingAs($this->staff)->get('/staff/suratIzin');
+
+        $response->assertOk()
+            ->assertSee('name="tanggal_pengajuan"', false)
+            ->assertSee('name="keperluan"', false)
+            ->assertSee('name="jenis_pengajuan"', false)
+            ->assertSee('name="jam_pengajuan"', false)
+            ->assertSee('placeholder="HH:MM"', false)
+            ->assertSee('Tidak Masuk')
+            ->assertSee('Ajukan Perizinan')
+            ->assertSee('Status Surat Izin Saya');
+        $this->assertSame(1, substr_count($response->getContent(), 'id="modalSuratIzin"'));
+
+        $this->actingAs($this->staff)
+            ->get('/pesan')
+            ->assertOk()
+            ->assertDontSee('id="modalSuratIzin"', false)
+            ->assertDontSee('Status Surat Izin Saya');
     }
 
     public function test_non_staff_cannot_submit_surat_izin(): void
@@ -166,7 +203,8 @@ class PesanTableTest extends TestCase
                 'judul_surat' => 'Izin Sakit',
                 'tanggal_izin' => '2026-10-20',
             ])
-            ->assertForbidden();
+            ->assertRedirect(route('hrd.dashboard'))
+            ->assertSessionHas('forbidden');
 
         $this->assertDatabaseCount('surat_izin', 0);
     }

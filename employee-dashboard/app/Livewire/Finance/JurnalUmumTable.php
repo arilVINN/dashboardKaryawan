@@ -148,7 +148,7 @@ class JurnalUmumTable extends Component
         $search = trim($search);
 
         if ($search !== '') {
-            $term = '%' . strtolower($search) . '%';
+            $term = '%'.strtolower($search).'%';
             $query->where(function ($q) use ($term) {
                 $q->whereRaw('LOWER(kode) LIKE ?', [$term])
                     ->orWhereRaw('LOWER(nama) LIKE ?', [$term]);

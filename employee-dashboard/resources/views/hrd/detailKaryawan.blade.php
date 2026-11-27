@@ -36,7 +36,7 @@
                     </div>
                     <div class="min-w-0">
                         <h1 class="text-2xl font-bold text-slate-900 truncate">{{ $karyawan->nama }}</h1>
-                        <p class="text-sm text-slate-500">{{ $karyawan->jabatan }} · {{ $karyawan->id_karyawan }}</p>
+                        <p class="text-sm text-slate-500">{{ $karyawan->jabatanLabel() }} · {{ $karyawan->id_karyawan }}</p>
                         <div class="mt-2 flex flex-wrap gap-2">
                             <span class="px-2.5 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs font-bold">
                                 {{ $karyawan->divisi->nama_divisi ?? 'Tanpa divisi' }}
@@ -44,6 +44,10 @@
                             <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">
                                 {{ $karyawan->user?->role?->nama_role ?? 'Belum ada akun' }}
                             </span>
+                            @foreach ($karyawan->user?->roles ?? [] as $peranTambahan)
+                                <span class="px-2.5 py-1 border border-[#146C94] text-[#146C94] rounded-full text-xs font-bold"
+                                      title="Role tambahan">{{ ucfirst((string) $peranTambahan->nama_role) }}</span>
+                            @endforeach
                             <span
                                 class="px-2.5 py-1 border {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'bg-red-100 text-red-700 border-red-500' : 'bg-emerald-100 text-emerald-700 border-emerald-500' }} rounded-full text-xs font-bold">
                                 {{ $karyawan->status_aktif === 'Tidak Aktif' || !$karyawan->aktif ? 'Tidak Aktif' : 'Aktif' }}
@@ -78,7 +82,7 @@
                             data-rekening="{{ $karyawan->no_rekening }}"
                             data-akhir-kontrak="{{ $karyawan->tanggal_akhir_kontrak ? \Carbon\Carbon::parse($karyawan->tanggal_akhir_kontrak)->format('Y-m-d') : '' }}"
                             data-email="{{ $karyawan->email }}" data-alamat="{{ $karyawan->alamat }}"
-                            data-telepon="{{ $karyawan->no_telepon }}" data-jabatan="{{ $karyawan->jabatan }}"
+                            data-telepon="{{ $karyawan->no_telepon }}" data-jabatan="{{ $karyawan->jabatanRef?->nama ?? $karyawan->jabatan }}"
                             data-status="{{ $karyawan->status_aktif }}"
                             data-tanggal-keluar="{{ $karyawan->tanggal_keluar ? \Carbon\Carbon::parse($karyawan->tanggal_keluar)->format('Y-m-d') : '' }}"
                             data-divisi="{{ $karyawan->divisi_id_divisi }}" data-pendidikan="{{ $karyawan->pendidikan }}"
@@ -143,7 +147,9 @@
                                     ? 'SMK'
                                     : $karyawan->pendidikan,
                                 'Job Level' => $karyawan->job_level,
-                                'Status Karyawan' => $karyawan->tanggal_akhir_kontrak ? 'Kontrak' : 'Tetap',
+                                'Status Karyawan' => $karyawan->tanggal_akhir_kontrak
+                                    ? 'Kontrak'
+                                    : (filled($karyawan->status_karyawan) ? ucfirst((string) $karyawan->status_karyawan) : 'Tetap'),
                                 'Tanggal Masuk' =>
                                     $karyawan->tanggal_masuk ?? $karyawan->tanggal_rekrut
                                         ? \Carbon\Carbon::parse(
@@ -158,7 +164,7 @@
                         @foreach ($info as $label => $nilai)
                             <div class="flex justify-between gap-4 border-b border-slate-100 pb-2">
                                 <dt class="text-slate-500">{{ $label }}</dt>
-                                <dd class="text-slate-900 font-medium text-right">{{ $nilai ?: '-' }}</dd>
+                                <dd class="text-slate-900 font-medium text-right">{{ filled(trim((string) $nilai)) ? $nilai : '-' }}</dd>
                             </div>
                         @endforeach
                     </dl>
@@ -178,7 +184,43 @@
                                     {{ $karyawan->user?->last_login_at?->format('d M Y, H.i') ?? 'Belum pernah' }}
                                 </dd>
                             </div>
+                            <div class="flex justify-between border-t border-slate-100 pt-2">
+                                <dt class="text-slate-500">Role utama</dt>
+                                <dd class="text-slate-900 font-medium">{{ ucfirst((string) ($karyawan->user?->role?->nama_role ?? '-')) }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-slate-500">Role tambahan</dt>
+                                <dd class="text-slate-900 font-medium text-right">
+                                    {{ $karyawan->user ? implode(', ', array_map('ucfirst', $karyawan->user->peranTambahan())) : '-' }}
+                                </dd>
+                            </div>
                         </dl>
+
+                        @if ($karyawan->user && (auth()->user()?->hasRole('direktur') || auth()->user()?->isSuperAdmin()))
+                            <form method="POST" action="{{ route('hrd.karyawan.peran', $karyawan->id_karyawan) }}" class="mt-4 border-t border-slate-100 pt-4">
+                                @csrf
+                                @method('PUT')
+                                <label class="mb-2 block text-[13px] font-medium text-[#172B36]">Kelola role tambahan</label>
+                                <p class="mb-2 text-[12px] text-[#4B5563]">Hanya direktur/superadmin. Role utama mengikuti jabatan.</p>
+                                <div class="space-y-1.5">
+                                    @foreach ($daftarRoleTambahan as $role)
+                                        <label class="flex items-center gap-2 text-[13px] text-[#172B36]">
+                                            <input type="checkbox" name="roles[]" value="{{ $role->id_role }}"
+                                                   @checked($karyawan->user->roles->contains('id_role', $role->id_role))
+                                                   class="h-4 w-4 rounded border-[#D5DEE3] text-[#146C94] focus:ring-2 focus:ring-[#146C94]">
+                                            {{ ucfirst((string) $role->nama_role) }}
+                                            @if ($role->id_role === $karyawan->user->role_id_role)
+                                                <span class="text-[11px] text-[#4B5563]">(role utama)</span>
+                                            @endif
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <button type="submit"
+                                        class="mt-3 inline-flex h-8 items-center rounded-lg bg-[#146C94] px-3 text-[12px] font-medium text-white hover:bg-[#0F5678]">
+                                    Simpan role tambahan
+                                </button>
+                            </form>
+                        @endif
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -357,7 +399,7 @@
                                     </td>
                                     <td class="px-6 py-3 text-center">
                                         <span class="px-2 py-1 text-xs font-bold rounded {{ $badgeColor }}">
-                                            {{ ucfirst($izin->status) }}
+                                            {{ $izin->tahap_label }}
                                         </span>
                                     </td>
                                 </tr>

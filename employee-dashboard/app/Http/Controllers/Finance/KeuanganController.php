@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Exports\RekapLabaRugiExport;
 use App\Http\Controllers\Controller;
 use App\Models\Divisi;
+use App\Models\KLabaRugi;
 use App\Models\KPemasukan;
 use App\Models\KPengeluaran;
-use App\Models\KLabaRugi;
 use App\Models\KPermintDana;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Dashboard utama Keuangan — hanya untuk Kadiv Finance.
@@ -19,7 +22,7 @@ class KeuanganController extends Controller
     /**
      * Halaman dashboard keuangan: ringkasan KPI + rekap saldo per divisi.
      */
-    public function index(Request $request): \Illuminate\View\View
+    public function index(Request $request): View
     {
         $periode = $request->input('periode', now()->format('Y-m'));
         [$tahun, $bulan] = explode('-', $periode);
@@ -49,6 +52,7 @@ class KeuanganController extends Controller
             ->get()
             ->map(function ($divisi) {
                 $divisi->sisa_pagu = ($divisi->total_alokasi ?? 0) - ($divisi->total_terpakai ?? 0);
+
                 return $divisi;
             });
 
@@ -65,16 +69,16 @@ class KeuanganController extends Controller
     /**
      * Halaman rekap laba/rugi per divisi (semua periode & minggu).
      */
-    public function rekapDivisi(Request $request): \Illuminate\View\View
+    public function rekapDivisi(Request $request): View
     {
-        $periode  = $request->input('periode', now()->format('Y-m'));
+        $periode = $request->input('periode', now()->format('Y-m'));
         $mingguKe = $request->input('minggu_ke', null); // null = semua minggu
 
         $query = Divisi::query()->unitNonFinance()
             ->where('status_aktif', 'Aktif')
             ->with(['laporanLabaRugi' => function ($q) use ($periode, $mingguKe) {
                 $q->where('periode', $periode)
-                  ->where('status_verifikasi', '!=', 'menunggu');
+                    ->where('status_verifikasi', '!=', 'menunggu');
                 if ($mingguKe) {
                     $q->where('minggu_ke', $mingguKe);
                 }
@@ -83,10 +87,11 @@ class KeuanganController extends Controller
 
         $rekapDivisi = $query->map(function ($divisi) {
             $laporan = $divisi->laporanLabaRugi;
-            $divisi->total_pendapatan_rekap  = $laporan->sum('total_pendapatan');
+            $divisi->total_pendapatan_rekap = $laporan->sum('total_pendapatan');
             $divisi->total_pengeluaran_rekap = $laporan->sum('total_pengeluaran');
-            $divisi->laba_bersih_rekap       = $laporan->sum('laba_bersih');
-            $divisi->laporan_list            = $laporan;
+            $divisi->laba_bersih_rekap = $laporan->sum('laba_bersih');
+            $divisi->laporan_list = $laporan;
+
             return $divisi;
         });
 
@@ -96,30 +101,30 @@ class KeuanganController extends Controller
     /**
      * Halaman Arus Kas — gabungan Kas Masuk + Kas Keluar dengan tab.
      */
-    public function arusKas(Request $request): \Illuminate\View\View
+    public function arusKas(Request $request): View
     {
-        $tab     = $request->input('tab', 'masuk');
+        $tab = $request->input('tab', 'masuk');
         $periode = $request->input('periode', now()->format('Y-m'));
         [$tahun, $bulan] = explode('-', $periode);
 
-        $divisiList   = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
+        $divisiList = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
         $kategoriList = KPemasukan::KATEGORI_OPTIONS;
 
         // Kas Masuk (always load for badge count)
         $kategori = $request->input('kategori', '');
-        $qMasuk   = KPemasukan::with('divisi')
+        $qMasuk = KPemasukan::with('divisi')
             ->whereYear('tanggal_masuk', $tahun)
             ->whereMonth('tanggal_masuk', $bulan);
         if ($tab === 'masuk' && $kategori) {
             $qMasuk->where('kategori_pemasukan', $kategori);
         }
-        $pemasukan  = $qMasuk->latest('tanggal_masuk')->paginate(15)->withQueryString();
+        $pemasukan = $qMasuk->latest('tanggal_masuk')->paginate(15)->withQueryString();
         $totalMasuk = KPemasukan::whereYear('tanggal_masuk', $tahun)
             ->whereMonth('tanggal_masuk', $bulan)->sum('nominal');
 
         // Kas Keluar (always load for badge count)
         $divisiId = $request->input('divisi_id_divisi', null);
-        $qKeluar  = KPengeluaran::with('divisi', 'permintaanDana')
+        $qKeluar = KPengeluaran::with('divisi', 'permintaanDana')
             ->whereYear('tanggal_cair', $tahun)
             ->whereMonth('tanggal_cair', $bulan);
         if ($tab === 'keluar' && $divisiId) {
@@ -144,12 +149,12 @@ class KeuanganController extends Controller
     /**
      * Halaman Manajemen Dana — gabungan Permintaan Dana + Verifikasi Laporan L/R.
      */
-    public function manajemenDana(Request $request): \Illuminate\View\View
+    public function manajemenDana(Request $request): View
     {
-        $tab      = $request->input('tab', 'permintaan');
-        $status   = $request->input('status', '');
+        $tab = $request->input('tab', 'permintaan');
+        $status = $request->input('status', '');
         $divisiId = $request->input('divisi_id', null);
-        $periode  = $request->input('periode', now()->format('Y-m'));
+        $periode = $request->input('periode', now()->format('Y-m'));
 
         if (! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', (string) $periode)) {
             $periode = now()->format('Y-m');
@@ -165,7 +170,7 @@ class KeuanganController extends Controller
         if ($divisiId && $tab === 'permintaan') {
             $qPerm->where('divisi_id_divisi', $divisiId);
         }
-        $permintaan               = $qPerm->latest()->paginate(15)->withQueryString();
+        $permintaan = $qPerm->latest()->paginate(15)->withQueryString();
         $jumlahMenungguPermintaan = KPermintDana::where('status', KPermintDana::STATUS_MENUNGGU)->count();
 
         // Laporan L/R
@@ -180,7 +185,7 @@ class KeuanganController extends Controller
                 $qLap->where('divisi_id_divisi', $divisiId);
             }
         }
-        $laporan               = $qLap->latest()->paginate(15)->withQueryString();
+        $laporan = $qLap->latest()->paginate(15)->withQueryString();
         $jumlahMenungguLaporan = KLabaRugi::where('status_verifikasi', 'menunggu')->count();
 
         return view('finance.manajemenDana.index', compact(
@@ -193,16 +198,16 @@ class KeuanganController extends Controller
     /**
      * Export rekap laba/rugi divisi ke Excel (.xlsx).
      */
-    public function export(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function export(Request $request): BinaryFileResponse
     {
-        $periode  = $request->input('periode', now()->format('Y-m'));
+        $periode = $request->input('periode', now()->format('Y-m'));
         $mingguKe = $request->input('minggu_ke');
         $divisiId = $request->input('divisi_id');
 
-        $fileName = 'Rekap_Laba_Rugi_' . $periode . ($mingguKe ? '_M' . $mingguKe : '') . '.xlsx';
+        $fileName = 'Rekap_Laba_Rugi_'.$periode.($mingguKe ? '_M'.$mingguKe : '').'.xlsx';
 
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\RekapLabaRugiExport($periode, $mingguKe, $divisiId),
+        return Excel::download(
+            new RekapLabaRugiExport($periode, $mingguKe, $divisiId),
             $fileName
         );
     }

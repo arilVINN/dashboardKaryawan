@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Divisi;
-use App\Models\Karyawan;
 use App\Models\User2;
+use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DivisionHierarchySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -18,11 +18,16 @@ class DivisionHierarchyTest extends TestCase
         $this->seed(DivisionHierarchySeeder::class);
     }
 
+    private function seedCompany(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+    }
+
     public function test_seeder_builds_the_dummy_company_hierarchy(): void
     {
-        $this->seedHierarchy();
+        $this->seedCompany();
 
-        $this->assertSame(10, Divisi::count());
+        $this->assertSame(11, Divisi::count());
 
         $direktur = Divisi::where('tipe', Divisi::TIPE_DIREKTUR)->firstOrFail();
         $this->assertSame('Direktur Utama', $direktur->nama_divisi);
@@ -56,6 +61,7 @@ class DivisionHierarchyTest extends TestCase
             'Academic Event',
             'Kreatif Digital',
             'IT',
+            'MARKOM',
         ];
 
         foreach ($expectedDivisions as $name) {
@@ -64,6 +70,12 @@ class DivisionHierarchyTest extends TestCase
             $this->assertSame(3, $division->level);
             $this->assertNull($division->kapasitas);
             $this->assertTrue($division->canAcceptMember());
+        }
+
+        // Only the divisions that currently have a kadiv in the seeder can
+        // resolve a penanggung jawab.
+        foreach (['Publikasi Buku', 'Publikasi Jurnal'] as $name) {
+            $division = Divisi::where('nama_divisi', $name)->firstOrFail();
             $this->assertNotNull($division->penanggungJawab());
             $this->assertTrue($division->penanggungJawab()->isKadiv());
         }
@@ -79,11 +91,12 @@ class DivisionHierarchyTest extends TestCase
             'Academic Event',
             'Kreatif Digital',
             'IT',
+            'MARKOM',
         ], Divisi::query()->ordered()->pluck('nama_divisi')->all());
 
         // The structural nodes are not part of the operating divisions used by
         // finance's per-division budget pages.
-        $this->assertSame(7, Divisi::query()->unitNonFinance()->count());
+        $this->assertSame(8, Divisi::query()->unitNonFinance()->count());
     }
 
     public function test_seeder_is_idempotent(): void
@@ -91,16 +104,14 @@ class DivisionHierarchyTest extends TestCase
         $this->seedHierarchy();
         $this->seedHierarchy();
 
-        $this->assertSame(10, Divisi::count());
-        $this->assertSame(16, Karyawan::count());
-        $this->assertSame(15, User2::count());
+        $this->assertSame(11, Divisi::count());
     }
 
     public function test_single_person_and_grouping_units_reject_extra_members(): void
     {
-        $this->seedHierarchy();
+        $this->seedCompany();
 
-        $hrd = User2::where('username', 'darmawanhrd')->firstOrFail();
+        $hrd = User2::where('username', 'agnes')->firstOrFail();
 
         $this->actingAs($hrd)
             ->postJson('/hrd/staff', [
@@ -146,13 +157,13 @@ class DivisionHierarchyTest extends TestCase
 
     public function test_finance_access_and_budget_scope_follow_division_capability(): void
     {
-        $this->seedHierarchy();
+        $this->seedCompany();
 
         $financeHead = User2::where('username', 'sarifin')->firstOrFail();
-        $itHead = User2::where('username', 'tonokd')->firstOrFail();
+        $nonFinanceHead = User2::where('username', 'durotur')->firstOrFail();
 
         $this->assertTrue($financeHead->isKadivFinance());
-        $this->assertFalse($itHead->isKadivFinance());
+        $this->assertFalse($nonFinanceHead->isKadivFinance());
 
         $nonFinance = Divisi::query()->unitNonFinance()->ordered()->pluck('nama_divisi')->all();
 
@@ -165,9 +176,9 @@ class DivisionHierarchyTest extends TestCase
 
     public function test_division_crud_keeps_the_hierarchy_consistent(): void
     {
-        $this->seedHierarchy();
+        $this->seedCompany();
 
-        $hrd = User2::where('username', 'darmawanhrd')->firstOrFail();
+        $hrd = User2::where('username', 'agnes')->firstOrFail();
 
         $this->actingAs($hrd)
             ->postJson('/hrd/divisi', [

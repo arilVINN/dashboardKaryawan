@@ -6,7 +6,6 @@ use App\Models\CoaAkun;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-
 class CoaSeeder extends Seeder
 {
     public function run(): void
@@ -26,28 +25,34 @@ class CoaSeeder extends Seeder
             ];
 
             foreach ($pindah as [$kodeLama, $namaLama, $kodeBaru, $namaBaru]) {
-                CoaAkun::where('kode', $kodeLama)
-                    ->where('nama', $namaLama)
-                    ->update([
-                        'kode' => $kodeBaru,
-                        'nama' => $namaBaru,
-                        'kelompok' => $this->kelompokUtama($kodeBaru),
-                        'kelompok_detail' => $this->kelompokDetail($kodeBaru),
-                    ]);
+                $targetExists = CoaAkun::where('kode', $kodeBaru)->exists();
+                if ($targetExists) {
+                    CoaAkun::where('kode', $kodeLama)->delete();
+                } else {
+                    CoaAkun::where('kode', $kodeLama)
+                        ->where('nama', $namaLama)
+                        ->update([
+                            'kode' => $kodeBaru,
+                            'nama' => $namaBaru,
+                            'kelompok' => $this->kelompokUtama($kodeBaru),
+                            'kelompok_detail' => $this->kelompokDetail($kodeBaru),
+                        ]);
+                }
             }
-foreach ($this->daftarAkun() as [$kode, $nama]) {
-    CoaAkun::updateOrCreate(
-        ['kode' => $kode],
-        [
-            'nama' => $nama,
-            'kelompok' => $this->kelompokUtama($kode),
-            'kelompok_detail' => $this->kelompokDetail($kode),
-            'aktif' => true,
-        ]
-    );
-}
+            foreach ($this->daftarAkun() as [$kode, $nama]) {
+                CoaAkun::updateOrCreate(
+                    ['kode' => $kode],
+                    [
+                        'nama' => $nama,
+                        'kelompok' => $this->kelompokUtama($kode),
+                        'kelompok_detail' => $this->kelompokDetail($kode),
+                        'aktif' => true,
+                    ]
+                );
+            }
         });
     }
+
     /**
      * Kolom kelompok hanya menerima 5 nilai (lihat CoaAkun::KELOMPOK),
      * jadi kelompok dihitung dari kode akun.
@@ -73,8 +78,8 @@ foreach ($this->daftarAkun() as [$kode, $nama]) {
     /**
      * @return array<int, array{0:string,1:string}> [kode, nama]
      */
-    
-        /**
+
+    /**
      * Menentukan kategori akun sesuai COA PT SILINDO.
      */
     private function kelompokDetail(string $kode): string
@@ -100,17 +105,16 @@ foreach ($this->daftarAkun() as [$kode, $nama]) {
             $nomor >= 7000 && $nomor <= 7200 => 'Beban Pemasaran',
 
             ($nomor >= 7300 && $nomor <= 7500)
-                || ($nomor >= 7800 && $nomor <= 7900)
-                    => 'Pendapatan Non Operasional',
+                || ($nomor >= 7800 && $nomor <= 7900) => 'Pendapatan Non Operasional',
 
             $nomor >= 7600 && $nomor <= 7700 => 'Beban Operasional',
 
             default => '-',
         };
     }
+
     private function daftarAkun(): array
     {
-   
 
         return [
             // ===== AKTIVA =====

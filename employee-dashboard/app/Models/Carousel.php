@@ -42,7 +42,7 @@ class Carousel extends Model
 
     public function isLikedBy(?User2 $user): bool
     {
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

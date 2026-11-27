@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Finance;
 
-use App\Livewire\Finance\Concerns\HasMonthPicker;
 use App\Helpers\FormatAkuntansi;
+use App\Livewire\Finance\Concerns\HasMonthPicker;
 use App\Models\Divisi;
 use Carbon\Carbon;
 use Illuminate\View\View;
@@ -137,18 +137,18 @@ class RekapLabaRugi extends Component
         $grandMargin = FormatAkuntansi::hitungMargin($grandPendapatan, $grandPengeluaran);
 
         return view('livewire.finance.rekap-laba-rugi', [
-            'periodeLabel'                   => $this->periodeLabel(),
-            'periodeSubtitle'                => $this->periodeSubtitle(),
-            'grandPendapatan'                => (float) $grandPendapatan,
-            'grandPengeluaran'               => (float) $grandPengeluaran,
-            'grandLaba'                      => (float) $grandLaba,
-            'grandMargin'                    => $grandMargin,
-            'grandPendapatanOperasional'     => (float) $grandPendapatanOperasional,
-            'grandPendapatanNonOperasional'  => (float) $grandPendapatanNonOperasional,
-            'grandBebanOperasional'          => (float) $grandBebanOperasional,
-            'grandBebanNonOperasional'       => (float) $grandBebanNonOperasional,
-            'grandLabaOperasional'           => (float) $grandLabaOperasional,
-            'rekapDivisi'                    => $rekapDivisi,
+            'periodeLabel' => $this->periodeLabel(),
+            'periodeSubtitle' => $this->periodeSubtitle(),
+            'grandPendapatan' => (float) $grandPendapatan,
+            'grandPengeluaran' => (float) $grandPengeluaran,
+            'grandLaba' => (float) $grandLaba,
+            'grandMargin' => $grandMargin,
+            'grandPendapatanOperasional' => (float) $grandPendapatanOperasional,
+            'grandPendapatanNonOperasional' => (float) $grandPendapatanNonOperasional,
+            'grandBebanOperasional' => (float) $grandBebanOperasional,
+            'grandBebanNonOperasional' => (float) $grandBebanNonOperasional,
+            'grandLabaOperasional' => (float) $grandLabaOperasional,
+            'rekapDivisi' => $rekapDivisi,
         ]);
     }
 

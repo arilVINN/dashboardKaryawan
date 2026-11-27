@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('carousels', function (Blueprint $table) {
-            if (!Schema::hasColumn('carousels', 'subtitle')) {
+            if (! Schema::hasColumn('carousels', 'subtitle')) {
                 $table->string('subtitle')->nullable()->after('title');
             }
-            if (!Schema::hasColumn('carousels', 'description')) {
+            if (! Schema::hasColumn('carousels', 'description')) {
                 $table->text('description')->nullable()->after('subtitle');
             }
-            if (!Schema::hasColumn('carousels', 'initial_likes')) {
+            if (! Schema::hasColumn('carousels', 'initial_likes')) {
                 $table->unsignedInteger('initial_likes')->default(0)->after('image');
             }
         });
@@ -40,7 +40,7 @@ return new class extends Migration
             if (Schema::hasColumn('carousels', 'initial_likes')) {
                 $columnsToDrop[] = 'initial_likes';
             }
-            if (!empty($columnsToDrop)) {
+            if (! empty($columnsToDrop)) {
                 $table->dropColumn($columnsToDrop);
             }
         });

@@ -257,18 +257,18 @@ class StaffApiTest extends TestCase
             ->assertJsonPath('pesan_langsung.0.arah', 'masuk')
             ->assertJsonPath('pesan_langsung.0.pengirim.nama', 'Kadiv Dummy');
 
-            $this->withToken($token)
-                ->getJson('/api/staff/pesan/PSN-DIRECT')
-                ->assertOk()
-                ->assertJsonPath('data.id_pesan', 'PSN-DIRECT')
-                ->assertJsonPath('data.penerima.id_user', $this->staff->id_user)
-                ->assertJsonPath('data.lampiran.link', 'https://example.com/panduan')
-                ->assertJsonPath('data.lampiran.file', Storage::disk('public')->url('pesan/kadiv-file.pdf'));
+        $this->withToken($token)
+            ->getJson('/api/staff/pesan/PSN-DIRECT')
+            ->assertOk()
+            ->assertJsonPath('data.id_pesan', 'PSN-DIRECT')
+            ->assertJsonPath('data.penerima.id_user', $this->staff->id_user)
+            ->assertJsonPath('data.lampiran.link', 'https://example.com/panduan')
+            ->assertJsonPath('data.lampiran.file', Storage::disk('public')->url('pesan/kadiv-file.pdf'));
 
-            $this->withToken($token)
-                ->getJson('/api/staff/pesan/PSN-OTHER')
-                ->assertNotFound();
-            }
+        $this->withToken($token)
+            ->getJson('/api/staff/pesan/PSN-OTHER')
+            ->assertNotFound();
+    }
 
     public function test_staff_can_reply_to_messages_but_not_letters(): void
     {

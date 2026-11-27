@@ -59,6 +59,7 @@ class CarouselController extends Controller
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => 'Silakan login terlebih dahulu.'], 401);
             }
+
             return redirect()->route('login');
         }
 
@@ -109,12 +110,12 @@ class CarouselController extends Controller
         abort_if($role === 'kadiv' && ! $divisiId, 403);
 
         $validated = $request->validate([
-            'category'    => 'required|string|max:50',
-            'title'       => 'required|string|max:255',
-            'subtitle'    => 'nullable|string|max:255',
+            'category' => 'required|string|max:50',
+            'title' => 'required|string|max:255',
+            'subtitle' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:5000',
-            'date'        => 'required|date',
-            'image'       => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
+            'date' => 'required|date',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:5120',
         ]);
 
         $path = null;
@@ -123,13 +124,13 @@ class CarouselController extends Controller
         }
 
         Carousel::create([
-            'title'            => $validated['title'],
-            'subtitle'         => $validated['subtitle'] ?? null,
-            'description'      => $validated['description'] ?? null,
-            'category'         => $validated['category'],
-            'date'             => $validated['date'],
-            'image'            => $path,
-            'user_id_user'     => $user?->id_user,
+            'title' => $validated['title'],
+            'subtitle' => $validated['subtitle'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'category' => $validated['category'],
+            'date' => $validated['date'],
+            'image' => $path,
+            'user_id_user' => $user?->id_user,
             'divisi_id_divisi' => $divisiId,
         ]);
 

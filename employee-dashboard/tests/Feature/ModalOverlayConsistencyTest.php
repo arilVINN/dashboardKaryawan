@@ -9,7 +9,10 @@ class ModalOverlayConsistencyTest extends TestCase
     public function test_dialog_overlays_use_the_single_dim_token(): void
     {
         $token = 'bg-[rgba(15,40,55,.45)]';
-        $allowedBlur = 'components/birthday-popup.blade.php';
+        $allowedExceptions = [
+            'components/birthday-popup.blade.php',
+            'components/table-loading-overlay.blade.php',
+        ];
         $count = 0;
 
         $files = new \RecursiveIteratorIterator(
@@ -22,7 +25,8 @@ class ModalOverlayConsistencyTest extends TestCase
             }
 
             $text = (string) file_get_contents($file->getPathname());
-            $relative = str_replace(resource_path('views').'/', '', $file->getPathname());
+            $relative = str_replace('\\', '/', str_replace(resource_path('views'), '', $file->getPathname()));
+            $relative = ltrim($relative, '/');
 
             preg_match_all('/class="([^"]*)"/s', $text, $matches);
 
@@ -36,8 +40,8 @@ class ModalOverlayConsistencyTest extends TestCase
 
                 $count++;
 
-                if ($relative === $allowedBlur) {
-                    // The birthday popup is the one deliberate blur exception.
+                if (in_array($relative, $allowedExceptions, true)) {
+                    // Birthday popup and table loading overlay are deliberate exceptions.
                     continue;
                 }
 

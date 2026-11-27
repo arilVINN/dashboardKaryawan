@@ -20,7 +20,9 @@ class PesanTableTest extends TestCase
     use RefreshDatabase;
 
     private User2 $kadiv;
+
     private User2 $abby;
+
     private User2 $outsider;
 
     protected function setUp(): void
@@ -55,7 +57,7 @@ class PesanTableTest extends TestCase
         Karyawan::create(['id_karyawan' => $id, 'nama' => $nama, 'jenis_kelamin' => 'Laki-laki', 'jabatan' => $nama, 'divisi_id_divisi' => $divisi]);
 
         return User2::create([
-            'id_user' => 'USR-' . $id,
+            'id_user' => 'USR-'.$id,
             'username' => $username,
             'password' => Hash::make('pass123'),
             'role_id_role' => $role,
@@ -115,6 +117,26 @@ class PesanTableTest extends TestCase
             ->assertHasNoErrors();
 
         Event::assertDispatched(PesanDikirim::class);
+    }
+
+    public function test_kadiv_surat_izin_page_renders_the_perizinan_modal_once(): void
+    {
+        $response = $this->actingAs($this->kadiv)->get(route('kadiv.suratIzin'));
+
+        $response->assertOk()
+            ->assertSee('name="jenis_pengajuan"', false)
+            ->assertSee('Ajukan Perizinan')
+            ->assertSee('Pengajuan Saya')
+            ->assertSee('Persetujuan Tim')
+            ->assertSee('Tanda Tangan')
+            ->assertSee('modalKadivSignature', false);
+        $this->assertSame(1, substr_count($response->getContent(), 'id="modalSuratIzin"'));
+        $this->assertSame(1, substr_count($response->getContent(), 'id="modalKadivSignature"'));
+
+        $this->actingAs($this->kadiv)
+            ->get(route('kadiv.pesan'))
+            ->assertOk()
+            ->assertDontSee('id="modalSuratIzin"', false);
     }
 
     public function test_non_kadiv_is_forbidden(): void

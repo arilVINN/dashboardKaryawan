@@ -34,7 +34,7 @@ class JurnalUmumController extends Controller
 
         return Excel::download(
             new JurnalUmumExport($periode, $divisiId),
-            'Jurnal_Umum_' . $periode . '.xlsx',
+            'Jurnal_Umum_'.$periode.'.xlsx',
         );
     }
 }

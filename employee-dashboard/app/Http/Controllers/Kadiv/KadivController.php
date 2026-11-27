@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Kadiv;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Kadiv\KadivTaskController;
-use Illuminate\Http\Request;
 use App\Models\SuratIzin;
+use Illuminate\Http\Request;
 
 /**
  * Minimal wrapper controller to handle legacy routes that reference KadivController.
@@ -31,7 +30,7 @@ class KadivController extends Controller
 
         $lastId = SuratIzin::orderBy('id_surat', 'desc')->first();
         $newId = $lastId
-            ? 'SRT' . str_pad(intval(substr($lastId->id_surat, 3)) + 1, 3, '0', STR_PAD_LEFT)
+            ? 'SRT'.str_pad(intval(substr($lastId->id_surat, 3)) + 1, 3, '0', STR_PAD_LEFT)
             : 'SRT001';
 
         SuratIzin::create([
@@ -51,6 +50,7 @@ class KadivController extends Controller
     {
         // Resolve the KadivTaskController via the container to honour any dependencies.
         $taskController = app(KadivTaskController::class);
+
         return $taskController->store($request);
     }
 }

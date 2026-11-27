@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Divisi;
+use App\Models\Jabatan;
 use App\Models\Karyawan;
 use App\Models\Role;
 use App\Models\User2;
@@ -99,7 +100,7 @@ class HrdDivisionFormDedupTest extends TestCase
 
     public function test_api_rejects_jabatan_from_another_division(): void
     {
-        $jabatanLain = \App\Models\Jabatan::create([
+        $jabatanLain = Jabatan::create([
             'division_id' => 'DIV-IT',
             'nama' => 'Staff',
         ]);
@@ -119,7 +120,7 @@ class HrdDivisionFormDedupTest extends TestCase
 
     public function test_api_accepts_jabatan_in_selected_division(): void
     {
-        $jabatan = \App\Models\Jabatan::create([
+        $jabatan = Jabatan::create([
             'division_id' => 'DIV-EMPTY',
             'nama' => 'Staff',
         ]);
@@ -164,7 +165,7 @@ class HrdDivisionFormDedupTest extends TestCase
             'password' => 'password',
         ])->assertCreated();
 
-        $this->assertSame(2, \App\Models\Jabatan::where('nama', 'Staff Administrasi')->count());
+        $this->assertSame(2, Jabatan::where('nama', 'Staff Administrasi')->count());
     }
 
     public function test_form_uses_shared_jabatan_select(): void

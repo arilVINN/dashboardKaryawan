@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Divisi extends Model
 {
     protected $table = 'divisis';
+
     protected $primaryKey = 'id_divisi';
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     /**
@@ -22,7 +24,9 @@ class Divisi extends Model
      * levels above them.
      */
     public const TIPE_DIREKTUR = 'direktur';
+
     public const TIPE_MANAJEMEN = 'manajemen';
+
     public const TIPE_DIVISI = 'divisi';
 
     public const TIPE_OPTIONS = [
@@ -31,14 +35,30 @@ class Divisi extends Model
         self::TIPE_DIVISI => 'Divisi',
     ];
 
+    public const POSISI_DIRUT_PENDUKUNG = 'dirut_pendukung';
+
+    public const POSISI_DIROPS_PENDUKUNG = 'dirops_pendukung';
+
+    public const POSISI_OPERASIONAL = 'operasional';
+
+    public const POSISI_BAGAN_OPTIONS = [
+        self::POSISI_DIRUT_PENDUKUNG => 'Di Bawah Direktur Utama (Sejajar Legal / PA / Writer)',
+        self::POSISI_DIROPS_PENDUKUNG => 'Di Bawah Direktur Operasional (Sejajar Finance / HR)',
+        self::POSISI_OPERASIONAL => 'Departemen Operasional (Baris Bawah)',
+    ];
+
     /**
      * Stable codes for the units that business logic needs to recognise.
      * Everything else should be driven by `tipe` and `kapasitas`, not names.
      */
     public const KODE_DIREKTUR = 'DIRUT';
+
     public const KODE_MANAJEMEN = 'MGT';
+
     public const KODE_HR = 'HR';
+
     public const KODE_FINANCE = 'FIN';
+
     public const KODE_IT = 'IT';
 
     protected $fillable = [
@@ -50,6 +70,7 @@ class Divisi extends Model
         'level',
         'kapasitas',
         'urutan',
+        'posisi_bagan',
         'status_aktif',
     ];
 

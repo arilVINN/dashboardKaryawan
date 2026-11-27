@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class KadivTugasQuery
 {
-    private function __construct(private ?string $divisiId = null)
-    {
-    }
+    private function __construct(private ?string $divisiId = null) {}
 
     public static function forDivision(?string $divisiId = null): self
     {
@@ -29,7 +27,7 @@ class KadivTugasQuery
         ]);
         $karyawanQuery = Karyawan::query();
 
-        if (!empty($this->divisiId)) {
+        if (! empty($this->divisiId)) {
             $karyawanIds = $karyawanQuery
                 ->where('divisi_id_divisi', $this->divisiId)
                 ->pluck('id_karyawan');
@@ -50,7 +48,7 @@ class KadivTugasQuery
 
         $q = $filters['q'] ?? null;
         if ($q !== null && $q !== '') {
-            $query->whereRaw('LOWER(judul_tugas) LIKE ?', ['%' . mb_strtolower($q) . '%']);
+            $query->whereRaw('LOWER(judul_tugas) LIKE ?', ['%'.mb_strtolower($q).'%']);
         }
 
         $dir = ($filters['dir'] ?? null) === 'asc' ? 'asc' : 'desc';

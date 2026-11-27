@@ -39,12 +39,12 @@ class NotifikasiController extends Controller
 
         $pengingatNote = $notesHariIni->map(function (CalendarNote $note) {
             return [
-                'id_notifikasi'      => 'note-reminder-' . $note->id,
-                'judul_notifikasi'   => 'Pengingat Kalender',
-                'isi_notif'          => $note->reminderMessage(),
+                'id_notifikasi' => 'note-reminder-'.$note->id,
+                'judul_notifikasi' => 'Pengingat Kalender',
+                'isi_notif' => $note->reminderMessage(),
                 'tanggal_notifikasi' => now()->toDateString(),
-                'created_at'         => now()->toISOString(),
-                'is_note_reminder'   => true,
+                'created_at' => now()->toISOString(),
+                'is_note_reminder' => true,
             ];
         })->values()->all();
 
@@ -62,12 +62,12 @@ class NotifikasiController extends Controller
             $waktuLabel = $jam !== '00.00' ? " pukul {$jam}" : '';
 
             return [
-                'id_notifikasi'      => 'tugas-reminder-' . $tugas->id_tugas,
-                'judul_notifikasi'   => 'Pengingat Tugas',
-                'isi_notif'          => "Tugas \"{$tugas->judul_tugas}\" tenggat waktunya besok, {$tanggalLabel}{$waktuLabel}.",
+                'id_notifikasi' => 'tugas-reminder-'.$tugas->id_tugas,
+                'judul_notifikasi' => 'Pengingat Tugas',
+                'isi_notif' => "Tugas \"{$tugas->judul_tugas}\" tenggat waktunya besok, {$tanggalLabel}{$waktuLabel}.",
                 'tanggal_notifikasi' => now()->toDateString(),
-                'created_at'         => now()->toISOString(),
-                'is_tugas_reminder'  => true,
+                'created_at' => now()->toISOString(),
+                'is_tugas_reminder' => true,
             ];
         })->values()->all();
 
@@ -79,11 +79,11 @@ class NotifikasiController extends Controller
             $pengingatKontrak ? [$pengingatKontrak] : [],
             $notifikasi->map(function ($item) {
                 return [
-                    'id_notifikasi'      => $item->id_notifikasi,
-                    'judul_notifikasi'   => $item->judul_notifikasi,
-                    'isi_notif'          => $item->displayMessage(),
+                    'id_notifikasi' => $item->id_notifikasi,
+                    'judul_notifikasi' => $item->judul_notifikasi,
+                    'isi_notif' => $item->displayMessage(),
                     'tanggal_notifikasi' => $item->tanggal_notifikasi,
-                    'created_at'         => $item->created_at,
+                    'created_at' => $item->created_at,
                 ];
             })->all()
         );

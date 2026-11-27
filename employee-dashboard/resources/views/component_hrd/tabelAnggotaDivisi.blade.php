@@ -43,7 +43,7 @@
                             </td>
                             <td class="{{ $cellPadding }} text-slate-700 whitespace-nowrap">
                                 <span class="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-xs font-medium border border-slate-200">
-                                    {{ $anggota->jabatan }}
+                                    {{ $anggota->jabatanLabel() }}
                                 </span>
                             </td>
                             <td class="{{ $cellPadding }} text-slate-500 whitespace-nowrap">
@@ -72,7 +72,7 @@
                                         data-email="{{ $anggota->email }}"
                                         data-alamat="{{ $anggota->alamat }}"
                                         data-telepon="{{ $anggota->no_telepon }}"
-                                        data-jabatan="{{ $anggota->jabatan }}"
+                                        data-jabatan="{{ $anggota->jabatanRef?->nama ?? $anggota->jabatan }}"
                                         data-status="{{ $anggota->status_aktif }}"
                                         data-tanggal-keluar="{{ $anggota->tanggal_keluar ? \Carbon\Carbon::parse($anggota->tanggal_keluar)->format('Y-m-d') : '' }}"
                                         data-divisi="{{ $divisi->id_divisi }}"

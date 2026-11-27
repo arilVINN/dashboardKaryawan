@@ -110,6 +110,8 @@
     </form>
 </div>
 
+@include('components.modal-scripts')
+
 <script>
     (() => {
         const category = document.getElementById('bookingKategori');

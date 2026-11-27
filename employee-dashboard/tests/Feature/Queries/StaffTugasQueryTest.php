@@ -46,7 +46,7 @@ class StaffTugasQueryTest extends TestCase
             'id_tugas' => $id,
             'karyawan_id_karyawan' => 'KRY-S',
             'judul_tugas' => $judul,
-            'deskripsi' => $judul . ' desc',
+            'deskripsi' => $judul.' desc',
             'deadline' => $deadline,
             'progress' => '0',
             'status' => $status,

@@ -9,9 +9,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Divisi;
 use App\Models\KLabaRugi;
 use App\Services\Finance\VerifikasiLaporanService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 /**
  * Manajemen Laporan Laba/Rugi:
@@ -27,9 +28,9 @@ class LabaRugiController extends Controller
     /**
      * Halaman form laporan & riwayat laporan divisi user saat ini.
      */
-    public function index(Request $request): \Illuminate\View\View
+    public function index(Request $request): View
     {
-        $user     = Auth::user();
+        $user = Auth::user();
         $divisiId = $user->karyawan?->divisi_id_divisi;
 
         $periode = $request->input('periode', now()->format('Y-m'));
@@ -59,29 +60,29 @@ class LabaRugiController extends Controller
     /**
      * Simpan laporan laba/rugi mingguan dari Kadiv divisi.
      */
-    public function store(Request $request): \Illuminate\Http\RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $user     = Auth::user();
+        $user = Auth::user();
         $divisiId = $user->karyawan?->divisi_id_divisi;
 
         $data = $request->validate([
-            'periode'                    => ['required', 'string', 'regex:/^\d{4}-\d{2}$/'],
-            'minggu_ke'                  => ['required', 'integer', 'min:1', 'max:5'],
-            'tanggal_mulai'              => ['required', 'date'],
-            'tanggal_selesai'            => ['required', 'date', 'after_or_equal:tanggal_mulai'],
-            'pendapatan_operasional'     => ['nullable', 'numeric', 'min:0'],
+            'periode' => ['required', 'string', 'regex:/^\d{4}-\d{2}$/'],
+            'minggu_ke' => ['required', 'integer', 'min:1', 'max:5'],
+            'tanggal_mulai' => ['required', 'date'],
+            'tanggal_selesai' => ['required', 'date', 'after_or_equal:tanggal_mulai'],
+            'pendapatan_operasional' => ['nullable', 'numeric', 'min:0'],
             'pendapatan_non_operasional' => ['nullable', 'numeric', 'min:0'],
-            'beban_operasional'          => ['nullable', 'numeric', 'min:0'],
-            'beban_non_operasional'      => ['nullable', 'numeric', 'min:0'],
-            'total_pendapatan'           => ['nullable', 'numeric', 'min:0'],
-            'total_pengeluaran'          => ['nullable', 'numeric', 'min:0'],
-            'bukti_laporan'              => ['required', 'file', 'mimes:pdf,xlsx,xls,jpg,jpeg,png', 'max:5120'],
-            'catatan'                    => ['nullable', 'string', 'max:500'],
+            'beban_operasional' => ['nullable', 'numeric', 'min:0'],
+            'beban_non_operasional' => ['nullable', 'numeric', 'min:0'],
+            'total_pendapatan' => ['nullable', 'numeric', 'min:0'],
+            'total_pengeluaran' => ['nullable', 'numeric', 'min:0'],
+            'bukti_laporan' => ['required', 'file', 'mimes:pdf,xlsx,xls,jpg,jpeg,png', 'max:5120'],
+            'catatan' => ['nullable', 'string', 'max:500'],
         ], [
-            'periode.regex'              => 'Format periode harus YYYY-MM, contoh: 2026-11.',
-            'minggu_ke.min'              => 'Minggu ke harus antara 1 sampai 5.',
-            'minggu_ke.max'              => 'Minggu ke harus antara 1 sampai 5.',
-            'bukti_laporan.required'     => 'File bukti laporan wajib diunggah.',
+            'periode.regex' => 'Format periode harus YYYY-MM, contoh: 2026-11.',
+            'minggu_ke.min' => 'Minggu ke harus antara 1 sampai 5.',
+            'minggu_ke.max' => 'Minggu ke harus antara 1 sampai 5.',
+            'bukti_laporan.required' => 'File bukti laporan wajib diunggah.',
         ]);
 
         // Cek laporan minggu tersebut belum ada
@@ -106,7 +107,7 @@ class LabaRugiController extends Controller
         $totalPendapatan = isset($data['pendapatan_operasional'])
             ? ($pendOp + $pendNonOp)
             : (float) ($data['total_pendapatan'] ?? 0);
-        if (!isset($data['pendapatan_operasional'])) {
+        if (! isset($data['pendapatan_operasional'])) {
             $pendOp = $totalPendapatan;
         }
 
@@ -115,26 +116,26 @@ class LabaRugiController extends Controller
         $totalPengeluaran = isset($data['beban_operasional'])
             ? ($bebanOp + $bebanNonOp)
             : (float) ($data['total_pengeluaran'] ?? 0);
-        if (!isset($data['beban_operasional'])) {
+        if (! isset($data['beban_operasional'])) {
             $bebanOp = $totalPengeluaran;
         }
 
-        $data['pendapatan_operasional']     = $pendOp;
+        $data['pendapatan_operasional'] = $pendOp;
         $data['pendapatan_non_operasional'] = $pendNonOp;
-        $data['beban_operasional']          = $bebanOp;
-        $data['beban_non_operasional']      = $bebanNonOp;
-        $data['total_pendapatan']           = $totalPendapatan;
-        $data['total_pengeluaran']          = $totalPengeluaran;
-        $data['laba_operasional']           = $pendOp - $bebanOp;
-        $data['laba_bersih']                = FormatAkuntansi::hitungLaba($totalPendapatan, $totalPengeluaran);
-        $data['margin_persen']              = FormatAkuntansi::hitungMargin($totalPendapatan, $totalPengeluaran);
+        $data['beban_operasional'] = $bebanOp;
+        $data['beban_non_operasional'] = $bebanNonOp;
+        $data['total_pendapatan'] = $totalPendapatan;
+        $data['total_pengeluaran'] = $totalPengeluaran;
+        $data['laba_operasional'] = $pendOp - $bebanOp;
+        $data['laba_bersih'] = FormatAkuntansi::hitungLaba($totalPendapatan, $totalPengeluaran);
+        $data['margin_persen'] = FormatAkuntansi::hitungMargin($totalPendapatan, $totalPengeluaran);
 
         $count = KLabaRugi::count();
-        $data['id_klr']           = 'KLR' . str_pad($count + 1, 5, '0', STR_PAD_LEFT);
+        $data['id_klr'] = 'KLR'.str_pad($count + 1, 5, '0', STR_PAD_LEFT);
         $data['status_verifikasi'] = KLabaRugi::STATUS_MENUNGGU;
-        $data['tanggal_kirim']     = now()->toDateString();
-        $data['divisi_id_divisi']  = $divisiId;
-        $data['user_id_user']      = $user->id_user;
+        $data['tanggal_kirim'] = now()->toDateString();
+        $data['divisi_id_divisi'] = $divisiId;
+        $data['user_id_user'] = $user->id_user;
 
         $laporan = KLabaRugi::create($data);
 
@@ -155,11 +156,11 @@ class LabaRugiController extends Controller
     /**
      * Daftar semua laporan laba/rugi masuk (Finance view).
      */
-    public function daftarLaporan(Request $request): \Illuminate\View\View
+    public function daftarLaporan(Request $request): View
     {
-        $periode  = $request->input('periode', now()->format('Y-m'));
+        $periode = $request->input('periode', now()->format('Y-m'));
         $mingguKe = $request->input('minggu_ke', null);
-        $status   = $request->input('status', 'semua');
+        $status = $request->input('status', 'semua');
         $divisiId = $request->input('divisi_id_divisi', null);
 
         $query = KLabaRugi::with('divisi', 'pelapor.karyawan', 'diverifikasiOleh.karyawan')
@@ -178,7 +179,7 @@ class LabaRugiController extends Controller
             $query->where('status_verifikasi', $status);
         }
 
-        $laporan    = $query->paginate(15);
+        $laporan = $query->paginate(15);
         $divisiList = Divisi::query()->unitNonFinance()->where('status_aktif', 'Aktif')->get();
 
         return view('finance.laporan.index', compact('laporan', 'periode', 'mingguKe', 'status', 'divisiId', 'divisiList'));
@@ -187,10 +188,10 @@ class LabaRugiController extends Controller
     /**
      * Verifikasi laporan laba/rugi (setujui atau minta revisi).
      */
-    public function verifikasi(Request $request, string $id): \Illuminate\Http\RedirectResponse
+    public function verifikasi(Request $request, string $id): RedirectResponse
     {
         $data = $request->validate([
-            'status_verifikasi'  => ['required', 'string', 'in:disetujui,perlu_revisi'],
+            'status_verifikasi' => ['required', 'string', 'in:disetujui,perlu_revisi'],
             'catatan_verifikasi' => ['nullable', 'string', 'max:500'],
         ]);
 

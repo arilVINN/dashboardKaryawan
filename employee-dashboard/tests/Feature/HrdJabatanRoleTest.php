@@ -16,7 +16,9 @@ class HrdJabatanRoleTest extends TestCase
     use RefreshDatabase;
 
     private User2 $hrd;
+
     private Jabatan $jabatanStaff;
+
     private Jabatan $jabatanKadiv;
 
     protected function setUp(): void
@@ -146,6 +148,4 @@ class HrdJabatanRoleTest extends TestCase
             'role_id_role' => 'ROLE-SUPER',
         ])->assertUnprocessable()->assertJsonValidationErrors('role_id_role');
     }
-
-
 }

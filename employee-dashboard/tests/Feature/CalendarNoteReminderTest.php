@@ -201,16 +201,16 @@ class CalendarNoteReminderTest extends TestCase
 
         $ids = collect($response->json('data'))->pluck('id_notifikasi');
 
-        $this->assertContains('note-reminder-' . $remindTodayThreeDays->id, $ids);
-        $this->assertContains('note-reminder-' . $remindTodayOnTheDay->id, $ids);
+        $this->assertContains('note-reminder-'.$remindTodayThreeDays->id, $ids);
+        $this->assertContains('note-reminder-'.$remindTodayOnTheDay->id, $ids);
         $this->assertCount(2, $ids);
 
         $threeDays = collect($response->json('data'))
-            ->firstWhere('id_notifikasi', 'note-reminder-' . $remindTodayThreeDays->id);
+            ->firstWhere('id_notifikasi', 'note-reminder-'.$remindTodayThreeDays->id);
         $this->assertStringContainsString('3 hari lagi', $threeDays['isi_notif']);
 
         $onTheDay = collect($response->json('data'))
-            ->firstWhere('id_notifikasi', 'note-reminder-' . $remindTodayOnTheDay->id);
+            ->firstWhere('id_notifikasi', 'note-reminder-'.$remindTodayOnTheDay->id);
         $this->assertStringContainsString('hari ini', $onTheDay['isi_notif']);
     }
 

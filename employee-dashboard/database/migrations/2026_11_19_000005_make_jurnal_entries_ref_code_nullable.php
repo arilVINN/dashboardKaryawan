@@ -33,7 +33,7 @@ return new class extends Migration
             ->each(function ($row) {
                 DB::table('jurnal_entries')
                     ->where('id', $row->id)
-                    ->update(['ref_code' => 'LEG' . str_pad((string) $row->id, 6, '0', STR_PAD_LEFT)]);
+                    ->update(['ref_code' => 'LEG'.str_pad((string) $row->id, 6, '0', STR_PAD_LEFT)]);
             });
 
         Schema::table('jurnal_entries', function (Blueprint $table) {

@@ -133,7 +133,7 @@ class HrdLampiranKaryawanTest extends TestCase
             'path_file' => 'lampiran_karyawan/ktp_siti.pdf',
         ]);
 
-        $response = $this->actingAs($this->hrd)->get('/hrd/detailKaryawan/' . $karyawan->id_karyawan);
+        $response = $this->actingAs($this->hrd)->get('/hrd/detailKaryawan/'.$karyawan->id_karyawan);
         $response->assertOk();
 
         // Cek data diri baru
@@ -202,4 +202,3 @@ class HrdLampiranKaryawanTest extends TestCase
         $this->assertDatabaseMissing('lampiran_karyawan', ['id_lampiran' => 'LMP-DEL']);
     }
 }
-

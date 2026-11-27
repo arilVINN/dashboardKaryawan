@@ -16,6 +16,7 @@ class MessageConversationUiTest extends TestCase
     use RefreshDatabase;
 
     private User2 $hrd;
+
     private User2 $staff;
 
     protected function setUp(): void
@@ -94,7 +95,7 @@ class MessageConversationUiTest extends TestCase
         foreach (['staff', 'kadiv', 'hrd'] as $role) {
             $html = (string) file_get_contents(resource_path('views/'.$role.'/detailPesan.blade.php'));
 
-            $this->assertStringContainsString("component.breadcrumbs", $html, $role);
+            $this->assertStringContainsString('component.breadcrumbs', $html, $role);
             $this->assertStringContainsString("'inline' => true", $html, $role);
             $this->assertStringContainsString('px-6 pb-8 pt-6 sm:px-8', $html, $role);
         }

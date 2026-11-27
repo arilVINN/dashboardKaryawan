@@ -5,22 +5,26 @@ namespace App\Http\Controllers\Staff;
 use App\Actions\StoreKaryawanFoto;
 use App\Http\Controllers\Controller;
 use App\Support\AccountSecurity;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
     public function show(Request $request)
     {
-        $user = $request->user()->load(['karyawan.divisi', 'role']);
+        $user = $request->user()->load(['karyawan.divisi', 'karyawan.jabatanRef', 'role']);
         $karyawan = $user->karyawan;
-        $foto = $karyawan->foto ?? null;
+        $foto = $karyawan?->foto ?? null;
 
         $tglMasuk = $karyawan?->tanggal_masuk ?? $karyawan?->tanggal_rekrut;
         $tglAkhirKontrak = $karyawan?->tanggal_akhir_kontrak;
         $tglLahir = $karyawan?->tanggal_lahir;
         $pendidikan = strtoupper(trim((string) $karyawan?->pendidikan));
         $jobLevel = ucfirst(strtolower(trim((string) $karyawan?->job_level)));
+        $jabatan = $karyawan ? $karyawan->jabatanLabel() : '-';
+        $textOrDash = static fn (?string $value): string => filled(trim((string) $value)) ? trim((string) $value) : '-';
 
         if ($pendidikan === 'SMA/SMK') {
             $pendidikan = 'SMK';
@@ -30,28 +34,30 @@ class ProfileController extends Controller
             'message' => 'Data profil',
             'data' => [
                 'id_karyawan' => $karyawan?->id_karyawan ?? '-',
-                'nama' => $karyawan?->nama ?? $user->username,
-                'email' => $karyawan?->email ?? '-',
-                'alamat' => $karyawan?->alamat ?? '-',
-                'jabatan' => $karyawan?->jabatan ?? '-',
+                'nama' => $textOrDash($karyawan?->nama ?? $user->username),
+                'email' => $textOrDash($karyawan?->email),
+                'alamat' => $textOrDash($karyawan?->alamat),
+                'jabatan' => $jabatan,
                 'jobdesk' => $karyawan?->jobdesk ?: '-',
                 'job_level' => $jobLevel !== '' ? $jobLevel : '-',
                 'pendidikan' => $pendidikan !== '' ? $pendidikan : '-',
-                'status_karyawan' => $karyawan ? ($tglAkhirKontrak ? 'Kontrak' : 'Tetap') : '-',
-                'status_aktif' => $karyawan?->status_aktif ?? 'Aktif',
-                'divisi' => $karyawan?->divisi->nama_divisi ?? '-',
-                'no_telepon' => $karyawan?->no_telepon ?? '-',
-                'no_rekening' => $karyawan?->no_rekening ?? '-',
-                'tanggal_masuk' => $tglMasuk ? \Carbon\Carbon::parse($tglMasuk)->format('Y-m-d') : null,
-                'tanggal_masuk_label' => $tglMasuk ? \Carbon\Carbon::parse($tglMasuk)->format('d M Y') : '-',
-                'tanggal_rekrut' => $tglMasuk ? \Carbon\Carbon::parse($tglMasuk)->format('Y-m-d') : null,
-                'tanggal_akhir_kontrak' => $tglAkhirKontrak ? \Carbon\Carbon::parse($tglAkhirKontrak)->format('d M Y') : 'Karyawan Tetap / Tidak Ada',
-                'tanggal_lahir' => $tglLahir ? \Carbon\Carbon::parse($tglLahir)->format('d M Y') : '-',
-                'jenis_kelamin' => $karyawan?->jenis_kelamin ?? '-',
-                'tingkatan' => $user->role?->nama_role ? ucfirst($user->role->nama_role) : ($karyawan?->jabatan ?? 'Staff'),
+                'status_karyawan' => $karyawan
+                    ? ($tglAkhirKontrak ? 'Kontrak' : (filled($karyawan->status_karyawan) ? ucfirst((string) $karyawan->status_karyawan) : 'Tetap'))
+                    : '-',
+                'status_aktif' => $textOrDash($karyawan?->status_aktif ?? 'Aktif'),
+                'divisi' => $textOrDash($karyawan?->divisi?->nama_divisi),
+                'no_telepon' => $textOrDash($karyawan?->no_telepon),
+                'no_rekening' => $textOrDash($karyawan?->no_rekening),
+                'tanggal_masuk' => $tglMasuk ? Carbon::parse($tglMasuk)->format('Y-m-d') : null,
+                'tanggal_masuk_label' => $tglMasuk ? Carbon::parse($tglMasuk)->format('d M Y') : '-',
+                'tanggal_rekrut' => $tglMasuk ? Carbon::parse($tglMasuk)->format('Y-m-d') : null,
+                'tanggal_akhir_kontrak' => $tglAkhirKontrak ? Carbon::parse($tglAkhirKontrak)->format('d M Y') : 'Karyawan Tetap / Tidak Ada',
+                'tanggal_lahir' => $tglLahir ? Carbon::parse($tglLahir)->format('d M Y') : '-',
+                'jenis_kelamin' => $textOrDash($karyawan?->jenis_kelamin),
+                'tingkatan' => $user->role?->nama_role ? ucfirst($user->role->nama_role) : ($jabatan !== '-' ? $jabatan : 'Staff'),
                 'tanggal_dibuat' => $user->created_at ? $user->created_at->format('d F Y') : '-',
                 'foto_url' => $foto ? '/storage/'.$foto : null,
-            ]
+            ],
         ]);
     }
 
@@ -108,18 +114,18 @@ class ProfileController extends Controller
     public function updatePassword(Request $request)
     {
         $user = $request->user();
-        
+
         $request->validate([
             'current_password' => 'required|string',
             'new_password' => 'required|string|min:8',
         ]);
 
-        if (!\Illuminate\Support\Facades\Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return response()->json(['message' => 'Password saat ini salah.'], 400);
         }
 
         $user->update([
-            'password' => \Illuminate\Support\Facades\Hash::make($request->new_password),
+            'password' => Hash::make($request->new_password),
             'must_change_password' => false,
         ]);
 
